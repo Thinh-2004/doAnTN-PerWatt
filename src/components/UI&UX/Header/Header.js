@@ -22,10 +22,9 @@ const Header = () => {
               style={{ width: "400px" }}
             />
             <button className="btn btn-outline-primary rounded-end-4 mx-2 ">
-            <i class="bi bi-mic"></i>
-          </button>
+              <i class="bi bi-mic"></i>
+            </button>
           </form>
-          
         </div>
       </div>
       <div className="align-content-center m-3">
@@ -34,6 +33,7 @@ const Header = () => {
             <Link
               type="button"
               class="btn btn-icon position-relative rounded-4"
+              to={"/store"}
             >
               <i class="bi bi-cart4 fs-4"></i>
               <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
