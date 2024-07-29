@@ -9,7 +9,7 @@ import Footer from "../../Footer/Footer";
 const Home = () => {
   return (
     <>
-      <Header></Header>
+    <Header></Header>
       <div className="container">
         <About></About>
         <div className="" style={{ marginTop: "300px" }}>

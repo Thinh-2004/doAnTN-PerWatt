@@ -1,31 +1,18 @@
-import React from "react";
-import "./HeaderStyle.css";
-import { Link } from "react-router-dom";
-import "bootstrap-icons/font/bootstrap-icons.css";
-const Header = () => {
-  return (
-    <div
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const HeaderMarket = () => {
+    return (
+        <div
       className="d-flex justify-content-between shadow sticky-top container-fluid"
       id="nav"
     >
       <div className="d-flex">
-        <Link to={"/"}>
+        <Link to={"/profileMarket"}>
           <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
         </Link>
         <div className="align-content-center">
-          <form class="d-flex" role="search">
-            <input
-              class="form-control rounded-start-4"
-              type="search"
-              placeholder="Bạn cần tìm gì"
-              aria-label="Search"
-              style={{ width: "400px" }}
-            />
-            <button className="btn btn-outline-primary rounded-end-4 mx-2 ">
-            <i class="bi bi-mic"></i>
-          </button>
-          </form>
-          
+         <h3>Kênh người bán</h3>
         </div>
       </div>
       <div className="align-content-center m-3">
@@ -34,15 +21,12 @@ const Header = () => {
             <Link
               type="button"
               class="btn btn-icon position-relative rounded-4"
-              to={"/cart"}
+              to={"/"}
             >
-              <i class="bi bi-cart4 fs-4"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                99+
-              </span>
+              <i class="bi bi-houses fs-4"></i>
             </Link>
-            <Link type="button" class="btn btn-icon btn-sm mx-3 rounded-4 " to={"/market"}>
-              <i class="bi bi-shop fs-4"></i>
+            <Link type="button" class="btn btn-icon btn-sm mx-3 rounded-4 " to={""}>
+            <i class="bi bi-gear fs-4"></i>
             </Link>
             <Link
               type="button"
@@ -63,7 +47,7 @@ const Header = () => {
         </div>
       </div>
     </div>
-  );
+    );
 };
 
-export default Header;
+export default HeaderMarket;
