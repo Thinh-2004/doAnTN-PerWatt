@@ -1,21 +1,16 @@
 import "./App.css";
-import Form from "./components/Login&Register/Form";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./components/UI&UX/Body/Home/Home";
-import Market from "./components/Market/Market";
-import IsMarket from "./components/Market/CheckUsers/IsMarket/IsMarket";
+import { BrowserRouter } from "react-router-dom";
+import RouteUsers from "./components/RouteUsers/RouteUsers";
+import RouteAdmin from "./RouteAdmin/RouteAdmin";
+import { ToastContainer } from "react-toastify";
 
 
 function App() {
   return (
-    <BrowserRouter>      
-      <Routes>
-        <Route path="/" element={<Home></Home>}></Route>
-        <Route path="login" element={<Form></Form>}></Route>
-        <Route path="/cart" element={<h1>hello</h1>}></Route>
-        <Route path="/market" element={<Market></Market>}></Route>
-        <Route path="/profileMarket/*" element={<IsMarket></IsMarket>}></Route>
-      </Routes>
+    <BrowserRouter>     
+        <RouteAdmin></RouteAdmin>
+      <RouteUsers></RouteUsers>
+      <ToastContainer />
     </BrowserRouter>
   );
 }

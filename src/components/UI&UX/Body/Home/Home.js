@@ -5,11 +5,12 @@ import "./HomeStyle.css";
 import About from "./About/About";
 import ProductItem from "./Product/ProductItem";
 import Footer from "../../Footer/Footer";
+import { ToastContainer } from "react-toastify";
 
 const Home = () => {
   return (
     <>
-    <Header></Header>
+      <Header></Header>
       <div className="container">
         <About></About>
         <div className="" style={{ marginTop: "300px" }}>
