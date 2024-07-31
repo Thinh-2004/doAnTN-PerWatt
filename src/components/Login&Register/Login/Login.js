@@ -17,7 +17,7 @@ const Login = () => {
         placeholder="********"
         className="form-control mb-3"
       />
-      <a href="#" style={{ textDecoration: "none" }}>
+      <a href="/formForgetPassword" style={{ textDecoration: "none" }}>
         Quên mật khẩu?
       </a>
       <button type="submit" className="button">
