@@ -1,0 +1,18 @@
+ /* Tùy chỉnh thanh cuộn cho phần tử với class accordion */
+ .accordion::-webkit-scrollbar {
+    width: 10px; /* Độ rộng của thanh cuộn */
+  }
+
+  .accordion::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Màu nền của thanh cuộn */
+  }
+
+  .accordion::-webkit-scrollbar-thumb {
+    background: #888; /* Màu của thanh cuộn */
+    border-radius: 10px; /* Bo tròn góc của thanh cuộn */
+  }
+
+  .accordion::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Màu của thanh cuộn khi hover */
+  }
+  
