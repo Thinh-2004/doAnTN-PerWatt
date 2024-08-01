@@ -1,15 +1,17 @@
 // src/components/Store/Cards.js
 import React from 'react';
-import './Cards.css';
+import './CardsAmin.css';
 import { CardData } from '../../Data/Data';
-import Card from '../Card/Card';
+import CardAd from './CardAd';
 
-const Cards = () => {
+
+
+const CardsAmin = () => {
   return (
     <div className="Cards">
       {CardData.map((card, id) => (
         <div className="parentContainer" >
-          <Card
+          <CardAd
             title={card.title}
             color={card.color}
             barValue={card.barValue}
@@ -17,10 +19,11 @@ const Cards = () => {
             png={card.png}
             series={card.series}
           />
+          
         </div>
       ))}
     </div>
   );
 };
 
-export default Cards;
+export default CardsAmin;
