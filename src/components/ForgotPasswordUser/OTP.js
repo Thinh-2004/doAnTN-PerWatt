@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
 const VerifyOTP = () => {
   const [otp, setOtp] = useState("");
-  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   const verifyOtp = async (e) => {
@@ -21,10 +20,10 @@ const VerifyOTP = () => {
           email,
         }
       );
-      setMessage(response.data || "OTP đã được xác nhận!");
+      toast.error(response.data || "OTP đã được xác nhận!");
       navigate("/resetPassword");
     } catch (error) {
-      setMessage(error.response?.data || "Đã xảy ra lỗi!");
+      toast.error(error.response?.data || "Đã xảy ra lỗi!");
     }
   };
 
@@ -45,7 +44,6 @@ const VerifyOTP = () => {
           </div>
           <button type="submit">Xác nhận</button>
         </form>
-        {message && <p>{message}</p>}
       </div>
     </div>
   );

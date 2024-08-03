@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./ForgotPassword.css";
-
+import { toast } from "react-toastify";
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   const sendOtp = async (e) => {
@@ -15,7 +14,7 @@ const ForgotPassword = () => {
         toEmail: email,
       });
       const responseData = response.data;
-      setMessage(responseData.message);
+      toast.error(responseData.message);
 
       // Lưu OTP và email vào session storage
       sessionStorage.setItem("generatedOTP", responseData.otp);
@@ -24,7 +23,7 @@ const ForgotPassword = () => {
       navigate("/otp");
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi!";
-      setMessage(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -46,7 +45,6 @@ const ForgotPassword = () => {
           </div>
           <button type="submit">Gửi</button>
         </form>
-        {message && <p>{message}</p>}
       </div>
     </div>
   );

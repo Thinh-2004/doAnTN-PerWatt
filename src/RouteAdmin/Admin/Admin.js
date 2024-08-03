@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useSession from '../../Session/useSession'
+import useSession from "../../Session/useSession";
 const Admin = () => {
-  const [fullName, setFullName, removeFullName] = useSession('fullname');
+  const [fullName, setFullName, removeFullName] = useSession("fullname");
+  const [email, sêtmail, removeEmail] = useSession("email");
   const changeLink = useNavigate();
   const handleLogOut = (e) => {
     removeFullName();
+    removeEmail();
     changeLink("/login");
   };
   return (

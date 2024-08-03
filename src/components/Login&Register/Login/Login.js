@@ -48,7 +48,9 @@ const Login = () => {
             }, 2000); // Thời gian chờ là 2000ms (2 giây)
           }
           sessionStorage.setItem("fullname", res.data.fullname);
-          console.log("Session stored: ", res.data.fullname); // Kiểm tra giá trị username
+          sessionStorage.setItem("email", res.data.email);
+          console.log("Session stored: ", res.data.fullname);
+          console.log("Session stored: ", res.data.email); // Kiểm tra giá trị username
         }
       } catch (error) {
         toast.dismiss(id);
@@ -78,30 +80,6 @@ const Login = () => {
   };
 
   return (
-<<<<<<< HEAD
-    <form action="#" className="form-sign">
-      <h2 className="title">Đăng nhập</h2>
-      <p className="subject">Hãy đăng nhập để có trải nghiệm tốt nhất</p>
-      <input
-        type="text"
-        name="email"
-        placeholder="Email"
-        className="form-control mb-3"
-      />
-      <input
-        type="password"
-        name="passWord"
-        placeholder="********"
-        className="form-control mb-3"
-      />
-      <a href="/formForgetPassword" style={{ textDecoration: "none" }}>
-        Quên mật khẩu?
-      </a>
-      <button type="submit" className="button">
-        Đăng nhập
-      </button>
-    </form>
-=======
     <>
       <form onSubmit={handleSubmit} className="form-sign">
         <h2 className="title">Đăng nhập</h2>
@@ -130,7 +108,6 @@ const Login = () => {
         </button>
       </form>
     </>
->>>>>>> origin/thinhtq
   );
 };
 

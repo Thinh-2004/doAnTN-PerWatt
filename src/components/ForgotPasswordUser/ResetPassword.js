@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   const resetPassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      setMessage("Mật khẩu và xác nhận mật khẩu không khớp!");
+      toast.error("Mật khẩu và xác nhận mật khẩu không khớp!");
       return;
     }
 
@@ -22,12 +21,12 @@ const ResetPassword = () => {
         "http://localhost:8080/api/reset-password",
         { newPassword, confirmPassword, email }
       );
-      setMessage(response.data);
+      toast.error(response.data);
       sessionStorage.removeItem("email");
       sessionStorage.removeItem("generatedOTP");
       navigate("/login");
     } catch (error) {
-      setMessage(error.response.data);
+      toast.error(error.response.data);
     }
   };
 
@@ -58,7 +57,6 @@ const ResetPassword = () => {
           </div>
           <button type="submit">Đặt lại mật khẩu</button>
         </form>
-        {message && <p>{message}</p>}
       </div>
     </div>
   );
