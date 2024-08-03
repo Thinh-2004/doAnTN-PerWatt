@@ -12,7 +12,7 @@ const MainDash = () => {
     <div className='MainDash'>
     <Header></Header>
     <div className="container">
-    <h1>Dashboard</h1>
+    <h1>Overview chart</h1>
       <CardsAmin></CardsAmin>
       <div className="" style={{ marginTop: "70px" }}>
       <TableAd></TableAd>

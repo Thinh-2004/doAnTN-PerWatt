@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Nhập axios để gọi API
-import { Form, Input, InputNumber, Popconfirm, Table, Typography } from 'antd'; // Nhập các thành phần từ Ant Design
-import ApexCharts from 'react-apexcharts'; // Nhập thư viện biểu đồ
+import axios from 'axios';
+import { Form, Input, InputNumber, Popconfirm, Table, Typography } from 'antd';
+import ApexCharts from 'react-apexcharts';
 
 // Thành phần để hiển thị các ô có thể chỉnh sửa
 const EditableCell = ({
@@ -20,15 +20,8 @@ const EditableCell = ({
       {editing ? (
         <Form.Item
           name={dataIndex}
-          style={{
-            margin: 0,
-          }}
-          rules={[
-            {
-              required: true,
-              message: `Please Input ${title}!`,
-            },
-          ]}
+          style={{ margin: 0 }}
+          rules={[{ required: true, message: `Please Input ${title}!` }]}
         >
           {inputNode}
         </Form.Item>
@@ -39,26 +32,35 @@ const EditableCell = ({
   );
 };
 
-// Thành phần chính của bảng
+// Thành phần chính của bảng và biểu đồ
 const TableAd = () => {
-  const [form] = Form.useForm(); // Khởi tạo form
-  const [data, setData] = useState([]); // Dữ liệu cho bảng
-  const [editingKey, setEditingKey] = useState(''); // Khoá dòng đang chỉnh sửa
-  const [chartSeries, setChartSeries] = useState([]); // Dữ liệu cho biểu đồ
+  const [form] = Form.useForm();
+  const [data, setData] = useState([]);
+  const [editingKey, setEditingKey] = useState('');
+  const [chartSeries, setChartSeries] = useState([]);
+  const [chartCategories, setChartCategories] = useState([]);
 
   useEffect(() => {
-    // Hàm lấy dữ liệu từ API
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/fees');
+        const response = await axios.get('http://localhost:8080/fees/store-fee-details');
         const fetchedData = response.data;
-        console.log('Fetched Data:', fetchedData); // Kiểm tra dữ liệu nhận được
-        setData(fetchedData);
 
-        // Tính toán dữ liệu cho biểu đồ
-        const seriesData = fetchedData.map(item => item.taxmoney || 0); // Đảm bảo dữ liệu không undefined
-        const categories = fetchedData.map(item => item.nameStore || `Item ${item.id}`); // Đảm bảo có dữ liệu cho trục x
+        // Chuyển đổi dữ liệu từ mảng các mảng con thành mảng các đối tượng
+        const transformedData = fetchedData.map((item, index) => ({
+          id: index + 1, // Tạo ID giả định
+          nameStore: item[0],
+          taxmoney: item[1],
+          commission: item[2] || 0, // Lấy commission từ dữ liệu hoặc mặc định là 0
+        }));
+
+        setData(transformedData);
+
+        // Cập nhật dữ liệu biểu đồ với nameStore và taxmoney
+        const seriesData = transformedData.map(item => item.taxmoney || 0); // Giá trị thuế
+        const categories = transformedData.map(item => item.nameStore || 'Unknown'); // Tên cửa hàng
         setChartSeries([{ name: 'Tax Money', data: seriesData }]);
+        setChartCategories(categories);
 
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -68,68 +70,58 @@ const TableAd = () => {
     fetchData();
   }, []);
 
-  // Kiểm tra nếu một dòng đang được chỉnh sửa
   const isEditing = (record) => record.id === editingKey;
 
-  // Bắt đầu chỉnh sửa một dòng
   const edit = (record) => {
     form.setFieldsValue({
       id: record.id,
-      taxMoney: record.taxmoney || 0, // Đảm bảo giá trị hợp lệ
+      taxmoney: record.taxmoney || 0,
+      // Đặt giá trị commission để giữ nguyên khi chỉnh sửa
       commission: record.commission || 0,
     });
     setEditingKey(record.id);
   };
 
-  // Hủy bỏ chỉnh sửa
   const cancel = () => {
     setEditingKey('');
   };
 
-  // Lưu thông tin chỉnh sửa
   const save = async (id) => {
     try {
-      const row = await form.validateFields(); // Xác thực dữ liệu từ form
-      await axios.put(`http://localhost:8080/fees/${id}`, row); // Gọi API để cập nhật dữ liệu
-      const newData = [...data];
-      const index = newData.findIndex((item) => id === item.id);
-      if (index > -1) {
-        const item = newData[index];
-        newData.splice(index, 1, {
-          ...item,
-          ...row,
-        });
-        setData(newData); // Cập nhật dữ liệu mới
-        setEditingKey('');
+      const row = await form.validateFields();
+      const existingRecord = data.find(item => item.id === id);
 
-        // Cập nhật dữ liệu cho biểu đồ khi có sự thay đổi
-        const seriesData = newData.map(item => item.taxmoney || 0);
-        setChartSeries([{ name: 'Tax Money', data: seriesData }]);
+      // Cập nhật chỉ taxmoney, giữ nguyên commission
+      const updatedRow = { taxmoney: row.taxmoney || 0, commission: existingRecord.commission };
 
-      }
+      await axios.put(`http://localhost:8080/fees/${id}`, updatedRow);
+
+      const newData = data.map(item =>
+        item.id === id ? { ...item, taxmoney: updatedRow.taxmoney } : item
+      );
+      setData(newData);
+      setEditingKey('');
+
+      // Cập nhật dữ liệu biểu đồ sau khi chỉnh sửa
+      const seriesData = newData.map(item => item.taxmoney || 0);
+      setChartSeries([{ name: 'Tax Money', data: seriesData }]);
+
     } catch (errInfo) {
       console.log('Validate Failed:', errInfo);
     }
   };
 
-  // Cấu hình các cột của bảng
   const columns = [
     {
       title: 'ID',
       dataIndex: 'id',
-      width: '15%',
+      width: '20%',
     },
     {
       title: 'Tax Money',
-      dataIndex: 'taxmoney', // Thay đổi đây để khớp với dữ liệu từ API
-      width: '40%',
-      editable: true, // Cho phép chỉnh sửa cột taxMoney
-    },
-    {
-      title: 'Commission',
-      dataIndex: 'commission',
-      width: '40%',
-      editable: false, // Không cho phép chỉnh sửa cột commission
+      dataIndex: 'taxmoney',
+      width: '70%',
+      editable: true,
     },
     {
       title: 'Operation',
@@ -140,9 +132,7 @@ const TableAd = () => {
           <span>
             <Typography.Link
               onClick={() => save(record.id)}
-              style={{
-                marginInlineEnd: 8,
-              }}
+              style={{ marginInlineEnd: 8 }}
             >
               Save
             </Typography.Link>
@@ -159,7 +149,6 @@ const TableAd = () => {
     },
   ];
 
-  // Kết hợp các cột có thể chỉnh sửa với phần tử ô
   const mergedColumns = columns.map((col) => {
     if (!col.editable) {
       return col;
@@ -168,7 +157,7 @@ const TableAd = () => {
       ...col,
       onCell: (record) => ({
         record,
-        inputType: col.dataIndex === 'taxmoney' ? 'number' : 'text', // Chỉ cột taxMoney có kiểu số
+        inputType: col.dataIndex === 'taxmoney' ? 'number' : 'text',
         dataIndex: col.dataIndex,
         title: col.title,
         editing: isEditing(record),
@@ -176,39 +165,52 @@ const TableAd = () => {
     };
   });
 
-  // Cấu hình biểu đồ
   const chartOptions = {
     chart: {
-      type: 'bar',
+      type: 'line',
+      height: 670,
+    },
+    plotOptions: {
+      line: {
+        dataLabels: {
+          enabled: true,
+        },
+        markers: {
+          size: 5,
+          colors: ['#FF4560'],
+          strokeColors: '#fff',
+          strokeWidth: 2,
+          shape: 'circle',
+        },
+      },
     },
     xaxis: {
-      categories: data.length ? data.map(item => item.nameStore || `Item ${item.id}`) : [], // Đảm bảo không có lỗi khi data chưa được tải
+      categories: chartCategories,
     },
     title: {
       text: 'Tax Money Overview',
       align: 'left',
     },
+    dataLabels: {
+      enabled: true,
+    },
+    stroke: {
+      curve: 'smooth',
+    },
   };
 
-  // Trả về thành phần bảng
   return (
     <div className="row">
       <div className="col-lg-6">
         <Form form={form} component={false}>
-          <div><h1>TableAd1</h1></div>
+          <div><h1>Tax table</h1></div>
           <Table
-            components={{
-              body: {
-                cell: EditableCell,
-              },
-            }}
+            components={{ body: { cell: EditableCell } }}
             bordered
-            dataSource={data} // Đảm bảo data chứa trường taxMoney
+            dataSource={data}
             columns={mergedColumns}
             rowClassName="editable-row"
-            pagination={{
-              onChange: cancel,
-            }}
+            pagination={{ onChange: cancel }}
           />
         </Form>
       </div>
@@ -217,7 +219,7 @@ const TableAd = () => {
           <ApexCharts
             options={chartOptions}
             series={chartSeries}
-            type="bar"
+            type="line"
             height={670}
           />
         </div>

@@ -1,18 +1,17 @@
-// src/Data/Data.js
-import { UilUsdSquare, UilMoneyWithdrawal, UilClipboardAlt } from '@iconscout/react-unicons';
+import { UilInvoice, UilMoneyWithdrawal, UilStore, UilUser } from '@iconscout/react-unicons';
 
 export const CardData = [{
-  title: "Sales",
+  title: "Bill",
   color: {
     backGround: "linear-gradient(180deg, #bb67ff 0%, #c484f3 100%)",
     boxShadow: "0px 10px 20px 0px #e0c6f5",
   },
   barValue: 70,
-  value: "25,970",
-  png: UilUsdSquare,
+  value: "",
+  png: UilInvoice,
   series: [
     {
-      name: "Sales",
+      name: "Bill",
       data: [31, 40, 28, 51, 42, 109, 100],
     }
   ]
@@ -33,19 +32,36 @@ export const CardData = [{
     }
   ]
 },
+
 {
-  title: "Expenses",
+  title: "Store",
   color: {
     backGround: "linear-gradient(180deg, #f7ff00 0%, #db36a4 100%)",
     boxShadow: "0px 10px 20px 0px #f2dce8",
   },
   barValue: 60,
-  value: "10,300",
-  png: UilClipboardAlt,
+  value: "Active",
+  png: UilStore,
   series: [
     {
-      name: "Expenses",
-      data: [40, 50, 70, 80, 20, 30, 50],
+      name: "Store",
+      data: [],  // Dữ liệu sẽ được cập nhật từ API
+    }
+  ]
+},
+{
+  title: "User",  // Thêm biểu đồ User
+  color: {
+    backGround: "linear-gradient(180deg, #00c6ff 0%, #0072ff 100%)",
+    boxShadow: "0px 10px 20px 0px #c4e3f3",
+  },
+  barValue: 50,
+  value: "",
+  png: UilUser,
+  series: [
+    {
+      name: "Users",
+      data: [],  // Dữ liệu sẽ được cập nhật từ API
     }
   ]
 }];
