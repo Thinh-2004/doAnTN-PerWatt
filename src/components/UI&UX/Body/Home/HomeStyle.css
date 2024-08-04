@@ -6,7 +6,6 @@
   #item-product  a {
     text-decoration: none;
     color: #65676B;
-    border: 1px solid #65676B;
     display: inline-block; /* Ensure the link behaves as a block for transform */
     transition: 0.5s;
   }
@@ -24,8 +23,6 @@
     transform: scale(1.08); /* Slightly scale up the div on hover */
     z-index: 1; /* Ensure the scaled-up div is on top */
     border-radius: 10px;    
-    
-    border: 1px solid;
     transition: 0.1s;
   }
 

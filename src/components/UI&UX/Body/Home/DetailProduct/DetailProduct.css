@@ -1,0 +1,16 @@
+#btn-children-img{
+    border: none;
+    background-color: white
+}
+#btn-children-img:hover{
+    border: none;
+    background-color: white
+}
+#avt-store {
+    width: 90px; /* hoặc bất kỳ kích thước nào bạn muốn */
+    height: 90px; /* đảm bảo chiều cao và chiều rộng bằng nhau */
+    border-radius: 50%;
+}
+#description{
+    white-space: pre-wrap; /* Giữ lại các khoảng trắng và xuống dòng */
+}

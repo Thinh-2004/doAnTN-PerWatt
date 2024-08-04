@@ -1,4 +1,4 @@
-import axios from "../../../localhost/Custumize-axios";
+import axios from "../../../Localhost/Custumize-axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -13,8 +13,7 @@ const Register = () => {
     role: 3, // Vai trò buyer
     address: "",
     phone: "",
-    avatar:
-      "https://as2.ftcdn.net/v2/jpg/03/49/49/79/1000_F_349497933_Ly4im8BDmHLaLzgyKg2f2yZOvJjBtlw5.jpg",
+    avatar: "", // Khởi tạo avatar trống
   });
 
   const handleChange = (e) => {
@@ -23,6 +22,9 @@ const Register = () => {
       setFormUser((prev) => ({
         ...prev,
         [name]: checked ? value : prev[name],
+        avatar: value === "true"
+          ? "nam.jpg"
+          : "nu.jpg",
       }));
     } else {
       setFormUser((prev) => ({
@@ -43,10 +45,12 @@ const Register = () => {
       phone,
       configPassWord,
     } = formUser;
-    //Biểu thức chính quy
+
+    // Biểu thức chính quy
     const pattentEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const pattentPhone = /0[0-9]{9}/;
     const patternPassword = /^(?=.*[a-zA-Z]).{8,}$/;
+
     // Kiểm tra nếu tất cả các trường đều trống
     if (
       !fullname &&

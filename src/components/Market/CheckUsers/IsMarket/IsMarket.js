@@ -1,11 +1,31 @@
-import React from "react";
+import React, { useEffect } from "react";
 import HeaderMarket from "../../../UI&UX/Header/HeaderMarket";
 import { Link, Route, Routes } from "react-router-dom";
 import "./isMarketStyle.css";
 import ListProduct from "./Product/List/ListProduct";
 import FormProduct from "./Product/Form/FormProduct";
 import StatisticalOrder from "./StatisticalOrders/StatisticalOrder";
+import useSession from "../../../../Session/useSession";
+import axios from "../../../../Localhost/Custumize-axios";
+import EditProduct from "./Product/Form/EditProduct";
 const IsMarket = () => {
+  const [id] = useSession("id");
+  useEffect(() => {
+    const searchIdStoreByIdUser = async () => {
+      try {
+        const res = await axios.get(`/searchStore/${id}`);
+        sessionStorage.setItem("idStore", res.data.id);
+      } catch (error) {
+        // Xử lý lỗi nếu có
+        console.error("Error fetching store data:", error);
+      }
+    };
+
+    // Gọi hàm fetchData khi id thay đổi
+    if (id) {
+      searchIdStoreByIdUser();
+    }
+  }, [id]);
   return (
     <>
       <HeaderMarket />
@@ -258,6 +278,7 @@ const IsMarket = () => {
             <Route path="/" element={<StatisticalOrder />} />
             <Route path="/listStoreProduct" element={<ListProduct />} />
             <Route path="/FormStoreProduct" element={<FormProduct />} />
+            <Route path="updateProduct/:id" element={<EditProduct />} />
           </Routes>
         </div>
       </div>

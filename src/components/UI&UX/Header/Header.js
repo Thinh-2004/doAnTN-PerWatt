@@ -1,18 +1,21 @@
 import React from "react";
 import "./HeaderStyle.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import useSession from "../../../Session/useSession";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { confirmAlert } from "react-confirm-alert"; // Import thư viện confirm-alert
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS cho confirm-alert
+import axios from "../../../Localhost/Custumize-axios";
 
 const Header = () => {
-  const [fullName, setFullName, removeFullName] = useSession("fullname");
+  const [fullName, removeFullName] = useSession("fullname");
+  const [avatar, removeAvatar] = useSession("avatar");
+  const [id, removeId] = useSession("id");
+  const changeLink = useNavigate();
 
   const handleLogOut = () => {
-    // Hiển thị hộp thoại xác nhận
     confirmAlert({
       title: "Đăng xuất tài khoản",
       message: "Bạn chắc chắn muốn đăng xuất?",
@@ -20,18 +23,21 @@ const Header = () => {
         {
           label: "Có",
           onClick: () => {
-            // Hiển thị thông báo đang tải
-            const id = toast.loading("Vui lòng chờ...");
+            const toastId = toast.loading("Vui lòng chờ...");
             setTimeout(() => {
-              toast.update(id, {
+              toast.update(toastId, {
                 render: "Đăng xuất thành công",
                 type: "success",
                 isLoading: false,
                 autoClose: 5000,
                 closeButton: true,
               });
-              removeFullName();
-            }, 2000);
+              removeFullName(); // Xóa giá trị fullname từ session
+              removeAvatar(); // Xóa giá trị avatar từ session
+              removeId(); // Xóa giá trị id từ session
+              sessionStorage.removeItem("idStore"); // Xóa giá trị idStore từ session
+              changeLink("/"); // Chuyển hướng về trang chủ
+            }, 500);
           },
         },
         {
@@ -39,6 +45,61 @@ const Header = () => {
         },
       ],
     });
+  };
+
+  const CallAPICheckUserId = async (id) => {
+    try {
+      const res = await axios.get(`store/checkIdUser/${id}`);
+      return res.data.exists; // Lấy giá trị exists từ phản hồi
+    } catch (error) {
+      console.log("Error ", error);
+      return false;
+    }
+  };
+
+  const checkUserId = async (e) => {
+    // Ngăn chặn hành động mặc định của liên kết
+    e.preventDefault();
+
+    // Kiểm tra nếu id là null hoặc undefined
+    if (id === "" || id === undefined) {
+      confirmAlert({
+        title: "Bạn đã đăng nhập chưa?",
+        message: "Hãy đăng nhập để có trải nghiệm tuyệt vời hơn",
+        buttons: [
+          {
+            label: "Có",
+            onClick: () => {
+              // Hiển thị thông báo đang tải
+              const id = toast.loading("Vui lòng chờ...");
+              setTimeout(() => {
+                toast.update(id, {
+                  render: "Chuyển hướng đến trang đăng nhập",
+                  type: "info",
+                  isLoading: false,
+                  autoClose: 2000,
+                  closeButton: true,
+                });
+                changeLink("/login");
+              }, 500);
+            },
+          },
+          {
+            label: "Không",
+          },
+        ],
+      });
+    } else {
+      // Nếu id tồn tại, kiểm tra với API
+      const check = await CallAPICheckUserId(id);
+      if (check) {
+        // Nếu id tồn tại trong cửa hàng
+        changeLink("/profileMarket");
+      } else {
+        // Chưa tồn tại
+        changeLink("/market");
+      }
+    }
   };
 
   return (
@@ -67,7 +128,7 @@ const Header = () => {
       </div>
       <div className="align-content-center m-3">
         <div className="d-flex">
-          <div className="mx-3">
+          <div className="mx-4 border-end">
             <Link
               type="button"
               className="btn btn-icon position-relative rounded-4"
@@ -79,22 +140,23 @@ const Header = () => {
               </span>
             </Link>
             <Link
+              onClick={checkUserId}
               type="button"
               className="btn btn-icon btn-sm mx-3 rounded-4"
-              to={"/market"}
+              to={""}
             >
               <i className="bi bi-shop fs-4"></i>
             </Link>
             <Link
               type="button"
-              className="btn btn-icon btn-sm rounded-4"
+              className="btn btn-icon btn-sm rounded-4 me-3"
               to={"/login"}
             >
               <i className="bi bi-bell fs-4"></i>
             </Link>
           </div>
           {fullName ? (
-            <div className="d-flex justify-content-center align-items-center mt-2">
+            <div className="d-flex justify-content-center align-items-center mt-2 ">
               <div className="dropdown">
                 <button
                   className="p-1 btn btn-lg d-flex p-0 align-items-center dropdown-toggle"
@@ -104,7 +166,7 @@ const Header = () => {
                   id="btn-sessionUser"
                 >
                   <img
-                    src="https://as2.ftcdn.net/v2/jpg/03/49/49/79/1000_F_349497933_Ly4im8BDmHLaLzgyKg2f2yZOvJjBtlw5.jpg"
+                    src={`/images/${avatar}`}
                     alt=""
                     className="rounded-circle img-fluid"
                     style={{ width: "30px", height: "30px" }}
@@ -121,11 +183,7 @@ const Header = () => {
                     <hr className="p-0 m-2" />
                   </li>
                   <li>
-                    <Link
-                      className="dropdown-item"
-                      to={"/"}
-                      onClick={handleLogOut}
-                    >
+                    <Link className="dropdown-item" onClick={handleLogOut}>
                       Đăng xuất
                     </Link>
                   </li>
@@ -133,11 +191,12 @@ const Header = () => {
               </div>
             </div>
           ) : (
-            <div className="border-start mt-2">
+            <div className="mt-2">
               <Link
                 type="button"
-                className="btn btn-register btn-sm mx-3"
+                className="btn btn-register btn-sm me-3"
                 to={"/login"}
+                style={{ width: "90px", height: "30px" }}
               >
                 Đăng ký
               </Link>
@@ -145,6 +204,7 @@ const Header = () => {
                 type="button"
                 className="btn btn-login btn-sm"
                 to={"/login"}
+                style={{ width: "95px", height: "30px" }}
               >
                 Đăng nhập
               </Link>
@@ -155,5 +215,4 @@ const Header = () => {
     </div>
   );
 };
-
 export default Header;

@@ -6,7 +6,11 @@ const useSession = (key) => {
   });
 
   useEffect(() => {
-    sessionStorage.setItem(key, sessionValue);
+    if (sessionValue === "" || sessionValue === undefined) {
+      sessionStorage.removeItem(key);
+    } else {
+      sessionStorage.setItem(key, sessionValue);
+    }
   }, [key, sessionValue]);
 
   const removeSessionValue = () => {

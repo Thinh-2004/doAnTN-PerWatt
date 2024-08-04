@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+import axios from "../../../Localhost/Custumize-axios";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,47 +11,37 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (validate()) {
-      const id = toast.loading("Vui lòng chờ...");
       try {
-        const res = await axios.get(`http://localhost:8080/user/${email}`);
-        if (res.data.password !== password) {
-          toast.update(id, {
-            render: "Mật khẩu không đúng",
-            type: "error",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
+        const res = await axios.get(`user/${email}`);
+        if (res.data.email !== email) {
+          toast.error("Email không tồn tại");
+        } else if (res.data.password !== password) {
+          toast.error("Mật khẩu không đúng");
         } else {
-          if (res.data.role.id === 1) {
-            setTimeout(() => {
-              toast.update(id, {
-                render: "Đăng nhập thành công",
-                type: "success",
-                isLoading: false,
-                autoClose: 5000,
-                closeButton: true,
-              });
-              navigate("/admin");
-            }, 2000); // Thời gian chờ là 2000ms (2 giây)
-          } else {
-            setTimeout(() => {
-              toast.update(id, {
-                render: "Đăng nhập thành công",
-                type: "success",
-                isLoading: false,
-                autoClose: 5000,
-                closeButton: true,
-              });
-              navigate("/");
-            }, 2000); // Thời gian chờ là 2000ms (2 giây)
-          }
+          const id = toast.loading("Vui lòng đợi...");
           sessionStorage.setItem("fullname", res.data.fullname);
-          console.log("Session stored: ", res.data.fullname); // Kiểm tra giá trị username
+          sessionStorage.setItem("id", res.data.id);
+          sessionStorage.setItem("avatar", res.data.avatar);
+          console.log("Session stored: ", res.data.fullname);
+
+          setTimeout(() => {
+            toast.update(id, {
+              render: "Đăng nhập thành công",
+              type: "success",
+              isLoading: false,
+              autoClose: 5000,
+              closeButton: true,
+            },500);
+            if (res.data.role.id === 1) {
+              navigate("/admin");
+            } else {
+              navigate("/");
+            }
+          }, 500);
         }
       } catch (error) {
-        toast.dismiss(id);
         if (error.response) {
           toast.error("Email không tồn tại: " + error.response.data.message);
         } else if (error.request) {

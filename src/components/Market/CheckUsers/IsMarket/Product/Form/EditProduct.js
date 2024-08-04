@@ -1,19 +1,22 @@
-import React, { useState } from "react";
-import "./FormProduct.css";
-import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Category from "../../CategoryProduct/Category";
 import Brand from "../../Brand/Brand";
 import Warranties from "../../Warranties/Warranties";
+import { toast } from "react-toastify";
 import useSession from "../../../../../../Session/useSession";
 import axios from "../../../../../../Localhost/Custumize-axios";
 
-const FormProduct = () => {
+const EditProduct = () => {
+  const { id } = useParams();
+  const geturlIMG = (productId, filename) => {
+    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
+  };
   const [idStore] = useSession("idStore");
   const [images, setImages] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(null);
   const clickTimeout = 300; // Thời gian tối đa giữa hai lần click (milisecond)
-  const [formProduct, setFormProduct] = useState({
+  const [formEditProduct, setFormEditProduct] = useState({
     name: "",
     productcategory: "",
     trademark: "",
@@ -25,10 +28,30 @@ const FormProduct = () => {
     description: "",
     store: idStore,
   });
-
   const maxFiles = 9;
+  const changeLink = useNavigate();
 
-  // Xử lý khi người dùng chọn tệp
+  // Fill dữ liệu edit
+  const fillData = async (id) => {
+    try {
+      const res = await axios.get(`product/${id}`);
+      setFormEditProduct({
+        ...res.data,
+        productcategory: res.data.productcategory.id,
+        trademark: res.data.trademark.id,
+        warranties: res.data.warranties.id,
+        store: idStore,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fillData(id);
+  }, [id]);
+
+  // Hàm xử lí sự kiện thay đổi File
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
 
@@ -46,6 +69,7 @@ const FormProduct = () => {
     setImages((prevImages) => [...prevImages, ...imageFiles]);
   };
 
+  // Hàm xử lí click để xóa ảnh
   const handleImageClick = (index) => {
     const now = Date.now();
     if (lastClickTime && now - lastClickTime < clickTimeout) {
@@ -55,15 +79,26 @@ const FormProduct = () => {
     }
   };
 
+  // Hàm xóa ảnh được fill lên từ API
+  const handleDeleteImageClick = async (idImage) => {
+    try {
+      await axios.delete(`image/${idImage}`);
+      fillData(id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Hàm xử lí sự kiện các thẻ input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    setFormProduct((prevFormProduct) => ({
+    setFormEditProduct((prevFormProduct) => ({
       ...prevFormProduct,
       [name]: value,
     }));
   };
 
+  // Bắt lỗi
   const validate = () => {
     const {
       name,
@@ -75,133 +110,96 @@ const FormProduct = () => {
       size,
       description,
       specializedgame,
-    } = formProduct;
-    //Biểu thức chính quy
+    } = formEditProduct;
     const pattenSize = /^(?:\d+x\d+x\d+|\d+inch(?: \d+inch)*)$/i;
     if (
-      !name &&
-      !price &&
-      !quantity &&
-      !size &&
-      !description &&
-      !productcategory &&
-      !trademark &&
-      !warranties &&
+      !name ||
+      !price ||
+      !quantity ||
+      !size ||
+      !description ||
+      !productcategory ||
+      !trademark ||
+      !warranties ||
       !specializedgame
     ) {
       toast.warning("Vui lòng nhập đầy đủ thông tin.");
       return false;
-    } else {
-      if (name === "") {
-        toast.warning("Vui lòng nhập tên sản phẩm.");
-        return false;
-      } else if (name.length < 20) {
-        toast.warning("Tên sản phẩm tối thiểu 20 kí tự.");
-        return false;
-      }
-      if (price === "") {
-        toast.warning("Vui lòng nhập giá sản phẩm.");
-        return false;
-      } else if (!parseFloat(price)) {
-        toast.warning("Giá không hợp lệ");
-        return false;
-      }
-
-      if (quantity === "") {
-        toast.warning("Vui lòng nhập số lượng sản phẩm.");
-        return false;
-      } else if (!parseInt(quantity)) {
-        toast.warning("Số lượng sản phẩm không hợp lệ.");
-        return false;
-      }
-
-      if (description === "") {
-        toast.warning("Vui lòng nhập mô tả sản phẩm.");
-        return false;
-      }
-
-      if (productcategory === "") {
-        toast.warning("Cần loại sản phẩm.");
-        return false;
-      }
-
-      if (specializedgame === "") {
-        toast.warning("Cần chọn chuyên dụng.");
-        return false;
-      }
-
-      if (trademark === "") {
-        toast.warning("Cần chọn thương hiệu.");
-        return false;
-      }
-
-      if (warranties === "") {
-        toast.warning("Cần chọn thời gian bảo hành.");
-        return false;
-      }
-
-      if (size === "") {
-        toast.warning("Cần nhập kích cỡ.");
-        return false;
-      }
-      return true;
     }
+
+    if (name === "") {
+      toast.warning("Nhập tên sản phẩm.");
+      return false;
+    } else if (name.length < 20) {
+      toast.warning("Tên sản phẩm tối thiểu 20 kí tự.");
+      return false;
+    }
+
+    if (price === "") {
+      toast.warning("Vui lòng nhập giá sản phẩm");
+      return false;
+    } else if (!parseFloat(price)) {
+      toast.warning("Giá sản phẩm không hợp lệ");
+      return false;
+    }
+
+    if (quantity === "") {
+      toast.warning("Vui lòng nhập số lượng.");
+      return false;
+    } else if (!parseInt(quantity)) {
+      toast.warning("Số lượng sản phẩm không hợp lệ.");
+      return false;
+    }
+
+    if(description === ""){
+      toast.warning("Vui lòng nhập mô tả.");
+      return false;
+    }else if(description.length < 250){
+      toast.warning("Mô tả không được ít hơn 250 kí tự");
+      return false;
+    }
+
+    if (size === "") {
+      toast.warning("Vui lòng nhập kích thước");
+      return false;
+    }
+    return true;
   };
 
-  const handleSubmit = async (e) => {
+  // Hàm sửa sản phẩm
+  const handleUpdate = async (e) => {
     e.preventDefault();
     if (validate()) {
       const formData = new FormData();
       const productToSend = {
-        ...formProduct,
-        productcategory: {
-          id: formProduct.productcategory,
-        },
-        trademark: {
-          id: formProduct.trademark,
-        },
-        warranties: {
-          id: formProduct.warranties,
-        },
-        store: {
-          id: formProduct.store,
-        },
+        ...formEditProduct,
+        productcategory: { id: formEditProduct.productcategory },
+        trademark: { id: formEditProduct.trademark },
+        warranties: { id: formEditProduct.warranties },
+        store: { id: formEditProduct.store },
       };
       formData.append(
         "product",
         new Blob([JSON.stringify(productToSend)], { type: "application/json" })
       );
-      images.forEach((file) => {
-        formData.append("files", file);
-      });
+      images.forEach((file) => formData.append("files", file));
 
       try {
-        const id = toast.loading("Vui lòng chờ...");
-        const response = await axios.post("/productCreate", formData, {
+        const idToast = toast.loading("Vui lòng chờ...");
+        const response = await axios.put(`/productUpdate/${id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
         setTimeout(() => {
-          toast.update(id, {
-            render: "Sản phẩm đã được đăng thành công",
+          toast.update(idToast, {
+            render: "Cập nhật sản phẩm thành công",
             type: "success",
             isLoading: false,
             closeButton: true,
             autoClose: 5000,
           });
-          setFormProduct({
-            name: "",
-            productcategory: "",
-            trademark: "",
-            warranties: "",
-            price: "",
-            quantity: "",
-            size: "",
-            specializedgame: "",
-            description: "",
-            store: idStore,
-          });
+          changeLink("/profileMarket/listStoreProduct");
           setImages([]);
         }, 500);
       } catch (error) {
@@ -213,8 +211,7 @@ const FormProduct = () => {
 
   return (
     <div className="row mt-4">
-      <form onSubmit={handleSubmit}>
-        {/* Product Info */}
+      <form onSubmit={handleUpdate}>
         <div className="col-lg-12">
           <div className="bg-white rounded-4">
             <div className="card">
@@ -228,7 +225,7 @@ const FormProduct = () => {
                         className="form-control"
                         placeholder="Nhập tên sản phẩm"
                         name="name"
-                        value={formProduct.name}
+                        value={formEditProduct.name}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -239,7 +236,7 @@ const FormProduct = () => {
                           placeholder="Nhập giá sản phẩm"
                           className="form-control me-2"
                           name="price"
-                          value={formProduct.price}
+                          value={formEditProduct.price}
                           onChange={handleInputChange}
                         />
                         <input
@@ -247,7 +244,7 @@ const FormProduct = () => {
                           placeholder="Nhập số lượng"
                           className="form-control"
                           name="quantity"
-                          value={formProduct.quantity}
+                          value={formEditProduct.quantity}
                           onChange={handleInputChange}
                         />
                       </div>
@@ -258,16 +255,27 @@ const FormProduct = () => {
                         className="form-control"
                         rows={12}
                         name="description"
-                        value={formProduct.description}
+                        value={formEditProduct.description}
                         onChange={handleInputChange}
                       ></textarea>
                     </div>
                   </div>
                   <div className="col-lg-6">
                     <div className="mb-3 border" id="bg-upload-img">
+                      {formEditProduct.images &&
+                        formEditProduct.images.map((image, index) => (
+                          <img
+                            key={index}
+                            src={geturlIMG(formEditProduct.id, image.imagename)}
+                            alt={`Current ${index}`}
+                            className="img-fluid"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => handleDeleteImageClick(image.id)}
+                          />
+                        ))}
                       {images.map((image, index) => (
                         <img
-                          key={index}
+                          key={`new-${index}`}
                           src={URL.createObjectURL(image)}
                           alt={`Preview ${index}`}
                           className="img-fluid"
@@ -301,7 +309,6 @@ const FormProduct = () => {
             </div>
           </div>
         </div>
-        {/* Detailed Info */}
         <div className="col-lg-12">
           <div className="bg-white rounded-4 mt-3">
             <div className="card">
@@ -310,26 +317,23 @@ const FormProduct = () => {
                 <div className="row">
                   <div className="col-lg-6">
                     <div className="mb-4 d-flex">
-                      {/* Category Component */}
                       <Category
                         name="productcategory"
-                        value={formProduct.productcategory}
+                        value={formEditProduct.productcategory}
                         onChange={handleInputChange}
                       />
                     </div>
                     <div className="mb-4 d-flex">
-                      {/* Brand Component */}
                       <Brand
                         name="trademark"
-                        value={formProduct.trademark}
+                        value={formEditProduct.trademark}
                         onChange={handleInputChange}
                       />
                     </div>
                     <div className="mb-4 d-flex">
-                      {/* Warranties Component */}
                       <Warranties
                         name="warranties"
-                        value={formProduct.warranties}
+                        value={formEditProduct.warranties}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -339,7 +343,7 @@ const FormProduct = () => {
                       <select
                         name="specializedgame"
                         className="form-select"
-                        value={formProduct.specializedgame}
+                        value={formEditProduct.specializedgame}
                         onChange={handleInputChange}
                       >
                         <option value="" className="text-secondary" hidden>
@@ -355,7 +359,7 @@ const FormProduct = () => {
                         placeholder="Nhập kích cỡ (dài x rộng x cao)"
                         className="form-control"
                         name="size"
-                        value={formProduct.size}
+                        value={formEditProduct.size}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -365,7 +369,6 @@ const FormProduct = () => {
             </div>
           </div>
         </div>
-        {/* Form Actions */}
         <div className="mt-4 mb-4">
           <button className="btn mx-2" id="btn-addProduct" type="submit">
             Đăng sản phẩm
@@ -375,7 +378,7 @@ const FormProduct = () => {
             id="btn-resetProduct"
             type="button"
             onClick={() =>
-              setFormProduct({
+              setFormEditProduct({
                 name: "",
                 productcategory: "",
                 trademark: "",
@@ -404,4 +407,4 @@ const FormProduct = () => {
   );
 };
 
-export default FormProduct;
+export default EditProduct;

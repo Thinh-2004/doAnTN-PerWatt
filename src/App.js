@@ -1,16 +1,15 @@
 import "./App.css";
 import { BrowserRouter } from "react-router-dom";
-import RouteUsers from "./components/RouteUsers/RouteUsers";
+import RouteUsers from "./RouteUsers/RouteUsers";
 import RouteAdmin from "./RouteAdmin/RouteAdmin";
 import { ToastContainer } from "react-toastify";
 
-
 function App() {
   return (
-    <BrowserRouter>     
-        <RouteAdmin></RouteAdmin>
+    <BrowserRouter>
+    <ToastContainer />
+      <RouteAdmin></RouteAdmin>
       <RouteUsers></RouteUsers>
-      <ToastContainer />
     </BrowserRouter>
   );
 }

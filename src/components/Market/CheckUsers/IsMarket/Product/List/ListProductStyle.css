@@ -1,5 +1,5 @@
 #td-img{
-    width: 5%;
+    width: 10%;
     padding: 10px 0px;
 }
 #btn-edit{
@@ -34,6 +34,17 @@
     background-color: green;
     color: white;
     margin-top: 5px;
+    transform: scale(1.08);
+    transition: 0.5s;
+}
+#btn-showDetail{
+    background-color: rgb(60, 190, 220);
+    color: white;
+    transition: 0.5s;
+}
+#btn-showDetail:hover{
+    background-color: rgb(60, 190, 220);
+    color: white;
     transform: scale(1.08);
     transition: 0.5s;
 }
