@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./HeaderStyle.css";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -133,6 +133,7 @@ const Header = () => {
               type="button"
               className="btn btn-icon position-relative rounded-4"
               to={"/cart"}
+              
             >
               <i className="bi bi-cart4 fs-4"></i>
               <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
