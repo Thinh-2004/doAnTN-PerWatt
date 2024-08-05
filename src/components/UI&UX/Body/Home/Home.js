@@ -9,6 +9,7 @@ import Footer from "../../Footer/Footer";
 const Home = () => {
   return (
     <div>
+      <Header></Header>
       <div className="container">
         <About></About>
         <div className="" style={{ marginTop: "300px" }}>
@@ -18,6 +19,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+      <Footer></Footer>
     </div>
   );
 };

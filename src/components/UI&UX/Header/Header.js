@@ -1,16 +1,41 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./HeaderStyle.css";
 import { Link } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import axios from "../../../Localhost/Custumize-axios";
+
 const Header = () => {
+  const [fill, setFill] = useState([]);
+  const [cart, setCart] = useState([]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await axios.get("cart");
+        setFill(res.data);
+        console.log(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    load();
+  }, []);
+
+  const loadCart = async (id) => {
+    try {
+      const res = await axios.get(`cart/${id}`);
+      setCart(res.data);
+      console.log(res.data);
+    } catch (error) {}
+  };
   return (
     <div
       className="d-flex justify-content-between shadow sticky-top container-fluid"
       id="nav"
     >
       <div className="d-flex">
-        <Link>
+        <Link   to={"/"}>
           <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
+        
         </Link>
         <div className="align-content-center">
           <form class="d-flex" role="search">
@@ -22,10 +47,9 @@ const Header = () => {
               style={{ width: "400px" }}
             />
             <button className="btn btn-outline-primary rounded-end-4 mx-2 ">
-            <i class="bi bi-mic"></i>
-          </button>
+              <i class="bi bi-mic"></i>
+            </button>
           </form>
-          
         </div>
       </div>
       <div className="align-content-center m-3">
@@ -33,7 +57,8 @@ const Header = () => {
           <div className="mx-3">
             <Link
               type="button"
-              class="btn btn-icon position-relative rounded-4" to={"/cart"}
+              class="btn btn-icon position-relative rounded-4"
+              to={`/cart/1`}
             >
               <i class="bi bi-cart4 fs-4"></i>
               <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -41,7 +66,11 @@ const Header = () => {
                 <span class="visually-hidden">unread messages</span>
               </span>
             </Link>
-            <Link type="button" class="btn btn-icon btn-sm mx-3 rounded-4 ">
+            <Link
+              type="button"
+              class="btn btn-icon btn-sm mx-3 rounded-4"
+              to={"/order"}
+            >
               <i class="bi bi-shop fs-4"></i>
             </Link>
             <Link

@@ -7,17 +7,12 @@ import axios from "../../../Localhost/Custumize-axios";
 const Order = () => {
   const [fill, setFill] = useState([]);
   const [orderProduct, setOrderProduct] = useState([]);
-  // const [FormOrder, setFormOrder] = useState({
-  //   fullname : "",
-  //   password: "",
-
-  // });
-  //Call API
   useEffect(() => {
     const load = async () => {
       try {
         const res = await axios.get("order");
         setFill(res.data);
+        console.log(res.data);
       } catch (error) {
         console.log(error);
       }
@@ -111,12 +106,7 @@ const Order = () => {
               >
                 {/* đầu */}
                 {fill.map((order, index) => (
-                  <a
-                    rel="stylesheet"
-                    href="/orderDetail"
-                    key={order.id}
-                    
-                  >
+                  <a href={`/orderDetail/${order.id}`} key={order.id}>
                     <div className="card rounded-3 mb-3" id="cartItem">
                       <div className="card-body">
                         <div className="d-flex align-items-center">
@@ -128,9 +118,9 @@ const Order = () => {
                           <img
                             src={order.user.avatar}
                             id="imgShop"
-                            className="rounded-5 mx-3"
+                            className="mx-3"
                             alt="Shop Logo"
-                            style={{ height: "100%" }}
+                            style={{ height: "120%" }}
                           />
                           <h5 id="nameShop" className="mb-0">
                             {order.store.namestore}
@@ -147,10 +137,7 @@ const Order = () => {
                               id="img"
                             />
                             <div className="col-8 mt-3">
-                              <div id="fontSizeTitle">
-                                Lenovo ThinkPad X1 Carbon Gen 11
-                               
-                              </div>
+                              <div id="fontSizeTitle"></div>
                               <div id="fontSize">
                                 i7 1365U, 16GB, 256GB, FHD+ Touch, Black,
                                 Outlet, Nhập khẩu
@@ -167,7 +154,6 @@ const Order = () => {
                     </div>
                   </a>
                 ))}
-
                 {/* cuoi */}
               </div>
               <div

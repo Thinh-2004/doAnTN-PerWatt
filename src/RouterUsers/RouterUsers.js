@@ -14,9 +14,9 @@ const RouterUsers = () => {
     <Routes>
       <Route path="/" element={<Home></Home>}></Route>
       <Route path="/login" element={<Form></Form>}></Route>
-      <Route path="/cart" element={<Cart></Cart>}></Route>
+      <Route path="/cart/:id" element={<Cart></Cart>}></Route>
       <Route path="/order" element={<Order></Order>}></Route>
-      <Route path="/orderDetail" element={<OrderDetail></OrderDetail>}></Route>
+      <Route path="/orderDetail/:id" element={<OrderDetail></OrderDetail>}></Route>
       <Route path="/pay" element={<PayBuyer></PayBuyer>}></Route>
       <Route path="/orderSeller" element={<OrderSeller></OrderSeller>}></Route>
       <Route

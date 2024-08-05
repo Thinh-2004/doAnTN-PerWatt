@@ -1,8 +1,26 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../../UI&UX/Header/Header";
 import Footer from "../../UI&UX/Footer/Footer";
+import axios from "../../../Localhost/Custumize-axios";
+import { useParams } from "react-router-dom";
 
 const OrderDetail = () => {
+  const [fill1, setFill1] = useState([]);
+
+  const { id } = useParams();
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await axios.get(`/orderDetail/${id}`);
+        setFill1(res.data);
+        console.log(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    load();
+  }, [id]);
+
   return (
     <div>
       <Header></Header>
@@ -14,43 +32,27 @@ const OrderDetail = () => {
             </a>
           </div>
         </div>
-        <div className="card mt-3" id="cartItem">
-          <div className="card-body">
-            <div className="d-flex align-items-center">
-              <input
-                className="form-check-input mb-1"
-                type="checkbox"
-                id="checkBox"
-              />
-              <img
-                src="http://localhost:3000/images/logoWeb.png"
-                id="imgShop"
-                className="mx-2"
-                alt="Shop Logo"
-                style={{ height: "100%" }}
-              />
-              <h5 id="nameShop" className="mb-0">
-                PerWatt
-              </h5>
-            </div>
-            <hr id="hr" />
-            <div className="col-8">
-              <div className="d-flex">
-                <img
-                  src="https://imagor.owtg.one/unsafe/fit-in/1000x1000/filters:quality(100)/https://media-api-beta.thinkpro.vn/media/core/products/2022/12/23/lenovo-thinkpad-x1-carbon-gen-11-thinkpro-01.png"
-                  id="img"
-                />
-                <div className="col-8 mt-3">
-                  <div id="fontSizeTitle">Lenovo ThinkPad X1 Carbon Gen 11</div>
-                  <div id="fontSize">
-                    i7 1365U, 16GB, 256GB, FHD+ Touch, Black, Outlet, Nhập khẩu
+        {fill1.map((orderDetail, index) => (
+          <div className="card mt-3" id="cartItem" key={index}>
+            <div className="card-body">
+              <div className="col-8">
+                <div className="d-flex">
+                  <div className="col-8 mt-3">
+                    <div id="fontSizeTitle">{orderDetail.product.name}</div>
+                    <div id="fontSize">
+                      {orderDetail.product.productcategory.name +
+                        ", " +
+                        orderDetail.product.trademark.name +
+                        ", " +
+                        orderDetail.product.warranties.name}
+                    </div>
                   </div>
+                  <div className="col-8 mx-3"></div>
                 </div>
-                <div className="col-8 mx-3"></div>
               </div>
             </div>
           </div>
-        </div>
+        ))}
         <div className="card mt-3">
           <div className="card-body text-end">Tổng cộng: 1.000.000VNĐ</div>
         </div>
