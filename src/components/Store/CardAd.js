@@ -26,7 +26,7 @@ const CardAd = (props) => {
           setRevenueData(data);
           const totalRevenue = data.reduce((acc, item) => acc + item.totalRevenue, 0);
           setTotalRevenue(totalRevenue);
-          setTotalStores(data.length); // Tổng số cửa hàng có doanh thu
+          setTotalStores(data.length);
         })
         .catch(error => {
           console.error("Có lỗi xảy ra khi lấy dữ liệu doanh thu:", error);
@@ -63,10 +63,11 @@ const CardAd = (props) => {
           console.error("Có lỗi xảy ra khi lấy dữ liệu đơn hàng:", error);
         });
     } else if (props.title === "User") {
-      axios.get("http://localhost:8080/user-ads/users-by-year")
+      axios.get("http://localhost:8080/user-ads/total-users")
         .then(response => {
           const data = response.data;
           setUsersByYearData(data);
+          // Đặt tổng số người dùng từ dữ liệu
           const totalUsers = data.reduce((acc, item) => acc + item.TotalUsers, 0);
           setTotalUsers(totalUsers);
         })
@@ -144,6 +145,7 @@ function CompactCard({ param, setExpanded }) {
         )}
       </div>
     </motion.div>
+    
   );
 }
 
@@ -231,7 +233,7 @@ function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, order
       height: "auto",
     },
     xaxis: {
-      categories: usersByYearData.map(item => item.Year),
+      categories: ["Total Users"], // Hiển thị một mục duy nhất vì dữ liệu chỉ có một giá trị tổng
     },
     dataLabels: {
       enabled: false,
@@ -301,7 +303,7 @@ function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, order
             series={[
               {
                 name: "Total Users",
-                data: usersByYearData.map(item => item.TotalUsers),
+                data: [totalUsers], // Sử dụng tổng số người dùng
               },
             ]}
             type="bar"
