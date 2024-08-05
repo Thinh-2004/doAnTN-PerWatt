@@ -10,6 +10,7 @@ import axios from "../../Localhost/Custumize-axios";
 const Cart = () => {
   const [fill1, setFill1] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [images, setImages] = useState([]); // Thay đổi: Thêm trạng thái để lưu danh sách hình ảnh
 
   const { id } = useParams();
 
@@ -17,7 +18,9 @@ const Cart = () => {
     const load = async () => {
       try {
         const res = await axios.get(`/cart/${id}`);
+        const imagesRes = await axios.get("/images"); // Thay đổi: Lấy danh sách hình ảnh từ API
         setFill1(res.data);
+        setImages(imagesRes.data);
         console.log(res.data);
       } catch (error) {
         console.log(error);
@@ -70,7 +73,7 @@ const Cart = () => {
                       id="checkBox"
                     />
                     <img
-                      src={`/images/${cart.user.avatar}`}
+                      src={`/${cart.user.avatar}`}
                       id="imgShop"
                       className="mx-2"
                       alt="Shop Logo"
@@ -84,18 +87,23 @@ const Cart = () => {
                   <div className="col-8">
                     <div className="d-flex">
                       <img
-                        src="https://example.com/sample-image.png"
+                        src={`http://localhost:5000/${cart.product.image.imageName}`} // Thay đổi đường dẫn nếu cần thiết
                         id="img"
+                        className="me-3 mt-3 rounded-3"
                         alt="Product"
                       />
                       <div className="col-8 mt-3">
                         <div id="fontSizeTitle">{cart.product.name}</div>
                         <div id="fontSize">
-                          {cart.product.productCategory.name +
-                            ", " +
-                            cart.product.trademark.name +
-                            ", " +
-                            cart.product.warranties.name}
+                          {`${
+                            cart.product.productCategory?.name ||
+                            "Chưa có danh mục"
+                          }, ${
+                            cart.product.trademark?.name ||
+                            "Chưa có thương hiệu"
+                          }, ${
+                            cart.product.warranties?.name || "Chưa có bảo hành"
+                          }`}
                         </div>
                       </div>
                       <div className="col-8 mx-3">
