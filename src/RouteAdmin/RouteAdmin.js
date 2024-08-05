@@ -1,11 +1,11 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import Admin from "./Admin/Admin";
+import MainDash from "../RouteAdmin/Admin/MainDash";
 
 const RouteAdmin = (props) => {
   return (
     <Routes>
-      <Route path="/admin" element={<Admin></Admin>}></Route>
+      <Route path="/admin" element={<MainDash></MainDash>}></Route>
     </Routes>
   );
 };

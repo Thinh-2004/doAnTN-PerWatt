@@ -56,21 +56,37 @@ const DetailProduct = () => {
               <div className="carousel-inner">
                 {FillDetailPr &&
                   FillDetailPr.images &&
+                  FillDetailPr.images.length > 0 ? (
                   FillDetailPr.images.map((image, index) => (
                     <div
                       key={index}
                       className={`carousel-item ${
                         index === selectedImage ? "active" : ""
                       }`}
+                     
                     >
                       <img
-                        src={geturlIMG(FillDetailPr.id, image.imagename)}
+                        src={
+                          FillDetailPr
+                            ? geturlIMG(FillDetailPr.id, image.imagename)
+                            : "/images/no_img.png"
+                        }
                         className="d-block"
                         alt={FillDetailPr.name}
                         style={{ width: "100%", height: "400px" }}
                       />
                     </div>
-                  ))}
+                  ))
+                ) : (
+                  <div className="carousel-item active">
+                    <img
+                      src="/images/no_img.png"
+                      className="d-block"
+                      alt="No image available"
+                      style={{ width: "100%", height: "400px" }}
+                    />
+                  </div>
+                )}
               </div>
               <button
                 className="carousel-control-prev"
@@ -111,6 +127,7 @@ const DetailProduct = () => {
             <div className="d-flex mt-2">
               {FillDetailPr &&
                 FillDetailPr.images &&
+                FillDetailPr.images.length > 0 &&
                 FillDetailPr.images
                   .slice(
                     currentPage * itemsPerPage,
@@ -137,7 +154,11 @@ const DetailProduct = () => {
                       }
                     >
                       <img
-                        src={geturlIMG(FillDetailPr.id, image.imagename)}
+                        src={
+                          FillDetailPr
+                            ? geturlIMG(FillDetailPr.id, image.imagename)
+                            : "/images/no_img.png"
+                        }
                         className="img-thumbnail"
                         alt=""
                         style={{ width: "100px", height: "100px" }}
@@ -156,7 +177,7 @@ const DetailProduct = () => {
               <div className="d-flex">
                 <div className="mx-2 mt-1">
                   <span htmlFor="" className="">
-                    <i class="bi bi-star-fill text-warning">
+                    <i className="bi bi-star-fill text-warning">
                       <label htmlFor="" className="fs-6">
                         5.0
                       </label>
@@ -268,14 +289,20 @@ const DetailProduct = () => {
         <div className="row bg-white rounded-4 mt-3">
           <div className="p-3">
             <h4>Thông tin chi tiết sản phẩm</h4>
-            <span className="p-0 m-0"><hr /></span>
-            <span id="description">{FillDetailPr && FillDetailPr.description}</span>
+            <span className="p-0 m-0">
+              <hr />
+            </span>
+            <span id="description">
+              {FillDetailPr && FillDetailPr.description}
+            </span>
           </div>
         </div>
         <div className="row bg-white rounded-4 mt-3">
           <div className="p-3">
             <h4>Đánh giá sản phẩm</h4>
-            <span className="p-0 m-0"><hr /></span>
+            <span className="p-0 m-0">
+              <hr />
+            </span>
           </div>
         </div>
       </div>

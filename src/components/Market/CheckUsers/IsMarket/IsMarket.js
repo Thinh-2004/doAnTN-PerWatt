@@ -4,10 +4,10 @@ import { Link, Route, Routes } from "react-router-dom";
 import "./isMarketStyle.css";
 import ListProduct from "./Product/List/ListProduct";
 import FormProduct from "./Product/Form/FormProduct";
-import StatisticalOrder from "./StatisticalOrders/StatisticalOrder";
 import useSession from "../../../../Session/useSession";
 import axios from "../../../../Localhost/Custumize-axios";
 import EditProduct from "./Product/Form/EditProduct";
+import MainUserSeller from "./StatisticalOrders/MainUserSeller";
 const IsMarket = () => {
   const [id] = useSession("id");
   useEffect(() => {
@@ -275,7 +275,7 @@ const IsMarket = () => {
         </div>
         <div className="col-lg-9">
           <Routes>
-            <Route path="/" element={<StatisticalOrder />} />
+            <Route path="/" element={<MainUserSeller />} />
             <Route path="/listStoreProduct" element={<ListProduct />} />
             <Route path="/FormStoreProduct" element={<FormProduct />} />
             <Route path="updateProduct/:id" element={<EditProduct />} />

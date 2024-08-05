@@ -8,6 +8,7 @@ import { ToastContainer } from "react-toastify";
 import DetailProduct from "../components/UI&UX/Body/Home/DetailProduct/DetailProduct";
 import CheckItemProduct from "../components/Market/CheckUsers/IsMarket/Product/CheckItemProduct/CheckItemProduct";
 import Cart from "../components/Cart/Cart";
+import ProfileUser from "../components/ProfileUser/ProfileUser";
 
 const RouteUsers = (props) => {
   return (
@@ -26,6 +27,7 @@ const RouteUsers = (props) => {
           path="profileMarket/checkItemProduct/:id"
           element={<CheckItemProduct></CheckItemProduct>}
         ></Route>
+        <Route path="/profileUser" element={<ProfileUser></ProfileUser>}></Route>
         <Route path="*">404 Not Found</Route>
       </Routes>
       <ToastContainer />

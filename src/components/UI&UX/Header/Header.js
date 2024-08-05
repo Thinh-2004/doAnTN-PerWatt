@@ -10,10 +10,28 @@ import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS cho conf
 import axios from "../../../Localhost/Custumize-axios";
 
 const Header = () => {
+  const [inputValue, setInputValue] = useState("");
   const [fullName, removeFullName] = useSession("fullname");
   const [avatar, removeAvatar] = useSession("avatar");
   const [id, removeId] = useSession("id");
+  const [count, setCount] = useState(0);
   const changeLink = useNavigate();
+  const geturlIMG = (filename) => {
+    return `${axios.defaults.baseURL}files/userAvt/${filename}`;
+  };
+
+  useEffect(() => {
+    const count = async (id) => {
+      try {
+        const res = await axios.get(`/countCartIdUser/${id}`);
+        setCount(res.data.length);
+        console.log(res.data.length);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    count(id);
+  }, [id]);
 
   const handleLogOut = () => {
     confirmAlert({
@@ -45,6 +63,28 @@ const Header = () => {
         },
       ],
     });
+  };
+
+  const handleVoiceSearch = () => {
+    const recognition = new (window.SpeechRecognition ||
+      window.webkitSpeechRecognition)();
+
+    recognition.lang = "vi-VN"; // Đặt ngôn ngữ cho nhận diện giọng nói
+    recognition.interimResults = true; // Cho phép nhận diện kết quả tạm thời
+
+    recognition.onresult = (event) => {
+      let transcript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setInputValue(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+    };
+
+    recognition.start();
   };
 
   const CallAPICheckUserId = async (id) => {
@@ -101,6 +141,42 @@ const Header = () => {
       }
     }
   };
+  const checkUserIdOnCart = async (e) => {
+    // Ngăn chặn hành động mặc định của liên kết
+    e.preventDefault();
+
+    // Kiểm tra nếu id là null hoặc undefined
+    if (id === "" || id === undefined) {
+      confirmAlert({
+        title: "Bạn đã đăng nhập chưa?",
+        message: "Bạn cần đăng nhập để vào giỏ hàng của mình",
+        buttons: [
+          {
+            label: "Có",
+            onClick: () => {
+              // Hiển thị thông báo đang tải
+              const id = toast.loading("Vui lòng chờ...");
+              setTimeout(() => {
+                toast.update(id, {
+                  render: "Chuyển hướng đến trang đăng nhập",
+                  type: "info",
+                  isLoading: false,
+                  autoClose: 2000,
+                  closeButton: true,
+                });
+                changeLink("/login");
+              }, 500);
+            },
+          },
+          {
+            label: "Không",
+          },
+        ],
+      });
+    } else {
+      changeLink("/cart");
+    }
+  };
 
   return (
     <div
@@ -119,8 +195,14 @@ const Header = () => {
               placeholder="Bạn cần tìm gì"
               aria-label="Search"
               style={{ width: "400px" }}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
             />
-            <button className="btn btn-outline-primary rounded-end-4 mx-2">
+            <button
+              type="button"
+              className="btn btn-outline-primary rounded-end-4 mx-2"
+              onClick={handleVoiceSearch}
+            >
               <i className="bi bi-mic"></i>
             </button>
           </form>
@@ -132,12 +214,11 @@ const Header = () => {
             <Link
               type="button"
               className="btn btn-icon position-relative rounded-4"
-              to={"/cart"}
-              
+              onClick={checkUserIdOnCart}
             >
               <i className="bi bi-cart4 fs-4"></i>
               <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                99+
+                {count}
               </span>
             </Link>
             <Link
@@ -167,7 +248,7 @@ const Header = () => {
                   id="btn-sessionUser"
                 >
                   <img
-                    src={`/images/${avatar}`}
+                    src={geturlIMG(avatar)}
                     alt=""
                     className="rounded-circle img-fluid"
                     style={{ width: "30px", height: "30px" }}
@@ -176,7 +257,7 @@ const Header = () => {
                 </button>
                 <ul className="dropdown-menu">
                   <li>
-                    <Link className="dropdown-item" href="#">
+                    <Link className="dropdown-item" to={"/profileUser"}>
                       Hồ sơ của tôi
                     </Link>
                   </li>
