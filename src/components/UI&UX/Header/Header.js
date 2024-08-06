@@ -16,8 +16,8 @@ const Header = () => {
   const [id, removeId] = useSession("id");
   const [count, setCount] = useState(0);
   const changeLink = useNavigate();
-  const geturlIMG = (filename) => {
-    return `${axios.defaults.baseURL}files/userAvt/${filename}`;
+  const geturlIMG = (idUser, filename) => {
+    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
 
   useEffect(() => {
@@ -40,22 +40,33 @@ const Header = () => {
       buttons: [
         {
           label: "Có",
-          onClick: () => {
+          onClick: async () => {
             const toastId = toast.loading("Vui lòng chờ...");
-            setTimeout(() => {
-              toast.update(toastId, {
-                render: "Đăng xuất thành công",
-                type: "success",
-                isLoading: false,
-                autoClose: 5000,
-                closeButton: true,
-              });
+            try {
               removeFullName(); // Xóa giá trị fullname từ session
               removeAvatar(); // Xóa giá trị avatar từ session
               removeId(); // Xóa giá trị id từ session
               sessionStorage.removeItem("idStore"); // Xóa giá trị idStore từ session
-              changeLink("/"); // Chuyển hướng về trang chủ
-            }, 500);
+              setTimeout(() => {
+                toast.update(toastId, {
+                  render: "Đăng xuất thành công",
+                  type: "success",
+                  isLoading: false,
+                  autoClose: 5000,
+                  closeButton: true,
+                });
+
+                changeLink("/"); // Chuyển hướng về trang chủ
+              }, 500);
+            } catch (error) {
+              toast.update(toastId, {
+                render: "Đăng xuất thất bại",
+                type: "error",
+                isLoading: false,
+                autoClose: 5000,
+                closeButton: true,
+              });
+            }
           },
         },
         {
@@ -248,7 +259,7 @@ const Header = () => {
                   id="btn-sessionUser"
                 >
                   <img
-                    src={geturlIMG(avatar)}
+                    src={geturlIMG(id,avatar)}
                     alt=""
                     className="rounded-circle img-fluid"
                     style={{ width: "30px", height: "30px" }}
@@ -257,7 +268,7 @@ const Header = () => {
                 </button>
                 <ul className="dropdown-menu">
                   <li>
-                    <Link className="dropdown-item" to={"/profileUser"}>
+                    <Link className="dropdown-item" to={"/user"}>
                       Hồ sơ của tôi
                     </Link>
                   </li>

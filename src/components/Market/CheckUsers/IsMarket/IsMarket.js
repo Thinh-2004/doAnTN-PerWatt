@@ -8,6 +8,7 @@ import useSession from "../../../../Session/useSession";
 import axios from "../../../../Localhost/Custumize-axios";
 import EditProduct from "./Product/Form/EditProduct";
 import MainUserSeller from "./StatisticalOrders/MainUserSeller";
+import ProfileShop from "./ProfileShop/ProfileShop";
 const IsMarket = () => {
   const [id] = useSession("id");
   useEffect(() => {
@@ -30,20 +31,20 @@ const IsMarket = () => {
     <>
       <HeaderMarket />
       <div className="row container-fluid ">
-        <div className="col-lg-3">
+        <div className="col-lg-3 p-0 m-0">
           <div
-            className="accordion overflow-auto"
+            className="accordion  overflow-y-scroll"
             style={{ height: "590px" }}
             id="accordionPanelsStayOpenExample"
           >
             <div className="accordion-item">
               <h2 className="accordion-header">
                 <button
-                  className="accordion-button collapsed"
+                  className="accordion-button"
                   type="button"
                   data-bs-toggle="collapse"
                   data-bs-target="#panelsStayOpen-collapseOne"
-                  aria-expanded="false"
+                  aria-expanded="true"
                   aria-controls="panelsStayOpen-collapseOne"
                 >
                   <i className="bi bi-box fs-4"></i>
@@ -52,7 +53,7 @@ const IsMarket = () => {
               </h2>
               <div
                 id="panelsStayOpen-collapseOne"
-                className="accordion-collapse collapse"
+                className="accordion-collapse collapse show"
               >
                 <div className="accordion-body">
                   <ul
@@ -214,7 +215,7 @@ const IsMarket = () => {
                     <li>
                       <Link
                         style={{ textDecoration: "none" }}
-                        to="/shopProfile"
+                        to="/profileMarket/profileShop"
                       >
                         Hồ sơ shop
                       </Link>
@@ -279,6 +280,7 @@ const IsMarket = () => {
             <Route path="/listStoreProduct" element={<ListProduct />} />
             <Route path="/FormStoreProduct" element={<FormProduct />} />
             <Route path="updateProduct/:id" element={<EditProduct />} />
+            <Route path="/profileShop" element={<ProfileShop />} />
           </Routes>
         </div>
       </div>

@@ -9,6 +9,9 @@ import DetailProduct from "../components/UI&UX/Body/Home/DetailProduct/DetailPro
 import CheckItemProduct from "../components/Market/CheckUsers/IsMarket/Product/CheckItemProduct/CheckItemProduct";
 import Cart from "../components/Cart/Cart";
 import ProfileUser from "../components/ProfileUser/ProfileUser";
+import ForgotPassword from '../components/ForgotPasswordUser/ForgotPassword'
+import OTP from '../components/ForgotPasswordUser/OTP'
+import ResetPassword from '../components/ForgotPasswordUser/ResetPassword'
 
 const RouteUsers = (props) => {
   return (
@@ -27,7 +30,10 @@ const RouteUsers = (props) => {
           path="profileMarket/checkItemProduct/:id"
           element={<CheckItemProduct></CheckItemProduct>}
         ></Route>
-        <Route path="/profileUser" element={<ProfileUser></ProfileUser>}></Route>
+        <Route path="/user/*" element={<ProfileUser></ProfileUser>}></Route>
+        <Route path="forgotPass" element={<ForgotPassword></ForgotPassword>}></Route>
+        <Route path="/otp" element={<OTP />}></Route>
+        <Route path="/resetPassword" element={<ResetPassword />}></Route>
         <Route path="*">404 Not Found</Route>
       </Routes>
       <ToastContainer />

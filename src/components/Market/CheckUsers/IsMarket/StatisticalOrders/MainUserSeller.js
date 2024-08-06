@@ -10,7 +10,6 @@ const MainUserSeller = () => {
         <CardsUs></CardsUs>
         <div className="" style={{ marginTop: "70px" }}></div>
       </div>
-      /
     </div>
   );
 };

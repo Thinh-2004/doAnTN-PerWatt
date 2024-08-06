@@ -6,9 +6,6 @@ import { toast } from "react-toastify";
 
 const Profile = () => {
   const [id] = useSession("id");
-  const geturlIMG = (filename) => {
-    return `${axios.defaults.baseURL}files/userAvt/${filename}`;
-  };
   const [fill, setFill] = useState({
     fullname: "",
     password: "",
@@ -20,6 +17,11 @@ const Profile = () => {
     gender: true,
     avatar: "",
   });
+
+  const geturlIMG = (idUser, filename) => {
+    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
+  };
+
   const [previewAvatar, setPreviewAvatar] = useState(""); // State for image preview
 
   useEffect(() => {
@@ -28,7 +30,8 @@ const Profile = () => {
         const res = await axios.get(`userProFile/${id}`);
         setFill(res.data);
         // Set the preview URL if there is an avatar
-        setPreviewAvatar(res.data.avatar ? geturlIMG(res.data.avatar) : "");
+        setPreviewAvatar(res.data.avatar ? geturlIMG(id, res.data.avatar) : "");
+        console.log(res.data);
       } catch (error) {
         console.log(error);
       }
@@ -37,7 +40,7 @@ const Profile = () => {
   }, [id]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
     setFill({
       ...fill,
       [name]: type === "radio" ? JSON.parse(value) : value,
@@ -47,12 +50,12 @@ const Profile = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Set the preview URL
+      // Set preview URL
       setPreviewAvatar(URL.createObjectURL(file));
-      setFill({
-        ...fill,
+      setFill(prevFill => ({
+        ...prevFill,
         avatar: file,
-      });
+      }));
     }
   };
 
@@ -61,7 +64,7 @@ const Profile = () => {
 
     const pattentEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const pattentPhone = /0[0-9]{9}/;
-    if (!fullname && !email && !birthdate && !phone && !gender && !avatar) {
+    if (!fullname || !email || !birthdate || !phone || gender === undefined || !avatar) {
       toast.warning("Vui lòng nhập toàn bộ thông tin");
       return false;
     } else {
@@ -136,13 +139,17 @@ const Profile = () => {
           },
         });
         setTimeout(() => {
-          toast.update(idToast, {
-            render: "Cập nhật thông tin thành công",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
+          toast.update(
+            idToast,
+            {
+              render: "Cập nhật thông tin thành công",
+              type: "success",
+              isLoading: false,
+              autoClose: 5000,
+              closeButton: true,
+            },
+            500
+          );
           setFill(res.data); // Cập nhật thông tin sau khi lưu thành công
           sessionStorage.setItem("fullname", res.data.fullname);
           sessionStorage.setItem("avatar", res.data.avatar);
@@ -240,7 +247,7 @@ const Profile = () => {
             <div className="row">
               <div className="col-lg-12 d-flex justify-content-center mb-3">
                 <img
-                  src={previewAvatar || geturlIMG(fill.avatar)}
+                  src={previewAvatar || geturlIMG(id, fill.avatar)}
                   alt="Avatar"
                   className="img-fluid"
                   id="img-change-avatar"

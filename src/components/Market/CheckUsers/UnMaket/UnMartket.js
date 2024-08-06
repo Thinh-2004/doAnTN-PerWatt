@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./UnMarketStyle.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useSession from "../../../../Session/useSession";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
@@ -105,8 +105,8 @@ const UnMatket = () => {
       if (namestore === "") {
         toast.warning("Vui lòng nhập tên của hàng");
         return false;
-      } else if (namestore.length < 20) {
-        toast.warning("Tên cửa hàng phải tối thiểu 20 kí tự");
+      } else if (namestore.length < 10) {
+        toast.warning("Tên cửa hàng phải tối thiểu 10 kí tự");
         return false;
       }
 

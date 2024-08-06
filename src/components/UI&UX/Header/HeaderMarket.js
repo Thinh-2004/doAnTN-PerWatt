@@ -10,6 +10,9 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import axios from "../../../Localhost/Custumize-axios";
 
 const Header = () => {
+  const geturlIMG = (idUser, filename) => {
+    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
+  };
   const [fullName, , removeFullName] = useSession("fullname");
   const [avatar, , removeAvatar] = useSession("avatar");
   const [id, , removeId] = useSession("id");
@@ -36,7 +39,7 @@ const Header = () => {
               removeAvatar();
               removeId();
               sessionStorage.removeItem("idStore");
-              changeLink('/');
+              changeLink("/");
             }, 500);
           },
         },
@@ -122,7 +125,7 @@ const Header = () => {
       <div className="align-content-center m-3">
         <div className="d-flex">
           <div className="mx-4 border-end">
-          <Link
+            <Link
               type="button"
               className="btn btn-icon position-relative rounded-4 me-3"
               to={"/"}
@@ -166,7 +169,7 @@ const Header = () => {
                   id="btn-sessionUser"
                 >
                   <img
-                    src={`/images/${avatar}`}
+                    src={geturlIMG(id, avatar)}
                     alt=""
                     className="rounded-circle img-fluid"
                     style={{ width: "30px", height: "30px" }}
@@ -175,7 +178,7 @@ const Header = () => {
                 </button>
                 <ul className="dropdown-menu">
                   <li>
-                    <Link className="dropdown-item" to="#">
+                    <Link className="dropdown-item" to={"/user"}>
                       Hồ sơ của tôi
                     </Link>
                   </li>

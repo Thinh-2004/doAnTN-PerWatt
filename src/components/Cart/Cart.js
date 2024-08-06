@@ -14,6 +14,9 @@ const Cart = () => {
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
+  const getAvtUser = (filename) => {
+    return `${axios.defaults.baseURL}files/userAvt/${filename}`;
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -42,7 +45,8 @@ const Cart = () => {
   const handleIncrease = (index) => {
     const newFill1 = [...fill1];
     const product = newFill1[index];
-    if (product.quantity < product.product.quantity) { // Check against product max quantity
+    if (product.quantity < product.product.quantity) {
+      // Check against product max quantity
       product.quantity += 1;
       setFill1(newFill1);
       updateTotalPrice(newFill1);
@@ -65,7 +69,9 @@ const Cart = () => {
           <div className="col-9">
             {fill1.map((cart, index) => {
               const firstIMG =
-                cart.product.images && cart.product.images.length > 0 ? cart.product.images[0] : null;
+                cart.product.images && cart.product.images.length > 0
+                  ? cart.product.images[0]
+                  : null;
               return (
                 <div className="card mb-3" id="cartItem" key={index}>
                   <div className="card-body">
@@ -76,11 +82,10 @@ const Cart = () => {
                         id="checkBox"
                       />
                       <img
-                        src={`/images/${cart.user.avatar}`}
+                        src={getAvtUser(cart.user.avatar)}
                         id="imgShop"
-                        className="mx-2"
+                        className="mx-2 rounded-circle"
                         alt="Shop Logo"
-                        style={{ height: "100%" }}
                       />
                       <h5 id="nameShop" className="mb-0">
                         {cart.product.store.namestore}
@@ -118,7 +123,7 @@ const Cart = () => {
                               min={0}
                               className="form-control rounded-0 w-50"
                               value={cart.quantity}
-                              />
+                            />
                             <button
                               className="btn border rounded-0 rounded-end"
                               id="button"

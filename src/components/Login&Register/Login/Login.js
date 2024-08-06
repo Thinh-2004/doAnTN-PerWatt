@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "../../../Localhost/Custumize-axios";
@@ -9,7 +9,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit  = async (e) => {
     e.preventDefault();
 
     if (validate()) {
@@ -88,9 +88,9 @@ const Login = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <a href="#" style={{ textDecoration: "none" }}>
+        <Link to={"/forgotPass"} style={{ textDecoration: "none" }}>
           Quên mật khẩu?
-        </a>
+        </Link>
         <button type="submit" className="button">
           Đăng nhập
         </button>
