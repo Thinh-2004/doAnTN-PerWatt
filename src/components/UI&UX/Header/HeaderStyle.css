@@ -51,4 +51,15 @@
 }
 #btn-sessionUser{
   border: 1px solid;
+  cursor: default;
+}
+#btn-logOut{
+  transition: 0.5s;
+}
+#btn-logOut:hover{
+  border: 1px solid;
+  color: white;
+  background-color: red;
+  transform: scale(1.1);
+  transition: 0.5s;
 }

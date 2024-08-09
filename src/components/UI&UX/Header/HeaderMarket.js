@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./HeaderStyle.css";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -16,7 +16,21 @@ const Header = () => {
   const [fullName, , removeFullName] = useSession("fullname");
   const [avatar, , removeAvatar] = useSession("avatar");
   const [id, , removeId] = useSession("id");
+  const [count, setCount] = useState(0);
   const changeLink = useNavigate();
+
+  useEffect(() => {
+    const count = async (id) => {
+      try {
+        const res = await axios.get(`/countCartIdUser/${id}`);
+        setCount(res.data.length);
+        console.log(res.data.length);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    count(id);
+  }, [id]);
 
   const handleLogOut = () => {
     confirmAlert({
@@ -139,7 +153,7 @@ const Header = () => {
             >
               <i className="bi bi-cart4 fs-4"></i>
               <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                99+
+                {count}
               </span>
             </Link>
             <Link

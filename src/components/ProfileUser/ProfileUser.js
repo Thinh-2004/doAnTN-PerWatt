@@ -125,7 +125,7 @@ const ProfileUser = () => {
                               <input
                                 type="password"
                                 className="form-control"
-                                placeholder="Nhập mật khẩu để truy cập"
+                                placeholder="Nhập mật khẩu của bạn"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                               />

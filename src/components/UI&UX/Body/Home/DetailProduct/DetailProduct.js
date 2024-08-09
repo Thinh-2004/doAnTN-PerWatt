@@ -5,7 +5,7 @@ import axios from "../../../../../Localhost/Custumize-axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useSession from "../../../../../Session/useSession";
 import Header from "../../../Header/Header";
-import './DetailProduct.css'
+import "./DetailProduct.css";
 
 const DetailProduct = () => {
   const { id } = useParams();
@@ -104,13 +104,27 @@ const DetailProduct = () => {
       <div className="container mt-4">
         <div className="row bg-white rounded-4">
           <div className="col-md-4 border-end">
-            <div id="carouselExampleDark" className="carousel carousel-dark slide">
+            <div
+              id="carouselExampleDark"
+              className="carousel carousel-dark slide"
+            >
               <div className="carousel-inner">
-                {FillDetailPr && FillDetailPr.images && FillDetailPr.images.length > 0 ? (
+                {FillDetailPr &&
+                FillDetailPr.images &&
+                FillDetailPr.images.length > 0 ? (
                   FillDetailPr.images.map((image, index) => (
-                    <div key={index} className={`carousel-item ${index === selectedImage ? "active" : ""}`}>
+                    <div
+                      key={index}
+                      className={`carousel-item ${
+                        index === selectedImage ? "active" : ""
+                      }`}
+                    >
                       <img
-                        src={FillDetailPr ? geturlIMG(FillDetailPr.id, image.imagename) : "/images/no_img.png"}
+                        src={
+                          FillDetailPr
+                            ? geturlIMG(FillDetailPr.id, image.imagename)
+                            : "/images/no_img.png"
+                        }
                         className="d-block"
                         alt={FillDetailPr ? FillDetailPr.name : "No Image"}
                         style={{ width: "100%", height: "400px" }}
@@ -119,7 +133,12 @@ const DetailProduct = () => {
                   ))
                 ) : (
                   <div className="carousel-item active">
-                    <img src="/images/no_img.png" className="d-block" alt="" style={{ width: "100%", height: "400px" }} />
+                    <img
+                      src="/images/no_img.png"
+                      className="d-block"
+                      alt=""
+                      style={{ width: "100%", height: "400px" }}
+                    />
                   </div>
                 )}
               </div>
@@ -129,10 +148,16 @@ const DetailProduct = () => {
                 data-bs-target="#carouselExampleDark"
                 data-bs-slide="prev"
                 onClick={() =>
-                  handleSelectImage((selectedImage - 1 + (FillDetailPr?.images?.length || 1)) % (FillDetailPr?.images?.length || 1))
+                  handleSelectImage(
+                    (selectedImage - 1 + (FillDetailPr?.images?.length || 1)) %
+                      (FillDetailPr?.images?.length || 1)
+                  )
                 }
               >
-                <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span
+                  className="carousel-control-prev-icon"
+                  aria-hidden="true"
+                ></span>
                 <span className="visually-hidden">Previous</span>
               </button>
               <button
@@ -141,10 +166,15 @@ const DetailProduct = () => {
                 data-bs-target="#carouselExampleDark"
                 data-bs-slide="next"
                 onClick={() =>
-                  handleSelectImage((selectedImage + 1) % (FillDetailPr?.images?.length || 1))
+                  handleSelectImage(
+                    (selectedImage + 1) % (FillDetailPr?.images?.length || 1)
+                  )
                 }
               >
-                <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                <span
+                  className="carousel-control-next-icon"
+                  aria-hidden="true"
+                ></span>
                 <span className="visually-hidden">Next</span>
               </button>
             </div>
@@ -153,7 +183,10 @@ const DetailProduct = () => {
                 FillDetailPr.images &&
                 FillDetailPr.images.length > 0 &&
                 FillDetailPr.images
-                  .slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
+                  .slice(
+                    currentPage * itemsPerPage,
+                    (currentPage + 1) * itemsPerPage
+                  )
                   .map((image, index) => (
                     <button
                       id="btn-children-img"
@@ -164,12 +197,22 @@ const DetailProduct = () => {
                       className={`carousel-indicator-button mb-2 ${
                         index === selectedImage % itemsPerPage ? "active" : ""
                       }`}
-                      aria-current={index === selectedImage % itemsPerPage ? "true" : "false"}
+                      aria-current={
+                        index === selectedImage % itemsPerPage
+                          ? "true"
+                          : "false"
+                      }
                       aria-label={`Slide ${index + 1}`}
-                      onClick={() => handleSelectImage(currentPage * itemsPerPage + index)}
+                      onClick={() =>
+                        handleSelectImage(currentPage * itemsPerPage + index)
+                      }
                     >
                       <img
-                        src={FillDetailPr ? geturlIMG(FillDetailPr.id, image.imagename) : "/images/no_img.png"}
+                        src={
+                          FillDetailPr
+                            ? geturlIMG(FillDetailPr.id, image.imagename)
+                            : "/images/no_img.png"
+                        }
                         className="img-thumbnail"
                         alt=""
                         style={{ width: "100px", height: "100px" }}
@@ -178,16 +221,20 @@ const DetailProduct = () => {
                   ))}
             </div>
           </div>
-          <div className="col-md-8">
+          <div className="col-md-8 d-flex flex-column">
             <div className="p-3 border-bottom">
-              <h1 className="fst-italic">{FillDetailPr ? FillDetailPr.name : "No Name"}</h1>
+              <h1 className="fst-italic" id="productName">
+                {FillDetailPr ? FillDetailPr.name : "No Name"}
+              </h1>
             </div>
             <div className="d-flex justify-content-between">
               <div className="d-flex">
                 <div className="mx-2 mt-1">
                   <span htmlFor="">
                     <i className="bi bi-star-fill text-warning">
-                      <label htmlFor="" className="fs-6">5.0</label>
+                      <label htmlFor="" className="fs-6">
+                        5.0
+                      </label>
                     </i>
                   </span>
                 </div>
@@ -234,19 +281,25 @@ const DetailProduct = () => {
                     <li>
                       <label htmlFor="">Loại sản phẩm:</label>{" "}
                       <Link style={{ textDecoration: "none" }}>
-                        {FillDetailPr && FillDetailPr.productcategory ? FillDetailPr.productcategory.name : "N/A"}
+                        {FillDetailPr && FillDetailPr.productcategory
+                          ? FillDetailPr.productcategory.name
+                          : "N/A"}
                       </Link>
                     </li>
                     <li>
                       <label htmlFor="">Thương hiệu:</label>{" "}
                       <Link style={{ textDecoration: "none" }}>
-                        {FillDetailPr && FillDetailPr.trademark ? FillDetailPr.trademark.name : "N/A"}
+                        {FillDetailPr && FillDetailPr.trademark
+                          ? FillDetailPr.trademark.name
+                          : "N/A"}
                       </Link>
                     </li>
                     <li>
                       <label htmlFor="">Thời hạn bảo hành:</label>{" "}
                       <span>
-                        {FillDetailPr && FillDetailPr.warranties ? FillDetailPr.warranties.name : "N/A"}
+                        {FillDetailPr && FillDetailPr.warranties
+                          ? FillDetailPr.warranties.name
+                          : "N/A"}
                       </span>
                     </li>
                     <li>
@@ -256,25 +309,25 @@ const DetailProduct = () => {
                     <li>
                       <label htmlFor="">Hỗ trợ chơi game:</label>{" "}
                       <span>
-                        {FillDetailPr && FillDetailPr.specializedgame === "Y" ? "Có" : "Không hỗ trợ"}
+                        {FillDetailPr && FillDetailPr.specializedgame === "Y"
+                          ? "Có"
+                          : "Không hỗ trợ"}
                       </span>
                     </li>
                   </ul>
                 </div>
               </div>
-              <div className="col-lg-6 d-flex flex-column">
-                <div className="d-flex align-items-end mt-auto">
-                  <button className="btn btn-sm btn-outline-success w-100 rounded-3">
-                    <i className="bi bi-cash fs-6"></i>
-                  </button>
-                  <button
-                    className="btn btn-sm btn-outline-primary mx-2 w-100 rounded-3"
-                    onClick={() => addToCart(FillDetailPr ? FillDetailPr.id : null)}
-                  >
-                    <i className="bi bi-cart-plus fs-6"></i>
-                  </button>
-                </div>
-              </div>
+            </div>
+            <div className="d-flex mt-auto mb-3">
+              <button className="btn btn-sm btn-outline-success w-100 rounded-3" id="btn-layout">
+                <i className="bi bi-cash fs-6"></i>
+              </button>
+              <button
+                className="btn btn-sm btn-outline-primary mx-2 w-100 rounded-3" id="btn-layout"
+                onClick={() => addToCart(FillDetailPr ? FillDetailPr.id : null)}
+              >
+                <i className="bi bi-cart-plus fs-6"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -282,13 +335,22 @@ const DetailProduct = () => {
           <div className="col-lg-4 border-end">
             <div className="p-4 d-flex">
               <img
-                src={FillDetailPr && FillDetailPr.store ? geturlIMGStore(FillDetailPr.store.id, FillDetailPr.store.imgbackgound) : "/images/no_img.png"}
+                src={
+                  FillDetailPr && FillDetailPr.store
+                    ? geturlIMGStore(
+                        FillDetailPr.store.id,
+                        FillDetailPr.store.imgbackgound
+                      )
+                    : "/images/no_img.png"
+                }
                 alt=""
                 id="avt-store"
               />
               <div className="mt-3">
                 <span htmlFor="" className="fs-6 mx-3">
-                  {FillDetailPr && FillDetailPr.store ? FillDetailPr.store.namestore : "N/A"}
+                  {FillDetailPr && FillDetailPr.store
+                    ? FillDetailPr.store.namestore
+                    : "N/A"}
                 </span>
                 <button className="btn btn-sm btn-outline-info mx-2">
                   Xem thông tin

@@ -1,15 +1,15 @@
 import React from "react";
 
 import "./MainDash.css";
-import Header from "../../components/UI&UX/Header/Header";
 import CardsAmin from "./CardsAdmin";
 import TableAd from "./TableAd";
 import { Footer } from "antd/es/layout/layout";
+import HeaderAdmin from "../../components/UI&UX/Header/HeaderAdmin";
 
 const MainDash = () => {
   return (
     <div className="MainDash">
-      <Header></Header>
+      <HeaderAdmin></HeaderAdmin>
       <div className="container">
         <h1>Overview chart</h1>
         <CardsAmin></CardsAmin>

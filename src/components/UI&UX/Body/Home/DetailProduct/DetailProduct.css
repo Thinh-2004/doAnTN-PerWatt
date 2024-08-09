@@ -14,3 +14,11 @@
 #description{
     white-space: pre-wrap; /* Giữ lại các khoảng trắng và xuống dòng */
 }
+#productName {
+    font-size: calc(16px + (24 - 16) * (100vw - 300px) / (1600 - 300)); /* Thu nhỏ cỡ chữ khi cần thiết */
+  }
+
+  
+  
+  
+  

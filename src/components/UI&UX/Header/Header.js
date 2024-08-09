@@ -9,8 +9,8 @@ import { confirmAlert } from "react-confirm-alert"; // Import thư viện confir
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS cho confirm-alert
 import axios from "../../../Localhost/Custumize-axios";
 
-const Header = () => {
-  const [inputValue, setInputValue] = useState("");
+const Header = ({contextSearch}) => {
+  const [search, setSearch] = useState("");
   const [fullName, removeFullName] = useSession("fullname");
   const [avatar, removeAvatar] = useSession("avatar");
   const [id, removeId] = useSession("id");
@@ -76,7 +76,7 @@ const Header = () => {
     });
   };
 
-  const handleVoiceSearch = () => {
+  const handleVoiceSearch = (e) => {
     const recognition = new (window.SpeechRecognition ||
       window.webkitSpeechRecognition)();
 
@@ -88,15 +88,19 @@ const Header = () => {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript;
       }
-      setInputValue(transcript);
+      setSearch(transcript);
+      contextSearch(transcript); // đặt dữ liệu tìm kiếm lên thằng cha
     };
 
     recognition.onerror = (event) => {
       console.error("Speech recognition error:", event.error);
     };
-
     recognition.start();
   };
+  const handleTextSearch = (e) =>{
+    setSearch(e.target.value);
+    contextSearch(e.target.value);
+  }
 
   const CallAPICheckUserId = async (id) => {
     try {
@@ -198,7 +202,7 @@ const Header = () => {
         <Link to={"/"}>
           <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
         </Link>
-        <div className="align-content-center">
+        <div className="align-content-center"  hidden={window.location.pathname !== "/"}>
           <form className="d-flex" role="search">
             <input
               className="form-control rounded-start-4"
@@ -206,8 +210,9 @@ const Header = () => {
               placeholder="Bạn cần tìm gì"
               aria-label="Search"
               style={{ width: "400px" }}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              value={search}
+              onChange={handleTextSearch}
+             
             />
             <button
               type="button"

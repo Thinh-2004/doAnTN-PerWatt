@@ -1,6 +1,5 @@
 import axios from "../../../Localhost/Custumize-axios";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Register = () => {
@@ -13,7 +12,6 @@ const Register = () => {
     role: 3, // Vai trò buyer
     address: "",
     phone: "",
-    avatar: "", // Khởi tạo avatar trống
   });
 
   const handleChange = (e) => {
@@ -22,9 +20,6 @@ const Register = () => {
       setFormUser((prev) => ({
         ...prev,
         [name]: checked ? value : prev[name],
-        avatar: value === "true"
-          ? "nam.jpg"
-          : "nu.jpg",
       }));
     } else {
       setFormUser((prev) => ({
@@ -46,12 +41,10 @@ const Register = () => {
       configPassWord,
     } = formUser;
 
-    // Biểu thức chính quy
     const pattentEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const pattentPhone = /0[0-9]{9}/;
     const patternPassword = /^(?=.*[a-zA-Z]).{8,}$/;
 
-    // Kiểm tra nếu tất cả các trường đều trống
     if (
       !fullname &&
       !password &&
@@ -64,7 +57,6 @@ const Register = () => {
       toast.warning("Cần nhập toàn bộ thông tin");
       return false;
     } else {
-      // Kiểm tra từng trường riêng biệt
       if (!fullname) {
         toast.warning("Hãy nhập họ và tên");
         return false;
@@ -110,7 +102,7 @@ const Register = () => {
       if (!password) {
         toast.warning("Hãy nhập mật khẩu");
         return false;
-      } else if ((password.length < 8) | !patternPassword.test(password)) {
+      } else if (password.length < 8 || !patternPassword.test(password)) {
         toast.warning(
           "Mật khẩu phải chứa ít nhất 8 ký tự bao gồm chữ hoa hoặc thường"
         );
@@ -263,7 +255,7 @@ const Register = () => {
                   name="password"
                   value={formUser.password}
                   onChange={handleChange}
-                  placeholder="Nhập mật khẩu ***"
+                  placeholder="Mật khẩu"
                   className="form-control"
                 />
               </div>
@@ -275,7 +267,7 @@ const Register = () => {
                   onChange={handleChange}
                   value={formUser.configPassWord}
                   name="configPassWord"
-                  placeholder="Xác thực mật khẩu ***"
+                  placeholder="Nhập lại mk"
                   className="form-control mb-3"
                 />
               </div>
