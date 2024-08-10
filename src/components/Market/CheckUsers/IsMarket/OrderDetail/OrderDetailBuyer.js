@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import Header from "../../UI&UX/Header/Header";
-import Footer from "../../UI&UX/Footer/Footer";
-import axios from "../../../Localhost/Custumize-axios";
+import Header from "../../../../UI&UX/Header/Header";
+import Footer from "../../../../UI&UX/Footer/Footer";
+import axios from "../../../../../Localhost/Custumize-axios";
 import { useParams } from "react-router-dom";
 
-const OrderDetail = () => {
+const OrderDetailBuyer = () => {
   const [orderDetails, setOrderDetails] = useState([]);
   const [groupedByStore, setGroupedByStore] = useState({});
   const { id } = useParams();
@@ -12,22 +12,21 @@ const OrderDetail = () => {
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
-  const getAvtUser = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
 
   useEffect(() => {
-    const load = async () => {
+    const load = async (id) => {
       try {
-        const res = await axios.get(`/orderDetail/${id}`);
+        const res = await axios.get(`/orderDetailSeller/${id}`);
         setOrderDetails(res.data);
+        console.log(res.data);
+        
         const grouped = groupByStore(res.data);
         setGroupedByStore(grouped);
       } catch (error) {
         console.error(error);
       }
     };
-    load();
+    load(id);
   }, [id]);
 
   const groupByStore = (details) => {
@@ -48,7 +47,6 @@ const OrderDetail = () => {
 
   return (
     <div>
-      <Header />
       <div className="container">
         <div className="card mt-3">
           <div className="card-body">
@@ -61,7 +59,7 @@ const OrderDetail = () => {
         {Object.keys(groupedByStore).map((storeId) => {
           const storeProducts = groupedByStore[storeId];
           const store = storeProducts[0].product.store;
-          const order = storeProducts[0].order;
+          const order = storeProducts[0].order; // Assuming this is available
 
           return (
             <div className="card mt-3" key={storeId}>
@@ -69,7 +67,7 @@ const OrderDetail = () => {
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center">
                     <img
-                      src={getAvtUser(store.user.id, store.user.avatar)}
+                      src={`/images/${store.user.avatar}`}
                       id="imgShop"
                       className="mx-2"
                       alt="Shop Logo"
@@ -117,7 +115,7 @@ const OrderDetail = () => {
                             Số lượng: {orderDetail.quantity}
                           </div>
                           <div className="col-4">
-                            Thành tiền:
+                            Thành tiền:{" "}
                             {formatPrice(
                               orderDetail.product.price * orderDetail.quantity
                             ) + " VNĐ"}
@@ -153,9 +151,8 @@ const OrderDetail = () => {
           );
         })}
       </div>
-      <Footer />
     </div>
   );
 };
 
-export default OrderDetail;
+export default OrderDetailBuyer;

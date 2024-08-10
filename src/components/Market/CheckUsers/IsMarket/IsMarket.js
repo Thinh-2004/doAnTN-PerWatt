@@ -9,6 +9,9 @@ import axios from "../../../../Localhost/Custumize-axios";
 import EditProduct from "./Product/Form/EditProduct";
 import MainUserSeller from "./StatisticalOrders/MainUserSeller";
 import ProfileShop from "./ProfileShop/ProfileShop";
+import OrderSeller from "./Order/OrderSeller";
+import OrderDetailBuyer from "./OrderDetail/OrderDetailBuyer";
+
 const IsMarket = () => {
   const [id] = useSession("id");
   useEffect(() => {
@@ -104,7 +107,10 @@ const IsMarket = () => {
                     className="p-0 m-0"
                   >
                     <li>
-                      <Link style={{ textDecoration: "none" }} to="/allOrders">
+                      <Link
+                        style={{ textDecoration: "none" }}
+                        to={`/profileMarket/orderSeller/${id}`}
+                      >
                         Tất cả
                       </Link>
                     </li>
@@ -281,6 +287,14 @@ const IsMarket = () => {
             <Route path="/FormStoreProduct" element={<FormProduct />} />
             <Route path="updateProduct/:id" element={<EditProduct />} />
             <Route path="/profileShop" element={<ProfileShop />} />
+            <Route
+              path="orderDetailSeller/:id"
+              element={<OrderDetailBuyer />}
+            />
+            <Route
+              path="/orderSeller/:id"
+              element={<OrderSeller></OrderSeller>}
+            ></Route>
           </Routes>
         </div>
       </div>

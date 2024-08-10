@@ -162,7 +162,7 @@ const ProfileUser = () => {
                   </li>
                 </ul>
               </div>
-              <Link className="mx-2 text-decoration-none">
+              <Link className="mx-2 text-decoration-none" to={"/order"}>
                 <i className="bi bi-receipt fs-3 text-primary me-2"></i>
                 <span className="text-dark">Đơn mua</span>
               </Link>

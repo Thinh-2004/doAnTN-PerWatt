@@ -9,10 +9,13 @@ import DetailProduct from "../components/UI&UX/Body/Home/DetailProduct/DetailPro
 import CheckItemProduct from "../components/Market/CheckUsers/IsMarket/Product/CheckItemProduct/CheckItemProduct";
 import Cart from "../components/Cart/Cart";
 import ProfileUser from "../components/ProfileUser/ProfileUser";
-import ForgotPassword from '../components/ForgotPasswordUser/ForgotPassword'
-import OTP from '../components/ForgotPasswordUser/OTP'
-import ResetPassword from '../components/ForgotPasswordUser/ResetPassword'
+import ForgotPassword from "../components/ForgotPasswordUser/ForgotPassword";
+import OTP from "../components/ForgotPasswordUser/OTP";
+import ResetPassword from "../components/ForgotPasswordUser/ResetPassword";
 import Store from "../components/UI&UX/Body/Store/Store";
+import Order from "../components/Order/OrderBuyer/OrderBuyer";
+import OrderDetail from "../components/Order/OrderDetail/OrderDetail";
+import PayBuyer from "../components/Order/PayBuyer/PayBuyer";
 
 const RouteUsers = (props) => {
   return (
@@ -32,10 +35,21 @@ const RouteUsers = (props) => {
           element={<CheckItemProduct></CheckItemProduct>}
         ></Route>
         <Route path="/user/*" element={<ProfileUser></ProfileUser>}></Route>
-        <Route path="forgotPass" element={<ForgotPassword></ForgotPassword>}></Route>
+        <Route
+          path="forgotPass"
+          element={<ForgotPassword></ForgotPassword>}
+        ></Route>
         <Route path="/otp" element={<OTP />}></Route>
         <Route path="/resetPassword" element={<ResetPassword />}></Route>
         <Route path="/pageStore/:idStore" element={<Store />}></Route>
+
+        <Route path="/order" element={<Order></Order>}></Route>
+        <Route
+          path="/OrderDetail"
+          element={<OrderDetail></OrderDetail>}
+        ></Route>
+        <Route path="/paybuyer" element={<PayBuyer />} />
+        <Route path="/orderDetail/:id" element={<OrderDetail />} />
         <Route path="*">404 Not Found</Route>
       </Routes>
       <ToastContainer />
