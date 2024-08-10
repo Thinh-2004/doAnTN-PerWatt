@@ -9,59 +9,54 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit  = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validate()) {
+      const idToast = toast.loading("Vui lòng chờ...");
       try {
-        const res = await axios.get(`user/${email}`);
-        if (res.data.email !== email) {
-          toast.error("Email không tồn tại");
-        } else if (res.data.password !== password) {
-          toast.error("Mật khẩu không đúng");
-        } else {
-          const id = toast.loading("Vui lòng đợi...");
-          sessionStorage.setItem("fullname", res.data.fullname);
-          sessionStorage.setItem("id", res.data.id);
-          sessionStorage.setItem("avatar", res.data.avatar);
-          console.log("Session stored: ", res.data.fullname);
+        const res = await axios.post("/login", { email, password }); // Thay đổi phương thức từ GET thành POST
+        if (res.status === 200) {
+          const { user } = res.data;
+          // Lưu thông tin vào sessionStorage
+          sessionStorage.setItem("fullname", user.fullname);
+          sessionStorage.setItem("id", user.id);
+          sessionStorage.setItem("avatar", user.avatar);
 
           setTimeout(() => {
-            toast.update(id, {
+            toast.update(idToast, {
               render: "Đăng nhập thành công",
               type: "success",
               isLoading: false,
               autoClose: 5000,
               closeButton: true,
-            },500);
-            if (res.data.role.id === 1) {
+            });
+            if (user.role && user.role.id === 1) {
               navigate("/admin");
             } else {
               navigate("/");
             }
           }, 500);
+        } else {
+          toast.error(res.data.message || "Đăng nhập thất bại");
         }
       } catch (error) {
-        if (error.response) {
-          toast.error("Email không tồn tại: " + error.response.data.message);
-        } else if (error.request) {
-          toast.error("Không có phản hồi từ máy chủ");
-        } else {
-          toast.error("Đăng nhập thất bại: " + error.message);
-        }
+        toast.update(idToast, {
+          render:
+            "Đăng nhập thất bại: " +
+            (error.response ? error.response.data.message : error.message),
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
       }
     }
   };
 
   const validate = () => {
-    if (email === "" && password === "") {
+    if (email === "" || password === "") {
       toast.warning("Hãy nhập đầy đủ thông tin");
-      return false;
-    } else if (email === "") {
-      toast.warning("Hãy nhập email");
-      return false;
-    } else if (password === "") {
-      toast.warning("Hãy nhập password");
       return false;
     }
     return true;

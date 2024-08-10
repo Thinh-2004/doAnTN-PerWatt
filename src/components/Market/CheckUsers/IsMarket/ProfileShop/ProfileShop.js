@@ -101,6 +101,9 @@ const ProfileShop = () => {
             email: dataStore.email,
             phone: dataStore.phone,
             cccdnumber: dataStore.cccdnumber,
+            user : {
+              id : idUser
+            }
           })
         );
         if (dataStore.imgbackgound instanceof File) {
@@ -138,7 +141,7 @@ const ProfileShop = () => {
       <div className="card-body">
         <form onSubmit={handleSubmit}>
           <div className="row">
-            <div className="col-lg-6">
+            <div className="col-lg-6" style={{marginTop: "40px"}}>
               <div className="row">
                 <div className="col-lg-6">
                   <div className="mb-3">
@@ -196,7 +199,7 @@ const ProfileShop = () => {
             </div>
             <div className="col-lg-6">
               <div className="">
-                <h4 className="text-center">Logo shop</h4>
+                <h4 className="text-center">Hình nền shop</h4>
                 <div className="d-flex justify-content-center">
                   <img
                     src={
@@ -204,7 +207,8 @@ const ProfileShop = () => {
                       geturlIMG(idStore, dataStore.imgbackgound)
                     }
                     alt="Logo shop"
-                    id="img-avatar"
+                    id="img-background"
+                    className="rounded-3"
                   />
                 </div>
                 <div className="d-flex justify-content-center">

@@ -3,11 +3,15 @@ import "./ProductItemStyle.css";
 import { Link } from "react-router-dom";
 import axios from "../../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
+import useDebounce from '../../../../../CustumHook/useDebounce'
 trefoil.register();
 
 const Product = ({ item, idCate }) => {
   const [fillAllProduct, setFillAllProduct] = useState([]);
   const [loading, setLoading] = useState(true);
+   // Debounce item và idCate để tránh gọi API quá nhiều lần
+   const debouncedItem = useDebounce(item);
+   const debouncedIdCate = useDebounce(idCate);
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -31,13 +35,13 @@ const Product = ({ item, idCate }) => {
   // Lọc sản phẩm theo từ khóa tìm kiếm và danh mục
   const filterBySearchAndCategory = fillAllProduct.filter((product) => {
     // Kiểm tra tìm kiếm
-    const matchesSearch = item
-      ? product.name.toLowerCase().includes(item.toLowerCase())
+    const matchesSearch = debouncedItem
+      ? product.name.toLowerCase().includes(debouncedItem.toLowerCase())
       : true;
 
     // Kiểm tra danh mục
-    const matchesCategory = idCate
-      ? product.productcategory.id === idCate
+    const matchesCategory = debouncedIdCate
+      ? product.productcategory.id === debouncedIdCate
       : true;
 
     // Phải thỏa mãn cả hai tiêu chí
@@ -58,7 +62,7 @@ const Product = ({ item, idCate }) => {
       ) : filterBySearchAndCategory.length === 0 ? (
         <>
           <div className="d-flex justify-content-center">
-            <i class="bi bi-file-earmark-x" style={{ fontSize: "100px" }}></i>
+            <i className="bi bi-file-earmark-x" style={{ fontSize: "100px" }}></i>
           </div>
           <label className="text-center fs-4">
             Thông tin bạn tìm không tồn tại
@@ -70,7 +74,7 @@ const Product = ({ item, idCate }) => {
           return (
             <div className="col-lg-2 mt-3" key={fill.id}>
               <div
-                class="card shadow rounded-4 mt-4 p-2"
+                className="card shadow rounded-4 mt-4 p-2"
                 style={{ width: "18rem;" }}
                 id="product-item"
               >

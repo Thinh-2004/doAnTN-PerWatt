@@ -1,28 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import axios from "../../../../../Localhost/Custumize-axios";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import useSession from "../../../../../Session/useSession";
 import Header from "../../../Header/Header";
 import "./DetailProduct.css";
+import FindMoreProduct from "../FindMoreProduct/FindMoreProduct";
 
 const DetailProduct = () => {
   const { id } = useParams();
   const [idUser] = useSession("id");
   const changeLink = useNavigate();
+  const [FillDetailPr, setFillDetailPr] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [countProductStore, setCountProductStore] = useState(0);
+  const itemsPerPage = 4;
+  const [idClick, setIdClick] = useState("");
+  const [typeId, setTypeId] = useState("");
+  const findMoreProductRef = useRef(null); // Tạo ref cho phần tử cần cuộn đến
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
   const geturlIMGStore = (storeId, filename) => {
     return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
   };
-  const [FillDetailPr, setFillDetailPr] = useState(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [countProductStore, setCountProductStore] = useState(0);
-  const itemsPerPage = 4;
-
   const loadProductDetail = async (id) => {
     try {
       const res = await axios.get(`product/${id}`);
@@ -36,10 +39,16 @@ const DetailProduct = () => {
       console.log(error);
     }
   };
-
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     loadProductDetail(id);
   }, [id]);
+  // Theo dõi sự thay đổi của idClick và typeId để cuộn đến phần tử
+  useEffect(() => {
+    if (findMoreProductRef.current) {
+      findMoreProductRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [idClick, typeId]);
 
   const handleSelectImage = (index) => {
     setSelectedImage(index);
@@ -97,7 +106,17 @@ const DetailProduct = () => {
     }
     window.location.reload();
   };
-
+  const handleClickIdCateOrIdBrand = (idCateOrBrand, typeId) => {
+    setIdClick(idCateOrBrand);
+    setTypeId(typeId);
+    console.log(idCateOrBrand, typeId);
+  };
+  const handleViewStoreInfo = () => {
+    const storeId = FillDetailPr.store.id;
+    if (storeId) {
+      changeLink(`/pageStore/${storeId}`); // Điều hướng đến trang thông tin của store
+    }
+  };
   return (
     <>
       <Header />
@@ -280,7 +299,15 @@ const DetailProduct = () => {
                   <ul>
                     <li>
                       <label htmlFor="">Loại sản phẩm:</label>{" "}
-                      <Link style={{ textDecoration: "none" }}>
+                      <Link
+                        style={{ textDecoration: "none" }}
+                        onClick={() =>
+                          handleClickIdCateOrIdBrand(
+                            FillDetailPr.productcategory.id,
+                            "category"
+                          )
+                        }
+                      >
                         {FillDetailPr && FillDetailPr.productcategory
                           ? FillDetailPr.productcategory.name
                           : "N/A"}
@@ -288,7 +315,15 @@ const DetailProduct = () => {
                     </li>
                     <li>
                       <label htmlFor="">Thương hiệu:</label>{" "}
-                      <Link style={{ textDecoration: "none" }}>
+                      <Link
+                        style={{ textDecoration: "none" }}
+                        onClick={() =>
+                          handleClickIdCateOrIdBrand(
+                            FillDetailPr.trademark.id,
+                            "brand"
+                          )
+                        }
+                      >
                         {FillDetailPr && FillDetailPr.trademark
                           ? FillDetailPr.trademark.name
                           : "N/A"}
@@ -319,11 +354,15 @@ const DetailProduct = () => {
               </div>
             </div>
             <div className="d-flex mt-auto mb-3">
-              <button className="btn btn-sm btn-outline-success w-100 rounded-3" id="btn-layout">
+              <button
+                className="btn btn-sm btn-success w-100 rounded-3"
+                id="btn-layout"
+              >
                 <i className="bi bi-cash fs-6"></i>
               </button>
               <button
-                className="btn btn-sm btn-outline-primary mx-2 w-100 rounded-3" id="btn-layout"
+                className="btn btn-sm btn-primary mx-2 w-100 rounded-3"
+                id="btn-layout"
                 onClick={() => addToCart(FillDetailPr ? FillDetailPr.id : null)}
               >
                 <i className="bi bi-cart-plus fs-6"></i>
@@ -352,10 +391,10 @@ const DetailProduct = () => {
                     ? FillDetailPr.store.namestore
                     : "N/A"}
                 </span>
-                <button className="btn btn-sm btn-outline-info mx-2">
+                <button className="btn btn-sm btn-info mx-2" onClick={handleViewStoreInfo}>
                   Xem thông tin
                 </button>
-                <button className="btn btn-sm btn-outline-secondary">
+                <button className="btn btn-sm btn-warning">
                   Xem nhắn tin
                 </button>
               </div>
@@ -391,9 +430,14 @@ const DetailProduct = () => {
             </span>
           </div>
         </div>
+        <div ref={findMoreProductRef}>
+          <FindMoreProduct
+            idClick={idClick}
+            filterType={typeId}
+          ></FindMoreProduct>
+        </div>
       </div>
     </>
   );
 };
-
 export default DetailProduct;

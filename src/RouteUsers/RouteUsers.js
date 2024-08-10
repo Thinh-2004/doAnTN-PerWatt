@@ -12,6 +12,7 @@ import ProfileUser from "../components/ProfileUser/ProfileUser";
 import ForgotPassword from '../components/ForgotPasswordUser/ForgotPassword'
 import OTP from '../components/ForgotPasswordUser/OTP'
 import ResetPassword from '../components/ForgotPasswordUser/ResetPassword'
+import Store from "../components/UI&UX/Body/Store/Store";
 
 const RouteUsers = (props) => {
   return (
@@ -34,6 +35,7 @@ const RouteUsers = (props) => {
         <Route path="forgotPass" element={<ForgotPassword></ForgotPassword>}></Route>
         <Route path="/otp" element={<OTP />}></Route>
         <Route path="/resetPassword" element={<ResetPassword />}></Route>
+        <Route path="/pageStore/:idStore" element={<Store />}></Route>
         <Route path="*">404 Not Found</Route>
       </Routes>
       <ToastContainer />

@@ -26,25 +26,35 @@ const ProfileUser = () => {
         setFill(res.data);
       } catch (error) {
         console.log(error);
+        toast.error(
+          error.response ? error.response.data.message : error.message
+        );
       }
     };
     loadData(id);
   }, [id]);
 
-  const onClickChangePass = (e) => {
+  const onClickChangePass = async (e) => {
     e.preventDefault();
     if (password === "") {
       toast.error("Vui lòng nhập mật khẩu ");
-    } else if (fill.password !== password) {
-      toast.error("Mật khẩu không đúng");
-    } else {
-      toast.success("Đăng nhập thành công");
+      return;
+    }
+    try {
+      // Gọi API xác thực mật khẩu (nếu có)
+      const res = await axios.post("checkPass", { password, id });
+      toast.success("Truy cập thành công");
       setIsChangePassClicked(true);
       changeLink("changePass");
-
-      const modelCLose = document.getElementById("exampleModal");
-      const closeAuto = window.bootstrap.Modal.getInstance(modelCLose);
-      closeAuto.hide();
+      const modalElement = document.getElementById("exampleModal");
+      if (modalElement) {
+        const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+          modalInstance.hide();
+        }
+      }
+    } catch (error) {
+      toast.error(error.response ? error.response.data.message : error.message);
     }
   };
 

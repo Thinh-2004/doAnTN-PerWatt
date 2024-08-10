@@ -121,20 +121,6 @@ const Header = () => {
         <Link to={"/profileMarket"}>
           <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
         </Link>
-        <div className="align-content-center">
-          <form className="d-flex" role="search">
-            <input
-              className="form-control rounded-start-4"
-              type="search"
-              placeholder="Bạn cần tìm gì"
-              aria-label="Search"
-              style={{ width: "400px" }}
-            />
-            <button className="btn btn-outline-primary rounded-end-4 mx-2">
-              <i className="bi bi-mic"></i>
-            </button>
-          </form>
-        </div>
       </div>
       <div className="align-content-center m-3">
         <div className="d-flex">
