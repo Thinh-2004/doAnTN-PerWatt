@@ -37,7 +37,6 @@ const IsMarket = () => {
         <div className="col-lg-3 p-0 m-0">
           <div
             className="accordion  overflow-y-scroll"
-            style={{ height: "590px" }}
             id="accordionPanelsStayOpenExample"
           >
             <div className="accordion-item">

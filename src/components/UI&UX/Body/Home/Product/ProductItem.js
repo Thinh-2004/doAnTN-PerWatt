@@ -78,7 +78,8 @@ const Product = ({ item, idCate }) => {
                 style={{ width: "18rem;" }}
                 id="product-item"
               >
-                <Link to={`/detailProduct/${fill.id}`}>
+               
+                <Link to={`/detailProduct/${fill.id}`} className="position-relative">
                   <img
                     src={
                       firstIMG
@@ -89,6 +90,7 @@ const Product = ({ item, idCate }) => {
                     alt="..."
                     style={{ width: "200px", height: "150px" }}
                   />
+                  <div className="position-absolute top-0 start-50 translate-middle text-danger" id="bg-slod-out" style={{display : fill && fill.quantity === 0 ? "inline" : "none"}}><span className="text-white text-center">Hết hàng</span></div>
                 </Link>
                 <div class="mt-2">
                   <span className="fw-bold fst-italic" id="product-name">

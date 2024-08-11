@@ -7,105 +7,89 @@ import Chart from "react-apexcharts";
 import axios from "axios";
 import "./CardAd.css";
 
+// Hàm formatNumber để định dạng số
+const formatNumber = (value) => {
+  if (value === null || value === undefined) return '';
+  return `${value.toLocaleString()} đ`;
+};
+
 const CardAd = (props) => {
   const [expanded, setExpanded] = useState(false);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalStores, setTotalStores] = useState(0);
-  const [totalOrders, setTotalOrders] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
   const [revenueData, setRevenueData] = useState([]);
   const [storesByYearData, setStoresByYearData] = useState([]);
-  const [orderDetailsData, setOrderDetailsData] = useState([]);
   const [usersByYearData, setUsersByYearData] = useState([]);
 
   useEffect(() => {
-    if (props.title === "Revenue") {
-      axios.get("http://localhost:8080/revenue/total-revenue-by-store")
-        .then(response => {
-          const data = response.data;
-          setRevenueData(data);
-          const totalRevenue = data.reduce((acc, item) => acc + item.totalRevenue, 0);
+    const fetchData = async () => {
+      try {
+        if (props.title === "Doanh thu") {
+          const revenueResponse = await axios.get("http://localhost:8080/revenue/total-revenue-by-store");
+          const revenueData = revenueResponse.data;
+          console.log("Dữ liệu doanh thu:", revenueData); // Kiểm tra dữ liệu nhận được
+          setRevenueData(revenueData);
+          const totalRevenue = revenueData.reduce((acc, item) => acc + item.totalRevenue, 0);
           setTotalRevenue(totalRevenue);
-          setTotalStores(data.length);
-        })
-        .catch(error => {
-          console.error("Có lỗi xảy ra khi lấy dữ liệu doanh thu:", error);
-        });
+          setTotalStores(revenueData.length);
 
-      axios.get("http://localhost:8080/revenue/stores-by-year")
-        .then(response => {
-          const data = response.data;
-          setStoresByYearData(data);
-        })
-        .catch(error => {
-          console.error("Có lỗi xảy ra khi lấy dữ liệu số lượng cửa hàng:", error);
-        });
-    } else if (props.title === "Store") {
-      axios.get("http://localhost:8080/revenue/stores-by-year")
-        .then(response => {
-          const data = response.data;
-          setStoresByYearData(data);
-          const totalStores = data.reduce((acc, item) => acc + item.TotalStores, 0);
+          const storesResponse = await axios.get("http://localhost:8080/revenue/stores-by-year");
+          const storesData = storesResponse.data;
+          console.log("Dữ liệu số lượng cửa hàng:", storesData); // Kiểm tra dữ liệu nhận được
+          setStoresByYearData(storesData);
+        } else if (props.title === "Cửa hàng") {
+          const storesResponse = await axios.get("http://localhost:8080/revenue/stores-by-year");
+          const storesData = storesResponse.data;
+          console.log("Dữ liệu số lượng cửa hàng:", storesData); // Kiểm tra dữ liệu nhận được
+          setStoresByYearData(storesData);
+          const totalStores = storesData.reduce((acc, item) => acc + item.TotalStores, 0);
           setTotalStores(totalStores);
-        })
-        .catch(error => {
-          console.error("Có lỗi xảy ra khi lấy dữ liệu số lượng cửa hàng:", error);
-        });
-    } else if (props.title === "Bill") {
-      axios.get("http://localhost:8080/order-details/count-by-store-and-year")
-        .then(response => {
-          const data = response.data;
-          setOrderDetailsData(data);
-          const totalOrders = data.reduce((acc, item) => acc + item.TotalOrderDetails, 0);
-          setTotalOrders(totalOrders);
-        })
-        .catch(error => {
-          console.error("Có lỗi xảy ra khi lấy dữ liệu đơn hàng:", error);
-        });
-    } else if (props.title === "User") {
-      axios.get("http://localhost:8080/user-ads/total-users")
-        .then(response => {
-          const data = response.data;
-          setUsersByYearData(data);
-          // Đặt tổng số người dùng từ dữ liệu
-          const totalUsers = data.reduce((acc, item) => acc + item.TotalUsers, 0);
+        } else if (props.title === "Người dùng") {
+          const usersResponse = await axios.get("http://localhost:8080/user-ads/total-users");
+          const usersData = usersResponse.data;
+          console.log("Dữ liệu người dùng:", usersData); // Kiểm tra dữ liệu nhận được
+          setUsersByYearData(usersData);
+          const totalUsers = usersData.reduce((acc, item) => acc + item.TotalUsers, 0);
           setTotalUsers(totalUsers);
-        })
-        .catch(error => {
-          console.error("Có lỗi xảy ra khi lấy dữ liệu người dùng:", error);
-        });
-    }
+        }
+      } catch (error) {
+        console.error("Có lỗi xảy ra khi lấy dữ liệu:", error);
+      }
+    };
+
+    fetchData();
   }, [props.title]);
 
   return (
     <LayoutGroup>
-      {expanded ? (
+      {expanded && props.title !== "Người dùng" ? (
         <ExpandedCard
           param={props}
           setExpanded={() => setExpanded(false)}
           revenueData={revenueData}
           storesByYearData={storesByYearData}
-          orderDetailsData={orderDetailsData}
           usersByYearData={usersByYearData}
           totalRevenue={totalRevenue}
           totalStores={totalStores}
-          totalOrders={totalOrders}
           totalUsers={totalUsers}
         />
       ) : (
         <CompactCard
           param={{ 
             ...props, 
-            value: props.title === "Store" 
-              ? "Active" 
-              : (props.title === "Bill" 
-                ? "Approve"
-                : (props.title === "User" 
-                  ? "Registered" 
-                  : totalRevenue.toLocaleString())), 
-            stores: props.title === "Bill" ? totalOrders : (props.title === "User" ? totalUsers : totalStores)
+            value: props.title === "Cửa hàng" 
+              ? "Cửa hàng đã được tạo" 
+              : (props.title === "Người dùng" 
+                ? "Đã đăng ký" 
+                : formatNumber(totalRevenue)), 
+            stores: props.title === "Người dùng" ? totalUsers : totalStores
           }}
-          setExpanded={() => setExpanded(true)}
+          setExpanded={() => {
+            if (props.title !== "Người dùng") {
+              setExpanded(true);
+            }
+          }}
         />
       )}
     </LayoutGroup>
@@ -114,6 +98,10 @@ const CardAd = (props) => {
 
 function CompactCard({ param, setExpanded }) {
   const Png = param.png;
+  const commission = (param.title === "Doanh thu" 
+    ? (parseFloat(param.value.replace(/,/g, '')) * 0.05).toLocaleString() 
+    : "0"); // Tính 5% hoa hồng
+
   return (
     <motion.div
       className="CompactCard"
@@ -133,23 +121,22 @@ function CompactCard({ param, setExpanded }) {
       </div>
       <div className="detail">
         <Png />
-        <span>{param.value}</span>
+        {param.title === "Doanh thu" && (
+          <span>{commission},000 ₫</span>
+        )}
         {param.stores !== undefined && (
           <span>
-            {param.title === "Bill"
-              ? `Total Orders: ${param.stores}`
-              : param.title === "User"
-              ? `Total Users: ${param.stores}`
-              : `Total Stores: ${param.stores}`}
+            {param.title === "Người dùng"
+              ? `Tổng số: ${param.stores.toLocaleString()}`
+              : `Tổng số: ${param.stores.toLocaleString()}`}
           </span>
         )}
       </div>
     </motion.div>
-    
   );
 }
 
-function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, orderDetailsData, usersByYearData, totalRevenue, totalStores, totalOrders, totalUsers }) {
+function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, usersByYearData, totalRevenue, totalStores, totalUsers }) {
   const revenueOptions = {
     chart: {
       type: "bar",
@@ -169,11 +156,11 @@ function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, order
       categories: revenueData.map(item => item.storeName),
     },
     fill: {
-      colors: ["#00E396"],
+      colors: ["#FF6347"],
     },
     tooltip: {
       y: {
-        formatter: (val) => `$ ${val.toLocaleString()}`,
+        formatter: (val) => formatNumber(val),
       },
     },
   };
@@ -190,39 +177,11 @@ function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, order
       enabled: false,
     },
     fill: {
-      colors: ["#FF5733"],
+      colors: ["#32CD32"],
     },
     tooltip: {
       y: {
-        formatter: (val) => `${val} Stores`,
-      },
-    },
-  };
-
-  const orderDetailsOptions = {
-    chart: {
-      type: "bar",
-      height: "auto",
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "55%",
-        endingShape: "rounded",
-      },
-    },
-    xaxis: {
-      categories: orderDetailsData.map(item => `${item.StoreName} (${item.Year})`),
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    fill: {
-      colors: ["#4B9CE2"],
-    },
-    tooltip: {
-      y: {
-        formatter: (val) => `${val} Orders`,
+        formatter: (val) => `${val.toLocaleString()} Cửa hàng`,
       },
     },
   };
@@ -233,7 +192,7 @@ function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, order
       height: "auto",
     },
     xaxis: {
-      categories: ["Total Users"], // Hiển thị một mục duy nhất vì dữ liệu chỉ có một giá trị tổng
+      categories: ["Tổng số người dùng"], // Hiển thị một mục duy nhất vì dữ liệu chỉ có một giá trị tổng
     },
     dataLabels: {
       enabled: false,
@@ -243,10 +202,12 @@ function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, order
     },
     tooltip: {
       y: {
-        formatter: (val) => `${val} Users`,
+        formatter: (val) => `${val.toLocaleString()} Người dùng`,
       },
     },
   };
+
+  const commission = (totalRevenue * 0.05).toLocaleString(); // Tính 5% hoa hồng
 
   return (
     <motion.div
@@ -262,11 +223,11 @@ function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, order
       </div>
       <span>{param.title}</span>
       <div className="chartContainer">
-        {param.title === "Revenue" && (
+        {param.title === "Doanh thu" && (
           <Chart
             series={[
               {
-                name: "Total Revenue",
+                name: "Tổng doanh thu",
                 data: revenueData.map(item => item.totalRevenue),
               },
             ]}
@@ -274,11 +235,11 @@ function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, order
             options={revenueOptions}
           />
         )}
-        {param.title === "Store" && (
+        {param.title === "Cửa hàng" && (
           <Chart
             series={[
               {
-                name: "Total Stores",
+                name: "Tổng số cửa hàng",
                 data: storesByYearData.map(item => item.TotalStores),
               },
             ]}
@@ -286,23 +247,11 @@ function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, order
             options={storesOptions}
           />
         )}
-        {param.title === "Bill" && (
+        {param.title === "Người dùng" && (
           <Chart
             series={[
               {
-                name: "Total Orders",
-                data: orderDetailsData.map(item => item.TotalOrderDetails),
-              },
-            ]}
-            type="bar"
-            options={orderDetailsOptions}
-          />
-        )}
-        {param.title === "User" && (
-          <Chart
-            series={[
-              {
-                name: "Total Users",
+                name: "Tổng số người dùng",
                 data: [totalUsers], // Sử dụng tổng số người dùng
               },
             ]}
@@ -312,10 +261,11 @@ function ExpandedCard({ param, setExpanded, revenueData, storesByYearData, order
         )}
       </div>
       <div className="summary">
-        <span>{param.title === "Revenue" ? `Total Revenue: $${totalRevenue.toLocaleString()}` : ""}</span>
-        <span>{param.title === "Store" ? `Total Stores: ${totalStores}` : ""}</span>
-        <span>{param.title === "Bill" ? `Total Orders: ${totalOrders}` : ""}</span>
-        <span>{param.title === "User" ? `Total Users: ${totalUsers}` : ""}</span>
+        {param.title === "Doanh thu" && (
+          <span>5% Hoa hồng thu về: {formatNumber(commission)}</span>
+        )}
+        <span>{param.title === "Cửa hàng" ? `Tổng số cửa hàng: ${(totalStores)}` : ""}</span>
+        <span>{param.title === "Người dùng" ? `Tổng số người dùng: ${formatNumber(totalUsers)}` : ""}</span>
       </div>
     </motion.div>
   );

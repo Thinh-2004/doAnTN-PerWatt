@@ -38,7 +38,7 @@ const Store = () => {
   return (
     <>
       <Header></Header>
-      <div className="container-fluid position-relative">
+      <div className="container-fluid position-relative mt-2">
         <img
           src={geturlBgStore(fill.id, fill.imgbackgound)}
           alt=""
@@ -47,7 +47,7 @@ const Store = () => {
         />
         <div
           className="position-absolute translate-middle shadow rounded-1"
-          style={{ left: "282px", top: "320px", width: "30%" }}
+          style={{ left: "320px", top: "320px", width: "30%" }}
         >
           <div className="d-flex justify-content-start m-3">
             <img

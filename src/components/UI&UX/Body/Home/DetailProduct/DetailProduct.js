@@ -23,8 +23,8 @@ const DetailProduct = () => {
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
-  const geturlIMGStore = (storeId, filename) => {
-    return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
+  const geturlIMGStore = (userId, filename) => {
+    return `${axios.defaults.baseURL}files/user/${userId}/${filename}`;
   };
   const loadProductDetail = async (id) => {
     try {
@@ -125,8 +125,20 @@ const DetailProduct = () => {
           <div className="col-md-4 border-end">
             <div
               id="carouselExampleDark"
-              className="carousel carousel-dark slide"
+              className="carousel carousel-dark slide position-relative"
             >
+              <div
+                className="position-absolute top-50 start-50 translate-middle rounded-3"
+                id="bg-sold-out"
+                style={{
+                  display:
+                    FillDetailPr && FillDetailPr.quantity === 0
+                      ? "inline"
+                      : "none",
+                }}
+              >
+                <span className="text-white" id="text-sold-out">Hết hàng</span>
+              </div>
               <div className="carousel-inner">
                 {FillDetailPr &&
                 FillDetailPr.images &&
@@ -357,6 +369,7 @@ const DetailProduct = () => {
               <button
                 className="btn btn-sm btn-success w-100 rounded-3"
                 id="btn-layout"
+                disabled={FillDetailPr && FillDetailPr.quantity === 0}
               >
                 <i className="bi bi-cash fs-6"></i>
               </button>
@@ -364,6 +377,7 @@ const DetailProduct = () => {
                 className="btn btn-sm btn-primary mx-2 w-100 rounded-3"
                 id="btn-layout"
                 onClick={() => addToCart(FillDetailPr ? FillDetailPr.id : null)}
+                disabled={FillDetailPr && FillDetailPr.quantity === 0}
               >
                 <i className="bi bi-cart-plus fs-6"></i>
               </button>
@@ -377,8 +391,8 @@ const DetailProduct = () => {
                 src={
                   FillDetailPr && FillDetailPr.store
                     ? geturlIMGStore(
-                        FillDetailPr.store.id,
-                        FillDetailPr.store.imgbackgound
+                        FillDetailPr.store.user.id,
+                        FillDetailPr.store.user.avatar
                       )
                     : "/images/no_img.png"
                 }
@@ -391,12 +405,13 @@ const DetailProduct = () => {
                     ? FillDetailPr.store.namestore
                     : "N/A"}
                 </span>
-                <button className="btn btn-sm btn-info mx-2" onClick={handleViewStoreInfo}>
+                <button
+                  className="btn btn-sm btn-info mx-2"
+                  onClick={handleViewStoreInfo}
+                >
                   Xem thông tin
                 </button>
-                <button className="btn btn-sm btn-warning">
-                  Xem nhắn tin
-                </button>
+                <button className="btn btn-sm btn-warning">Xem nhắn tin</button>
               </div>
             </div>
           </div>

@@ -7,6 +7,7 @@ import Profile from "./Profile/Profile";
 import ChangePass from "./ChangePassword/ChangePass";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import ShippingList from "../Shipping/ShippingList"
 
 const ProfileUser = () => {
   const [id] = useSession("id");
@@ -160,6 +161,9 @@ const ProfileUser = () => {
                   <li>
                     <Link className="text-decoration-none">Quyền riêng tư</Link>
                   </li>
+                  <li>
+                    <Link className="text-decoration-none" to={"shippingInfo"}>Địa chỉ nhận hàng</Link>
+                  </li>
                 </ul>
               </div>
               <Link className="mx-2 text-decoration-none" to={"/order"}>
@@ -178,6 +182,7 @@ const ProfileUser = () => {
             <Routes>
               <Route path="/" element={<Profile />} />
               <Route path="changePass" element={<ChangePass />} />
+              <Route path="/shippingInfo" element={<ShippingList/>} /> 
             </Routes>
           </div>
         </div>

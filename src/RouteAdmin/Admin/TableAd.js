@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Form, Input, InputNumber, Popconfirm, Table, Typography } from 'antd';
+import { Form, Input, InputNumber, Popconfirm, Table, Typography, notification } from 'antd';
 import ApexCharts from 'react-apexcharts';
+import './TableAd.css'; // Thêm tệp CSS tùy chỉnh
+
+// Hàm định dạng số với dấu phân cách hàng nghìn và ký hiệu đ
+const formatNumber = (value) => {
+  if (value === null || value === undefined) return '';
+  return `${value.toLocaleString()} đ`;
+};
 
 // Thành phần để hiển thị các ô có thể chỉnh sửa
 const EditableCell = ({
@@ -21,7 +28,7 @@ const EditableCell = ({
         <Form.Item
           name={dataIndex}
           style={{ margin: 0 }}
-          rules={[{ required: true, message: `Please Input ${title}!` }]}
+          rules={[{ required: true, message: `Vui lòng nhập ${title}!` }]}
         >
           {inputNode}
         </Form.Item>
@@ -41,33 +48,37 @@ const TableAd = () => {
   const [chartCategories, setChartCategories] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTableData = async () => {
       try {
         const response = await axios.get('http://localhost:8080/fees/store-fee-details');
         const fetchedData = response.data;
-
-        // Chuyển đổi dữ liệu từ mảng các mảng con thành mảng các đối tượng
         const transformedData = fetchedData.map((item, index) => ({
-          id: index + 1, // Tạo ID giả định
+          id: index + 1,
           nameStore: item[0],
           taxmoney: item[1],
-          commission: item[2] || 0, // Lấy commission từ dữ liệu hoặc mặc định là 0
+          commission: item[2] || 0,
         }));
-
-        setData(transformedData);
-
-        // Cập nhật dữ liệu biểu đồ với nameStore và taxmoney
-        const seriesData = transformedData.map(item => item.taxmoney || 0); // Giá trị thuế
-        const categories = transformedData.map(item => item.nameStore || 'Unknown'); // Tên cửa hàng
-        setChartSeries([{ name: 'Tax Money', data: seriesData }]);
-        setChartCategories(categories);
-
+        setData([transformedData[0]]);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching table data:', error);
       }
     };
 
-    fetchData();
+    const fetchChartData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/fees/store-revenue');
+        const fetchedData = response.data;
+        const seriesData = fetchedData.map(item => item[1] || 0);
+        const categories = fetchedData.map(item => item[0] || 'Unknown');
+        setChartSeries([{ name: 'Doanh thu tổng', data: seriesData }]);
+        setChartCategories(categories);
+      } catch (error) {
+        console.error('Error fetching chart data:', error);
+      }
+    };
+
+    fetchTableData();
+    fetchChartData();
   }, []);
 
   const isEditing = (record) => record.id === editingKey;
@@ -76,7 +87,6 @@ const TableAd = () => {
     form.setFieldsValue({
       id: record.id,
       taxmoney: record.taxmoney || 0,
-      // Đặt giá trị commission để giữ nguyên khi chỉnh sửa
       commission: record.commission || 0,
     });
     setEditingKey(record.id);
@@ -90,10 +100,27 @@ const TableAd = () => {
     try {
       const row = await form.validateFields();
       const existingRecord = data.find(item => item.id === id);
+      const taxmoney = parseFloat(row.taxmoney);
 
-      // Cập nhật chỉ taxmoney, giữ nguyên commission
-      const updatedRow = { taxmoney: row.taxmoney || 0, commission: existingRecord.commission };
+      if (isNaN(taxmoney)) {
+        notification.error({
+          message: 'Lỗi',
+          description: 'Số tiền thuế không hợp lệ.',
+        });
+        form.setFieldsValue({ taxmoney: existingRecord.taxmoney });
+        return;
+      }
 
+      if (taxmoney < 0) {
+        notification.error({
+          message: 'Lỗi',
+          description: 'Số tiền thuế không được âm.',
+        });
+        form.setFieldsValue({ taxmoney: existingRecord.taxmoney });
+        return;
+      }
+
+      const updatedRow = { taxmoney, commission: existingRecord.commission };
       await axios.put(`http://localhost:8080/fees/${id}`, updatedRow);
 
       const newData = data.map(item =>
@@ -102,12 +129,22 @@ const TableAd = () => {
       setData(newData);
       setEditingKey('');
 
-      // Cập nhật dữ liệu biểu đồ sau khi chỉnh sửa
-      const seriesData = newData.map(item => item.taxmoney || 0);
-      setChartSeries([{ name: 'Tax Money', data: seriesData }]);
+      const response = await axios.get('http://localhost:8080/fees/store-revenue');
+      const fetchedData = response.data;
+      const seriesData = fetchedData.map(item => item[1] || 0);
+      setChartSeries([{ name: 'Doanh thu tổng', data: seriesData }]);
+
+      notification.success({
+        message: 'Thành công',
+        description: 'Cập nhật dữ liệu thành công!',
+      });
 
     } catch (errInfo) {
       console.log('Validate Failed:', errInfo);
+      notification.error({
+        message: 'Lỗi',
+        description: 'Có lỗi xảy ra khi lưu dữ liệu.',
+      });
     }
   };
 
@@ -115,17 +152,21 @@ const TableAd = () => {
     {
       title: 'ID',
       dataIndex: 'id',
-      width: '20%',
+      width: '10%',
+      align: 'center',
     },
     {
-      title: 'Tax Money',
+      title: 'Tiền thuế',
       dataIndex: 'taxmoney',
-      width: '70%',
+      width: '40%',
       editable: true,
+      align: 'center',
     },
     {
-      title: 'Operation',
+      title: 'Thao tác',
       dataIndex: 'operation',
+      width: '50%',
+      align: 'center',
       render: (_, record) => {
         const editable = isEditing(record);
         return editable ? (
@@ -134,15 +175,15 @@ const TableAd = () => {
               onClick={() => save(record.id)}
               style={{ marginInlineEnd: 8 }}
             >
-              Save
+              Lưu
             </Typography.Link>
-            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-              <a>Cancel</a>
+            <Popconfirm title="Bạn có chắc chắn muốn hủy?" onConfirm={cancel}>
+              <a>Hủy</a>
             </Popconfirm>
           </span>
         ) : (
           <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
-            Edit
+            Chỉnh sửa
           </Typography.Link>
         );
       },
@@ -174,13 +215,7 @@ const TableAd = () => {
       line: {
         dataLabels: {
           enabled: true,
-        },
-        markers: {
-          size: 5,
-          colors: ['#FF4560'],
-          strokeColors: '#fff',
-          strokeWidth: 2,
-          shape: 'circle',
+          formatter: (val) => formatNumber(val), // Sử dụng hàm formatNumber
         },
       },
     },
@@ -188,11 +223,17 @@ const TableAd = () => {
       categories: chartCategories,
     },
     title: {
-      text: 'Tax Money Overview',
+      text: 'Tổng quan về doanh thu cửa hàng',
       align: 'left',
     },
     dataLabels: {
       enabled: true,
+      formatter: (val) => formatNumber(val), // Sử dụng hàm formatNumber
+    },
+    tooltip: {
+      y: {
+        formatter: (val) => formatNumber(val), // Sử dụng hàm formatNumber
+      },
     },
     stroke: {
       curve: 'smooth',
@@ -203,14 +244,15 @@ const TableAd = () => {
     <div className="row">
       <div className="col-lg-6">
         <Form form={form} component={false}>
-          <div><h1>Tax table</h1></div>
+          <div><h1>Bảng thuế</h1></div>
           <Table
             components={{ body: { cell: EditableCell } }}
             bordered
             dataSource={data}
             columns={mergedColumns}
             rowClassName="editable-row"
-            pagination={{ onChange: cancel }}
+            pagination={false} // Tắt phân trang
+            className="custom-table"
           />
         </Form>
       </div>
@@ -220,7 +262,7 @@ const TableAd = () => {
             options={chartOptions}
             series={chartSeries}
             type="line"
-            height={670}
+            height={350}
           />
         </div>
       </div>

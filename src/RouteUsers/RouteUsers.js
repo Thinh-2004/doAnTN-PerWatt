@@ -16,6 +16,7 @@ import Store from "../components/UI&UX/Body/Store/Store";
 import Order from "../components/Order/OrderBuyer/OrderBuyer";
 import OrderDetail from "../components/Order/OrderDetail/OrderDetail";
 import PayBuyer from "../components/Order/PayBuyer/PayBuyer";
+import ShippingCreate from "../components/Shipping/ShippingCreate";
 
 const RouteUsers = (props) => {
   return (
@@ -50,6 +51,8 @@ const RouteUsers = (props) => {
         ></Route>
         <Route path="/paybuyer" element={<PayBuyer />} />
         <Route path="/orderDetail/:id" element={<OrderDetail />} />
+        <Route path="/shippingCreate" element={<ShippingCreate />} />
+        
         <Route path="*">404 Not Found</Route>
       </Routes>
       <ToastContainer />

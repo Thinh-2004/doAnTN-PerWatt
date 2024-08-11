@@ -1,158 +1,131 @@
 import React, { useState, useEffect } from "react";
-import { motion, LayoutGroup } from "framer-motion";
+import { motion } from "framer-motion";
+import axios from "../../../../../Localhost/Custumize-axios";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { UilTimes } from "@iconscout/react-unicons";
-import Chart from "react-apexcharts";
-import axios from "axios";
 import "./CardUs.css";
 
 const CardUs = (props) => {
-  const [expanded, setExpanded] = useState(false);
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
+  const [percentage, setPercentage] = useState(0);
+
+  // Lấy idUser từ sessionStorage
+  const idUser = sessionStorage.getItem("id");
+
+  // Tìm kiếm idStore từ idUser và lưu vào sessionStorage
+  const findStoreByIdUser = async (idUser) => {
+    try {
+      const res = await axios.get(`searchStore/${idUser}`);
+      sessionStorage.setItem("idStore", res.data.id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (idUser) {
+      findStoreByIdUser(idUser);
+    }
+  }, [idUser]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        let response;
-        switch (props.title) {
-          case "Processing":
-            response = await axios.get("http://localhost:8080/order-us/count-store-processing");
-            break;
-          case "Shipped":
-            response = await axios.get("http://localhost:8080/order-us/count-store-shipped");
-            break;
-          case "Delivered":
-            response = await axios.get("http://localhost:8080/order-us/count-store-delivered");
-            break;
-          case "Cancelled":
-            response = await axios.get("http://localhost:8080/order-us/count-store-cancelled");
-            break;
-          case "Returned":
-            response = await axios.get("http://localhost:8080/order-us/count-store-returned");
-            break;
-          default:
-            return;
+        const idStore = sessionStorage.getItem("idStore");
+        if (idStore && props.title) {
+          const response = await axios.get(
+            `http://localhost:8080/order-us/count-orders/${idStore}?status=${props.title}`
+          );
+          const apiData = response.data;
+
+          if (Array.isArray(apiData)) {
+            setData(apiData);
+            const totalOrders = apiData.reduce(
+              (acc, item) => acc + (item.count || 0),
+              0
+            );
+            setTotal(totalOrders);
+          } else if (typeof apiData === "object" && apiData !== null) {
+            setData([apiData]);
+            const totalOrders = apiData.count || 0;
+            setTotal(totalOrders);
+          } else {
+            console.error(
+              "Dữ liệu trả về không phải là mảng hoặc đối tượng hợp lệ:",
+              apiData
+            );
+            setData([]);
+            setTotal(0);
+          }
+        } else {
+          // Đặt total thành 0 nếu không có idStore hoặc props.title
+          setData([]);
+          setTotal(0);
         }
-        const apiData = response.data;
-        setData(apiData);
-        const totalOrders = apiData.reduce((acc, item) => acc + (item.TotalOrders || 0), 0);
-        setTotal(totalOrders);
       } catch (error) {
         console.error(`Có lỗi xảy ra khi lấy dữ liệu ${props.title}:`, error);
+        // Đặt total thành 0 nếu có lỗi xảy ra
+        setData([]);
+        setTotal(0);
       }
     };
 
     fetchData();
   }, [props.title]);
 
-  return (
-    <LayoutGroup>
-      {expanded ? (
-        <ExpandedCard
-          param={props}
-          setExpanded={() => setExpanded(false)}
-          data={data}
-          total={total}
-        />
-      ) : (
-        <CompactCard
-          param={{ 
-            ...props, 
-            value: total.toLocaleString(),
-          }}
-          setExpanded={() => setExpanded(true)}
-        />
-      )}
-    </LayoutGroup>
-  );
-};
+  // Tính phần trăm dựa trên dữ liệu của thẻ
+  useEffect(() => {
+    if (total > 0) {
+      const totalCount = data.reduce((acc, item) => acc + (item.count || 0), 0);
+      setPercentage((total / totalCount) * 100);
+    } else {
+      // Đặt phần trăm thành 0 nếu total là 0
+      setPercentage(0);
+    }
+  }, [data, total]);
 
-function CompactCard({ param, setExpanded }) {
-  const Png = param.png;
   return (
     <motion.div
       className="CompactCard"
       style={{
-        background: param.color.backGround,
-        boxShadow: param.color.boxShadow,
+        background: props.color.backGround,
+        boxShadow: props.color.boxShadow,
       }}
-      onClick={setExpanded}
       layoutId="compactCard"
     >
       <div className="radialBar">
-        <CircularProgressbar
-          value={param.barValue}
-          text={`${param.barValue}%`}
-        />
-        <span>{param.title}</span>
+        <div className="circularProgress">
+          <CircularProgressbar
+            value={percentage}
+            text={`${Math.round(percentage)}%`}
+            styles={{
+              path: {
+                stroke: `rgba(62, 152, 199, ${percentage / 100})`,
+              },
+              text: {
+                fill: '#fff',
+                fontSize: '16px',
+              },
+            }}
+          />
+        </div>
+        <span>{props.title}</span>
       </div>
       <div className="detail">
-        <Png />
-        <span>Total: {param.value}</span>
+        <div className="icon">
+          <props.png />
+        </div>
+        <div className="text">
+          {total > 0 ? (
+            <span>Số lượng: {total.toLocaleString()}</span>
+          ) : (
+            <span>Số lượng: 0</span>
+          )}
+        </div>
       </div>
     </motion.div>
   );
-}
-
-function ExpandedCard({ param, setExpanded, data, total }) {
-  const chartOptions = {
-    chart: {
-      type: "bar",
-      height: "auto",
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "55%",
-        endingShape: "rounded",
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    xaxis: {
-      categories: data.map(item => item.nameStore), // Các nhãn cho trục X
-    },
-    fill: {
-      colors: ["#00E396"], // Màu của cột biểu đồ
-    },
-    tooltip: {
-      y: {
-        formatter: (val) => `${val} Orders`, // Hiển thị đơn vị cho tooltip
-      },
-    },
-  };
-
-  return (
-    <motion.div
-      className="ExpandedCard"
-      style={{
-        background: param.color.backGround,
-        boxShadow: param.color.boxShadow,
-      }}
-      layoutId="expandableCard"
-    >
-      <div style={{ alignSelf: "flex-end", cursor: "pointer", color: "white" }}>
-        <UilTimes onClick={setExpanded} />
-      </div>
-      <span>{param.title}</span>
-      <div className="chartContainer">
-        <Chart
-          series={[{
-            name: param.title,
-            data: data.map(item => item.TotalOrders), // Dữ liệu cho biểu đồ
-          }]}
-          type="bar"
-          options={chartOptions}
-        />
-      </div>
-      <div className="summary">
-        <span>{`Total ${param.title}: ${total.toLocaleString()}`}</span>
-      </div>
-    </motion.div>
-  );
-}
+};
 
 export default CardUs;

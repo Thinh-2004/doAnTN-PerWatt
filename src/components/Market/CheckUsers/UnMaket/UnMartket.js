@@ -30,64 +30,72 @@ const UnMatket = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (validate()) {
-      const id = toast.loading("Vui lòng chờ...");
+      const toastId = toast.loading("Vui lòng chờ...");
       try {
         const storeToSend = {
           ...formStore,
-          user : {
-            id : formStore.user,
+          user: {
+            id: formStore.user,
+          },
+        };
+        // Gửi yêu cầu POST đến backend
+        const response = await axios.post("store", storeToSend);
+
+        // Nếu yêu cầu thành công
+        toast.update(toastId, {
+          render: "Đăng ký kênh bán thành công",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
+        // Chuyển hướng đến trang profileMarket
+        changeLink("/profileMarket");
+      } catch (error) {
+        // Xử lý lỗi từ backend
+        if (error.response) {
+          if (error.response.status === 409) {
+            // Nếu mã trạng thái là 409 (Conflict)
+            toast.update(toastId, {
+              render: error.response.data || "Tên cửa hàng đã tồn tại!",
+              type: "error",
+              isLoading: false,
+              autoClose: 5000,
+              closeButton: true,
+            });
+          } else {
+            // Các mã trạng thái lỗi khác
+            toast.update(toastId, {
+              render: error.response.data.message || "Lỗi xảy ra",
+              type: "error",
+              isLoading: false,
+              autoClose: 5000,
+              closeButton: true,
+            });
           }
-        }
-        const res = await axios.post("store", storeToSend);
-        setTimeout(() => {
-          toast.update(id, {
-            render: "Đăng ký kênh bán thành công",
-            type: "success",
+          console.error("Lỗi từ backend: ", error.response.data);
+        } else if (error.request) {
+          // Nếu không có phản hồi từ máy chủ
+          toast.update(toastId, {
+            render: "Không có phản hồi từ máy chủ. Vui lòng thử lại sau.",
+            type: "error",
             isLoading: false,
             autoClose: 5000,
             closeButton: true,
           });
-          changeLink('/profileMarket')
-        }, 500);
-      } catch (error) {
-        setTimeout(() => {
-          if (error.response) {
-            // Xử lý lỗi phản hồi từ máy chủ
-            toast.update(id, {
-              render: "Lỗi đăng ký kênh bán",
-              type: "error",
-              isLoading: false,
-              autoClose: 5000,
-              closeButton: true,
-            });
-            console.log(
-              "Lỗi đăng ký kênh bán: " +
-                (error.response.data.message || "Có lỗi xảy ra")
-            );
-          } else if (error.request) {
-            // Xử lý không có phản hồi từ máy chủ
-            toast.update(id, {
-              render: "Không có phản hồi từ máy chủ. Vui lòng thử lại sau.",
-              type: "error",
-              isLoading: false,
-              autoClose: 5000,
-              closeButton: true,
-            });
-            console.log("Không có phản hồi từ máy chủ. Vui lòng thử lại sau.");
-          } else {
-            // Xử lý lỗi thiết lập yêu cầu
-            toast.update(id, {
-              render: "Đăng ký kênh bán thất bại",
-              type: "error",
-              isLoading: false,
-              autoClose: 5000,
-              closeButton: true,
-            });
-            console.log("Đăng ký kênh bán thất bại: " + error.message);
-          }
-        }, 500);
+          console.error("Không có phản hồi từ máy chủ.");
+        } else {
+          // Lỗi thiết lập yêu cầu
+          toast.update(toastId, {
+            render: "Đăng ký kênh bán thất bại",
+            type: "error",
+            isLoading: false,
+            autoClose: 5000,
+            closeButton: true,
+          });
+          console.error("Lỗi thiết lập yêu cầu: ", error.message);
+        }
       }
     }
   };

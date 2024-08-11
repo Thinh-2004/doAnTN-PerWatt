@@ -6,11 +6,13 @@ import axios from "../../../Localhost/Custumize-axios";
 import { Link } from "react-router-dom";
 import useSession from "../../../Session/useSession";
 import { format } from "date-fns";
+import { confirmAlert } from "react-confirm-alert";
 
 const Order = () => {
   const [fill, setFill] = useState([]);
   const [idUser] = useSession("id");
   const [activeTab, setActiveTab] = useState("pills-home");
+  const [isCancelButtonHidden, setIsCancelButtonHidden] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -30,17 +32,33 @@ const Order = () => {
     return format(date, "HH:mm:ss dd/MM/yyyy");
   };
 
-  const handleCancelOrder = async (orderId) => {
-    try {
-      await axios.put(`/order/${orderId}/status`, { status: "Hủy" });
-      setFill(
-        fill.map((order) =>
-          order.id === orderId ? { ...order, orderstatus: "Hủy" } : order
-        )
-      );
-    } catch (error) {
-      console.log(error);
-    }
+  const handleCancelOrder = (orderId) => {
+    confirmAlert({
+      title : "Hủy đơn hàng",
+      message : "Bạn có muốn hủy đơn không?",
+      buttons : [
+        {
+          label : "Có",
+          onClick : async () =>{
+            try {
+              await axios.put(`/order/${orderId}/status`, { status: "Hủy" });
+              setIsCancelButtonHidden(true);
+              setFill(
+                fill.map((order) =>
+                  order.id === orderId ? { ...order, orderstatus: "Hủy" } : order
+                )
+              );
+            } catch (error) {
+              console.log(error);
+            }
+          },
+        },
+        {
+          label : "Không"
+        }
+      ]
+    })
+    
   };
 
   const handleMarkAsReceived = async (orderId) => {
@@ -72,6 +90,7 @@ const Order = () => {
   return (
     <div>
       <Header />
+      <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
       <div className="container">
         <div className="card mt-3">
           <div className="card-body">
@@ -96,7 +115,7 @@ const Order = () => {
                 </button>
               </li>
               <li className="nav-item" role="presentation">
-<button
+                <button
                   className="nav-link"
                   id="pills-profile-tab"
                   data-bs-toggle="pill"
@@ -172,7 +191,7 @@ const Order = () => {
                       <div className="col-3">Ngày đặt hàng</div>
                       <div className="col-3">Phương thức thanh toán</div>
                       <div className="col-2">Chi tiết</div>
-<div className="col-2">Hành động</div>
+                      <div className="col-2">Hành động</div>
                     </div>
                   </div>
                 </div>
@@ -209,6 +228,7 @@ const Order = () => {
                                 <button
                                   className="btn btn-danger me-2"
                                   onClick={() => handleCancelOrder(order.id)}
+                                  style={{ display:  order.orderstatus === "Hủy" ? "none" : "inline" }}
                                 >
                                   Hủy
                                 </button>
@@ -241,7 +261,7 @@ const Order = () => {
                 <div className="card rounded-3 sticky-top" id="cartTitle">
                   <div className="card-body">
                     <div className="d-flex">
-<div className="col-3">Trạng thái</div>
+                      <div className="col-3">Trạng thái</div>
                       <div className="col-3">Ngày đặt hàng</div>
                       <div className="col-3">Phương thức thanh toán</div>
                       <div className="col-2">Chi tiết</div>
@@ -307,7 +327,7 @@ const Order = () => {
                     <div className="d-flex">
                       <div className="col-3">Trạng thái</div>
                       <div className="col-3">Ngày đặt hàng</div>
-<div className="col-3">Phương thức thanh toán</div>
+                      <div className="col-3">Phương thức thanh toán</div>
                       <div className="col-2">Chi tiết</div>
                       <div className="col-2">Hành động</div>
                     </div>
@@ -372,7 +392,7 @@ const Order = () => {
                       <div className="col-3">Trạng thái</div>
                       <div className="col-3">Ngày đặt hàng</div>
                       <div className="col-3">Phương thức thanh toán</div>
-<div className="col-3">Chi tiết</div>
+                      <div className="col-3">Chi tiết</div>
                     </div>
                   </div>
                 </div>
@@ -442,7 +462,7 @@ const Order = () => {
                       .map((order) => (
                         <div
                           className="card rounded-3 mt-3"
-id="cartItem"
+                          id="cartItem"
                           key={order.id}
                         >
                           <div className="card-body">
@@ -477,4 +497,4 @@ id="cartItem"
   );
 };
 
-export default Order; 
+export default Order;

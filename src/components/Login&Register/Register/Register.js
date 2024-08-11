@@ -62,7 +62,7 @@ const Register = () => {
         return false;
       }
 
-      if (!email) {
+      if (email === "") {
         toast.warning("Hãy nhập email");
         return false;
       } else if (!pattentEmail.test(email)) {
@@ -187,7 +187,7 @@ const Register = () => {
           </div>
           <div className="mb-3">
             <input
-              type="text"
+              type="email"
               name="email"
               value={formUser.email}
               onChange={handleChange}

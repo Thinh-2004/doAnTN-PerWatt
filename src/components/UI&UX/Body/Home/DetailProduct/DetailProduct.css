@@ -1,24 +1,30 @@
-#btn-children-img{
-    border: none;
-    background-color: white
+#btn-children-img {
+  border: none;
+  background-color: white;
 }
-#btn-children-img:hover{
-    border: none;
-    background-color: white
+#btn-children-img:hover {
+  border: none;
+  background-color: white;
 }
 #avt-store {
-    width: 90px; /* hoặc bất kỳ kích thước nào bạn muốn */
-    height: 90px; /* đảm bảo chiều cao và chiều rộng bằng nhau */
-    border-radius: 50%;
+  width: 120px; /* hoặc bất kỳ kích thước nào bạn muốn */
+  height: 70px; /* đảm bảo chiều cao và chiều rộng bằng nhau */
+  border-radius: 50%;
 }
-#description{
-    white-space: pre-wrap; /* Giữ lại các khoảng trắng và xuống dòng */
+#description {
+  white-space: pre-wrap; /* Giữ lại các khoảng trắng và xuống dòng */
 }
 #productName {
-    font-size: calc(16px + (24 - 16) * (100vw - 300px) / (1600 - 300)); /* Thu nhỏ cỡ chữ khi cần thiết */
-  }
+  font-size: calc(
+    16px + (24 - 16) * (100vw - 300px) / (1600 - 300)
+  ); /* Thu nhỏ cỡ chữ khi cần thiết */
+}
 
-  
-  
-  
-  
+#bg-sold-out {
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 5px;
+  margin: 2px;
+  width: 220px; /* Điều chỉnh kích thước phần tử cho phù hợp */
+  text-align: center;
+  z-index: 1; /* Đảm bảo rằng phần tử nằm trên các phần tử khác */
+}

@@ -38,6 +38,7 @@ const Cart = () => {
       await axios.delete(`/cartDelete/${id}`);
       const res = await axios.get(`/cart/${id}`);
       setFill(res.data);
+      window.location.reload();
     } catch (error) {
       console.error(error);
     }
@@ -54,6 +55,7 @@ const Cart = () => {
       setSelectedProductIds([]);
       setTotalPrice(0); // Reset tổng tiền
       setSelectAll(false); // Bỏ chọn checkbox "Chọn tất cả sản phẩm"
+      window.location.reload();
     } catch (error) {
       console.error("Error deleting selected products:", error);
     }
@@ -268,7 +270,7 @@ const Cart = () => {
                               {`${cart.product.productcategory.name}, ${cart.product.trademark.name}, ${cart.product.warranties.name}`}
                             </div>
                           </div>
-                          <div className="col-7 me-3">
+                          <div className="col-7 ">
                             <div className="d-flex mt-3" id="spinner">
                               <button
                                 className="btn border rounded-0 rounded-start"

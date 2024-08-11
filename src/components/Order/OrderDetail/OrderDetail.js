@@ -130,6 +130,7 @@ const OrderDetail = () => {
                 <hr />
                 <div className="d-flex">
                   <div className="col-6">
+                  <div>Họ và tên người nhận: {order.user.fullname}</div>
                     <div>Số điện thoại: {order.user.phone}</div>
                     <div>Địa chỉ giao hàng: {order.shippinginfor.address}</div>
                   </div>

@@ -4,6 +4,7 @@ import Header from "../../UI&UX/Header/Header";
 import Footer from "../../UI&UX/Footer/Footer";
 import axios from "../../../Localhost/Custumize-axios";
 import useSession from "../../../Session/useSession";
+import { toast } from "react-toastify";
 
 const PayBuyer = () => {
   const [products, setProducts] = useState([]);
@@ -12,6 +13,7 @@ const PayBuyer = () => {
   const [shippingInfo, setShippingInfo] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [selectedShippingInfo, setSelectedShippingInfo] = useState(null);
+  const [newAddress, setNewAddress] = useState(""); // New state for address
   const location = useLocation();
   const navigate = useNavigate();
   const query = new URLSearchParams(location.search);
@@ -24,7 +26,6 @@ const PayBuyer = () => {
   const getAvtUser = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
-
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
@@ -32,7 +33,6 @@ const PayBuyer = () => {
         if (cartIds) {
           const response = await axios.get(`/cart?id=${cartIds}`);
           setProducts(response.data);
-          console.log(response.data);
         }
         const paymentResponse = await axios.get("/paymentMethod");
         setPaymentMethods(paymentResponse.data);
@@ -75,11 +75,11 @@ const PayBuyer = () => {
   const handleOrder = async () => {
     try {
       if (!selectedPaymentMethod) {
-        alert("Vui lòng chọn phương thức thanh toán!");
+        toast.error("Vui lòng chọn phương thức thanh toán!");
         return;
       }
       if (!selectedShippingInfo) {
-        alert("Vui lòng chọn địa chỉ nhận hàng!");
+        toast.error("Vui lòng chọn địa chỉ nhận hàng!");
         return;
       }
 
@@ -87,7 +87,7 @@ const PayBuyer = () => {
       const storeId = storeIds.length > 0 ? storeIds[0] : null;
 
       if (!storeId) {
-        alert("Cửa hàng không hợp lệ!");
+        toast.error("Cửa hàng không hợp lệ!");
         return;
       }
 
@@ -96,7 +96,7 @@ const PayBuyer = () => {
         paymentmethod: { id: selectedPaymentMethod },
         shippinginfor: { id: selectedShippingInfo },
         fee: { id: 1 },
-store: { id: storeId },
+        store: { id: storeId },
         paymentdate: new Date().toISOString(),
         orderstatus: "Đang chờ duyệt",
       };
@@ -112,10 +112,30 @@ store: { id: storeId },
         orderDetails,
       });
 
-      alert("Đặt hàng thành công!");
+      toast.success("Đặt hàng thành công!");
       navigate("/order");
     } catch (error) {
-      alert("Đặt hàng thất bại!");
+      toast.error("Đặt hàng thất bại!");
+    }
+  };
+
+  const handleAddAddress = async () => {
+    try {
+      if (!newAddress.trim()) {
+        toast.warning("Vui lòng nhập địa chỉ!");
+        return;
+      }
+
+      const response = await axios.post("/shippingInfoCreate", {
+        address: newAddress,
+        user: { id: idUser },
+      });
+
+      setShippingInfo([...shippingInfo, response.data]);
+      setNewAddress("");
+      toast.success("Thêm địa chỉ thành công!");
+    } catch (error) {
+      toast.error("Thêm địa chỉ thất bại!");
     }
   };
 
@@ -174,7 +194,7 @@ store: { id: storeId },
                             </div>
                             <div className="col-2">
                               Số lượng: {cart.quantity}
-</div>
+                            </div>
                             <div className="col-4">
                               Thành tiền: {cart.product.price * cart.quantity}{" "}
                               VNĐ
@@ -206,18 +226,66 @@ store: { id: storeId },
               </select>
             </div>
             <div className="col-6">
-              <select
-                className="form-select"
-                value={selectedShippingInfo || ""}
-                onChange={(e) => setSelectedShippingInfo(e.target.value)}
-              >
-                <option value="">Chọn địa chỉ nhận hàng</option>
-                {shippingInfo.map((shipping) => (
-                  <option key={shipping.id} value={shipping.id}>
-                    {shipping.address}
-                  </option>
-                ))}
-              </select>
+              <div className="d-flex">
+                <select
+                  className="form-select me-2"
+                  value={selectedShippingInfo || ""}
+                  onChange={(e) => setSelectedShippingInfo(e.target.value)}
+                >
+                  <option value="">Chọn địa chỉ nhận hàng</option>
+                  {shippingInfo.map((shipping) => (
+                    <option key={shipping.id} value={shipping.id}>
+                      {shipping.address}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#exampleModal"
+                >
+                  Thêm
+                </button>
+              </div>
+            </div>
+            <div
+              className="modal fade"
+              id="exampleModal"
+              tabIndex="-1"
+              aria-labelledby="exampleModalLabel"
+              aria-hidden="true"
+            >
+              <div className="modal-dialog">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h1 className="modal-title fs-5" id="exampleModalLabel">
+                      Địa chỉ nhận hàng
+                    </h1>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div className="modal-body">
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newAddress}
+                      onChange={(e) => setNewAddress(e.target.value)}
+                      placeholder="Nhập địa chỉ mới"
+                    />
+                    <button
+                      className="btn btn-primary mt-3"
+                      onClick={handleAddAddress}
+                    >
+                      Thêm
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div className="card-body">

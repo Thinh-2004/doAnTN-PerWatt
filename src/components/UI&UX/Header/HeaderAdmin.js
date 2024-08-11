@@ -72,7 +72,7 @@ const HeaderAdmin = () => {
             <Link
               type="button"
               className="btn btn-icon position-relative rounded-4 me-3"
-              to={"/user"}
+              to={"/admin/info"}
             >
               Hồ sơ của tôi
             </Link> 
