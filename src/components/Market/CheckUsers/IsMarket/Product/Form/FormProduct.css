@@ -1,0 +1,57 @@
+#bg-upload-img {
+  width: 100%;
+  height: 340px;
+  padding: 10px 10px;
+}
+#bg-upload-img img {
+  width: 20%;
+  height: 25%;
+  margin: 10px 10px;
+}
+#remember {
+  font-size: 10px;
+  color: grey;
+}
+#btn-addProduct {
+  background-color: #00c7ff;
+  color: white;
+  transition: 0.5s;
+}
+#btn-addProduct:hover {
+  background-color: #00c7ff;
+  color: white;
+  transform: scale(1.08);
+  transition: 0.5s;
+}
+#btn-resetProduct {
+    background-color: #5bc0de;
+    color: white;
+  transition: 0.5s;
+}
+#btn-resetProduct:hover {
+    background-color: #5bc0de;
+    color: white;
+  transform: scale(1.08);
+  transition: 0.5s;
+}
+#btn-cancelProduct {
+  background-color: white;
+  border: 1px solid;
+  color: black;
+  transition: 0.5s;
+}
+#btn-cancelProduct:hover {
+  background-color: white;
+  color: black;
+  transform: scale(1.08);
+  
+  transition: 0.5s;
+}
+#btn-close{
+  transition: 0.5s;
+  }
+#btn-close:hover{
+background-color: red;
+transform: scale(1.08);
+transition: 0.5s;
+}

@@ -1,0 +1,89 @@
+#img {
+  height: 100px;
+  width: 100px;
+}
+
+#imgShop {
+  height: 30px;
+  width: 30px;
+}
+
+#checkBox {
+  cursor: pointer;
+  padding-bottom: 1px;
+  transition: 0.5s;
+}
+
+#checkBox:hover {
+  transform: scale(1.1);
+  transition: 0.5s;
+}
+
+#checkBox:active {
+  transform: scale(0.9);
+  transition: 0.1s;
+}
+
+#sticky-top {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 100px; /* Khoảng cách từ trên cùng của viewport */
+  margin-bottom: 16px;
+}
+
+#button {
+  transition: 0.5s;
+}
+
+#button:hover {
+  transform: scale(1.01);
+  transition: 0.5s;
+}
+
+#button:active {
+  transform: scale(0.98);
+  transition: 0.1s;
+}
+
+#cartItem {
+  transition: 0.5s;
+}
+
+#cartItem:hover {
+  box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.5s ease;
+}
+
+#fontSizeTitle{
+  font-size: 15px;
+}
+
+#fontSize{
+  font-size: 11px;
+  background-color: rgb(245, 245, 245);
+  padding: 5px;
+  border-radius: 10px;
+}
+
+#spinner{
+  margin-top: 30px;
+  margin-left: 150px;
+}
+#price{
+  margin-left: 150px;
+  font-size: 18px;
+}
+
+#hr{
+  margin: 12px;
+  margin-bottom: 0px;
+}
+
+.card {
+  border: none;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  transition: 1s;
+}

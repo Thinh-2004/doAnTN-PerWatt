@@ -1,19 +1,16 @@
-
-import './App.css';
-
-import Form from './components/Login&Register/Form';
-
-import {BrowserRouter, Route, Routes} from 'react-router-dom'
-import Home from './components/UI&UX/Body/Home/Home';
+import "./App.css";
+import { BrowserRouter } from "react-router-dom";
+import RouteUsers from "./RouteUsers/RouteUsers";
+import RouteAdmin from "./RouteAdmin/RouteAdmin";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
-   <BrowserRouter>
-    <Routes>
-      <Route path='/' element={ <Home></Home>}></Route>
-      <Route path='/login' element={<Form></Form>}></Route>
-    </Routes>
-   </BrowserRouter>
+    <BrowserRouter>
+    <ToastContainer />
+      <RouteAdmin></RouteAdmin>
+      <RouteUsers></RouteUsers>
+    </BrowserRouter>
   );
 }
 
