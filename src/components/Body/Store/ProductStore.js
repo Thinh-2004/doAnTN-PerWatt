@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import axios from "../../../../Localhost/Custumize-axios";
-import useDebounce from "../../../../CustumHook/useDebounce";
+import axios from "../../../Localhost/Custumize-axios";
+import useDebounce from "../../../CustumHook/useDebounce";
 import './StoreStyle.css'
 const ProductStore = ({ item }) => {
   const { idStore } = useParams();

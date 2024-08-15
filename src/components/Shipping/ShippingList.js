@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../Localhost/Custumize-axios";
-import Header from "../UI&UX/Header/Header";
-import Footer from "../UI&UX/Footer/Footer";
 import useSession from "../../Session/useSession";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min"; // Import Bootstrap JS
 
 const ShippingList = () => {
   const [shippingInfo, setShippingInfo] = useState([]);

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "./ProductItemStyle.css";
 import { Link } from "react-router-dom";
-import axios from "../../../../../Localhost/Custumize-axios";
+import axios from "../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
-import useDebounce from '../../../../../CustumHook/useDebounce'
+import useDebounce from '../../../../CustumHook/useDebounce'
 trefoil.register();
 
 const Product = ({ item, idCate }) => {
@@ -12,6 +12,7 @@ const Product = ({ item, idCate }) => {
    // Debounce item và idCate để tránh gọi API quá nhiều lần
    const debouncedItem = useDebounce(item);
    const debouncedIdCate = useDebounce(idCate);
+   const [countOrderBuyed, setCountOrderBuyed] = useState(0);
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -29,7 +30,17 @@ const Product = ({ item, idCate }) => {
       setLoading(true);
     }
   };
+  // const loadOrderBuyed = async (id) => {
+  //   try {
+  //     const res = await axios.get(`countOrderSucces/18`);
+  //     setCountOrderBuyed(res.data);
+  //     console.log(countOrderBuyed);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
   useEffect(() => {
+    // loadOrderBuyed(fillAllProduct.id);
     loadData();
   }, []);
   // Lọc sản phẩm theo từ khóa tìm kiếm và danh mục
@@ -122,7 +133,7 @@ const Product = ({ item, idCate }) => {
                       </label>
                     </div>
                     <div>
-                      <span htmlFor="">Đã bán: 0</span>
+                      <span htmlFor="">Đã bán: {countOrderBuyed}</span>
                     </div>
                   </div>
                 </div>

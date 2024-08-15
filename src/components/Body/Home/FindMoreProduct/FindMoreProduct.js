@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "../../../../../Localhost/Custumize-axios";
+import axios from "../../../../Localhost/Custumize-axios";
 import { Link } from "react-router-dom";
 
 const FindMoreProduct = ({ idClick, filterType }) => {

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
-import axios from "../../../../../Localhost/Custumize-axios";
+import axios from "../../../../Localhost/Custumize-axios";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import useSession from "../../../../../Session/useSession";
+import useSession from "../../../../Session/useSession";
 import Header from "../../../Header/Header";
 import "./DetailProduct.css";
 import FindMoreProduct from "../FindMoreProduct/FindMoreProduct";

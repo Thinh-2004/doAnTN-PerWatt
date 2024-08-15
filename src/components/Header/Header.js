@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import "./HeaderStyle.css";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import useSession from "../../../Session/useSession";
+import useSession from "../../Session/useSession";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { confirmAlert } from "react-confirm-alert"; // Import thư viện confirm-alert
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS cho confirm-alert
-import axios from "../../../Localhost/Custumize-axios";
+import axios from "../../Localhost/Custumize-axios";
 
 const Header = ({contextSearch}) => {
   const [search, setSearch] = useState("");
@@ -248,7 +248,7 @@ const Header = ({contextSearch}) => {
             <Link
               type="button"
               className="btn btn-icon btn-sm rounded-4 me-3"
-              to={"/login"}
+              to={""}
             >
               <i className="bi bi-bell fs-4"></i>
             </Link>

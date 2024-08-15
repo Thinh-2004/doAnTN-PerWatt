@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "../../../Localhost/Custumize-axios";
-import useSession from "../../../Session/useSession";
+import axios from "../../Localhost/Custumize-axios";
+import useSession from "../../Session/useSession";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 

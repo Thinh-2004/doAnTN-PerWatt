@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "../../Header/Header";
 import "./StoreStyle.css";
 import { useParams } from "react-router-dom";
-import axios from "../../../../Localhost/Custumize-axios";
+import axios from "../../../Localhost/Custumize-axios";
 import ProductStore from "./ProductStore";
 import  Footer  from "../../Footer/Footer";
 

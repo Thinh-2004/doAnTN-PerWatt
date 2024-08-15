@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./CartStyle.css";
-import Header from "../UI&UX/Header/Header";
-import Footer from "../UI&UX/Footer/Footer";
+import Header from "../Header/Header";
+import Footer from "../Footer/Footer";
 import { Link } from "react-router-dom";
 import axios from "../../Localhost/Custumize-axios";
 import useSession from "../../Session/useSession";

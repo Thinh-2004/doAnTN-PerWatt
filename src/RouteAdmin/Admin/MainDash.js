@@ -4,7 +4,7 @@ import "./MainDash.css";
 import CardsAmin from "./CardsAdmin";
 import TableAd from "./TableAd";
 import { Footer } from "antd/es/layout/layout";
-import HeaderAdmin from "../../components/UI&UX/Header/HeaderAdmin";
+import HeaderAdmin from "../../components/Header/HeaderAdmin";
 
 const MainDash = () => {
   return (

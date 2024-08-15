@@ -1,22 +1,23 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Home from "../components/UI&UX/Body/Home/Home";
+import Home from "../components/Body/Home/Home";
 import Form from "../components/Login&Register/Form";
 import Market from "../components/Market/Market";
 import IsMarket from "../components/Market/CheckUsers/IsMarket/IsMarket";
 import { ToastContainer } from "react-toastify";
-import DetailProduct from "../components/UI&UX/Body/Home/DetailProduct/DetailProduct";
+import DetailProduct from "../components/Body/Home/DetailProduct/DetailProduct";
 import CheckItemProduct from "../components/Market/CheckUsers/IsMarket/Product/CheckItemProduct/CheckItemProduct";
 import Cart from "../components/Cart/Cart";
 import ProfileUser from "../components/ProfileUser/ProfileUser";
 import ForgotPassword from "../components/ForgotPasswordUser/ForgotPassword";
 import OTP from "../components/ForgotPasswordUser/OTP";
 import ResetPassword from "../components/ForgotPasswordUser/ResetPassword";
-import Store from "../components/UI&UX/Body/Store/Store";
+import Store from "../components/Body/Store/Store";
 import Order from "../components/Order/OrderBuyer/OrderBuyer";
 import OrderDetail from "../components/Order/OrderDetail/OrderDetail";
 import PayBuyer from "../components/Order/PayBuyer/PayBuyer";
 import ShippingCreate from "../components/Shipping/ShippingCreate";
+import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification"
 
 const RouteUsers = (props) => {
   return (
@@ -53,6 +54,7 @@ const RouteUsers = (props) => {
         <Route path="/orderDetail/:id" element={<OrderDetail />} />
         <Route path="/shippingCreate" element={<ShippingCreate />} />
         
+        <Route path="/notifications" element={<NotificationCard></NotificationCard>}></Route>
         <Route path="*">404 Not Found</Route>
       </Routes>
       <ToastContainer />

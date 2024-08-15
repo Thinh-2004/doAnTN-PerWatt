@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import "./HeaderStyle.css";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import useSession from "../../../Session/useSession";
+import useSession from "../../Session/useSession";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-import axios from "../../../Localhost/Custumize-axios";
+import axios from "../../Localhost/Custumize-axios";
 
 const Header = () => {
   const geturlIMG = (idUser, filename) => {
@@ -16,8 +16,10 @@ const Header = () => {
   const [fullName, , removeFullName] = useSession("fullname");
   const [avatar, , removeAvatar] = useSession("avatar");
   const [id, , removeId] = useSession("id");
+  const [countOrder, setCountOrder] = useState(0);
   const [count, setCount] = useState(0);
   const changeLink = useNavigate();
+  const idSotre = sessionStorage.getItem("idStore");
 
   useEffect(() => {
     const count = async (id) => {
@@ -29,8 +31,18 @@ const Header = () => {
         console.log(error);
       }
     };
+    const countOrders = async (idStore) => {
+      try {
+        const res = await axios.get(`checkOrder/${idStore}`);
+        setCountOrder(res.data.length);
+        console.log(res.data.length);
+      } catch (error) {
+        console.log("Error fetching new orders:", error);
+      }
+    };
+    countOrders(idSotre);
     count(id);
-  }, [id]);
+  }, [id, idSotre]);
 
   const handleLogOut = () => {
     confirmAlert({
@@ -152,10 +164,13 @@ const Header = () => {
             </Link>
             <Link
               type="button"
-              className="btn btn-icon btn-sm rounded-4 me-3"
-              to={"/login"}
+              className="btn btn-icon btn-sm  position-relative rounded-4 me-3"
+              to={"/notifications"}
             >
               <i className="bi bi-bell fs-4"></i>
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {countOrder}
+              </span>
             </Link>
           </div>
           {fullName ? (
