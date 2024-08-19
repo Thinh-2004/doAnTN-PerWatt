@@ -3,65 +3,92 @@ import "./ProductItemStyle.css";
 import { Link } from "react-router-dom";
 import axios from "../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
-import useDebounce from '../../../../CustumHook/useDebounce'
+import useDebounce from "../../../../CustumHook/useDebounce";
 trefoil.register();
 
 const Product = ({ item, idCate }) => {
   const [fillAllProduct, setFillAllProduct] = useState([]);
   const [loading, setLoading] = useState(true);
-   // Debounce item và idCate để tránh gọi API quá nhiều lần
-   const debouncedItem = useDebounce(item);
-   const debouncedIdCate = useDebounce(idCate);
-   const [countOrderBuyed, setCountOrderBuyed] = useState(0);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const debouncedItem = useDebounce(item);
+  const debouncedIdCate = useDebounce(idCate);
+  const [countOrderBuyed, setCountOrderBuyed] = useState({}); // Lưu số lượng đã bán cho mỗi sản phẩm
+
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
+
   const formatPrice = (value) => {
     if (!value) return "";
-    return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
+    return Number(value).toLocaleString("vi-VN");
   };
+
   const loadData = async () => {
     try {
       const res = await axios.get("pageHome");
       setFillAllProduct(res.data);
       setLoading(false);
+      loadOrderBuyed(res.data); // Gọi loadOrderBuyed sau khi đã có dữ liệu sản phẩm
     } catch (error) {
       console.log(error);
       setLoading(true);
     }
   };
-  // const loadOrderBuyed = async (id) => {
-  //   try {
-  //     const res = await axios.get(`countOrderSucces/18`);
-  //     setCountOrderBuyed(res.data);
-  //     console.log(countOrderBuyed);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+
+  const loadOrderBuyed = async (products) => {
+    const orderCounts = {};
+    for (const product of products) {
+      try {
+        const res = await axios.get(`countOrderSuccess/${product.id}`);
+        orderCounts[product.id] = res.data;
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    setCountOrderBuyed(orderCounts);
+  };
+
   useEffect(() => {
-    // loadOrderBuyed(fillAllProduct.id);
     loadData();
   }, []);
-  // Lọc sản phẩm theo từ khóa tìm kiếm và danh mục
+
+  useEffect(() => {
+    setIsFiltering(true);
+    const timer = setTimeout(() => {
+      setIsFiltering(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [debouncedItem, debouncedIdCate]);
+
   const filterBySearchAndCategory = fillAllProduct.filter((product) => {
-    // Kiểm tra tìm kiếm
     const matchesSearch = debouncedItem
       ? product.name.toLowerCase().includes(debouncedItem.toLowerCase())
       : true;
 
-    // Kiểm tra danh mục
     const matchesCategory = debouncedIdCate
       ? product.productcategory.id === debouncedIdCate
       : true;
 
-    // Phải thỏa mãn cả hai tiêu chí
     return matchesSearch && matchesCategory;
   });
 
+  const formatCount = (count) => {
+    if (count >= 1000000) {
+      // Nếu số lượng lớn hơn hoặc bằng 1 triệu, chia cho 1 triệu và làm tròn đến 1 chữ số thập phân, sau đó thêm "tr".
+      return `${(count / 1000000).toFixed(1)}tr`;
+    } else if (count >= 1_000) {
+      // Nếu số lượng lớn hơn hoặc bằng 1 nghìn nhưng nhỏ hơn 1 triệu, chia cho 1 nghìn và làm tròn đến 1 chữ số thập phân, sau đó thêm "K".
+      return `${(count / 1000).toFixed(1)}K`;
+    } else {
+      // Nếu không thỏa các điều kiện, chuyển đổi số lượng thành chuỗi.
+      return count.toString();
+    }
+  };
+
   return (
     <>
-      {loading ? (
+      {loading || isFiltering ? (
         <l-trefoil
           size="40"
           stroke="4"
@@ -73,14 +100,17 @@ const Product = ({ item, idCate }) => {
       ) : filterBySearchAndCategory.length === 0 ? (
         <>
           <div className="d-flex justify-content-center">
-            <i className="bi bi-file-earmark-x" style={{ fontSize: "100px" }}></i>
+            <i
+              className="bi bi-file-earmark-x"
+              style={{ fontSize: "100px" }}
+            ></i>
           </div>
           <label className="text-center fs-4">
             Thông tin bạn tìm không tồn tại
           </label>
         </>
       ) : (
-        filterBySearchAndCategory.map((fill, index) => {
+        filterBySearchAndCategory.map((fill) => {
           const firstIMG = fill.images[0];
           return (
             <div className="col-lg-2 mt-3" key={fill.id}>
@@ -89,8 +119,10 @@ const Product = ({ item, idCate }) => {
                 style={{ width: "18rem;" }}
                 id="product-item"
               >
-               
-                <Link to={`/detailProduct/${fill.id}`} className="position-relative">
+                <Link
+                  to={`/detailProduct/${fill.id}`}
+                  className="position-relative"
+                >
                   <img
                     src={
                       firstIMG
@@ -101,7 +133,15 @@ const Product = ({ item, idCate }) => {
                     alt="..."
                     style={{ width: "200px", height: "150px" }}
                   />
-                  <div className="position-absolute top-0 start-50 translate-middle text-danger" id="bg-slod-out" style={{display : fill && fill.quantity === 0 ? "inline" : "none"}}><span className="text-white text-center">Hết hàng</span></div>
+                  <div
+                    className="position-absolute top-0 start-50 translate-middle text-danger"
+                    id="bg-slod-out"
+                    style={{
+                      display: fill && fill.quantity === 0 ? "inline" : "none",
+                    }}
+                  >
+                    <span className="text-white text-center">Hết hàng</span>
+                  </div>
                 </Link>
                 <div class="mt-2">
                   <span className="fw-bold fst-italic" id="product-name">
@@ -133,7 +173,9 @@ const Product = ({ item, idCate }) => {
                       </label>
                     </div>
                     <div>
-                      <span htmlFor="">Đã bán: {countOrderBuyed}</span>
+                      <span htmlFor="" style={{fontSize : "12px"}}>
+                        Đã bán: {formatCount(countOrderBuyed[fill.id]) || 0}
+                      </span>
                     </div>
                   </div>
                 </div>
