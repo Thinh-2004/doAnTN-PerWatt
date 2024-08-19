@@ -20,29 +20,49 @@ const DetailProduct = () => {
   const [idClick, setIdClick] = useState("");
   const [typeId, setTypeId] = useState("");
   const findMoreProductRef = useRef(null); // Tạo ref cho phần tử cần cuộn đến
+  const [countOrderBuyed, setCountOrderBuyed] = useState(0); // Lưu số lượng đã bán cho mỗi sản phẩm
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
   const geturlIMGStore = (userId, filename) => {
     return `${axios.defaults.baseURL}files/user/${userId}/${filename}`;
   };
+
   const loadProductDetail = async (id) => {
     try {
       const res = await axios.get(`product/${id}`);
       setFillDetailPr(res.data);
-
       if (res.data && res.data.store && res.data.store.id) {
         const storeRes = await axios.get(`/productStore/${res.data.store.id}`);
         setCountProductStore(storeRes.data.length);
+      }
+      if (res.data.id) {
+        const countBuyed = await axios.get(`countOrderSuccess/${res.data.id}`);
+        setCountOrderBuyed(countBuyed.data);
       }
     } catch (error) {
       console.log(error);
     }
   };
+
+  const formatCount = (count) => {
+    if (count >= 1000000) {
+      // Nếu số lượng lớn hơn hoặc bằng 1 triệu, chia cho 1 triệu và làm tròn đến 1 chữ số thập phân, sau đó thêm "tr".
+      return `${(count / 1000000).toFixed(1)}tr`;
+    } else if (count >= 1_000) {
+      // Nếu số lượng lớn hơn hoặc bằng 1 nghìn nhưng nhỏ hơn 1 triệu, chia cho 1 nghìn và làm tròn đến 1 chữ số thập phân, sau đó thêm "K".
+      return `${(count / 1000).toFixed(1)}K`;
+    } else {
+      // Nếu không thỏa các điều kiện, chuyển đổi số lượng thành chuỗi.
+      return count.toString();
+    }
+  };
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     loadProductDetail(id);
   }, [id]);
+
   // Theo dõi sự thay đổi của idClick và typeId để cuộn đến phần tử
   useEffect(() => {
     if (findMoreProductRef.current) {
@@ -137,7 +157,9 @@ const DetailProduct = () => {
                       : "none",
                 }}
               >
-                <span className="text-white" id="text-sold-out">Hết hàng</span>
+                <span className="text-white" id="text-sold-out">
+                  Hết hàng
+                </span>
               </div>
               <div className="carousel-inner">
                 {FillDetailPr &&
@@ -279,8 +301,8 @@ const DetailProduct = () => {
                 <span className="border-end"></span>
                 <div className="mx-2 mt-1">
                   <span htmlFor="">
-                    <strong htmlFor="">Đã bán</strong> :{" "}
-                    <label htmlFor="">10k</label>
+                    <strong htmlFor="">Đã bán</strong> :
+                    <label htmlFor="">{countOrderBuyed}</label>
                   </span>
                 </div>
               </div>
