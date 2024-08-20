@@ -1,6 +1,0 @@
-#img-change-avatar {
-  width: 40%;
-  height: 130px;
-  border-radius: 50%;
-  object-fit: cover; /* Đảm bảo hình ảnh không bị méo */
-}
