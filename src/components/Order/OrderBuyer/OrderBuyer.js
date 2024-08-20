@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./OrderStyle.css";
+<<<<<<< HEAD
 import Header from "../../Header/Header";
 import Footer from "../../Footer/Footer";
 import axios from "../../../Localhost/Custumize-axios";
@@ -18,6 +19,19 @@ const Order = () => {
     const load = async () => {
       try {
         const res = await axios.get(`orderFill/${idUser}`);
+=======
+import Header from "../../UI&UX/Header/Header";
+import Footer from "../../UI&UX/Footer/Footer";
+import axios from "../../../Localhost/Custumize-axios";
+
+const Order = () => {
+  const [fill, setFill] = useState([]);
+  const [orderProduct, setOrderProduct] = useState([]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await axios.get("order");
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
         setFill(res.data);
         console.log(res.data);
       } catch (error) {
@@ -25,6 +39,7 @@ const Order = () => {
       }
     };
     load();
+<<<<<<< HEAD
   }, [idUser]);
 
   const formatDate = (dateString) => {
@@ -85,16 +100,31 @@ const Order = () => {
         order.orderstatus === "Chờ giao hàng") ||
       (activeTab === "pills-cancelled" && order.orderstatus === "Hủy")
     );
+=======
+  }, []);
+
+  const loadOrderDetail = async (id) => {
+    try {
+      const res = await axios.get(`orderDetail/${id}`);
+      setOrderProduct(res.data);
+      console.log(res.data);
+    } catch (error) {}
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
   };
 
   return (
     <div>
+<<<<<<< HEAD
       <Header />
       <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
+=======
+      <Header></Header>
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
       <div className="container">
         <div className="card mt-3">
           <div className="card-body">
             <ul
+<<<<<<< HEAD
               className="nav nav-pills mb-3 sticky-top"
               id="pills-tab"
               role="tablist"
@@ -102,6 +132,15 @@ const Order = () => {
               <li className="nav-item" role="presentation">
                 <button
                   className="nav-link active"
+=======
+              class="nav nav-pills mb-3 sticky-top"
+              id="pills-tab"
+              role="tablist"
+            >
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link active"
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
                   id="pills-home-tab"
                   data-bs-toggle="pill"
                   data-bs-target="#pills-home"
@@ -109,14 +148,23 @@ const Order = () => {
                   role="tab"
                   aria-controls="pills-home"
                   aria-selected="true"
+<<<<<<< HEAD
                   onClick={() => setActiveTab("pills-home")}
+=======
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
                 >
                   Tất cả
                 </button>
               </li>
+<<<<<<< HEAD
               <li className="nav-item" role="presentation">
                 <button
                   className="nav-link"
+=======
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
                   id="pills-profile-tab"
                   data-bs-toggle="pill"
                   data-bs-target="#pills-profile"
@@ -124,6 +172,7 @@ const Order = () => {
                   role="tab"
                   aria-controls="pills-profile"
                   aria-selected="false"
+<<<<<<< HEAD
                   onClick={() => setActiveTab("pills-profile")}
                 >
                   Đang chờ duyệt
@@ -132,6 +181,15 @@ const Order = () => {
               <li className="nav-item" role="presentation">
                 <button
                   className="nav-link"
+=======
+                >
+                  Chờ thanh toán
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
                   id="pills-contact-tab"
                   data-bs-toggle="pill"
                   data-bs-target="#pills-contact"
@@ -139,11 +197,29 @@ const Order = () => {
                   role="tab"
                   aria-controls="pills-contact"
                   aria-selected="false"
+<<<<<<< HEAD
                   onClick={() => setActiveTab("pills-contact")}
+=======
+                >
+                  Vận chuyển
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="pills-123-tab"
+                  data-bs-toggle="pill"
+                  data-bs-target="#pills-12"
+                  type="button"
+                  role="tab"
+                  aria-controls="pills-12"
+                  aria-selected="false"
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
                 >
                   Chờ giao hàng
                 </button>
               </li>
+<<<<<<< HEAD
               <li className="nav-item" role="presentation">
                 <button
                   className="nav-link"
@@ -242,10 +318,65 @@ const Order = () => {
                                   Đã nhận hàng
                                 </button>
                               )}
+=======
+            </ul>
+            <div class="tab-content" id="pills-tabContent">
+              <div
+                class="tab-pane fade show active"
+                id="pills-home"
+                role="tabpanel"
+                aria-labelledby="pills-home-tab"
+                tabindex="0"
+              >
+                {/* đầu */}
+                {fill.map((order, index) => (
+                  <a href={`/orderDetail/${order.id}`} key={order.id}>
+                    <div className="card rounded-3 mb-3" id="cartItem">
+                      <div className="card-body">
+                        <div className="d-flex align-items-center">
+                          <input
+                            className="form-check-input mb-1"
+                            type="checkbox"
+                            id="checkBox"
+                          />
+                          <img
+                            src={order.user.avatar}
+                            id="imgShop"
+                            className="mx-3"
+                            alt="Shop Logo"
+                            style={{ height: "120%" }}
+                          />
+                          <h5 id="nameShop" className="mb-0">
+                            {order.store.namestore}
+                          </h5>
+                          <button className="btn btn-danger  ms-auto">
+                            Mua lại
+                          </button>
+                        </div>
+                        <hr />
+                        <div className="col-8">
+                          <div className="d-flex">
+                            <img
+                              src="https://imagor.owtg.one/unsafe/fit-in/1000x1000/filters:quality(100)/https://media-api-beta.thinkpro.vn/media/core/products/2022/12/23/lenovo-thinkpad-x1-carbon-gen-11-thinkpro-01.png"
+                              id="img"
+                            />
+                            <div className="col-8 mt-3">
+                              <div id="fontSizeTitle"></div>
+                              <div id="fontSize">
+                                i7 1365U, 16GB, 256GB, FHD+ Touch, Black,
+                                Outlet, Nhập khẩu
+                              </div>
+                            </div>
+                            <div className="col-8 mt-4">
+                              <h5 className="mt-3" id="price">
+                                Thành tiền: 1.000.000VNĐ{" "}
+                              </h5>
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
                             </div>
                           </div>
                         </div>
                       </div>
+<<<<<<< HEAD
                     ))
                   )}
                 </div>
@@ -488,11 +619,36 @@ const Order = () => {
                   )}
                 </div>
               </div>
+=======
+                    </div>
+                  </a>
+                ))}
+                {/* cuoi */}
+              </div>
+              <div
+                class="tab-pane fade"
+                id="pills-profile"
+                role="tabpanel"
+                aria-labelledby="pills-profile-tab"
+                tabindex="0"
+              ></div>
+              <div
+                class="tab-pane fade"
+                id="pills-12"
+                role="tabpanel"
+                aria-labelledby="pills-12"
+                tabindex="0"
+              ></div>
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
             </div>
           </div>
         </div>
       </div>
+<<<<<<< HEAD
       <Footer />
+=======
+      <Footer></Footer>
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
     </div>
   );
 };

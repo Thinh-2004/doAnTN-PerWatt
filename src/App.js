@@ -1,4 +1,5 @@
 import "./App.css";
+<<<<<<< HEAD
 import Form from "./components/Login&Register/Form";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./components/Body/Home/Home";
@@ -21,6 +22,15 @@ function App() {
           element={<ResetPassword></ResetPassword>}
         ></Route>
       </Routes>
+=======
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import RouterUsers from "./RouterUsers/RouterUsers";
+
+function App() {
+  return (
+    <BrowserRouter>
+        <RouterUsers></RouterUsers>
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
     </BrowserRouter>
   );
 }

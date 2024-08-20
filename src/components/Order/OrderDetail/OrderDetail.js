@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from "react";
+<<<<<<< HEAD
 import Header from "../../Header/Header";
 import Footer from "../../Footer/Footer";
+=======
+import Header from "../../UI&UX/Header/Header";
+import Footer from "../../UI&UX/Footer/Footer";
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
 import axios from "../../../Localhost/Custumize-axios";
 import { useParams } from "react-router-dom";
 
 const OrderDetail = () => {
+<<<<<<< HEAD
   const [orderDetails, setOrderDetails] = useState([]);
   const [groupedByStore, setGroupedByStore] = useState({});
   const { id } = useParams();
@@ -16,20 +22,33 @@ const OrderDetail = () => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
 
+=======
+  const [fill1, setFill1] = useState([]);
+
+  const { id } = useParams();
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
   useEffect(() => {
     const load = async () => {
       try {
         const res = await axios.get(`/orderDetail/${id}`);
+<<<<<<< HEAD
         setOrderDetails(res.data);
         const grouped = groupByStore(res.data);
         setGroupedByStore(grouped);
       } catch (error) {
         console.error(error);
+=======
+        setFill1(res.data);
+        console.log(res.data);
+      } catch (error) {
+        console.log(error);
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
       }
     };
     load();
   }, [id]);
 
+<<<<<<< HEAD
   const groupByStore = (details) => {
     return details.reduce((groups, detail) => {
       const storeId = detail.product.store.id;
@@ -49,6 +68,11 @@ const OrderDetail = () => {
   return (
     <div>
       <Header />
+=======
+  return (
+    <div>
+      <Header></Header>
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
       <div className="container">
         <div className="card mt-3">
           <div className="card-body">
@@ -57,6 +81,7 @@ const OrderDetail = () => {
             </a>
           </div>
         </div>
+<<<<<<< HEAD
 
         {Object.keys(groupedByStore).map((storeId) => {
           const storeProducts = groupedByStore[storeId];
@@ -155,6 +180,34 @@ const OrderDetail = () => {
         })}
       </div>
       <Footer />
+=======
+        {fill1.map((orderDetail, index) => (
+          <div className="card mt-3" id="cartItem" key={index}>
+            <div className="card-body">
+              <div className="col-8">
+                <div className="d-flex">
+                  <div className="col-8 mt-3">
+                    <div id="fontSizeTitle">{orderDetail.product.name}</div>
+                    <div id="fontSize">
+                      {orderDetail.product.productcategory.name +
+                        ", " +
+                        orderDetail.product.trademark.name +
+                        ", " +
+                        orderDetail.product.warranties.name}
+                    </div>
+                  </div>
+                  <div className="col-8 mx-3"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        <div className="card mt-3">
+          <div className="card-body text-end">Tổng cộng: 1.000.000VNĐ</div>
+        </div>
+      </div>
+      <Footer></Footer>
+>>>>>>> a4a2c76a2188eff27aed7a2ceb5503475a5fc9ca
     </div>
   );
 };
