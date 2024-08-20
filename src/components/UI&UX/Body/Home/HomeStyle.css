@@ -1,0 +1,49 @@
+#item-product  {
+    text-align: center; /* Center the content inside the div */
+    transition: transform 0.3s ease; /* Smooth transition for the scale effect */
+  }
+  
+  #item-product  a {
+    text-decoration: none;
+    color: #65676B;
+    border: 1px solid #65676B;
+    display: inline-block; /* Ensure the link behaves as a block for transform */
+    transition: 0.5s;
+  }
+  #item-product a img {
+   width: 100px;
+   height: 100px;
+   padding-top: 10px;
+  }
+  
+  #item-product a {
+    background-color: white;
+  }
+
+  #item-product a:hover {
+    transform: scale(1.08); /* Slightly scale up the div on hover */
+    z-index: 1; /* Ensure the scaled-up div is on top */
+    border-radius: 10px;    
+    
+    border: 1px solid;
+    transition: 0.1s;
+  }
+
+  #item-product div::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  #item-product div::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+
+  #item-product div::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  #item-product div::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }

@@ -1,0 +1,10 @@
+#product-item{
+    text-decoration: none;
+    transition: 0.5s;
+
+}
+#product-item:hover{
+    transform: scale(1.08); /* Slightly scale up the div on hover */
+    z-index: 1; /* Ensure the scaled-up div is on top */
+    transition: 0.5s;
+}

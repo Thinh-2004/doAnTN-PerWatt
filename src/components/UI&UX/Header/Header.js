@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from "react";
 import "./HeaderStyle.css";
 import { Link } from "react-router-dom";
@@ -27,15 +28,27 @@ const Header = () => {
       console.log(res.data);
     } catch (error) {}
   };
+=======
+import React from "react";
+import "./HeaderStyle.css";
+import { Link } from "react-router-dom";
+import "bootstrap-icons/font/bootstrap-icons.css";
+const Header = () => {
+>>>>>>> 7591cd823f2e0548846e9695ecac625e3538904d
   return (
     <div
       className="d-flex justify-content-between shadow sticky-top container-fluid"
       id="nav"
     >
       <div className="d-flex">
+<<<<<<< HEAD
         <Link   to={"/"}>
           <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
         
+=======
+        <Link>
+          <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
+>>>>>>> 7591cd823f2e0548846e9695ecac625e3538904d
         </Link>
         <div className="align-content-center">
           <form class="d-flex" role="search">
@@ -58,7 +71,11 @@ const Header = () => {
             <Link
               type="button"
               class="btn btn-icon position-relative rounded-4"
+<<<<<<< HEAD
               to={`/cart/1`}
+=======
+              to={""}
+>>>>>>> 7591cd823f2e0548846e9695ecac625e3538904d
             >
               <i class="bi bi-cart4 fs-4"></i>
               <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -66,11 +83,15 @@ const Header = () => {
                 <span class="visually-hidden">unread messages</span>
               </span>
             </Link>
+<<<<<<< HEAD
             <Link
               type="button"
               class="btn btn-icon btn-sm mx-3 rounded-4"
               to={"/order"}
             >
+=======
+            <Link type="button" class="btn btn-icon btn-sm mx-3 rounded-4 ">
+>>>>>>> 7591cd823f2e0548846e9695ecac625e3538904d
               <i class="bi bi-shop fs-4"></i>
             </Link>
             <Link

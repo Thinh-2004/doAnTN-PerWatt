@@ -8,7 +8,11 @@ import Footer from "../../Footer/Footer";
 
 const Home = () => {
   return (
+<<<<<<< HEAD
     <div>
+=======
+    <>
+>>>>>>> 7591cd823f2e0548846e9695ecac625e3538904d
       <Header></Header>
       <div className="container">
         <About></About>
@@ -20,7 +24,11 @@ const Home = () => {
         </div>
       </div>
       <Footer></Footer>
+<<<<<<< HEAD
     </div>
+=======
+    </>
+>>>>>>> 7591cd823f2e0548846e9695ecac625e3538904d
   );
 };
 

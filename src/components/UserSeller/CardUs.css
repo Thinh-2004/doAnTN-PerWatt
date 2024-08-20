@@ -1,0 +1,100 @@
+
+.CompactCard {
+  display: flex;
+  flex: 1;
+  height: 9rem !important; /* Corrected the spelling of !important */
+  border-radius: 0.7rem;
+  color: white;
+  position: relative;
+  cursor: pointer;
+  padding: 1rem;
+}
+.CompactCard:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thay đổi box-shadow khi hover */
+}
+
+
+/* radiabar */
+.radialBar{
+flex: 1;
+display: flex;
+flex-direction: column;
+justify-content: flex-end;
+gap: 1rem;
+}
+.CircularProgressbar{
+  width: 4rem !important;
+  overflow: visible;
+}
+.CircularProgressbar-path{
+  stroke: white!important;
+  stroke-width: 12px !important;
+  filter: drop-shadow(2px 4px 6px white );
+}
+
+.CircularProgressbar-trail{
+  display: none;
+}
+
+.CircularProgressbar-text{
+  fill: white !important;
+}
+
+.radialBar>span{
+  font-size: 17px;
+  font-weight: bold;
+}
+
+/* detail */
+.detail{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.detail>span :nth-child(2){
+font-size: 22px;
+font-weight: bold;
+}
+
+.detail>span :nth-child(3){
+  font-size: 12px;
+  }
+
+  .ExpandedCard {
+    position: fixed; /* Đổi từ 'absolute' sang 'fixed' để card luôn nằm trên cùng */
+    width: 60%;
+    height: 70vh;
+    z-index: 9;
+    left: 50%; /* Đặt lề trái ở giữa màn hình */
+    top: 50%; /* Đặt lề trên ở giữa màn hình */
+    transform: translate(-50%, -50%); /* Dịch chuyển card lên giữa màn hình */
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.8); /* Thêm nền mờ để làm nổi bật card */
+  }
+  
+
+  .ExpandedCard >span:nth-of-type(1){
+    color: white;
+    font-size: 26px;
+    font-weight: bold;
+    text-shadow: 0px 0px 15px white;
+  }
+
+  .ExpandedCard >span:nth-of-type(2){
+color: rgb(223, 222, 222);
+font-size: 16px;
+  }
+
+  .chartContainer{
+    width: 70%;
+  }
+
+
