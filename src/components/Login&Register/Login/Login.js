@@ -65,36 +65,6 @@ const Login = () => {
   };
 
   return (
-<<<<<<< HEAD
-    <>
-      <form onSubmit={handleSubmit} className="form-sign">
-        <h2 className="title">Đăng nhập</h2>
-        <p className="subject">Hãy đăng nhập để có trải nghiệm tốt nhất</p>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          className="form-control mb-3"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="********"
-          className="form-control mb-3"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Link to={"/forgotPass"} style={{ textDecoration: "none" }}>
-          Quên mật khẩu?
-        </Link>
-        <button type="submit" className="button">
-          Đăng nhập
-        </button>
-      </form>
-    </>
-=======
     <form action="#" className="form-sign">
       <h2 className="title">Đăng nhập</h2>
       <p className="subject">Hãy đăng nhập để có trải nghiệm tốt nhất</p>
@@ -117,7 +87,6 @@ const Login = () => {
         Đăng nhập
       </button>
     </form>
->>>>>>> 106a8bb4f3e93a38b0e99c7ee8efac1405c981cd
   );
 };
 
