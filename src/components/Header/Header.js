@@ -9,7 +9,7 @@ import { confirmAlert } from "react-confirm-alert"; // Import thư viện confir
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS cho confirm-alert
 import axios from "../../Localhost/Custumize-axios";
 
-const Header = ({contextSearch}) => {
+const Header = ({contextSearch, resetSearch}) => {
   const [search, setSearch] = useState("");
   const [fullName, removeFullName] = useSession("fullname");
   const [avatar, removeAvatar] = useSession("avatar");
@@ -32,6 +32,11 @@ const Header = ({contextSearch}) => {
     };
     count(id);
   }, [id]);
+  useEffect(() => {
+    if (resetSearch) {
+      setSearch(""); // Xóa nội dung thanh tìm kiếm
+    }
+  }, [resetSearch]);
 
   const handleLogOut = () => {
     confirmAlert({

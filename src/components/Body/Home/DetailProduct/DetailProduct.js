@@ -294,15 +294,15 @@ const DetailProduct = () => {
                 <span className="border-end"></span>
                 <div className="mx-2 mt-1">
                   <span htmlFor="">
-                    <strong htmlFor="">Số lượng đánh giá</strong> :{" "}
+                    <strong htmlFor="">Số lượng đánh giá: </strong> 
                     <label htmlFor="">999</label>
                   </span>
                 </div>
                 <span className="border-end"></span>
                 <div className="mx-2 mt-1">
                   <span htmlFor="">
-                    <strong htmlFor="">Đã bán</strong> :
-                    <label htmlFor="">{countOrderBuyed}</label>
+                    <strong htmlFor="">Đã bán: </strong>
+                    <label htmlFor=""> {countOrderBuyed || 0}</label>
                   </span>
                 </div>
               </div>

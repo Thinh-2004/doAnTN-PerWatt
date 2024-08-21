@@ -6,14 +6,13 @@ import { trefoil } from "ldrs";
 import useDebounce from "../../../../CustumHook/useDebounce";
 trefoil.register();
 
-const Product = ({ item, idCate }) => {
+const Product = ({ item, idCate, handleReset }) => {
   const [fillAllProduct, setFillAllProduct] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isFiltering, setIsFiltering] = useState(false);
-  const debouncedItem = useDebounce(item);
-  const debouncedIdCate = useDebounce(idCate);
+  const [loading, setLoading] = useState(true); //đặt trang thái khi call API
+  const [isFiltering, setIsFiltering] = useState(false); //Đặt trang thái khi có sự thay đổi tìm kiếm
+  const debouncedItem = useDebounce(item); //Ngăn chặn call API liên tục
+  const debouncedIdCate = useDebounce(idCate); //Ngăn chặn call API liên tục
   const [countOrderBuyed, setCountOrderBuyed] = useState({}); // Lưu số lượng đã bán cho mỗi sản phẩm
-
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -88,6 +87,15 @@ const Product = ({ item, idCate }) => {
 
   return (
     <>
+      {debouncedItem || debouncedIdCate ? (
+        <div
+          onClick={handleReset}
+          className="text-primary"
+          style={{ cursor: "pointer" }}
+        >
+          <i class="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm
+        </div>
+      ) : null}
       {loading || isFiltering ? (
         <l-trefoil
           size="40"
@@ -121,7 +129,8 @@ const Product = ({ item, idCate }) => {
               >
                 <Link
                   to={`/detailProduct/${fill.id}`}
-                  className="position-relative"
+                  className="position-relative d-flex justify-content-center"
+                  style={{ height: "50%" }}
                 >
                   <img
                     src={
@@ -129,9 +138,8 @@ const Product = ({ item, idCate }) => {
                         ? geturlIMG(fill.id, firstIMG.imagename)
                         : "/images/no_img.png"
                     }
-                    className="card-img-top img-fluid rounded-4"
+                    className="img-fluid rounded-4"
                     alt="..."
-                    style={{ width: "200px", height: "150px" }}
                   />
                   <div
                     className="position-absolute top-0 start-50 translate-middle text-danger"
@@ -143,7 +151,7 @@ const Product = ({ item, idCate }) => {
                     <span className="text-white text-center">Hết hàng</span>
                   </div>
                 </Link>
-                <div class="mt-2">
+                <div className="mt-2 flex-grow-1">
                   <span className="fw-bold fst-italic" id="product-name">
                     {fill.name}
                   </span>
@@ -154,29 +162,29 @@ const Product = ({ item, idCate }) => {
                     </span>
                   </h5>
                   <hr />
-                  <div className="d-flex justify-content-between">
-                    <div>
-                      <label htmlFor="" className="text-warning">
-                        <i class="bi bi-star-fill"></i>
-                      </label>
-                      <label htmlFor="" className="text-warning">
-                        <i class="bi bi-star-fill"></i>
-                      </label>
-                      <label htmlFor="" className="text-warning">
-                        <i class="bi bi-star-fill"></i>
-                      </label>
-                      <label htmlFor="" className="text-warning">
-                        <i class="bi bi-star-fill"></i>
-                      </label>
-                      <label htmlFor="" className="text-warning">
-                        <i class="bi bi-star-fill"></i>
-                      </label>
-                    </div>
-                    <div>
-                      <span htmlFor="" style={{fontSize : "12px"}}>
-                        Đã bán: {formatCount(countOrderBuyed[fill.id]) || 0}
-                      </span>
-                    </div>
+                </div>
+                <div className="d-flex justify-content-between">
+                  <div>
+                    <label htmlFor="" className="text-warning">
+                      <i className="bi bi-star-fill"></i>
+                    </label>
+                    <label htmlFor="" className="text-warning">
+                      <i className="bi bi-star-fill"></i>
+                    </label>
+                    <label htmlFor="" className="text-warning">
+                      <i className="bi bi-star-fill"></i>
+                    </label>
+                    <label htmlFor="" className="text-warning">
+                      <i className="bi bi-star-fill"></i>
+                    </label>
+                    <label htmlFor="" className="text-warning">
+                      <i className="bi bi-star-fill"></i>
+                    </label>
+                  </div>
+                  <div>
+                    <span htmlFor="" style={{ fontSize: "12px" }}>
+                      Đã bán: {formatCount(countOrderBuyed[fill.id]) || 0}
+                    </span>
                   </div>
                 </div>
               </div>
