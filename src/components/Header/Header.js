@@ -9,7 +9,7 @@ import { confirmAlert } from "react-confirm-alert"; // Import thư viện confir
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS cho confirm-alert
 import axios from "../../Localhost/Custumize-axios";
 
-const Header = ({contextSearch, resetSearch}) => {
+const Header = ({ contextSearch, resetSearch }) => {
   const [search, setSearch] = useState("");
   const [fullName, removeFullName] = useSession("fullname");
   const [avatar, removeAvatar] = useSession("avatar");
@@ -95,6 +95,7 @@ const Header = ({contextSearch, resetSearch}) => {
       }
       setSearch(transcript);
       contextSearch(transcript); // đặt dữ liệu tìm kiếm lên thằng cha
+      recognition.stop(); // Dừng ghi âm sau khi nhận diện xong
     };
 
     recognition.onerror = (event) => {
@@ -102,10 +103,12 @@ const Header = ({contextSearch, resetSearch}) => {
     };
     recognition.start();
   };
-  const handleTextSearch = (e) =>{
+
+
+  const handleTextSearch = (e) => {
     setSearch(e.target.value);
     contextSearch(e.target.value);
-  }
+  };
 
   const CallAPICheckUserId = async (id) => {
     try {
@@ -199,25 +202,29 @@ const Header = ({contextSearch, resetSearch}) => {
   };
 
   return (
-    <div
-      className="d-flex justify-content-between shadow sticky-top container-fluid"
-      id="nav"
-    >
-      <div className="d-flex">
-        <Link to={"/"}>
-          <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
-        </Link>
-        <div className="align-content-center"  hidden={window.location.pathname !== "/"}>
+    <div className=" container-fluid sticky-top">
+      <div
+        className="row align-items-center justify-content-between shadow "
+        id="nav"
+      >
+        <div className="col-auto">
+          <Link to={"/"}>
+            <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
+          </Link>
+        </div>
+        <div
+          className="col-auto flex-grow-1"
+          hidden={window.location.pathname !== "/"}
+        >
           <form className="d-flex" role="search">
             <input
               className="form-control rounded-start-4"
               type="search"
               placeholder="Bạn cần tìm gì"
               aria-label="Search"
-              style={{ width: "400px" }}
+              style={{width : "auto"}}
               value={search}
               onChange={handleTextSearch}
-             
             />
             <button
               type="button"
@@ -228,10 +235,8 @@ const Header = ({contextSearch, resetSearch}) => {
             </button>
           </form>
         </div>
-      </div>
-      <div className="align-content-center m-3">
-        <div className="d-flex">
-          <div className="mx-4 border-end">
+        <div className="col-auto">
+          <div className="d-flex align-content-center m-3">
             <Link
               type="button"
               className="btn btn-icon position-relative rounded-4"
@@ -257,62 +262,62 @@ const Header = ({contextSearch, resetSearch}) => {
             >
               <i className="bi bi-bell fs-4"></i>
             </Link>
-          </div>
-          {fullName ? (
-            <div className="d-flex justify-content-center align-items-center mt-2 ">
-              <div className="dropdown">
-                <button
-                  className="p-1 btn btn-lg d-flex p-0 align-items-center dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                  id="btn-sessionUser"
-                >
-                  <img
-                    src={geturlIMG(id,avatar)}
-                    alt=""
-                    className="rounded-circle img-fluid"
-                    style={{ width: "30px", height: "30px" }}
-                  />
-                  <span className="ms-2">{fullName}</span>
-                </button>
-                <ul className="dropdown-menu">
-                  <li>
-                    <Link className="dropdown-item" to={"/user"}>
-                      Hồ sơ của tôi
-                    </Link>
-                  </li>
-                  <li>
-                    <hr className="p-0 m-2" />
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" onClick={handleLogOut}>
-                      Đăng xuất
-                    </Link>
-                  </li>
-                </ul>
+            {fullName ? (
+              <div className="d-flex justify-content-center align-items-center mt-2 ">
+                <div className="dropdown">
+                  <button
+                    className="p-1 btn btn-lg d-flex p-0 align-items-center dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    id="btn-sessionUser"
+                  >
+                    <img
+                      src={geturlIMG(id, avatar)}
+                      alt=""
+                      className="rounded-circle img-fluid"
+                      style={{ width: "30px", height: "30px" }}
+                    />
+                    <span className="ms-2">{fullName}</span>
+                  </button>
+                  <ul className="dropdown-menu">
+                    <li>
+                      <Link className="dropdown-item" to={"/user"}>
+                        Hồ sơ của tôi
+                      </Link>
+                    </li>
+                    <li>
+                      <hr className="p-0 m-2" />
+                    </li>
+                    <li>
+                      <Link className="dropdown-item text-danger" onClick={handleLogOut}>
+                        Đăng xuất
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="mt-2">
-              <Link
-                type="button"
-                className="btn btn-register btn-sm me-3"
-                to={"/login"}
-                style={{ width: "90px", height: "30px" }}
-              >
-                Đăng ký
-              </Link>
-              <Link
-                type="button"
-                className="btn btn-login btn-sm"
-                to={"/login"}
-                style={{ width: "95px", height: "30px" }}
-              >
-                Đăng nhập
-              </Link>
-            </div>
-          )}
+            ) : (
+              <div className="mt-2">
+                <Link
+                  type="button"
+                  className="btn btn-register btn-sm me-3"
+                  to={"/login"}
+                  style={{ width: "90px", height: "30px" }}
+                >
+                  Đăng ký
+                </Link>
+                <Link
+                  type="button"
+                  className="btn btn-login btn-sm"
+                  to={"/login"}
+                  style={{ width: "95px", height: "30px" }}
+                >
+                  Đăng nhập
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

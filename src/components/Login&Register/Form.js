@@ -10,7 +10,7 @@ const Form = () => {
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       <div
         id="main"
-        className={`container-login ${isSignUp ? "right-panel-active" : ""}`}
+        className={`container-login ${isSignUp ? "right-panel-active" : ""} shadow`}
       >
         <div className="row">
           <div className="col sign-up">

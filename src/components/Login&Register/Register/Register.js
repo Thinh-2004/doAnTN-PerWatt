@@ -1,6 +1,15 @@
+import {
+  FormControl,
+  IconButton,
+  Input,
+  InputAdornment,
+  InputLabel,
+  TextField,
+} from "@mui/material";
 import axios from "../../../Localhost/Custumize-axios";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const Register = () => {
   const [formUser, setFormUser] = useState({
@@ -13,6 +22,10 @@ const Register = () => {
     address: "",
     phone: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfig, setShowPasswordConfig] = React.useState(false);
+  const [isFocusedPass, setIsFocusedPass] = useState(false);
+  const [isFocusedPassCofig, setIsFocusedPassCofig] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -83,7 +96,7 @@ const Register = () => {
         const birthDate = new Date(birthdate);
         const age = today.getFullYear() - birthDate.getFullYear();
         if (birthDate > today) {
-          toast.warning("Ngày sinh không thể lớn hơn ngày hiện tại");
+          toast.warning("Ngày sinh không thể lớn hơn hoặc bằng ngày hiện tại");
           return false;
         } else if (age > 100 || age === 100) {
           toast.warning("Tuổi không hợp lệ");
@@ -167,33 +180,60 @@ const Register = () => {
     }
   };
 
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleClickShowPasswordConfig = () =>
+    setShowPasswordConfig((show) => !show);
+
+  const handleMouseDownPasswordConfig = (event) => {
+    event.preventDefault();
+  };
   return (
     <form onSubmit={handleRegister} className="form-sign">
       <h2 className="title">Đăng Ký</h2>
-      <p className="subject">
-        Hãy điền đầy đủ các thông tin trên để trải nghiệm dịch vụ của chúng tôi
-      </p>
       <div className="row">
         <div className="col-lg-12">
           <div className="mb-3">
-            <input
+            <TextField
+              fullWidth
+              name="fullname"
+              value={formUser.fullname}
+              onChange={handleChange}
+              id="standard-basic"
+              label="Nhập họ tên"
+              variant="standard"
+            />
+            {/* <input
               type="text"
               name="fullname"
               value={formUser.fullname}
               onChange={handleChange}
               placeholder="Nhập họ và tên"
               className="form-control"
-            />
+            /> */}
           </div>
           <div className="mb-3">
-            <input
+            <TextField
+              fullWidth
+              name="email"
+              value={formUser.email}
+              onChange={handleChange}
+              id="standard-basic"
+              label="Nhập email"
+              variant="standard"
+            />
+            {/* <input
               type="text"
               name="email"
               value={formUser.email}
               onChange={handleChange}
               placeholder="Email"
               className="form-control"
-            />
+            /> */}
           </div>
           <div className="d-flex justify-content-start">
             <div>
@@ -236,51 +276,127 @@ const Register = () => {
             />
           </div>
           <div className="mb-3">
-            <input
+            <TextField
+              fullWidth
+              name="phone"
+              value={formUser.phone}
+              onChange={handleChange}
+              label="Nhập số điện thoại"
+              variant="standard"
+            />
+            {/* <input
               type="text"
               name="phone"
               value={formUser.phone}
               onChange={handleChange}
               placeholder="Nhập số điện thoại"
               className="form-control"
-            />
+            /> */}
           </div>
         </div>
         <div className="col-lg-12">
           <div className="row">
             <div className="col-lg-6">
               <div className="mb-3">
-                <input
+                <FormControl sx={{ m: 1 }} variant="standard" fullWidth>
+                  <InputLabel htmlFor="standard-adornment-password">
+                    Nhập mật khẩu
+                  </InputLabel>
+                  <Input
+                    name="password"
+                    value={formUser.password}
+                    onChange={handleChange}
+                    id="standard-adornment-password"
+                    type={showPassword ? "text" : "password"}
+                    onFocus={() => setIsFocusedPass(true)}
+                    onBlur={() => setIsFocusedPass(false)}
+                    endAdornment={
+                      isFocusedPass && (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  />
+                </FormControl>
+                {/* <input
                   type="password"
                   name="password"
                   value={formUser.password}
                   onChange={handleChange}
                   placeholder="Mật khẩu"
                   className="form-control"
-                />
+                /> */}
               </div>
             </div>
             <div className="col-lg-6">
               <div className="mb-3">
-                <input
+                <FormControl sx={{ m: 1 }} variant="standard" fullWidth>
+                  <InputLabel htmlFor="standard-adornment-password">
+                    Xác thực mật khẩu
+                  </InputLabel>
+                  <Input
+                    onChange={handleChange}
+                    value={formUser.configPassWord}
+                    name="configPassWord"
+                    id="standard-adornment-password"
+                    type={showPasswordConfig ? "text" : "password"}
+                    onFocus={() => setIsFocusedPassCofig(true)}
+                    onBlur={() => setIsFocusedPassCofig(false)}
+                    endAdornment={
+                      isFocusedPassCofig && (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPasswordConfig}
+                            onMouseDown={handleMouseDownPasswordConfig}
+                          >
+                            {showPasswordConfig ? (
+                              <VisibilityOff />
+                            ) : (
+                              <Visibility />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  />
+                </FormControl>
+                {/* <input
                   type="password"
                   onChange={handleChange}
                   value={formUser.configPassWord}
                   name="configPassWord"
                   placeholder="Nhập lại mk"
                   className="form-control mb-3"
-                />
+                /> */}
               </div>
             </div>
           </div>
           <div className="mb-3">
-            <textarea
+            <TextField
+              fullWidth
+              name="address"
+              value={formUser.address}
+              onChange={handleChange}
+              id="outlined-multiline-static"
+              label="Nhập địa chỉ của bạn"
+              multiline
+              rows={2}
+            />
+            {/* <textarea
               name="address"
               value={formUser.address}
               onChange={handleChange}
               className="form-control"
               placeholder="Nhập địa chỉ của bạn"
-            ></textarea>
+            ></textarea> */}
           </div>
         </div>
       </div>

@@ -1,14 +1,23 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "../../../Localhost/Custumize-axios";
-import useSession from "../../../Session/useSession";
+import {
+  FormControl,
+  IconButton,
+  Input,
+  InputAdornment,
+  InputLabel,
+  TextField,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+  const [showPassword, setShowPassword] = React.useState(false);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -64,12 +73,57 @@ const Login = () => {
     return true;
   };
 
+ 
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
   return (
     <>
       <form onSubmit={handleSubmit} className="form-sign">
         <h2 className="title">Đăng nhập</h2>
-        <p className="subject">Hãy đăng nhập để có trải nghiệm tốt nhất</p>
-        <input
+        <p className="subject">Hãy đăng nhập để có trải nghiệm dịch vụ tốt nhất!!!</p>
+        <TextField
+          fullWidth
+          className="mb-3"
+          id="standard-basic"
+          label="Nhập email"
+          variant="standard"
+          name="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <FormControl
+          sx={{ m: 1, width: "100%" }}
+          variant="standard"
+          className="mb-3"
+        >
+          <InputLabel htmlFor="standard-adornment-password">
+            Nhập mật khẩu
+          </InputLabel>
+          <Input
+            id="standard-adornment-password"
+            type={showPassword ? "text" : "password"}
+            name="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleClickShowPassword}
+                  onMouseDown={handleMouseDownPassword}
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        </FormControl>
+        {/* <input
           type="email"
           name="email"
           placeholder="Email"
@@ -84,7 +138,7 @@ const Login = () => {
           className="form-control mb-3"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-        />
+        /> */}
         <Link to={"/forgotPass"} style={{ textDecoration: "none" }}>
           Quên mật khẩu?
         </Link>
