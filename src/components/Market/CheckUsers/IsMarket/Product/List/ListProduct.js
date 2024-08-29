@@ -21,7 +21,7 @@ const ListProduct = () => {
     if (!value) return "";
     return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
   };
-  const loadData = async (idStore) => {
+  const loadData = async () => {
     try {
       const res = await axios.get(`/productStore/${idStore}`);
       setFill(res.data);
@@ -32,8 +32,8 @@ const ListProduct = () => {
     }
   };
   useEffect(() => {
-    loadData(idStore);
-  }, [idStore]);
+    loadData();
+  }, []);
 
   const handleSubmitDelete = (idPr) => {
     confirmAlert({
@@ -102,9 +102,10 @@ const ListProduct = () => {
               <div className="mt-4">
                 <l-bouncy size="60" speed="0.75" color="black"></l-bouncy>
               </div>
+            ) : fill.length === 0 ? (
+              <h1>Bạn chưa đăng bán sản phẩm</h1>
             ) : (
               <>
-                {" "}
                 <tbody>
                   {fill.map((fill) => {
                     const firstIMG = fill.images[0];

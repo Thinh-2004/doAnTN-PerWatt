@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
 import useDebounce from "../../../CustumHook/useDebounce";
-import './StoreStyle.css'
+import "./StoreStyle.css";
 const ProductStore = ({ item }) => {
   const { idStore } = useParams();
   const [fill, setFill] = useState([]);
@@ -18,7 +18,7 @@ const ProductStore = ({ item }) => {
     }
   };
   useEffect(() => {
-    window.scrollTo({top : 0, behavior : "smooth"});
+    window.scrollTo({ top: 0, behavior: "smooth" });
     loadData(idStore);
   }, [idStore]);
   const geturlIMG = (productId, filename) => {
@@ -56,10 +56,10 @@ const ProductStore = ({ item }) => {
           {filterSearchByText.map((fill, index) => {
             const firstIMG = fill.images[0];
             return (
-              <div className="col-lg-2 mt-3" key={fill.id}>
+              <div className="col-lg-2 col-md-2 col-sm-2 mt-3" key={fill.id}>
                 <div
-                  className="card shadow rounded-4 mt-4 p-2"
-                  style={{ width: "18rem;" }}
+                  className="card shadow rounded-4 mt-4 p-2 d-flex flex-column"
+                  style={{height: "100%" }} // Đảm bảo chiều cao tự điều chỉnh
                   id="product-item"
                 >
                   <Link to={`/detailProduct/${fill.id}`}>
@@ -74,7 +74,8 @@ const ProductStore = ({ item }) => {
                       style={{ width: "200px", height: "150px" }}
                     />
                   </Link>
-                  <div class="mt-2">
+                  <div className="mt-2 flex-grow-1 d-flex flex-column justify-content-between">
+                    {/* Thêm flex-grow-1 */}
                     <span className="fw-bold fst-italic" id="product-name">
                       {fill.name}
                     </span>
@@ -91,19 +92,19 @@ const ProductStore = ({ item }) => {
                     <div className="d-flex justify-content-between">
                       <div>
                         <label htmlFor="" className="text-warning">
-                          <i class="bi bi-star-fill"></i>
+                          <i className="bi bi-star-fill"></i>
                         </label>
                         <label htmlFor="" className="text-warning">
-                          <i class="bi bi-star-fill"></i>
+                          <i className="bi bi-star-fill"></i>
                         </label>
                         <label htmlFor="" className="text-warning">
-                          <i class="bi bi-star-fill"></i>
+                          <i className="bi bi-star-fill"></i>
                         </label>
                         <label htmlFor="" className="text-warning">
-                          <i class="bi bi-star-fill"></i>
+                          <i className="bi bi-star-fill"></i>
                         </label>
                         <label htmlFor="" className="text-warning">
-                          <i class="bi bi-star-fill"></i>
+                          <i className="bi bi-star-fill"></i>
                         </label>
                       </div>
                       <div>

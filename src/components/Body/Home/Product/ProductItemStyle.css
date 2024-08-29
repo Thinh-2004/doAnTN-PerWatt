@@ -1,10 +1,12 @@
-#product-item{
+#home-product-item{
     text-decoration: none;
     transition: 0.5s;
     height: 300px;
+    margin-left: 5px;
+    margin-right: 5px;
 
 }
-#product-item:hover{
+#home-product-item:hover{
     transform: scale(1.02); /* Slightly scale up the div on hover */
     z-index: 1; /* Ensure the scaled-up div is on top */
     transition: 0.5s;
@@ -20,7 +22,7 @@
   #price-product del , #price-product-item{
     font-size: 12px;
   }
-#bg-slod-out{
+#bg-sold-out{
   background-color: rgba(0, 0, 0, 0.8);
   padding: 5px;
   margin: 2px;

@@ -2,17 +2,23 @@ import React, { useEffect, useState } from "react";
 import axios from "../../../../Localhost/Custumize-axios";
 import { Link } from "react-router-dom";
 import "./About.css";
+import { dotWave } from "ldrs";
+
+dotWave.register();
 
 const About = ({ idCategory }) => {
   const [fill, setFill] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
         const res = await axios.get("category/hot");
         setFill(res.data);
+        setLoading(true);
       } catch (error) {
         console.log(error);
+        setLoading(false);
       }
     };
     load();
@@ -20,11 +26,10 @@ const About = ({ idCategory }) => {
 
   const handleClick = (clickIdCategory) => {
     idCategory(clickIdCategory);
-    console.log(clickIdCategory);
   };
 
   return (
-    <div className="w-100 mt-4">
+    <div className="w-100 mt-4 container-fluid">
       <div className="position-relative">
         <img
           src="https://maytinhdalat.vn/Images/Product/maytinhdalat_linh-kien-may-tinh-2.jpg"
@@ -32,32 +37,70 @@ const About = ({ idCategory }) => {
           className="rounded-4 w-100 h-100"
         />
         <div
-          className="position-absolute start-50 translate-middle shadow"
-          style={{ top: "470px" }}
+          className="position-absolute start-50 translate-middle"
+          style={{ width: "90%", top: "125%" }}
         >
-          <div className="bg-white rounded-4 p-2" id="item-product">
-            <h2 className="text-center mb-3">Danh mục nổi bật</h2>
-            <div className="p-2 m-2 overflow-x-auto featured-categories-container">
-              <div className="d-flex flex-nowrap">
-                {fill.map((cate) => (
-                  <Link
-                    key={cate.id}
-                    className="featured-category-item text-decoration-none text-dark"
-                    onClick={() => handleClick(cate.id)}
-                    role="button"
-                    style={{ cursor: "pointer" }}
-                  >
-                    <img
-                      src={cate.imagecateproduct}
-                      alt={cate.name}
-                      className="img-fluid"
-                    />
-                    <br />
-                    <span className="card-text text-center">{cate.name}</span>
-                  </Link>
-                ))}
+          <div className="bg-white rounded-4 p-2 shadow" id="item-product">
+            <h2 className="text-center mb-3">Danh mục</h2>
+            {loading ? (
+              <div className="overflow-auto">
+                <div className="d-flex">
+                  {fill.slice(0, Math.ceil(fill.length / 2)).map((cate) => (
+                    <div
+                      className="d-flex justify-content-center mb-3"
+                      key={cate.id}
+                    >
+                      <Link
+                        className="text-decoration-none text-dark"
+                        id="featured-category-item"
+                        onClick={() => handleClick(cate.id)}
+                        role="button"
+                        style={{ cursor: "pointer" }}
+                      >
+                        <img
+                          src={cate.imagecateproduct}
+                          alt={cate.name}
+                          className="rounded-5"
+                         
+                        />
+                        <br />
+                        <span className="card-text text-center m-2">
+                          {cate.name}
+                        </span>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+                <div className="d-flex">
+                  {fill.slice(Math.ceil(fill.length / 2)).map((cate) => (
+                    <div
+                      className="d-flex justify-content-center mb-3"
+                      key={cate.id}
+                    >
+                      <Link
+                        className="text-decoration-none text-dark"
+                        id="featured-category-item"
+                        onClick={() => handleClick(cate.id)}
+                        role="button"
+                        style={{ cursor: "pointer" }}
+                      >
+                        <img
+                          src={cate.imagecateproduct}
+                          alt={cate.name}
+                          className="rounded-3"
+                        />
+                        <br />
+                        <span className="card-text text-center m-2">
+                          {cate.name}
+                        </span>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <l-dot-wave size="47" speed="1" color="black"></l-dot-wave>
+            )}
           </div>
         </div>
       </div>
