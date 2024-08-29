@@ -17,7 +17,8 @@ import Order from "../components/Order/OrderBuyer/OrderBuyer";
 import OrderDetail from "../components/Order/OrderDetail/OrderDetail";
 import PayBuyer from "../components/Order/PayBuyer/PayBuyer";
 import ShippingCreate from "../components/Shipping/ShippingCreate";
-import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification"
+import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification";
+import Successful from "../components/Order/Successful/Successful";
 
 const RouteUsers = (props) => {
   return (
@@ -53,11 +54,14 @@ const RouteUsers = (props) => {
         <Route path="/paybuyer" element={<PayBuyer />} />
         <Route path="/orderDetail/:id" element={<OrderDetail />} />
         <Route path="/shippingCreate" element={<ShippingCreate />} />
-        
-        <Route path="/notifications" element={<NotificationCard></NotificationCard>}></Route>
+        <Route path="/orderCreateVnPay" element={<Successful />} />
+
+        <Route
+          path="/notifications"
+          element={<NotificationCard></NotificationCard>}
+        ></Route>
         <Route path="*">404 Not Found</Route>
       </Routes>
-      <ToastContainer />
     </>
   );
 };

@@ -10,8 +10,9 @@ import axios from "../../../Localhost/Custumize-axios";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 
-const Register = () => {
+const Register = ({ onRegisterSuccess }) => {
   const [formUser, setFormUser] = useState({
     fullname: "",
     password: "",
@@ -21,6 +22,8 @@ const Register = () => {
     role: 3, // Vai trò buyer
     address: "",
     phone: "",
+    configPassWord: "",
+    check: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfig, setShowPasswordConfig] = React.useState(false);
@@ -29,17 +32,11 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (type === "radio") {
-      setFormUser((prev) => ({
-        ...prev,
-        [name]: checked ? value : prev[name],
-      }));
-    } else {
-      setFormUser((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+
+    setFormUser((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const validate = () => {
@@ -52,6 +49,7 @@ const Register = () => {
       address,
       phone,
       configPassWord,
+      check,
     } = formUser;
 
     const pattentEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -65,7 +63,8 @@ const Register = () => {
       !birthdate &&
       !gender &&
       !address &&
-      !phone
+      !phone &&
+      !check
     ) {
       toast.warning("Cần nhập toàn bộ thông tin");
       return false;
@@ -131,6 +130,11 @@ const Register = () => {
         toast.warning("Hãy nhập địa chỉ");
         return false;
       }
+
+      if (!check) {
+        toast.warning("Bạn chưa chấp nhận điều khoản và dịch vụ của chúng tôi");
+        return false;
+      }
     }
 
     return true;
@@ -143,26 +147,33 @@ const Register = () => {
       try {
         const genderBoolean = formUser.gender === "true";
         const userToSend = {
-          ...formUser,
+          fullname: formUser.fullname,
+          password: formUser.password,
+          email: formUser.email,
+          birthdate: formUser.birthdate,
           gender: genderBoolean,
           role: {
             id: formUser.role,
           },
+          address: formUser.address,
+          phone: formUser.phone,
         };
         const res = await axios.post("/user", userToSend);
 
         setTimeout(() => {
           toast.update(id, {
-            render:
-              "Tạo tài khoản thành công, vui lòng quay lại trang đăng nhập",
+            render: "Đăng ký thành công, hệ thống sẽ chuyển sang đăng nhập.",
             type: "success",
             isLoading: false,
             autoClose: 5000,
             closeButton: true,
           });
+          if (onRegisterSuccess) {
+            onRegisterSuccess();
+          }
         }, 2000);
       } catch (error) {
-        console.error("Error response:", error.response); // Log full error response
+        console.error("Error response:", error.response);
         const errorMessage =
           error.response && error.response.data
             ? error.response.data
@@ -203,7 +214,7 @@ const Register = () => {
               name="fullname"
               value={formUser.fullname}
               onChange={handleChange}
-              id="standard-basic"
+              id="fullname-basic"
               label="Nhập họ tên"
               variant="standard"
             />
@@ -222,7 +233,7 @@ const Register = () => {
               name="email"
               value={formUser.email}
               onChange={handleChange}
-              id="standard-basic"
+              id="email-basic"
               label="Nhập email"
               variant="standard"
             />
@@ -282,6 +293,7 @@ const Register = () => {
               value={formUser.phone}
               onChange={handleChange}
               label="Nhập số điện thoại"
+              id="phone-basic"
               variant="standard"
             />
             {/* <input
@@ -299,14 +311,14 @@ const Register = () => {
             <div className="col-lg-6">
               <div className="mb-3">
                 <FormControl sx={{ m: 1 }} variant="standard" fullWidth>
-                  <InputLabel htmlFor="standard-adornment-password">
+                  <InputLabel htmlFor="enterPass-adornment-password">
                     Nhập mật khẩu
                   </InputLabel>
                   <Input
                     name="password"
                     value={formUser.password}
                     onChange={handleChange}
-                    id="standard-adornment-password"
+                    id="enterPass-adornment-password"
                     type={showPassword ? "text" : "password"}
                     onFocus={() => setIsFocusedPass(true)}
                     onBlur={() => setIsFocusedPass(false)}
@@ -338,14 +350,14 @@ const Register = () => {
             <div className="col-lg-6">
               <div className="mb-3">
                 <FormControl sx={{ m: 1 }} variant="standard" fullWidth>
-                  <InputLabel htmlFor="standard-adornment-password">
+                  <InputLabel htmlFor="enterConfig-adornment-password">
                     Xác thực mật khẩu
                   </InputLabel>
                   <Input
                     onChange={handleChange}
                     value={formUser.configPassWord}
                     name="configPassWord"
-                    id="standard-adornment-password"
+                    id="enterConfig-adornment-password"
                     type={showPasswordConfig ? "text" : "password"}
                     onFocus={() => setIsFocusedPassCofig(true)}
                     onBlur={() => setIsFocusedPassCofig(false)}
@@ -397,6 +409,19 @@ const Register = () => {
               className="form-control"
               placeholder="Nhập địa chỉ của bạn"
             ></textarea> */}
+          </div>
+          <div className="p-0 m-0 d-flex">
+            <input
+              type="checkbox"
+              className="form-check me-2"
+              name="check"
+              checked={formUser.check}
+              onChange={handleChange}
+            />
+            <label>
+              Tôi đồng ý với các <Link>điều khoản</Link> và <Link>dịch vụ</Link>
+              .
+            </label>
           </div>
         </div>
       </div>

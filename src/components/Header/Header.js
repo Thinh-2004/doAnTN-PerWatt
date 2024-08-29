@@ -5,11 +5,11 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import useSession from "../../Session/useSession";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { confirmAlert } from "react-confirm-alert"; // Import thư viện confirm-alert
-import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS cho confirm-alert
+import { confirmAlert } from "react-confirm-alert"; 
+import "react-confirm-alert/src/react-confirm-alert.css"; 
 import axios from "../../Localhost/Custumize-axios";
 
-const Header = ({ contextSearch, resetSearch }) => {
+const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
   const [search, setSearch] = useState("");
   const [fullName, removeFullName] = useSession("fullname");
   const [avatar, removeAvatar] = useSession("avatar");
@@ -21,7 +21,7 @@ const Header = ({ contextSearch, resetSearch }) => {
   };
 
   useEffect(() => {
-    const count = async (id) => {
+    const count = async () => {
       try {
         const res = await axios.get(`/countCartIdUser/${id}`);
         setCount(res.data.length);
@@ -30,13 +30,29 @@ const Header = ({ contextSearch, resetSearch }) => {
         console.log(error);
       }
     };
-    count(id);
+    count();
   }, [id]);
+  
   useEffect(() => {
     if (resetSearch) {
       setSearch(""); // Xóa nội dung thanh tìm kiếm
     }
   }, [resetSearch]);
+
+  useEffect(() =>{
+    if(reloadCartItems){
+      const count = async () => {
+        try {
+          const res = await axios.get(`/countCartIdUser/${id}`);
+          setCount(res.data.length);
+          console.log(res.data.length);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      count();
+    }
+  }, [reloadCartItems, id])
 
   const handleLogOut = () => {
     confirmAlert({
@@ -103,7 +119,6 @@ const Header = ({ contextSearch, resetSearch }) => {
     };
     recognition.start();
   };
-
 
   const handleTextSearch = (e) => {
     setSearch(e.target.value);

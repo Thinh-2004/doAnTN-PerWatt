@@ -7,13 +7,25 @@ import Profile from "./Profile/Profile";
 import ChangePass from "./ChangePassword/ChangePass";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import ShippingList from "../Shipping/ShippingList"
+import ShippingList from "../Shipping/ShippingList";
+import "./ProfileUserStyle.css";
+import {
+  Button,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  OutlinedInput,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const ProfileUser = () => {
   const [id] = useSession("id");
+  const [avatar] = useSession("avatar");
   const [fill, setFill] = useState([]);
   const [password, setPassword] = useState("");
   const [isChangePassClicked, setIsChangePassClicked] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const changeLink = useNavigate();
 
   const geturlIMG = (idUser, filename) => {
@@ -21,7 +33,7 @@ const ProfileUser = () => {
   };
 
   useEffect(() => {
-    const loadData = async (id) => {
+    const loadData = async () => {
       try {
         const res = await axios.get(`userProFile/${id}`);
         setFill(res.data);
@@ -32,7 +44,7 @@ const ProfileUser = () => {
         );
       }
     };
-    loadData(id);
+    loadData();
   }, [id]);
 
   const onClickChangePass = async (e) => {
@@ -59,19 +71,28 @@ const ProfileUser = () => {
     }
   };
 
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (event) => {
+    event.preventDefault();
+  };
+
   return (
     <div>
       <Header />
       <div className="container">
-        <div className="row mt-4">
-          <div className="col-lg-3">
+        <div className="row">
+          <div className="col-lg-3 mt-4">
             <div className="bg-white rounded-4 p-2">
-              <div className="d-flex justify-content-center">
+              <div className="d-flex justify-content-center align-items-center mt-2">
                 <img
                   src={geturlIMG(fill.id, fill.avatar)}
                   alt=""
-                  style={{ width: "20%", height: "50px", borderRadius: "50%" }}
-                  className="mt-2"
+                  style={{ width: "70px", height: "70px", borderRadius: "50%" }}
                 />
                 <label htmlFor="" className="mt-3 mx-3">
                   {fill.fullname}
@@ -133,36 +154,61 @@ const ProfileUser = () => {
                           </div>
                           <form onSubmit={onClickChangePass}>
                             <div className="modal-body">
-                              <input
-                                type="password"
-                                className="form-control"
-                                placeholder="Nhập mật khẩu của bạn"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                              />
+                              <FormControl
+                                sx={{ m: 1, width: "100%" }}
+                                variant="outlined"
+                              >
+                                <InputLabel htmlFor="outlined-adornment-password">
+                                  Nhập mật khẩu của bạn
+                                </InputLabel>
+                                <OutlinedInput
+                                  value={password}
+                                  onChange={(e) => setPassword(e.target.value)}
+                                  id="outlined-adornment-password"
+                                  type={showPassword ? "text" : "password"}
+                                  endAdornment={
+                                    <InputAdornment position="end">
+                                      <IconButton
+                                        aria-label="toggle password visibility"
+                                        onClick={handleClickShowPassword}
+                                        onMouseDown={handleMouseDownPassword}
+                                        onMouseUp={handleMouseUpPassword}
+                                        edge="end"
+                                      >
+                                        {showPassword ? (
+                                          <VisibilityOff />
+                                        ) : (
+                                          <Visibility />
+                                        )}
+                                      </IconButton>
+                                    </InputAdornment>
+                                  }
+                                  label="Nhập mật khẩu của bạn"
+                                />
+                              </FormControl>
                             </div>
                             <div className="modal-footer">
-                              <button
-                                type="button"
-                                className="btn btn-secondary"
-                                data-bs-dismiss="modal"
+                              <Button
+                                variant="contained"
+                                id="btn-checkPass"
+                                type="submit"
+                                disableElevation
                               >
-                                Hủy
-                              </button>
-                              <button type="submit" className="btn btn-primary">
                                 Xác nhận
-                              </button>
+                              </Button>
                             </div>
                           </form>
                         </div>
                       </div>
                     </div>
                   </li>
-                  <li>
+                  <li className="mb-2">
                     <Link className="text-decoration-none">Quyền riêng tư</Link>
                   </li>
                   <li>
-                    <Link className="text-decoration-none" to={"shippingInfo"}>Địa chỉ nhận hàng</Link>
+                    <Link className="text-decoration-none" to={"shippingInfo"}>
+                      Địa chỉ nhận hàng
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -178,11 +224,18 @@ const ProfileUser = () => {
               </div>
             </div>
           </div>
-          <div className="col-lg-9">
+          <div className="col-lg-9 mt-4">
             <Routes>
               <Route path="/" element={<Profile />} />
-              <Route path="changePass" element={<ChangePass />} />
-              <Route path="/shippingInfo" element={<ShippingList/>} /> 
+              <Route
+                path="changePass"
+                element={
+                  <ChangePass
+                    checkStatus={() => setIsChangePassClicked(false)}
+                  />
+                }
+              />
+              <Route path="/shippingInfo" element={<ShippingList />} />
             </Routes>
           </div>
         </div>

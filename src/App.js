@@ -10,6 +10,15 @@ function App() {
     <ToastContainer />
       <RouteAdmin></RouteAdmin>
       <RouteUsers></RouteUsers>
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        closeOnClick={true}
+        draggable={true}
+        pauseOnHover={true}
+        theme="light"
+      />
     </BrowserRouter>
   );
 }

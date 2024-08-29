@@ -60,7 +60,8 @@ const About = ({ idCategory }) => {
                         <img
                           src={cate.imagecateproduct}
                           alt={cate.name}
-                          className="img-fluid"
+                          className="rounded-5"
+                         
                         />
                         <br />
                         <span className="card-text text-center m-2">
@@ -86,7 +87,7 @@ const About = ({ idCategory }) => {
                         <img
                           src={cate.imagecateproduct}
                           alt={cate.name}
-                          className="img-fluid"
+                          className="rounded-3"
                         />
                         <br />
                         <span className="card-text text-center m-2">

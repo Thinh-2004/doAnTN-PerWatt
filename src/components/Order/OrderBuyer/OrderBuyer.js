@@ -7,12 +7,14 @@ import { Link } from "react-router-dom";
 import useSession from "../../../Session/useSession";
 import { format } from "date-fns";
 import { confirmAlert } from "react-confirm-alert";
+import { tailspin } from "ldrs";
 
 const Order = () => {
   const [fill, setFill] = useState([]);
   const [idUser] = useSession("id");
   const [activeTab, setActiveTab] = useState("pills-home");
   const [isCancelButtonHidden, setIsCancelButtonHidden] = useState(false);
+  tailspin.register();
 
   useEffect(() => {
     const load = async () => {
@@ -34,18 +36,20 @@ const Order = () => {
 
   const handleCancelOrder = (orderId) => {
     confirmAlert({
-      title : "Hủy đơn hàng",
-      message : "Bạn có muốn hủy đơn không?",
-      buttons : [
+      title: "Hủy đơn hàng",
+      message: "Bạn có muốn hủy đơn không?",
+      buttons: [
         {
-          label : "Có",
-          onClick : async () =>{
+          label: "Có",
+          onClick: async () => {
             try {
               await axios.put(`/order/${orderId}/status`, { status: "Hủy" });
               setIsCancelButtonHidden(true);
               setFill(
                 fill.map((order) =>
-                  order.id === orderId ? { ...order, orderstatus: "Hủy" } : order
+                  order.id === orderId
+                    ? { ...order, orderstatus: "Hủy" }
+                    : order
                 )
               );
             } catch (error) {
@@ -54,11 +58,10 @@ const Order = () => {
           },
         },
         {
-          label : "Không"
-        }
-      ]
-    })
-    
+          label: "Không",
+        },
+      ],
+    });
   };
 
   const handleMarkAsReceived = async (orderId) => {
@@ -198,7 +201,12 @@ const Order = () => {
                 <div className="mt-5">
                   {fill.length === 0 ? (
                     <div className="text-center">
-                      <h4>Chưa có đơn hàng nào</h4>
+                      <l-tailspin
+                        size="40"
+                        stroke="5"
+                        speed="0.9"
+                        color="black"
+                      ></l-tailspin>
                     </div>
                   ) : (
                     fill.map((order) => (
@@ -226,11 +234,16 @@ const Order = () => {
                             <div className="col-2">
                               {isCancelButtonVisible(order) && (
                                 <button
-                                  className="btn btn-danger me-2"
+                                  className="btn btn-outline-danger me-2"
                                   onClick={() => handleCancelOrder(order.id)}
-                                  style={{ display:  order.orderstatus === "Hủy" ? "none" : "inline" }}
+                                  style={{
+                                    display:
+                                      order.orderstatus === "Hủy"
+                                        ? "none"
+                                        : "inline",
+                                  }}
                                 >
-                                  Hủy
+                                  <i class="bi bi-cart-x-fill"></i>
                                 </button>
                               )}
 
@@ -239,7 +252,7 @@ const Order = () => {
                                   className="btn btn-success me-2"
                                   onClick={() => handleMarkAsReceived(order.id)}
                                 >
-                                  Đã nhận hàng
+                                  <i class="bi bi-cart-check-fill"></i>
                                 </button>
                               )}
                             </div>
@@ -272,7 +285,12 @@ const Order = () => {
                 <div className="mt-5">
                   {fill.length === 0 ? (
                     <div className="text-center">
-                      <h4>Chưa có đơn hàng nào</h4>
+                      <l-tailspin
+                        size="40"
+                        stroke="5"
+                        speed="0.9"
+                        color="black"
+                      ></l-tailspin>
                     </div>
                   ) : (
                     fill
@@ -301,10 +319,10 @@ const Order = () => {
                               </div>
                               <div className="col-2">
                                 <button
-                                  className="btn btn-danger me-2"
+                                  className="btn btn-outline-danger me-2"
                                   onClick={() => handleCancelOrder(order.id)}
                                 >
-                                  Hủy
+                                  <i class="bi bi-cart-x-fill"></i>
                                 </button>
                               </div>
                             </div>
@@ -336,7 +354,12 @@ const Order = () => {
                 <div className="mt-5">
                   {fill.length === 0 ? (
                     <div className="text-center">
-                      <h4>Chưa có đơn hàng nào</h4>
+                      <l-tailspin
+                        size="40"
+                        stroke="5"
+                        speed="0.9"
+                        color="black"
+                      ></l-tailspin>
                     </div>
                   ) : (
                     fill
@@ -391,15 +414,20 @@ const Order = () => {
                     <div className="d-flex">
                       <div className="col-3">Trạng thái</div>
                       <div className="col-3">Ngày đặt hàng</div>
-                      <div className="col-3">Phương thức thanh toán</div>
-                      <div className="col-3">Chi tiết</div>
+                      <div className="col-4">Phương thức thanh toán</div>
+                      <div className="col-2">Chi tiết</div>
                     </div>
                   </div>
                 </div>
                 <div className="mt-5">
                   {fill.length === 0 ? (
                     <div className="text-center">
-                      <h4>Chưa có đơn hàng nào</h4>
+                      <l-tailspin
+                        size="40"
+                        stroke="5"
+                        speed="0.9"
+                        color="black"
+                      ></l-tailspin>
                     </div>
                   ) : (
                     fill
@@ -416,10 +444,10 @@ const Order = () => {
                               <div className="col-3">
                                 {formatDate(order.paymentdate)}
                               </div>
-                              <div className="col-3">
+                              <div className="col-4">
                                 {order.paymentmethod.type}
                               </div>
-                              <div className="col-3">
+                              <div className="col-2">
                                 <Link to={`/orderDetail/${order.id}`}>
                                   <button className="btn btn-primary">
                                     <i className="bi bi-eye-fill"></i>
@@ -446,8 +474,8 @@ const Order = () => {
                     <div className="d-flex">
                       <div className="col-3">Trạng thái</div>
                       <div className="col-3">Ngày đặt hàng</div>
-                      <div className="col-3">Phương thức thanh toán</div>
-                      <div className="col-3">Chi tiết</div>
+                      <div className="col-4">Phương thức thanh toán</div>
+                      <div className="col-2">Chi tiết</div>
                     </div>
                   </div>
                 </div>
@@ -471,10 +499,10 @@ const Order = () => {
                               <div className="col-3">
                                 {formatDate(order.paymentdate)}
                               </div>
-                              <div className="col-3">
+                              <div className="col-4">
                                 {order.paymentmethod.type}
                               </div>
-                              <div className="col-3">
+                              <div className="col-2">
                                 <Link to={`/orderDetail/${order.id}`}>
                                   <button className="btn btn-primary">
                                     <i className="bi bi-eye-fill"></i>

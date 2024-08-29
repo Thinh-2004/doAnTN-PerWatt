@@ -21,6 +21,7 @@ const DetailProduct = () => {
   const [typeId, setTypeId] = useState("");
   const findMoreProductRef = useRef(null); // Tạo ref cho phần tử cần cuộn đến
   const [countOrderBuyed, setCountOrderBuyed] = useState(0); // Lưu số lượng đã bán cho mỗi sản phẩm
+  const [isAddCart, setIsAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -121,10 +122,11 @@ const DetailProduct = () => {
     try {
       const response = await axios.post("/cart/add", cartItem);
       console.log("Added to cart:", response.data);
+      setIsAddCart(true);
+      toast.success("Thêm sản phẩm thành công!")
     } catch (error) {
       console.error("Error adding to cart:", error);
     }
-    window.location.reload();
   };
   const handleClickIdCateOrIdBrand = (idCateOrBrand, typeId) => {
     setIdClick(idCateOrBrand);
@@ -139,7 +141,7 @@ const DetailProduct = () => {
   };
   return (
     <>
-      <Header />
+      <Header reloadCartItems={isAddCart}/>
       <div className="container mt-4">
         <div className="row bg-white rounded-4">
           <div className="col-md-4 border-end">
@@ -149,7 +151,7 @@ const DetailProduct = () => {
             >
               <div
                 className="position-absolute top-50 start-50 translate-middle rounded-3"
-                id="bg-sold-out"
+                id="text-sold-out"
                 style={{
                   display:
                     FillDetailPr && FillDetailPr.quantity === 0
@@ -157,9 +159,7 @@ const DetailProduct = () => {
                       : "none",
                 }}
               >
-                <span className="text-white" id="text-sold-out">
-                  Hết hàng
-                </span>
+                <span className="text-white">Hết hàng</span>
               </div>
               <div className="carousel-inner">
                 {FillDetailPr &&
@@ -294,7 +294,7 @@ const DetailProduct = () => {
                 <span className="border-end"></span>
                 <div className="mx-2 mt-1">
                   <span htmlFor="">
-                    <strong htmlFor="">Số lượng đánh giá: </strong> 
+                    <strong htmlFor="">Số lượng đánh giá: </strong>
                     <label htmlFor="">999</label>
                   </span>
                 </div>
@@ -316,7 +316,7 @@ const DetailProduct = () => {
               </div>
             </div>
             <div className="bg-light w-100 h-25 mt-4 rounded-4">
-              <p className="fs-5 p-0 mx-2">Giá:</p>
+              <p className="fs-5 p-1 mx-2">Giá:</p>
               <div className="d-flex align-items-center">
                 <del className="text-secondary fs-5 mx-3">
                   {formatPrice(3000000)}đ
@@ -387,59 +387,104 @@ const DetailProduct = () => {
                 </div>
               </div>
             </div>
-            <div className="d-flex mt-auto mb-3">
-              <button
-                className="btn btn-sm btn-success w-100 rounded-3"
-                id="btn-layout"
-                disabled={FillDetailPr && FillDetailPr.quantity === 0}
-              >
-                <i className="bi bi-cash fs-6"></i>
-              </button>
-              <button
-                className="btn btn-sm btn-primary mx-2 w-100 rounded-3"
-                id="btn-layout"
-                onClick={() => addToCart(FillDetailPr ? FillDetailPr.id : null)}
-                disabled={FillDetailPr && FillDetailPr.quantity === 0}
-              >
-                <i className="bi bi-cart-plus fs-6"></i>
-              </button>
+            <div className="row mb-3">
+              <div className="col-lg-6 col-md-6 col-sm-6   ">
+                <div className="d-flex justify-content-start mt-3">
+                  <button
+                    className="btn border rounded-0 rounded-start"
+                    id="buttonDown"
+                    // onClick={() => handleDecrease(index)}
+                  >
+                    <i className="bi bi-dash-lg"></i>
+                  </button>
+                  <input
+                    type="number"
+                    min={0}
+                    className="form-control rounded-0 w-50"
+                    // value={cart.quantity}
+                    readOnly
+                  />
+                  <button
+                    className={`btn border rounded-0 rounded-end 
+                               
+                                `}
+                    id="buttonUp"
+                    // onClick={() => handleIncrease(index)}
+                    // disabled={
+                    //   cart.quantity >= cart.product.quantity
+                    // }
+                  >
+                    <i className="bi bi-plus-lg"></i>
+                  </button>
+                </div>
+              </div>
+              <div className="col-lg-6 col-md-6 col-sm-6 align-content-end ">
+                <div className="d-flex">
+                  <button
+                    className="btn w-75 h-75 rounded-3"
+                    id="btn-buy-now"
+                    disabled={FillDetailPr && FillDetailPr.quantity === 0}
+                  >
+                    <i className="bi bi-cash fs-5"></i>
+                  </button>
+                  <button
+                    className="btn mx-2 w-75 h-75 rounded-3"
+                    id="btn-add-card"
+                    onClick={() =>
+                      addToCart(FillDetailPr ? FillDetailPr.id : null)
+                    }
+                    disabled={FillDetailPr && FillDetailPr.quantity === 0}
+                  >
+                    <i className="bi bi-cart-plus fs-5"></i>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
         <div className="row bg-white rounded-4 mt-3">
-          <div className="col-lg-4 border-end">
-            <div className="p-4 d-flex">
-              <img
-                src={
-                  FillDetailPr && FillDetailPr.store
-                    ? geturlIMGStore(
-                        FillDetailPr.store.user.id,
-                        FillDetailPr.store.user.avatar
-                      )
-                    : "/images/no_img.png"
-                }
-                alt=""
-                id="avt-store"
-              />
-              <div className="mt-3">
-                <span htmlFor="" className="fs-6 mx-3">
-                  {FillDetailPr && FillDetailPr.store
-                    ? FillDetailPr.store.namestore
-                    : "N/A"}
-                </span>
-                <button
-                  className="btn btn-sm btn-info mx-2"
-                  onClick={handleViewStoreInfo}
-                >
-                  Xem thông tin
-                </button>
-                <button className="btn btn-sm btn-warning">Xem nhắn tin</button>
+          <div className="col-lg-4 col-md-4 col-sm-4 border-end">
+            <div className="d-flex justify-content-center">
+            <div className="p-2 d-flex justify-content-center">
+                  <img
+                    src={
+                      FillDetailPr && FillDetailPr.store
+                        ? geturlIMGStore(
+                            FillDetailPr.store.user.id,
+                            FillDetailPr.store.user.avatar
+                          )
+                        : "/images/no_img.png"
+                    }
+                    alt=""
+                    id="avt-store"
+                  />
+                </div>
+              <div className=" mt-3 ">
+                <div className="text-center">
+                  <span htmlFor="" className="fs-6">
+                    {FillDetailPr && FillDetailPr.store
+                      ? FillDetailPr.store.namestore
+                      : "N/A"}
+                  </span>
+                </div>
+                <div className="d-flex justify-content-center">
+                  <button
+                    className="btn btn-sm mx-2"
+                    onClick={handleViewStoreInfo}
+                    id="btn-infor-shop"
+                  >
+                    Xem thông tin
+                  </button>
+                  <button className="btn btn-sm" id="btn-chatMessage">
+                    Nhắn tin shop
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-          <div className="col-lg-8">
+          <div className="col-lg-8 col-md-8 col-sm-8">
             <div className="row mt-4">
-              <div className="col-lg-4">
+              <div className="col-lg-4 col-md-4 col-sm-4">
                 <div className="d-flex justify-content-between">
                   <label htmlFor="">Sản phẩm đã đăng bán:</label>
                   <span>{countProductStore}</span>

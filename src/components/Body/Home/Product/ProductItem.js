@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import axios from "../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
 import useDebounce from "../../../../CustumHook/useDebounce";
-import { Pagination } from "@mui/material";
+import { Box, Pagination, Skeleton } from "@mui/material";
 import { Stack } from "@mui/material";
 
 trefoil.register();
@@ -95,74 +95,86 @@ const Product = ({ item, idCate, handleReset }) => {
         </div>
       ) : null}
       {loading || isFiltering ? (
-        <l-trefoil
-          size="40"
-          stroke="4"
-          stroke-length="0.15"
-          bg-opacity="0.1"
-          speed="1"
-          color="blue"
-        ></l-trefoil>
+        Array.from(new Array(10)).map((skeleton, index) => (
+          <div
+            className="col-lg-3 col-md-3 col-sm-4 mt-3 p-2 d-flex flex-column"
+            style={{ minHeight: "100%" }}
+            key={index}
+          >
+            <Box sx={{ width: 310, marginRight: 0.5, my: 5 }}>
+              <Skeleton variant="rectangular" width={310} height={118} />
+              <Skeleton />
+              <Skeleton width="60%" />
+            </Box>
+          </div>
+        ))
       ) : filterBySearchAndCategory.length === 0 ? (
         <div className="text-center">
-          <i className="bi bi-file-earmark-x" style={{ fontSize: "100px" }}></i>
+          <h4>
+            <i
+              className="bi bi-file-earmark-x"
+              style={{ fontSize: "100px" }}
+            ></i>
+          </h4>
           <label className="fs-4">Thông tin bạn tìm không tồn tại</label>
         </div>
       ) : (
         filterBySearchAndCategory.map((fill) => {
           const firstIMG = fill.images[0];
           return (
-            <div className="col-lg-2 mt-3" key={fill.id}>
-              <div className="card shadow rounded-4 mt-4 p-2" id="product-item">
-                <Link
-                  to={`/detailProduct/${fill.id}`}
-                  className="position-relative d-flex justify-content-center"
-                  style={{ height: "50%" }}
-                >
-                  <img
-                    src={
-                      firstIMG
-                        ? geturlIMG(fill.id, firstIMG.imagename)
-                        : "/images/no_img.png"
-                    }
-                    className="img-fluid rounded-4"
-                    alt="Product"
-                  />
-                  {fill.quantity === 0 && (
-                    <div
-                      className="position-absolute top-0 start-50 translate-middle text-danger"
-                      id="bg-slod-out"
-                    >
-                      <span className="text-white text-center">Hết hàng</span>
-                    </div>
-                  )}
-                </Link>
-                <div className="mt-2 flex-grow-1">
-                  <span className="fw-bold fst-italic" id="product-name">
-                    {fill.name}
+            <div
+              className="col-lg-2 col-md-3 col-sm-4 mt-3 card shadow rounded-4 p-2 d-flex flex-column"
+              style={{ minHeight: "100%" }}
+              key={fill.id}
+              id="home-product-item"
+            >
+              <Link
+                to={`/detailProduct/${fill.id}`}
+                className="position-relative d-flex justify-content-center"
+                style={{ height: "50%" }}
+              >
+                <img
+                  src={
+                    firstIMG
+                      ? geturlIMG(fill.id, firstIMG.imagename)
+                      : "/images/no_img.png"
+                  }
+                  className="img-fluid rounded-4"
+                  alt="Product"
+                />
+                {fill.quantity === 0 && (
+                  <div
+                    className="position-absolute top-0 start-50 translate-middle text-danger"
+                    id="bg-sold-out"
+                  >
+                    <span className="text-white text-center">Hết hàng</span>
+                  </div>
+                )}
+              </Link>
+
+              <div className="mt-2 flex-grow-1 d-flex flex-column justify-content-between">
+                <span className="fw-bold fst-italic" id="product-name">
+                  {fill.name}
+                </span>
+                <h5 id="price-product">
+                  <del className="text-secondary me-1">3,000,000 đ</del> -
+                  <span className="text-danger mx-1" id="price-product-item">
+                    {formatPrice(fill.price)} đ
                   </span>
-                  <h5 id="price-product">
-                    <del className="text-secondary me-1">3,000,000 đ</del> -
-                    <span className="text-danger mx-1" id="price-product-item">
-                      {formatPrice(fill.price)} đ
-                    </span>
-                  </h5>
-                  <hr />
+                </h5>
+                <hr />
+              </div>
+
+              <div className="d-flex justify-content-between align-items-end">
+                <div>
+                  {[...Array(5)].map((_, index) => (
+                    <i key={index} className="bi bi-star-fill text-warning"></i>
+                  ))}
                 </div>
-                <div className="d-flex justify-content-between">
-                  <div>
-                    {[...Array(5)].map((_, index) => (
-                      <i
-                        key={index}
-                        className="bi bi-star-fill text-warning"
-                      ></i>
-                    ))}
-                  </div>
-                  <div>
-                    <span style={{ fontSize: "12px" }}>
-                      Đã bán: {formatCount(countOrderBuyed[fill.id]) || 0}
-                    </span>
-                  </div>
+                <div>
+                  <span style={{ fontSize: "12px" }}>
+                    Đã bán: {formatCount(countOrderBuyed[fill.id]) || 0}
+                  </span>
                 </div>
               </div>
             </div>
@@ -174,7 +186,6 @@ const Product = ({ item, idCate, handleReset }) => {
           count={10}
           variant="outlined"
           color="primary"
-          shape="rounded"
         />
       </div>
     </>

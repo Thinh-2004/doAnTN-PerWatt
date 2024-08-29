@@ -1,23 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./FormStyle.css";
 import Register from "./Register/Register";
 import Login from "./Login/Login";
 
 const Form = () => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isChangeForm, setChangeForm] = useState(false);
+
+  useEffect(() => {
+    if (isChangeForm) {
+      setIsSignUp(false); // Chuyển sang giao diện đăng nhập
+    }
+  }, [isChangeForm]);
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       <div
         id="main"
-        className={`container-login ${isSignUp ? "right-panel-active" : ""} shadow`}
+        className={`container-login ${
+          isSignUp ? "right-panel-active" : ""
+        } shadow`}
       >
         <div className="row">
           <div className="col sign-up">
-            <Register></Register>
+            <Register onRegisterSuccess={() => setChangeForm(true)} />
           </div>
           <div className="col sign-in">
-            <Login></Login>
+            <Login />
           </div>
         </div>
         <div className="overlay-container">
