@@ -286,6 +286,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                     id="btn-sessionUser"
+                    style={{cursor : "pointer"}}
                   >
                     <img
                       src={geturlIMG(id, avatar)}

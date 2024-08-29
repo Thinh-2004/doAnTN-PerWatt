@@ -17,6 +17,7 @@ const Cart = () => {
   const [groupSelection, setGroupSelection] = useState({});
   const [selectAll, setSelectAll] = useState(false);
   const [isCardLoaded, setIsCardLoaded] = useState(false);
+  const [isCountCart, setIsCountAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
   tailspin.register();
 
   // Hàm để lấy URL ảnh sản phẩm
@@ -27,19 +28,17 @@ const Cart = () => {
   const getAvtUser = (idUser, filename) =>
     `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
 
-// Hàm để nhóm sản phẩm theo cửa hàng
-const groupByStore = (products) => {
-  return products.reduce((groups, product) => {
-    const storeId = product.product.store.id;
-    if (!groups[storeId]) {
-      groups[storeId] = [];
-    }
-    groups[storeId].push(product);
-    return groups;
-  }, {});
-};
-
-
+  // Hàm để nhóm sản phẩm theo cửa hàng
+  const groupByStore = (products) => {
+    return products.reduce((groups, product) => {
+      const storeId = product.product.store.id;
+      if (!groups[storeId]) {
+        groups[storeId] = [];
+      }
+      groups[storeId].push(product);
+      return groups;
+    }, {});
+  };
 
   // Hàm để cập nhật số lượng sản phẩm trong giỏ hàng
   const updateQuantity = async (id, quantity) => {
@@ -62,64 +61,65 @@ const groupByStore = (products) => {
     }
   };
 
-  const [isAddCart, setIsAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
-// Hàm để xóa tất cả các sản phẩm đã chọn
-const deleteSelectedProduct1s = async () => {
-  confirmAlert({
-    title: "Xóa sản phẩm khỏi giỏ hàng",
-    message: "Bạn có chắc chắn muốn xóa các sản phẩm đã chọn không?",
-    buttons: [
-      {
-        label: "Có",
-        onClick: async () => {
-          try {
-            setSelectAll(false);
-            await Promise.all(selectedProductIds.map(id => axios.delete(`/cartDelete/${id}`)));
-            setSelectedProductIds([]); // Xóa danh sách sản phẩm đã chọn sau khi xóa
-            fetchCart(); // Gọi fetchCart sau khi xóa sản phẩm để cập nhật danh sách
-          } catch (error) {
-            console.error("Error deleting selected products:", error);
-          }
-        },
-      },
-      {
-        label: "Không",
-      },
-    ],
-  });
-};
+  
 
-const deleteSelectedProducts = async () => {
-  await Promise.all(selectedProductIds.map(id => axios.delete(`/cartDelete/${id}`)));
-  fetchCart();
-};
-
-
-
-// Hàm để tải danh sách sản phẩm trong giỏ hàng
-const fetchCart = async () => {
-  try {
-    const res = await axios.get(`/cart/${id}`);
-    setFill(res.data);
-    const grouped = groupByStore(res.data);
-    setGroupSelection(
-      Object.keys(grouped).reduce((acc, storeId) => {
-        acc[storeId] = false;
-        return acc;
-      }, {})
-    );
-    updateTotalPrice(res.data);
-  } catch (error) {
-    console.error("Error loading cart items:", error);
-  }
-};
-
-
+  // Hàm để tải danh sách sản phẩm trong giỏ hàng
+  const fetchCart = async () => {
+    try {
+      const res = await axios.get(`/cart/${id}`);
+      console.log("cặc");
+      setFill(res.data);
+      const grouped = groupByStore(res.data);
+      setGroupSelection(
+        Object.keys(grouped).reduce((acc, storeId) => {
+          acc[storeId] = false;
+          return acc;
+        }, {})
+      );
+      updateTotalPrice(res.data);
+    } catch (error) {
+      console.error("Error loading cart items:", error);
+    }
+  };
 
   // Sử dụng hook để tải giỏ hàng khi ID người dùng thay đổi
   useEffect(() => {
     fetchCart();
-  }, [id, isAddCart]);
+  }, []);
+
+
+  
+  // Hàm để xóa tất cả các sản phẩm đã chọn
+  const deleteSelectedProducts = async () => {
+    confirmAlert({
+      title: "Xóa sản phẩm khỏi giỏ hàng",
+      message: "Bạn có chắc chắn muốn xóa các sản phẩm đã chọn không?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            try {
+              setSelectAll(false);
+              await Promise.all(
+                selectedProductIds.map((id) =>
+                  axios.delete(`/cartDelete/${id}`)
+                )
+              );
+
+              setIsCountAddCart(true);
+              setSelectedProductIds([]); // Xóa danh sách sản phẩm đã chọn sau khi xóa
+              fetchCart(); // Gọi fetchCart sau khi xóa sản phẩm để cập nhật danh sách
+            } catch (error) {
+              console.error("Error deleting selected products:", error);
+            }
+          },
+        },
+        {
+          label: "Không",
+        },
+      ],
+    });
+  };
 
   // Hàm để cập nhật tổng giá trị giỏ hàng
   const updateTotalPrice = () => {
@@ -225,7 +225,7 @@ const fetchCart = async () => {
 
   return (
     <div>
-      <Header reloadCartItems={isAddCart} /> {/* Hiển thị header */}
+      <Header reloadCartItems={isCountCart} /> {/* Hiển thị header */}
       <div className="col-8 offset-2">
         <div className="row mt-3">
           <div className="col-9">

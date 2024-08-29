@@ -7,6 +7,7 @@ import useSession from "../../../../Session/useSession";
 import Header from "../../../Header/Header";
 import "./DetailProduct.css";
 import FindMoreProduct from "../FindMoreProduct/FindMoreProduct";
+import { Button } from "@mui/material";
 
 const DetailProduct = () => {
   const { id } = useParams();
@@ -21,7 +22,7 @@ const DetailProduct = () => {
   const [typeId, setTypeId] = useState("");
   const findMoreProductRef = useRef(null); // Tạo ref cho phần tử cần cuộn đến
   const [countOrderBuyed, setCountOrderBuyed] = useState(0); // Lưu số lượng đã bán cho mỗi sản phẩm
-  const [isAddCart, setIsAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
+  const [isCountCart, setIsCountAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -122,8 +123,8 @@ const DetailProduct = () => {
     try {
       const response = await axios.post("/cart/add", cartItem);
       console.log("Added to cart:", response.data);
-      setIsAddCart(true);
-      toast.success("Thêm sản phẩm thành công!")
+      setIsCountAddCart(true);
+      toast.success("Thêm sản phẩm thành công!");
     } catch (error) {
       console.error("Error adding to cart:", error);
     }
@@ -141,7 +142,7 @@ const DetailProduct = () => {
   };
   return (
     <>
-      <Header reloadCartItems={isAddCart}/>
+      <Header reloadCartItems={isCountCart} />
       <div className="container mt-4">
         <div className="row bg-white rounded-4">
           <div className="col-md-4 border-end">
@@ -420,15 +421,17 @@ const DetailProduct = () => {
               </div>
               <div className="col-lg-6 col-md-6 col-sm-6 align-content-end ">
                 <div className="d-flex">
-                  <button
+                  <Button
                     className="btn w-75 h-75 rounded-3"
                     id="btn-buy-now"
                     disabled={FillDetailPr && FillDetailPr.quantity === 0}
+                    disableElevation
                   >
                     <i className="bi bi-cash fs-5"></i>
-                  </button>
-                  <button
-                    className="btn mx-2 w-75 h-75 rounded-3"
+                  </Button>
+                  <Button
+                    className="btn mx-2 w-75 h-25 rounded-3"
+                    disableElevation
                     id="btn-add-card"
                     onClick={() =>
                       addToCart(FillDetailPr ? FillDetailPr.id : null)
@@ -436,7 +439,7 @@ const DetailProduct = () => {
                     disabled={FillDetailPr && FillDetailPr.quantity === 0}
                   >
                     <i className="bi bi-cart-plus fs-5"></i>
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -445,20 +448,20 @@ const DetailProduct = () => {
         <div className="row bg-white rounded-4 mt-3">
           <div className="col-lg-4 col-md-4 col-sm-4 border-end">
             <div className="d-flex justify-content-center">
-            <div className="p-2 d-flex justify-content-center">
-                  <img
-                    src={
-                      FillDetailPr && FillDetailPr.store
-                        ? geturlIMGStore(
-                            FillDetailPr.store.user.id,
-                            FillDetailPr.store.user.avatar
-                          )
-                        : "/images/no_img.png"
-                    }
-                    alt=""
-                    id="avt-store"
-                  />
-                </div>
+              <div className="p-2 d-flex justify-content-center">
+                <img
+                  src={
+                    FillDetailPr && FillDetailPr.store
+                      ? geturlIMGStore(
+                          FillDetailPr.store.user.id,
+                          FillDetailPr.store.user.avatar
+                        )
+                      : "/images/no_img.png"
+                  }
+                  alt=""
+                  id="avt-store"
+                />
+              </div>
               <div className=" mt-3 ">
                 <div className="text-center">
                   <span htmlFor="" className="fs-6">
