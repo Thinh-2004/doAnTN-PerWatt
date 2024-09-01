@@ -1,13 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { forwardRef, useEffect, useRef, useState } from "react";
 import "./HeaderStyle.css";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import useSession from "../../Session/useSession";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { confirmAlert } from "react-confirm-alert"; 
-import "react-confirm-alert/src/react-confirm-alert.css"; 
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
 import axios from "../../Localhost/Custumize-axios";
+import * as tmImage from "@teachablemachine/image";
+import { Button, Slide, styled } from "@mui/material";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Audio from "./VoiceSearhDialog/Audio";
 
 const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
   const [search, setSearch] = useState("");
@@ -16,6 +24,17 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
   const [id, removeId] = useSession("id");
   const [count, setCount] = useState(0);
   const changeLink = useNavigate();
+  const [open, setOpen] = useState(false); // mở dialog của tìm bằng hình ảnh
+  //AI tìm hình ảnh
+  const URL = "https://teachablemachine.withgoogle.com/models/fojEXSUzI/";
+  const [model, setModel] = useState(null);
+  const [maxPredictions, setMaxPredictions] = useState(0);
+  const [image, setImage] = useState(null);
+  const [predictions, setPredictions] = useState([]);
+  const [isRecording, setIsRecording] = useState(false); // Tham chiếu đến Audio component ngắt ghi âm
+  const recognitionRef = useRef(null);
+  //
+  const [openVoice, setOpenVoice] = useState(false);
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
@@ -32,15 +51,15 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     };
     count();
   }, [id]);
-  
+
   useEffect(() => {
     if (resetSearch) {
       setSearch(""); // Xóa nội dung thanh tìm kiếm
     }
   }, [resetSearch]);
 
-  useEffect(() =>{
-    if(reloadCartItems){
+  useEffect(() => {
+    if (reloadCartItems) {
       const count = async () => {
         try {
           const res = await axios.get(`/countCartIdUser/${id}`);
@@ -52,7 +71,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
       };
       count();
     }
-  }, [reloadCartItems, id])
+  }, [reloadCartItems, id]);
 
   const handleLogOut = () => {
     confirmAlert({
@@ -97,12 +116,12 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     });
   };
 
-  const handleVoiceSearch = (e) => {
+  const handleVoiceSearch = () => {
     const recognition = new (window.SpeechRecognition ||
       window.webkitSpeechRecognition)();
 
-    recognition.lang = "vi-VN"; // Đặt ngôn ngữ cho nhận diện giọng nói
-    recognition.interimResults = true; // Cho phép nhận diện kết quả tạm thời
+    recognition.lang = "vi-VN";
+    recognition.interimResults = true;
 
     recognition.onresult = (event) => {
       let transcript = "";
@@ -110,14 +129,35 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
         transcript += event.results[i][0].transcript;
       }
       setSearch(transcript);
-      contextSearch(transcript); // đặt dữ liệu tìm kiếm lên thằng cha
-      recognition.stop(); // Dừng ghi âm sau khi nhận diện xong
+      contextSearch(transcript);
     };
 
     recognition.onerror = (event) => {
       console.error("Speech recognition error:", event.error);
     };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+
     recognition.start();
+    setIsRecording(true);
+    recognitionRef.current = recognition;
+  };
+
+  const stopRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current.onend = () => {
+        setIsRecording(false); // Cập nhật trạng thái khi ghi âm dừng
+      };
+      recognitionRef.current.onerror = (error) => {
+        console.error("SpeechRecognition error:", error);
+        setIsRecording(false);
+      };
+    } else {
+      setIsRecording(false);
+    }
   };
 
   const handleTextSearch = (e) => {
@@ -216,6 +256,78 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     }
   };
 
+  useEffect(() => {
+    const loadModel = async () => {
+      if (!model) {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+
+        const loadedModel = await tmImage.load(modelURL, metadataURL);
+        setModel(loadedModel);
+        setMaxPredictions(loadedModel.getTotalClasses());
+      }
+    };
+
+    loadModel();
+  }, [model]);
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result);
+    };
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const predict = async () => {
+    if (model && image) {
+      const imgElement = document.createElement("img");
+      imgElement.src = image;
+      imgElement.onload = async () => {
+        const prediction = await model.predict(imgElement);
+        setPredictions(prediction);
+      };
+    }
+  };
+
+  const VisuallyHiddenInput = styled("input")({
+    clip: "rect(0 0 0 0)",
+    clipPath: "inset(50%)",
+    height: 1,
+    overflow: "hidden",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    whiteSpace: "nowrap",
+    width: 1,
+  });
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleClickOpenVoice = () => {
+    setOpenVoice(true);
+  };
+
+  const handleCloseVoice = () => {
+    stopRecording(); // Dừng ghi âm
+    setOpenVoice(false); // Đóng dialog
+    setIsRecording(false);
+  };
+
+  const handleStartRecording = () => {
+    handleVoiceSearch();
+    setIsRecording(true);
+  };
+
   return (
     <div className=" container-fluid sticky-top">
       <div
@@ -233,23 +345,116 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
         >
           <form className="d-flex" role="search">
             <input
-              className="form-control rounded-start-4"
+              className="form-control rounded-start-4 me-3"
               type="search"
               placeholder="Bạn cần tìm gì"
               aria-label="Search"
-              style={{width : "auto"}}
+              style={{ width: "auto" }}
               value={search}
               onChange={handleTextSearch}
             />
-            <button
-              type="button"
-              className="btn btn-outline-primary rounded-end-4 mx-2"
-              onClick={handleVoiceSearch}
-            >
-              <i className="bi bi-mic"></i>
-            </button>
+            <div>
+              <Button
+                variant="outlined"
+                onClick={handleClickOpenVoice}
+                className="me-2"
+              >
+                <i className="bi bi-mic"></i>
+              </Button>
+              <Dialog
+                open={openVoice}
+                onClose={handleCloseVoice}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+                disableScrollLock={true} //Ngăn chặn mất thanh cuộn
+                fullWidth
+              >
+                <DialogContent>
+                  <div id="alert-dialog-description" className="text-center">
+                    <div className="d-flex justify-content-center align-content-center">
+                      <Audio checkRecording={isRecording} />
+                    </div>
+                    <label htmlFor="" className="fs-4">{search ? search : ""}</label>
+                  </div>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleCloseVoice}>Dừng ghi âm</Button>
+                  <Button onClick={handleStartRecording}>Ghi âm</Button>
+                </DialogActions>
+              </Dialog>
+
+              <Button
+                variant="outlined"
+                onClick={handleClickOpen}
+                className="rounded-end-4"
+              >
+                <i class="bi bi-images"></i>
+              </Button>
+              <Dialog
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+                disableScrollLock={true} //Ngăn chặn mất thanh cuộn
+                fullWidth
+              >
+                <DialogTitle id="alert-dialog-title" className="text-center">
+                  Chọn hình ảnh cần tìm
+                </DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="alert-dialog-description">
+                    <div
+                      id="find-product-by-img"
+                      className="d-flex justify-content-center align-content-center"
+                    >
+                      {image && image !== null ? (
+                        <img
+                          src={image}
+                          alt="Uploaded"
+                          style={{ maxWidth: "100%", maxHeight: "100%" }}
+                        />
+                      ) : (
+                        <label htmlFor="" className="align-content-center fs-2">
+                          Bạn cần tìm sản phẩm gì?
+                        </label>
+                      )}
+                    </div>
+                    <div className="mt-3">
+                      <Button
+                        component="label"
+                        role={undefined}
+                        variant="contained"
+                        tabIndex={-1}
+                        fullWidth
+                      >
+                        <i class="bi bi-images"></i>
+                        <VisuallyHiddenInput
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                        />
+                      </Button>
+                    </div>
+
+                    <div id="label-container">
+                      {predictions.map((pred, i) => (
+                        <div key={i}>
+                          {pred.className === "Class 1" ? "Bàn phím" : "Bàn"}
+                          {pred.probability.toFixed(2)}
+                        </div>
+                      ))}
+                    </div>
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleClose}>Hủy</Button>
+                  <Button onClick={predict}>Tìm kiếm</Button>
+                </DialogActions>
+              </Dialog>
+            </div>
           </form>
         </div>
+
         <div className="col-auto">
           <div className="d-flex align-content-center m-3">
             <Link
@@ -286,7 +491,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                     id="btn-sessionUser"
-                    style={{cursor : "pointer"}}
+                    style={{ cursor: "pointer" }}
                   >
                     <img
                       src={geturlIMG(id, avatar)}
@@ -306,7 +511,10 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                       <hr className="p-0 m-2" />
                     </li>
                     <li>
-                      <Link className="dropdown-item text-danger" onClick={handleLogOut}>
+                      <Link
+                        className="dropdown-item text-danger"
+                        onClick={handleLogOut}
+                      >
                         Đăng xuất
                       </Link>
                     </li>
