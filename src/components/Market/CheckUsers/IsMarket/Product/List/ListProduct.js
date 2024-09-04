@@ -6,34 +6,79 @@ import useSession from "../../../../../../Session/useSession";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import { bouncy } from "ldrs";
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  TablePagination,
+  TextField,
+} from "@mui/material";
+import useDebounce from "../../../../../../CustumHook/useDebounce";
 
 bouncy.register();
 
 const ListProduct = () => {
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
   const [fill, setFill] = useState([]);
   const [idStore] = useSession("idStore");
   const [loading, setLoading] = useState(true);
+  const [order, setOrder] = useState("asc"); // 'asc' or 'desc'
+  const [orderBy, setOrderBy] = useState("price"); // Sorting by price
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [search, setSearch] = useState("");
+  const debounceSearch = useDebounce(search,500);
+
+  const geturlIMG = (productId, filename) => {
+    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
+  };
 
   const formatPrice = (value) => {
     if (!value) return "";
     return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
   };
+
   const loadData = async () => {
     try {
       const res = await axios.get(`/productStore/${idStore}`);
-      setFill(res.data);
+      const filteredData = res.data.filter((product) => {
+        const searchTerm = debounceSearch.toLowerCase();
+        return (
+          product.name.toLowerCase().includes(searchTerm) ||
+          product.productcategory.name.toLowerCase().includes(searchTerm) ||
+          product.trademark.name.toLowerCase().includes(searchTerm)
+        );
+      });
+      setFill(filteredData);
       setLoading(false);
     } catch (error) {
       console.log(error);
       setLoading(true);
     }
   };
+
   useEffect(() => {
     loadData();
-  }, []);
+  }, [idStore, debounceSearch]); // Reload data when idStore or search changes
+
+  const handleSort = (property) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   const handleSubmitDelete = (idPr) => {
     confirmAlert({
@@ -45,17 +90,15 @@ const ListProduct = () => {
           onClick: async () => {
             const id = toast.loading("Vui lòng chờ...");
             try {
-              const res = await axios.delete(`ProductDelete/${idPr}`);
-              setTimeout(() => {
-                toast.update(id, {
-                  render: "Xóa thành công",
-                  type: "success",
-                  isLoading: false,
-                  autoClose: 5000,
-                  closeButton: true,
-                });
-                loadData(idStore);
+              await axios.delete(`ProductDelete/${idPr}`);
+              toast.update(id, {
+                render: "Xóa thành công",
+                type: "success",
+                isLoading: false,
+                autoClose: 5000,
+                closeButton: true,
               });
+              loadData();
             } catch (error) {
               console.log(error);
             }
@@ -68,103 +111,170 @@ const ListProduct = () => {
     });
   };
 
+  const sortedData = fill.slice().sort((a, b) => {
+    if (order === "asc") {
+      return a[orderBy] > b[orderBy] ? 1 : -1;
+    } else {
+      return a[orderBy] < b[orderBy] ? 1 : -1;
+    }
+  });
+
+  const paginatedData = sortedData.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
   return (
-    <div className="card mt-4">
+    <div className="card mt-4 mb-4">
       <div className="d-flex justify-content-between p-4">
         <h3>Sản phẩm cửa hàng</h3>
-        <Link
-          className="btn"
-          id="btn-add"
-          to={"/profileMarket/FormStoreProduct"}
-        >
-          Thêm sản phẩm
-        </Link>
-      </div>
-      <div className="card" style={{ border: "none" }}>
-        <div className="card-body">
-          <table
-            className="table table text-center"
-            style={{ verticalAlign: "middle" }}
+        <button className="btn" id="btn-add">
+          <Link
+            to={"/profileMarket/FormStoreProduct"}
+            style={{ color: "rgb(45, 91, 0)" }}
           >
-            <thead>
-              <tr>
-                <th scope="col">Hình</th>
-                <th scope="col">Sản phẩm</th>
-                <th scope="col">Loại</th>
-                <th scope="col">Hãng</th>
-                <th scope="col">Giá</th>
-                <th scope="col">SL</th>
-                <th scope="col">Thao tác</th>
-              </tr>
-            </thead>
-
+            Thêm sản phẩm
+          </Link>
+        </button>
+      </div>
+      <div className="mx-4">
+        <TextField
+          id="outlined-search"
+          label="Nhập từ khóa bạn cần tìm kiếm (Tên, Loại, Hãng)."
+          type="search"
+          size="small"
+          fullWidth
+          name="searchProduct"
+          onChange={(e) => setSearch(e.target.value)} // Update search state on input change
+          value={search}
+        />
+      </div>
+      <TableContainer component={Paper} id="table-container">
+        <Table id="table" sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell align="center">Hình</TableCell>
+              <TableCell align="center">
+                <TableSortLabel
+                  active={orderBy === "name"}
+                  direction={orderBy === "name" ? order : "asc"}
+                  onClick={() => handleSort("name")}
+                >
+                  Sản phẩm
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center">Loại</TableCell>
+              <TableCell align="center">Hãng</TableCell>
+              <TableCell align="center">
+                <TableSortLabel
+                  active={orderBy === "price"}
+                  direction={orderBy === "price" ? order : "asc"}
+                  onClick={() => handleSort("price")}
+                >
+                  Giá
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center">SL</TableCell>
+              <TableCell align="center">Thao tác</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {loading ? (
               <div className="mt-4">
                 <l-bouncy size="60" speed="0.75" color="black"></l-bouncy>
               </div>
-            ) : fill.length === 0 ? (
+            ) : paginatedData.length === 0 ? (
               <h1>Bạn chưa đăng bán sản phẩm</h1>
             ) : (
-              <>
-                <tbody>
-                  {fill.map((fill) => {
-                    const firstIMG = fill.images[0];
-                    return (
-                      <tr key={fill.id}>
-                        <td id="td-img">
-                          {firstIMG ? (
-                            <img
-                              src={geturlIMG(fill.id, firstIMG.imagename)}
-                              alt=""
-                              className="img-fluid"
-                            />
-                          ) : (
-                            <img
-                              src="/images/no_img.png"
-                              alt=""
-                              className="img-fluid"
-                            />
-                          )}
-                        </td>
-                        <td>{fill.name}</td>
-                        <td>{fill.productcategory.name}</td>
-                        <td>{fill.trademark.name}</td>
-                        <td>{formatPrice(fill.price)}</td>
-                        <td>{fill.quantity}</td>
-                        <td>
-                          <div className="d-flex justify-content-center">
-                            <Link
-                              className="btn"
-                              id="btn-edit"
-                              to={`/profileMarket/updateProduct/${fill.id}`}
-                            >
-                              <i className="bi bi-pencil-square"></i>
-                            </Link>
-                            <button
-                              className="btn mx-2"
-                              id="btn-delete"
-                              onClick={(e) => handleSubmitDelete(fill.id)}
-                            >
-                              <i className="bi bi-trash"></i>
-                            </button>
-                            <Link
-                              className="btn"
-                              id="btn-showDetail"
-                              to={`/profileMarket/checkItemProduct/${fill.id}`}
-                            >
-                              <i class="bi bi-eye"></i>
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </>
+              paginatedData.map((fill) => {
+                const firstIMG = fill.images[0];
+                return (
+                  <TableRow
+                    key={fill.id}
+                    sx={{
+                      "&:last-child td, &:last-child th": { border: 0 },
+                    }}
+                  >
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      className="d-flex justify-content-center"
+                    >
+                      {firstIMG ? (
+                        <img
+                          src={geturlIMG(fill.id, firstIMG.imagename)}
+                          alt=""
+                          className="img-fluid"
+                          id="img-product-item"
+                        />
+                      ) : (
+                        <img
+                          src="/images/no_img.png"
+                          alt=""
+                          className="img-fluid"
+                          id="img-product-item"
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell align="center">{fill.name}</TableCell>
+                    <TableCell align="center">
+                      {fill.productcategory.name}
+                    </TableCell>
+                    <TableCell align="center">{fill.trademark.name}</TableCell>
+                    <TableCell align="center">
+                      {formatPrice(fill.price)}
+                    </TableCell>
+                    <TableCell align="center">{fill.quantity}</TableCell>
+                    <TableCell align="center">
+                      <div className="d-flex justify-content-center">
+                        <Link
+                          className="btn"
+                          id="btn-edit"
+                          to={`/profileMarket/updateProduct/${fill.id}`}
+                        >
+                          <i className="bi bi-pencil-square"></i>
+                        </Link>
+                        <button
+                          className="btn mx-2"
+                          id="btn-delete"
+                          onClick={(e) => handleSubmitDelete(fill.id)}
+                        >
+                          <i className="bi bi-trash"></i>
+                        </button>
+                        <Link
+                          className="btn"
+                          id="btn-showDetail"
+                          to={`/profileMarket/checkItemProduct/${fill.id}`}
+                        >
+                          <i className="bi bi-eye"></i>
+                        </Link>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
-          </table>
-        </div>
-      </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[5, 10]}
+        component="div"
+        count={fill.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        labelRowsPerPage="Giới hạn hiển thị"
+        sx={{
+          ".MuiTablePagination-displayedRows": {
+            transform: "translateY(7px)", // Điều chỉnh giá trị này để di chuyển xuống theo ý muốn
+          },
+          ".MuiTablePagination-selectLabel": {
+            transform: "translateY(7px)", // Điều chỉnh giá trị này để di chuyển xuống theo ý muốn
+          },
+        }}
+      />
     </div>
   );
 };

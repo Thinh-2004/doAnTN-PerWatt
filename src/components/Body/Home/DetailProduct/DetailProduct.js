@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
@@ -7,7 +7,15 @@ import useSession from "../../../../Session/useSession";
 import Header from "../../../Header/Header";
 import "./DetailProduct.css";
 import FindMoreProduct from "../FindMoreProduct/FindMoreProduct";
-import { Button } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Slide,
+} from "@mui/material";
 
 const DetailProduct = () => {
   const { id } = useParams();
@@ -23,6 +31,7 @@ const DetailProduct = () => {
   const findMoreProductRef = useRef(null); // Tạo ref cho phần tử cần cuộn đến
   const [countOrderBuyed, setCountOrderBuyed] = useState(0); // Lưu số lượng đã bán cho mỗi sản phẩm
   const [isCountCart, setIsCountAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
+  const [open, setOpen] = useState(false);
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -129,23 +138,37 @@ const DetailProduct = () => {
       console.error("Error adding to cart:", error);
     }
   };
+
   const handleClickIdCateOrIdBrand = (idCateOrBrand, typeId) => {
     setIdClick(idCateOrBrand);
     setTypeId(typeId);
     console.log(idCateOrBrand, typeId);
   };
+
   const handleViewStoreInfo = () => {
     const storeId = FillDetailPr.store.id;
     if (storeId) {
       changeLink(`/pageStore/${storeId}`); // Điều hướng đến trang thông tin của store
     }
   };
+
+  const [popUpImage, setPopUpImage] = useState(null);
+  const handleClickOpen = (image) => {
+    setPopUpImage(image);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+
+  };
+
   return (
     <>
       <Header reloadCartItems={isCountCart} />
       <div className="container mt-4">
         <div className="row bg-white rounded-4">
-          <div className="col-md-4 border-end">
+          <div className="col-md-4 col-lg-4 col-sm-4 border-end">
             <div
               id="carouselExampleDark"
               className="carousel carousel-dark slide position-relative"
@@ -173,16 +196,44 @@ const DetailProduct = () => {
                         index === selectedImage ? "active" : ""
                       }`}
                     >
-                      <img
-                        src={
-                          FillDetailPr
-                            ? geturlIMG(FillDetailPr.id, image.imagename)
-                            : "/images/no_img.png"
-                        }
-                        className="d-block"
-                        alt={FillDetailPr ? FillDetailPr.name : "No Image"}
-                        style={{ width: "100%", height: "400px" }}
-                      />
+                      <div variant="outlined" onClick={() => handleClickOpen(image)} style={{cursor : "pointer"}}>
+                        <img
+                          src={
+                            FillDetailPr
+                              ? geturlIMG(FillDetailPr.id, image.imagename)
+                              : "/images/no_img.png"
+                          }
+                         
+                          className="d-block"
+                          alt={FillDetailPr ? FillDetailPr.name : "No Image"}
+                          style={{ width: "100%", height: "400px" }}
+                        />
+                      </div>
+                      <Dialog
+                        open={open}
+                        keepMounted
+                        onClose={handleClose}
+                        aria-describedby="alert-dialog-slide-description"
+                        disableScrollLock={true}
+                        fullWidth
+                        maxWidth="xl"
+                      >
+                        <DialogContent>
+                          <img
+                            src={
+                              popUpImage
+                                ? geturlIMG(FillDetailPr.id, popUpImage.imagename)
+                                : ""
+                            }
+                            className="d-block"
+                            alt={FillDetailPr ? FillDetailPr.name : "No Image"}
+                            style={{ width: "100%", height: "100%" }}
+                          />
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={handleClose}>Thoát</Button>
+                        </DialogActions>
+                      </Dialog>
                     </div>
                   ))
                 ) : (
@@ -275,7 +326,7 @@ const DetailProduct = () => {
                   ))}
             </div>
           </div>
-          <div className="col-md-8 d-flex flex-column">
+          <div className="col-md-8 col-lg-8 col-sm-8 d-flex flex-column">
             <div className="p-3 border-bottom">
               <h1 className="fst-italic" id="productName">
                 {FillDetailPr ? FillDetailPr.name : "No Name"}
@@ -303,7 +354,10 @@ const DetailProduct = () => {
                 <div className="mx-2 mt-1">
                   <span htmlFor="">
                     <strong htmlFor="">Đã bán: </strong>
-                    <label htmlFor=""> {countOrderBuyed || 0}</label>
+                    <label htmlFor="">
+                      {" "}
+                      {formatCount(countOrderBuyed || 0)}
+                    </label>
                   </span>
                 </div>
               </div>

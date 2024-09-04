@@ -16,6 +16,16 @@ const Product = ({ item, idCate, handleReset }) => {
   const debouncedItem = useDebounce(item);
   const debouncedIdCate = useDebounce(idCate);
   const [countOrderBuyed, setCountOrderBuyed] = useState({});
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);//Trang hiện tại
+  const itemInPage = 20;
+
+  //Tính toán
+  const lastIndex = currentPage * itemInPage; // đi đến trang típ theo
+  const firstIndex = lastIndex - itemInPage; //Trở về trang (Ví dụ: 40 - 20)
+  const records = fillAllProduct.slice(firstIndex, lastIndex); //cắt danh sách fill sp cần show
+  const pageCount = Math.ceil(fillAllProduct.length / itemInPage); //ceil để làm tròn số số trang 
 
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
@@ -72,7 +82,7 @@ const Product = ({ item, idCate, handleReset }) => {
   }, [debouncedItem, debouncedIdCate]);
 
   const filterBySearchAndCategory = useMemo(() => {
-    return fillAllProduct.filter((product) => {
+    return records.filter((product) => {
       const matchesSearch = debouncedItem
         ? product.name.toLowerCase().includes(debouncedItem.toLowerCase())
         : true;
@@ -81,7 +91,13 @@ const Product = ({ item, idCate, handleReset }) => {
         : true;
       return matchesSearch && matchesCategory;
     });
-  }, [debouncedItem, debouncedIdCate, fillAllProduct]);
+  }, [debouncedItem, debouncedIdCate, records]);
+
+  // Sự kiện đặt lại giá trị cho số trang
+  const handlePageChange = (e, value) => {
+    setCurrentPage(value);
+    console.log(value);
+  };
 
   return (
     <>
@@ -183,7 +199,9 @@ const Product = ({ item, idCate, handleReset }) => {
       )}
       <div className="mt-3 mb-3 d-flex justify-content-center">
         <Pagination
-          count={10}
+          count={pageCount}
+          page={currentPage}
+          onChange={handlePageChange}
           variant="outlined"
           color="primary"
         />

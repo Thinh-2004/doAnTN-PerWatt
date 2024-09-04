@@ -33,7 +33,7 @@ const Home = () => {
     <>
       <Header contextSearch={handleSearch} resetSearch={resetSearch}></Header>
       <About idCategory={handleIdCate}></About>
-      <div className="container" style={{ marginTop: "35%" }}>
+      <div className="container-fluid" style={{ marginTop: "35%" }}>
         <h4 className="text-center fw-bold">Sản phẩm dành cho bạn</h4>
         <div className="row d-flex justify-content-center">
           <ProductItem

@@ -17,7 +17,7 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 12px;
+    font-size: 15px;
   }
   #price-product del , #price-product-item{
     font-size: 12px;

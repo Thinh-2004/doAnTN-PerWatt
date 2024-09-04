@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./HeaderStyle.css";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -9,7 +9,7 @@ import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import axios from "../../Localhost/Custumize-axios";
 import * as tmImage from "@teachablemachine/image";
-import { Button, Slide, styled } from "@mui/material";
+import { Button, styled } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -26,7 +26,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
   const changeLink = useNavigate();
   const [open, setOpen] = useState(false); // mở dialog của tìm bằng hình ảnh
   //AI tìm hình ảnh
-  const URL = "https://teachablemachine.withgoogle.com/models/fojEXSUzI/";
+  const URL = "https://teachablemachine.withgoogle.com/models/h47wTQkV-/";
   const [model, setModel] = useState(null);
   const [maxPredictions, setMaxPredictions] = useState(0);
   const [image, setImage] = useState(null);
@@ -116,6 +116,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     });
   };
 
+  //Ghi âm
   const handleVoiceSearch = () => {
     const recognition = new (window.SpeechRecognition ||
       window.webkitSpeechRecognition)();
@@ -160,6 +161,22 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     }
   };
 
+  const handleClickOpenVoice = () => {
+    setOpenVoice(true);
+  };
+
+  const handleCloseVoice = () => {
+    stopRecording(); // Dừng ghi âm
+    setOpenVoice(false); // Đóng dialog
+    setIsRecording(false);
+  };
+
+  const handleStartRecording = () => {
+    handleVoiceSearch();
+    setIsRecording(true);
+  };
+
+  //Nhập nội dung tìm kiếm
   const handleTextSearch = (e) => {
     setSearch(e.target.value);
     contextSearch(e.target.value);
@@ -256,6 +273,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     }
   };
 
+  //AI train hình ảnh
   useEffect(() => {
     const loadModel = async () => {
       if (!model) {
@@ -265,6 +283,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
         const loadedModel = await tmImage.load(modelURL, metadataURL);
         setModel(loadedModel);
         setMaxPredictions(loadedModel.getTotalClasses());
+        // console.log(maxPredictions);
       }
     };
 
@@ -282,7 +301,19 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     }
   };
 
-  const predict = async () => {
+  const predict = () => {
+    //setSearch(maxPrediction.className);
+    if (maxPrediction.probability.toFixed(2) >= 0.5) {
+      contextSearch(maxPrediction.className);
+      setOpen(false);
+      setImage(null); //đặt lại hình ảnh khi thoát khỏi tìm kiếm
+    } else {
+      toast.warning(
+        "Rất tiếc hình ảnh của bạn cần tìm không có trong sàn chúng tôi."
+      );
+    }
+  };
+  useEffect(() => {
     if (model && image) {
       const imgElement = document.createElement("img");
       imgElement.src = image;
@@ -291,6 +322,25 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
         setPredictions(prediction);
       };
     }
+  }, [model, image]);
+
+  //Lọc ra so sánh cao nhất của AI
+  const getMaxPrediction = () => {
+    if (predictions.length === 0) return null;
+
+    return predictions.reduce((maxPred, pred) =>
+      pred.probability > maxPred.probability ? pred : maxPred
+    );
+  };
+  const maxPrediction = getMaxPrediction();
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setImage(null); //đặt lại hình ảnh khi thoát khỏi tìm kiếm
   };
 
   const VisuallyHiddenInput = styled("input")({
@@ -304,29 +354,6 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     whiteSpace: "nowrap",
     width: 1,
   });
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleClickOpenVoice = () => {
-    setOpenVoice(true);
-  };
-
-  const handleCloseVoice = () => {
-    stopRecording(); // Dừng ghi âm
-    setOpenVoice(false); // Đóng dialog
-    setIsRecording(false);
-  };
-
-  const handleStartRecording = () => {
-    handleVoiceSearch();
-    setIsRecording(true);
-  };
 
   return (
     <div className=" container-fluid sticky-top">
@@ -374,7 +401,9 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                     <div className="d-flex justify-content-center align-content-center">
                       <Audio checkRecording={isRecording} />
                     </div>
-                    <label htmlFor="" className="fs-4">{search ? search : ""}</label>
+                    <label htmlFor="" className="fs-4">
+                      {search ? search : ""}
+                    </label>
                   </div>
                 </DialogContent>
                 <DialogActions>
@@ -388,7 +417,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                 onClick={handleClickOpen}
                 className="rounded-end-4"
               >
-                <i class="bi bi-images"></i>
+                <i className="bi bi-images"></i>
               </Button>
               <Dialog
                 open={open}
@@ -404,7 +433,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                 <DialogContent>
                   <DialogContentText id="alert-dialog-description">
                     <div
-                      id="find-product-by-img"
+                      id="find-product-bg-img"
                       className="d-flex justify-content-center align-content-center"
                     >
                       {image && image !== null ? (
@@ -419,15 +448,21 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                         </label>
                       )}
                     </div>
+                    {/* {predictions.map((fill) => (
+                      <div>
+                        <label htmlFor="">
+                          {fill.className} : {fill.probability.toFixed(2)}
+                        </label>
+                      </div>
+                    ))} */}
                     <div className="mt-3">
                       <Button
                         component="label"
-                        role={undefined}
                         variant="contained"
                         tabIndex={-1}
                         fullWidth
                       >
-                        <i class="bi bi-images"></i>
+                        <i className="bi bi-images"></i>
                         <VisuallyHiddenInput
                           type="file"
                           accept="image/*"
@@ -435,20 +470,13 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                         />
                       </Button>
                     </div>
-
-                    <div id="label-container">
-                      {predictions.map((pred, i) => (
-                        <div key={i}>
-                          {pred.className === "Class 1" ? "Bàn phím" : "Bàn"}
-                          {pred.probability.toFixed(2)}
-                        </div>
-                      ))}
-                    </div>
                   </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleClose}>Hủy</Button>
-                  <Button onClick={predict}>Tìm kiếm</Button>
+                  <Button onClick={predict} disabled={!image}>
+                    Tìm kiếm
+                  </Button>
                 </DialogActions>
               </Dialog>
             </div>

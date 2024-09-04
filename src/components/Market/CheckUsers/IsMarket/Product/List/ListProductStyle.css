@@ -1,50 +1,73 @@
-#td-img{
-    width: 10%;
-    padding: 10px 0px;
-}
-#btn-edit{
-    background-color: rgb(255, 255, 80);
-    color: black;
-    transition: 0.5s;
+#td-img {
+  width: 10%;
+  padding: 10px 0px;
 }
 
-#btn-edit:hover{
-    background-color: yellow;
-    color: black;
-    transform: scale(1.08);
-    transition: 0.5s;
+#btn-edit {
+  background-color: rgb(255, 255, 157);
+  color: rgb(100, 107, 0);
+  transition: 0.5s;
 }
-#btn-delete{
-    background-color: rgb(255, 80, 80);
-    color: white;
-    transition: 0.5s;
+
+#btn-edit:hover {
+  background-color: rgb(255, 255, 157);
+  color: rgb(100, 107, 0);
+  transform: scale(1.08);
+  transition: 0.5s;
 }
-#btn-delete:hover{
-    background-color: red;
-    color: white;
-    transform: scale(1.08);
-    transition: 0.5s;
+
+#btn-delete {
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
+  transition: 0.5s;
 }
-#btn-add{
-    border: 1px solid;
-    transition: 0.5s;
+
+#btn-delete:hover {
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
+  transform: scale(1.08);
+  transition: 0.5s;
 }
-#btn-add:hover{
-    border: none;
-    background-color: green;
-    color: white;
-    margin-top: 5px;
-    transform: scale(1.08);
-    transition: 0.5s;
+
+#btn-add {
+  background-color: rgb(218, 255, 180);
+  color: rgb(45, 91, 0);
+  border: 1px solid;
+  transition: 0.5s;
+  border: none;
+  text-decoration: none;
 }
-#btn-showDetail{
-    background-color: rgb(60, 190, 220);
-    color: white;
-    transition: 0.5s;
+
+#btn-add:hover {
+  border: none;
+  transform: scale(1.05);
+  transition: 0.5s;
 }
-#btn-showDetail:hover{
-    background-color: rgb(60, 190, 220);
-    color: white;
-    transform: scale(1.08);
-    transition: 0.5s;
+
+#btn-showDetail {
+  background-color: rgb(165, 239, 255);
+  color: rgb(0, 67, 82);
+  transition: 0.5s;
+}
+
+#btn-showDetail:hover {
+  background-color: rgb(165, 239, 255);
+  color: rgb(0, 67, 82);
+  transform: scale(1.08);
+  transition: 0.5s;
+}
+
+#img-product-item {
+  width: 100px; /* Hoặc giá trị kích thước cố định phù hợp */
+  height: 100px; /* Hoặc giá trị kích thước cố định phù hợp */
+  object-fit: cover; /* Đảm bảo hình ảnh không bị biến dạng */
+}
+
+#table-container {
+  width: 100%;
+  overflow-x: auto; /* Để bảng có thanh cuộn nếu nội dung vượt quá kích thước */
+}
+
+#table {
+  table-layout: fixed; /* Đảm bảo các cột có kích thước cố định */
 }

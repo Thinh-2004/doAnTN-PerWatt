@@ -76,7 +76,7 @@ const FindMoreProduct = ({ idClick, filterType }) => {
                 return (
                   <div className="col-lg-2 mt-3" key={fill.id}>
                     <div
-                      class="card shadow rounded-4 mt-4 p-2"
+                      className="card shadow rounded-4 mt-4 p-2"
                       style={{ width: "18rem;" }}
                       id="product-item"
                     >
@@ -92,7 +92,7 @@ const FindMoreProduct = ({ idClick, filterType }) => {
                           style={{ width: "200px", height: "150px" }}
                         />
                       </Link>
-                      <div class="mt-2">
+                      <div className="mt-2">
                         <span className="fw-bold fst-italic" id="product-name">
                           {fill.name}
                         </span>
@@ -109,19 +109,19 @@ const FindMoreProduct = ({ idClick, filterType }) => {
                         <div className="d-flex justify-content-between">
                           <div>
                             <label htmlFor="" className="text-warning">
-                              <i class="bi bi-star-fill"></i>
+                              <i className="bi bi-star-fill"></i>
                             </label>
                             <label htmlFor="" className="text-warning">
-                              <i class="bi bi-star-fill"></i>
+                              <i className="bi bi-star-fill"></i>
                             </label>
                             <label htmlFor="" className="text-warning">
-                              <i class="bi bi-star-fill"></i>
+                              <i className="bi bi-star-fill"></i>
                             </label>
                             <label htmlFor="" className="text-warning">
-                              <i class="bi bi-star-fill"></i>
+                              <i className="bi bi-star-fill"></i>
                             </label>
                             <label htmlFor="" className="text-warning">
-                              <i class="bi bi-star-fill"></i>
+                              <i className="bi bi-star-fill"></i>
                             </label>
                           </div>
                           <div>

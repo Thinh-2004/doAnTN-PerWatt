@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../../../Localhost/Custumize-axios";
+import { FormControl, InputLabel, MenuItem } from "@mui/material";
+import { Select } from "antd";
 
-const Category = ({name, value, onChange }) => {
+const Category = ({ name, value, onChange }) => {
   const [fillCate, setFillCate] = useState([]);
 
   useEffect(() => {

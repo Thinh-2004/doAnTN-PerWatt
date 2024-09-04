@@ -38,7 +38,7 @@ const ProductStore = ({ item }) => {
         <>
           <div className="d-flex justify-content-center">
             <i
-              class="bi bi-file-earmark-image-fill"
+              className="bi bi-file-earmark-image-fill"
               style={{ fontSize: "100px" }}
             ></i>
           </div>
