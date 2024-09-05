@@ -16,16 +16,34 @@ const Product = ({ item, idCate, handleReset }) => {
   const debouncedItem = useDebounce(item);
   const debouncedIdCate = useDebounce(idCate);
   const [countOrderBuyed, setCountOrderBuyed] = useState({});
-  
+
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1);//Trang hiện tại
+  const [currentPage, setCurrentPage] = useState(1); //Trang hiện tại
   const itemInPage = 20;
+
+  //Lọc
+  const filterBySearchAndCategory = useMemo(() => {
+    return fillAllProduct.filter((product) => {
+      const matchesSearch = debouncedItem
+        ? product.name.toLowerCase().includes(debouncedItem.toLowerCase())
+        : true;
+      const matchesCategory = debouncedIdCate
+        ? product.productcategory.id === debouncedIdCate
+        : true;
+      const matchesCategoryName = debouncedItem
+        ? product.productcategory.name
+            .toLowerCase()
+            .includes(debouncedItem.toLowerCase())
+        : true;
+      return (matchesSearch || matchesCategoryName) && matchesCategory;
+    });
+  }, [debouncedItem, debouncedIdCate, fillAllProduct]);
 
   //Tính toán
   const lastIndex = currentPage * itemInPage; // đi đến trang típ theo
   const firstIndex = lastIndex - itemInPage; //Trở về trang (Ví dụ: 40 - 20)
-  const records = fillAllProduct.slice(firstIndex, lastIndex); //cắt danh sách fill sp cần show
-  const pageCount = Math.ceil(fillAllProduct.length / itemInPage); //ceil để làm tròn số số trang 
+  const records = filterBySearchAndCategory.slice(firstIndex, lastIndex); //cắt danh sách fill sp cần show
+  const pageCount = Math.ceil(filterBySearchAndCategory.length / itemInPage); //ceil để làm tròn số số trang
 
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
@@ -80,19 +98,7 @@ const Product = ({ item, idCate, handleReset }) => {
     }, 500);
     return () => clearTimeout(timer);
   }, [debouncedItem, debouncedIdCate]);
-
-  const filterBySearchAndCategory = useMemo(() => {
-    return records.filter((product) => {
-      const matchesSearch = debouncedItem
-        ? product.name.toLowerCase().includes(debouncedItem.toLowerCase())
-        : true;
-      const matchesCategory = debouncedIdCate
-        ? product.productcategory.id === debouncedIdCate
-        : true;
-      return matchesSearch && matchesCategory;
-    });
-  }, [debouncedItem, debouncedIdCate, records]);
-
+  
   // Sự kiện đặt lại giá trị cho số trang
   const handlePageChange = (e, value) => {
     setCurrentPage(value);
@@ -135,7 +141,7 @@ const Product = ({ item, idCate, handleReset }) => {
           <label className="fs-4">Thông tin bạn tìm không tồn tại</label>
         </div>
       ) : (
-        filterBySearchAndCategory.map((fill) => {
+        records.map((fill) => {
           const firstIMG = fill.images[0];
           return (
             <div

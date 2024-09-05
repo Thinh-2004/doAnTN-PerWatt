@@ -23,7 +23,8 @@ import useDebounce from "../../../../../../CustumHook/useDebounce";
 bouncy.register();
 
 const ListProduct = () => {
-  const [fill, setFill] = useState([]);
+  const [fill, setFill] = useState([]); // giá trị để fill Pro vào bảng
+  const [fetchData, setFetchData] = useState([]); //giá trị check === 0
   const [idStore] = useSession("idStore");
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState("asc"); // 'asc' or 'desc'
@@ -31,7 +32,7 @@ const ListProduct = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [search, setSearch] = useState("");
-  const debounceSearch = useDebounce(search,500);
+  const debounceSearch = useDebounce(search, 500);
 
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
@@ -53,11 +54,13 @@ const ListProduct = () => {
           product.trademark.name.toLowerCase().includes(searchTerm)
         );
       });
+      setFetchData(res.data);
       setFill(filteredData);
       setLoading(false);
     } catch (error) {
       console.log(error);
       setLoading(true);
+      if (fetchData.length === 0) setLoading(false);
     }
   };
 
@@ -150,43 +153,51 @@ const ListProduct = () => {
         />
       </div>
       <TableContainer component={Paper} id="table-container">
-        <Table id="table" sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell align="center">Hình</TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "name"}
-                  direction={orderBy === "name" ? order : "asc"}
-                  onClick={() => handleSort("name")}
-                >
-                  Sản phẩm
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">Loại</TableCell>
-              <TableCell align="center">Hãng</TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "price"}
-                  direction={orderBy === "price" ? order : "asc"}
-                  onClick={() => handleSort("price")}
-                >
-                  Giá
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">SL</TableCell>
-              <TableCell align="center">Thao tác</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
-              <div className="mt-4">
-                <l-bouncy size="60" speed="0.75" color="black"></l-bouncy>
-              </div>
-            ) : paginatedData.length === 0 ? (
-              <h1>Bạn chưa đăng bán sản phẩm</h1>
-            ) : (
-              paginatedData.map((fill) => {
+        {loading ? (
+          <div className="mt-4 mb-4 d-flex justify-content-center">
+            <l-bouncy size="60" speed="0.75" color="black"></l-bouncy>
+          </div>
+        ) : fetchData.length === 0 ? (
+          <>
+            <hr />
+            <h1 className="text-center">Bạn chưa đăng bán sản phẩm.</h1>
+          </>
+        ) : paginatedData.length === 0 ? (
+          <>
+            <hr />
+            <h1 className="text-center">Sản phẩm bạn tìm không tồn tại.</h1>
+          </>
+        ) : (
+          <Table id="table" sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell align="center">Hình</TableCell>
+                <TableCell align="center">
+                  <TableSortLabel
+                    active={orderBy === "name"}
+                    direction={orderBy === "name" ? order : "asc"}
+                    onClick={() => handleSort("name")}
+                  >
+                    Sản phẩm
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="center">Loại</TableCell>
+                <TableCell align="center">Hãng</TableCell>
+                <TableCell align="center">
+                  <TableSortLabel
+                    active={orderBy === "price"}
+                    direction={orderBy === "price" ? order : "asc"}
+                    onClick={() => handleSort("price")}
+                  >
+                    Giá
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="center">SL</TableCell>
+                <TableCell align="center">Thao tác</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedData.map((fill) => {
                 const firstIMG = fill.images[0];
                 return (
                   <TableRow
@@ -252,10 +263,10 @@ const ListProduct = () => {
                     </TableCell>
                   </TableRow>
                 );
-              })
-            )}
-          </TableBody>
-        </Table>
+              })}
+            </TableBody>
+          </Table>
+        )}
       </TableContainer>
       <TablePagination
         rowsPerPageOptions={[5, 10]}

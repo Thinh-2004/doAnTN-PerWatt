@@ -1,8 +1,8 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import useSession from "../../../../Session/useSession";
 import Header from "../../../Header/Header";
 import "./DetailProduct.css";
@@ -12,9 +12,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Slide,
+  TextField,
 } from "@mui/material";
 
 const DetailProduct = () => {
@@ -32,6 +30,7 @@ const DetailProduct = () => {
   const [countOrderBuyed, setCountOrderBuyed] = useState(0); // Lưu số lượng đã bán cho mỗi sản phẩm
   const [isCountCart, setIsCountAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
   const [open, setOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1); //trạng thái cho số lượng trước khi thêm giỏ hàng
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -124,7 +123,7 @@ const DetailProduct = () => {
     }
 
     const cartItem = {
-      quantity: 1,
+      quantity: quantity,
       user: { id: userId },
       product: { id: productId },
     };
@@ -135,8 +134,16 @@ const DetailProduct = () => {
       setIsCountAddCart(true);
       toast.success("Thêm sản phẩm thành công!");
     } catch (error) {
+      toast.error("Thêm sản phẩm thất bại!" + error);
       console.error("Error adding to cart:", error);
     }
+  };
+
+  const handleChangeQuantity = (e) => {
+    var value = parseInt(e.target.value, 10); // chuyển đổi giá trị được nhập vào và chuyển đổi số thập phân (10)
+    if (value > FillDetailPr.quantity) value = FillDetailPr.quantity;
+    else if (value < 1) value = 1;
+    setQuantity(value);
   };
 
   const handleClickIdCateOrIdBrand = (idCateOrBrand, typeId) => {
@@ -160,7 +167,6 @@ const DetailProduct = () => {
 
   const handleClose = () => {
     setOpen(false);
-
   };
 
   return (
@@ -196,14 +202,17 @@ const DetailProduct = () => {
                         index === selectedImage ? "active" : ""
                       }`}
                     >
-                      <div variant="outlined" onClick={() => handleClickOpen(image)} style={{cursor : "pointer"}}>
+                      <div
+                        variant="outlined"
+                        onClick={() => handleClickOpen(image)}
+                        style={{ cursor: "pointer" }}
+                      >
                         <img
                           src={
                             FillDetailPr
                               ? geturlIMG(FillDetailPr.id, image.imagename)
                               : "/images/no_img.png"
                           }
-                         
                           className="d-block"
                           alt={FillDetailPr ? FillDetailPr.name : "No Image"}
                           style={{ width: "100%", height: "400px" }}
@@ -222,7 +231,10 @@ const DetailProduct = () => {
                           <img
                             src={
                               popUpImage
-                                ? geturlIMG(FillDetailPr.id, popUpImage.imagename)
+                                ? geturlIMG(
+                                    FillDetailPr.id,
+                                    popUpImage.imagename
+                                  )
                                 : ""
                             }
                             className="d-block"
@@ -445,32 +457,21 @@ const DetailProduct = () => {
             <div className="row mb-3">
               <div className="col-lg-6 col-md-6 col-sm-6   ">
                 <div className="d-flex justify-content-start mt-3">
-                  <button
-                    className="btn border rounded-0 rounded-start"
-                    id="buttonDown"
-                    // onClick={() => handleDecrease(index)}
-                  >
-                    <i className="bi bi-dash-lg"></i>
-                  </button>
-                  <input
+                  <TextField
+                    id="outlined-number"
+                    label="Số lượng"
                     type="number"
-                    min={0}
-                    className="form-control rounded-0 w-50"
-                    // value={cart.quantity}
-                    readOnly
+                    name="quantity"
+                    value={quantity}
+                    onChange={handleChangeQuantity}
+                    inputProps={{ min: 1 }} //đặt giá trị nhỏ nhất là
+                    slotProps={{
+                      inputLabel: {
+                        shrink: true, // cho phép Label lên xuống TextField
+                      },
+                    }}
+                    size="small"
                   />
-                  <button
-                    className={`btn border rounded-0 rounded-end 
-                               
-                                `}
-                    id="buttonUp"
-                    // onClick={() => handleIncrease(index)}
-                    // disabled={
-                    //   cart.quantity >= cart.product.quantity
-                    // }
-                  >
-                    <i className="bi bi-plus-lg"></i>
-                  </button>
                 </div>
               </div>
               <div className="col-lg-6 col-md-6 col-sm-6 align-content-end ">

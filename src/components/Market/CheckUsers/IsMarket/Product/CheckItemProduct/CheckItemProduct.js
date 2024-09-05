@@ -4,7 +4,7 @@ import axios from "../../../../../../Localhost/Custumize-axios";
 import { confirmAlert } from "react-confirm-alert";
 import useSession from "../../../../../../Session/useSession";
 import { toast } from "react-toastify";
-import { Button } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 
 const CheckItemProduct = () => {
   const { id } = useParams();
@@ -316,32 +316,20 @@ const CheckItemProduct = () => {
               <div className="row mb-3">
                 <div className="col-lg-6 col-md-6 col-sm-6   ">
                   <div className="d-flex justify-content-start mt-3">
-                    <button
-                      className="btn border rounded-0 rounded-start"
-                      id="buttonDown"
-                      // onClick={() => handleDecrease(index)}
-                    >
-                      <i className="bi bi-dash-lg"></i>
-                    </button>
-                    <input
-                      type="number"
-                      min={0}
-                      className="form-control rounded-0 w-50"
-                      // value={cart.quantity}
-                      readOnly
-                    />
-                    <button
-                      className={`btn border rounded-0 rounded-end 
-                               
-                                `}
-                      id="buttonUp"
-                      // onClick={() => handleIncrease(index)}
-                      // disabled={
-                      //   cart.quantity >= cart.product.quantity
-                      // }
-                    >
-                      <i className="bi bi-plus-lg"></i>
-                    </button>
+                  <TextField
+                    id="outlined-number"
+                    label="Số lượng"
+                    type="number"
+                    name="quantity"
+                    value={1}
+                    inputProps={{ min: 1 }} // đặt giá trị nhỏ nhất là
+                    slotProps={{
+                      inputLabel: {
+                        shrink: true, // cho phép Label lên xuống TextField
+                      },
+                    }}
+                    size="small"
+                  />
                   </div>
                 </div>
                 <div className="col-lg-6 col-md-6 col-sm-6 align-content-end ">
