@@ -39,14 +39,14 @@ const Store = () => {
   return (
     <>
       <Header></Header>
-      <div className="bg-white mt-2">
-        <div class="position-relative">
+      <div className="bg-white mt-2 container-fluid">
+        <div className="position-relative">
           <img
             src={geturlBgStore(fill.id, fill.imgbackgound)}
             alt=""
             id="background-img-filter"
           />
-          <div class="container position-absolute top-50 start-50 translate-middle">
+          <div className="container position-absolute top-50 start-50 translate-middle">
             <img
               src={geturlBgStore(fill.id, fill.imgbackgound)}
               alt=""

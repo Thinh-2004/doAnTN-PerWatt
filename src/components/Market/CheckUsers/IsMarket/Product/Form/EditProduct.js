@@ -6,6 +6,8 @@ import Warranties from "../../Warranties/Warranties";
 import { toast } from "react-toastify";
 import useSession from "../../../../../../Session/useSession";
 import axios from "../../../../../../Localhost/Custumize-axios";
+import { Button, styled, TextField } from "@mui/material";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -151,10 +153,10 @@ const EditProduct = () => {
       return false;
     }
 
-    if(description === ""){
+    if (description === "") {
       toast.warning("Vui lòng nhập mô tả.");
       return false;
-    }else if(description.length < 250){
+    } else if (description.length < 250) {
       toast.warning("Mô tả không được ít hơn 250 kí tự");
       return false;
     }
@@ -209,9 +211,23 @@ const EditProduct = () => {
     }
   };
 
+  const VisuallyHiddenInput = styled("input")({
+    clip: "rect(0 0 0 0)",
+    clipPath: "inset(50%)",
+    height: 1,
+    overflow: "hidden",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    whiteSpace: "nowrap",
+    width: 1,
+  });
+
+
   return (
     <div className="row mt-4">
       <form onSubmit={handleUpdate}>
+        {/* Product Info */}
         <div className="col-lg-12">
           <div className="bg-white rounded-4">
             <div className="card">
@@ -220,48 +236,54 @@ const EditProduct = () => {
                 <div className="row">
                   <div className="col-lg-6 border-end">
                     <div className="mb-3">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Nhập tên sản phẩm"
+                      <TextField
+                        label="Nhập tên sản phẩm"
+                        id="outlined-size-small"
+                        size="small"
                         name="name"
                         value={formEditProduct.name}
                         onChange={handleInputChange}
+                        fullWidth
                       />
                     </div>
                     <div className="mb-3">
-                      <div className="d-flex">
-                        <input
-                          type="text"
-                          placeholder="Nhập giá sản phẩm"
-                          className="form-control me-2"
+                      <div className="d-flex justify-content-between">
+                        <TextField
+                          label="Nhập giá sản phẩm"
+                          id="outlined-size-small"
+                          size="small"
                           name="price"
                           value={formEditProduct.price}
                           onChange={handleInputChange}
+                          fullWidth
+                          className="me-2"
                         />
-                        <input
-                          type="number"
-                          placeholder="Nhập số lượng"
-                          className="form-control"
+                        <TextField
+                          label="Nhập số lượng"
+                          id="outlined-size-small"
+                          size="small"
                           name="quantity"
                           value={formEditProduct.quantity}
                           onChange={handleInputChange}
+                          fullWidth
                         />
                       </div>
                     </div>
                     <div className="mb-3">
-                      <textarea
-                        placeholder="Mô tả sản phẩm"
-                        className="form-control"
-                        rows={12}
+                      <TextField
+                        id="outlined-multiline-static"
+                        label="Mô tả sản phẩm"
+                        multiline
+                        rows={13}
                         name="description"
                         value={formEditProduct.description}
                         onChange={handleInputChange}
-                      ></textarea>
+                        fullWidth
+                      />
                     </div>
                   </div>
                   <div className="col-lg-6">
-                    <div className="mb-3 border" id="bg-upload-img">
+                  <div className="mb-3 border" id="bg-upload-img">
                       {formEditProduct.images &&
                         formEditProduct.images.map((image, index) => (
                           <img
@@ -284,12 +306,22 @@ const EditProduct = () => {
                       ))}
                     </div>
                     <div className="mb-3">
-                      <input
-                        type="file"
-                        className="form-control"
-                        multiple
-                        onChange={handleFileChange}
-                      />
+                      <Button
+                        component="label"
+                        role={undefined}
+                        variant="contained"
+                        tabIndex={-1}
+                        startIcon={<CloudUploadIcon />}
+                        fullWidth
+                        disableElevation
+                      >
+                        Tải hình ảnh sản phẩm
+                        <VisuallyHiddenInput
+                          type="file"
+                          onChange={handleFileChange}
+                          multiple
+                        />
+                      </Button>
                     </div>
                     <div className="mb-3" id="remember">
                       <p>
@@ -309,6 +341,7 @@ const EditProduct = () => {
             </div>
           </div>
         </div>
+        {/* Detailed Info */}
         <div className="col-lg-12">
           <div className="bg-white rounded-4 mt-3">
             <div className="card">
@@ -317,6 +350,7 @@ const EditProduct = () => {
                 <div className="row">
                   <div className="col-lg-6">
                     <div className="mb-4 d-flex">
+                      {/* Category Component */}
                       <Category
                         name="productcategory"
                         value={formEditProduct.productcategory}
@@ -324,6 +358,7 @@ const EditProduct = () => {
                       />
                     </div>
                     <div className="mb-4 d-flex">
+                      {/* Brand Component */}
                       <Brand
                         name="trademark"
                         value={formEditProduct.trademark}
@@ -331,6 +366,7 @@ const EditProduct = () => {
                       />
                     </div>
                     <div className="mb-4 d-flex">
+                      {/* Warranties Component */}
                       <Warranties
                         name="warranties"
                         value={formEditProduct.warranties}
@@ -369,6 +405,7 @@ const EditProduct = () => {
             </div>
           </div>
         </div>
+        {/* Form Actions */}
         <div className="mt-4 mb-4">
           <button className="btn mx-2" id="btn-addProduct" type="submit">
             Đăng sản phẩm

@@ -7,6 +7,9 @@ import Brand from "../../Brand/Brand";
 import Warranties from "../../Warranties/Warranties";
 import useSession from "../../../../../../Session/useSession";
 import axios from "../../../../../../Localhost/Custumize-axios";
+import { Button, preReleaseLabel, styled, TextField } from "@mui/material";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { Flag } from "@mui/icons-material";
 
 const FormProduct = () => {
   const [idStore] = useSession("idStore");
@@ -105,6 +108,9 @@ const FormProduct = () => {
       } else if (!parseFloat(price)) {
         toast.warning("Giá không hợp lệ");
         return false;
+      }else if(price <= 0) {
+        toast.warning("Giá không được nhỏ hơn hoặc bằng 0");
+        return false;
       }
 
       if (quantity === "") {
@@ -113,10 +119,16 @@ const FormProduct = () => {
       } else if (!parseInt(quantity)) {
         toast.warning("Số lượng sản phẩm không hợp lệ.");
         return false;
+      }else if(quantity <= 0){
+        toast.warning("Số lượng không được nhỏ hơn hoặc bằng 0");
+        return false;
       }
 
       if (description === "") {
         toast.warning("Vui lòng nhập mô tả sản phẩm.");
+        return false;
+      }else if(description.length <= 250){
+        toast.warning("Mô tả sản phẩm phải lớn hơn hoặc tối thiểu 250 kí tự");
         return false;
       }
 
@@ -211,6 +223,18 @@ const FormProduct = () => {
     }
   };
 
+  const VisuallyHiddenInput = styled("input")({
+    clip: "rect(0 0 0 0)",
+    clipPath: "inset(50%)",
+    height: 1,
+    overflow: "hidden",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    whiteSpace: "nowrap",
+    width: 1,
+  });
+
   return (
     <div className="row mt-4">
       <form onSubmit={handleSubmit}>
@@ -223,44 +247,50 @@ const FormProduct = () => {
                 <div className="row">
                   <div className="col-lg-6 border-end">
                     <div className="mb-3">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Nhập tên sản phẩm"
+                      <TextField
+                        label="Nhập tên sản phẩm"
+                        id="outlined-size-small"
+                        size="small"
                         name="name"
                         value={formProduct.name}
                         onChange={handleInputChange}
+                        fullWidth
                       />
                     </div>
                     <div className="mb-3">
-                      <div className="d-flex">
-                        <input
-                          type="text"
-                          placeholder="Nhập giá sản phẩm"
-                          className="form-control me-2"
+                      <div className="d-flex justify-content-between">
+                        <TextField
+                          label="Nhập giá sản phẩm"
+                          id="outlined-size-small"
+                          size="small"
                           name="price"
                           value={formProduct.price}
                           onChange={handleInputChange}
+                          fullWidth
+                          className="me-2"
                         />
-                        <input
-                          type="number"
-                          placeholder="Nhập số lượng"
-                          className="form-control"
+                        <TextField
+                          label="Nhập số lượng"
+                          id="outlined-size-small"
+                          size="small"
                           name="quantity"
                           value={formProduct.quantity}
                           onChange={handleInputChange}
+                          fullWidth
                         />
                       </div>
                     </div>
                     <div className="mb-3">
-                      <textarea
-                        placeholder="Mô tả sản phẩm"
-                        className="form-control"
-                        rows={12}
+                      <TextField
+                        id="outlined-multiline-static"
+                        label="Mô tả sản phẩm"
+                        multiline
+                        rows={13}
                         name="description"
                         value={formProduct.description}
                         onChange={handleInputChange}
-                      ></textarea>
+                        fullWidth
+                      />
                     </div>
                   </div>
                   <div className="col-lg-6">
@@ -272,16 +302,27 @@ const FormProduct = () => {
                           alt={`Preview ${index}`}
                           className="img-fluid"
                           onClick={() => handleImageClick(index)}
+                          style={{cursor : "pointer"}}
                         />
                       ))}
                     </div>
                     <div className="mb-3">
-                      <input
-                        type="file"
-                        className="form-control"
-                        multiple
-                        onChange={handleFileChange}
-                      />
+                      <Button
+                        component="label"
+                        role={undefined}
+                        variant="contained"
+                        tabIndex={-1}
+                        startIcon={<CloudUploadIcon />}
+                        fullWidth
+                        disableElevation
+                      >
+                        Tải hình ảnh sản phẩm
+                        <VisuallyHiddenInput
+                          type="file"
+                          onChange={handleFileChange}
+                          multiple
+                        />
+                      </Button>
                     </div>
                     <div className="mb-3" id="remember">
                       <p>

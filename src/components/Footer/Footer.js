@@ -75,55 +75,73 @@ const Footer = () => {
             </label>
           </p>
           <ul className="p-2">
-            <li className="mb-4">
-              <label htmlFor="" className="text-dark">
-                thinhtran24082004@gmail.com
-              </label>
-              <br />
-              <label htmlFor="">Developer</label>
-            </li>
-            <li className="mb-4">
-              <label htmlFor="" className="text-dark">
-                toanvk@gmail.com
-              </label>
-              <br />
-              <label htmlFor="">Developer</label>
-            </li>
-            <li className="mb-4">
-              <label htmlFor="" className="text-dark">
-                hunghp@gmail.com
-              </label>
-              <br />
-              <label htmlFor="">Developer</label>
-            </li>
-            <li className="mb-4">
-              <label htmlFor="" className="text-dark">
-               nheht@gmail.com
-              </label>
-              <br />
-              <label htmlFor="">Developer</label>
-            </li>
-            <li className="mb-4">
-              <label htmlFor="" className="text-dark">
-                thanhtt@gmail.com
-              </label>
-              <br />
-              <label htmlFor="">Developer</label>
-            </li>
-            <li className="mb-4">
-              <label htmlFor="" className="text-dark">
-                thanhvh@gmail.com
-              </label>
-              <br />
-              <label htmlFor="">Developer</label>
-            </li>
+            <div className="row">
+              <div className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-center">
+                <div className="">
+                  <li className="mb-4">
+                    <label htmlFor="" className="text-dark">
+                      thinhtran24082004@gmail.com
+                    </label>
+                    <br />
+                    <label htmlFor="">Developer</label>
+                  </li>
+                  <li className="mb-4">
+                    <label htmlFor="" className="text-dark">
+                      toanvk@gmail.com
+                    </label>
+                    <br />
+                    <label htmlFor="">Developer</label>
+                  </li>
+                  <li className="mb-4">
+                    <label htmlFor="" className="text-dark">
+                      hunghp@gmail.com
+                    </label>
+                    <br />
+                    <label htmlFor="">Developer</label>
+                  </li>
+                  <li className="mb-4">
+                    <label htmlFor="" className="text-dark">
+                      nheht@gmail.com
+                    </label>
+                    <br />
+                    <label htmlFor="">Developer</label>
+                  </li>
+                </div>
+              </div>
+              <div className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-center">
+                <div>
+                  <li className="mb-4">
+                    <label htmlFor="" className="text-dark">
+                      thanhtt@gmail.com
+                    </label>
+                    <br />
+                    <label htmlFor="">Developer</label>
+                  </li>
+
+                  <li className="mb-4">
+                    <label htmlFor="" className="text-dark">
+                      thanhvh@gmail.com
+                    </label>
+                    <br />
+                    <label htmlFor="">Developer</label>
+                  </li>
+                  <li className="mb-4">
+                    <label htmlFor="" className="text-dark">
+                      khaidt@gmail.com
+                    </label>
+                    <br />
+                    <label htmlFor="">Developer</label>
+                  </li>
+                </div>
+              </div>
+            </div>
           </ul>
         </div>
         <hr />
         <div className="d-flex justify-content-evenly mt-2 mb-4">
-            <label>Nhóm thực hiện: Nhóm PerWatt</label>
-            <label>Ngày bắt đầu: 26/07/2024</label>
-            <label>Nơi cấp: Cao đẳng FPT Polytechnic Cần Thơ</label>
+          <label>Nhóm thực hiện: Nhóm PerWatt</label>
+          <label>Ngày bắt đầu: 26/07/2024</label>
+          <label>Nơi cấp: Cao đẳng FPT Polytechnic Cần Thơ</label>
         </div>
         <hr />
       </div>
