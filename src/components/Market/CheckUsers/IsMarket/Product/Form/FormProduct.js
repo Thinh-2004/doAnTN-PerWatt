@@ -7,26 +7,32 @@ import Brand from "../../Brand/Brand";
 import Warranties from "../../Warranties/Warranties";
 import useSession from "../../../../../../Session/useSession";
 import axios from "../../../../../../Localhost/Custumize-axios";
-import { Button, preReleaseLabel, styled, TextField } from "@mui/material";
+import { Button, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { Flag } from "@mui/icons-material";
+import DetailProduct from "../../DetailProduct/DetailProduct";
 
 const FormProduct = () => {
   const [idStore] = useSession("idStore");
   const [images, setImages] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(null);
   const clickTimeout = 300; // Thời gian tối đa giữa hai lần click (milisecond)
+  const [isHiddenDetailPro, setIsHiddenDetailPro] = useState(false); //Điều kiện hiển thị chi tiết sản phẩm
+  const [detailProduct, setDetailProduct] = useState([]);
+
   const [formProduct, setFormProduct] = useState({
     name: "",
     productcategory: "",
     trademark: "",
     warranties: "",
-    price: "",
-    quantity: "",
     size: "",
     specializedgame: "",
     description: "",
     store: idStore,
+  });
+
+  const [priceAndQuantity, setPriceAndQuantity] = useState({
+    priceDetail: "",
+    quantityDetail: "",
   });
 
   const maxFiles = 9;
@@ -65,6 +71,17 @@ const FormProduct = () => {
       ...prevFormProduct,
       [name]: value,
     }));
+    setPriceAndQuantity((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const handleInputChangePriceAndQuantity = (e) => {
+    const { name, value } = e.target;
+    setPriceAndQuantity((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const validate = () => {
@@ -73,18 +90,13 @@ const FormProduct = () => {
       productcategory,
       trademark,
       warranties,
-      price,
-      quantity,
       size,
       description,
       specializedgame,
     } = formProduct;
-    //Biểu thức chính quy
-    const pattenSize = /^(?:\d+x\d+x\d+|\d+inch(?: \d+inch)*)$/i;
+
     if (
       !name &&
-      !price &&
-      !quantity &&
       !size &&
       !description &&
       !productcategory &&
@@ -102,32 +114,11 @@ const FormProduct = () => {
         toast.warning("Tên sản phẩm tối thiểu 20 kí tự.");
         return false;
       }
-      if (price === "") {
-        toast.warning("Vui lòng nhập giá sản phẩm.");
-        return false;
-      } else if (!parseFloat(price)) {
-        toast.warning("Giá không hợp lệ");
-        return false;
-      }else if(price <= 0) {
-        toast.warning("Giá không được nhỏ hơn hoặc bằng 0");
-        return false;
-      }
-
-      if (quantity === "") {
-        toast.warning("Vui lòng nhập số lượng sản phẩm.");
-        return false;
-      } else if (!parseInt(quantity)) {
-        toast.warning("Số lượng sản phẩm không hợp lệ.");
-        return false;
-      }else if(quantity <= 0){
-        toast.warning("Số lượng không được nhỏ hơn hoặc bằng 0");
-        return false;
-      }
 
       if (description === "") {
         toast.warning("Vui lòng nhập mô tả sản phẩm.");
         return false;
-      }else if(description.length <= 250){
+      } else if (description.length <= 250) {
         toast.warning("Mô tả sản phẩm phải lớn hơn hoặc tối thiểu 250 kí tự");
         return false;
       }
@@ -163,26 +154,49 @@ const FormProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
+      // Tạo FormData để gửi đến server
       const formData = new FormData();
+      // Kết hợp dữ liệu từ formProduct
       const productToSend = {
         ...formProduct,
-        productcategory: {
-          id: formProduct.productcategory,
-        },
-        trademark: {
-          id: formProduct.trademark,
-        },
-        warranties: {
-          id: formProduct.warranties,
-        },
-        store: {
-          id: formProduct.store,
-        },
+        productcategory: { id: formProduct.productcategory },
+        trademark: { id: formProduct.trademark },
+        warranties: { id: formProduct.warranties },
+        store: { id: formProduct.store },
       };
+
       formData.append(
         "product",
         new Blob([JSON.stringify(productToSend)], { type: "application/json" })
       );
+      console.log(productToSend);
+
+      // Kiểm tra nếu detailProduct rỗng
+      if (detailProduct.length === 0) {
+        const nullProductDetails = [
+          {
+            price: priceAndQuantity.priceDetail,
+            quantity: priceAndQuantity.quantityDetail,
+          },
+        ];
+        formData.append(
+          "productDetails",
+          new Blob([JSON.stringify(nullProductDetails)], {
+            type: "application/json",
+          })
+        );
+        console.log(nullProductDetails);
+      } else {
+        formData.append(
+          "productDetails",
+          new Blob([JSON.stringify(detailProduct)], {
+            type: "application/json",
+          })
+        );
+        console.log(detailProduct);
+      }
+
+      // Thêm các tệp tin vào FormData
       images.forEach((file) => {
         formData.append("files", file);
       });
@@ -207,20 +221,24 @@ const FormProduct = () => {
             productcategory: "",
             trademark: "",
             warranties: "",
-            price: "",
-            quantity: "",
             size: "",
             specializedgame: "",
             description: "",
             store: idStore,
           });
           setImages([]);
+          setDetailProduct([]); // Reset dữ liệu chi tiết sản phẩm
+          setPriceAndQuantity({ price: "", quantity: "" }); // Reset giá và số lượng
         }, 500);
       } catch (error) {
         console.error("Error:", error.response?.data || error.message);
         toast.error("Đã xảy ra lỗi khi đăng sản phẩm!");
       }
     }
+  };
+
+  const handleClickHidden = () => {
+    setIsHiddenDetailPro(true);
   };
 
   const VisuallyHiddenInput = styled("input")({
@@ -235,17 +253,21 @@ const FormProduct = () => {
     width: 1,
   });
 
+  const handleDataChange = (newData) => {
+    setDetailProduct(newData);
+  };
+
   return (
     <div className="row mt-4">
       <form onSubmit={handleSubmit}>
         {/* Product Info */}
-        <div className="col-lg-12">
+        <div className="col-lg-12 col-md-12 col-sm-12">
           <div className="bg-white rounded-4">
             <div className="card">
               <h3 className="text-center mt-4">Thông tin sản phẩm</h3>
               <div className="card-body">
                 <div className="row">
-                  <div className="col-lg-6 border-end">
+                  <div className="col-lg-6 col-md-6 col-sm-6 border-end">
                     <div className="mb-3">
                       <TextField
                         label="Nhập tên sản phẩm"
@@ -258,34 +280,11 @@ const FormProduct = () => {
                       />
                     </div>
                     <div className="mb-3">
-                      <div className="d-flex justify-content-between">
-                        <TextField
-                          label="Nhập giá sản phẩm"
-                          id="outlined-size-small"
-                          size="small"
-                          name="price"
-                          value={formProduct.price}
-                          onChange={handleInputChange}
-                          fullWidth
-                          className="me-2"
-                        />
-                        <TextField
-                          label="Nhập số lượng"
-                          id="outlined-size-small"
-                          size="small"
-                          name="quantity"
-                          value={formProduct.quantity}
-                          onChange={handleInputChange}
-                          fullWidth
-                        />
-                      </div>
-                    </div>
-                    <div className="mb-3">
                       <TextField
                         id="outlined-multiline-static"
                         label="Mô tả sản phẩm"
                         multiline
-                        rows={13}
+                        rows={15}
                         name="description"
                         value={formProduct.description}
                         onChange={handleInputChange}
@@ -293,7 +292,7 @@ const FormProduct = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-lg-6">
+                  <div className="col-lg-6 col-md-6 col-sm-6 ">
                     <div className="mb-3 border" id="bg-upload-img">
                       {images.map((image, index) => (
                         <img
@@ -301,8 +300,9 @@ const FormProduct = () => {
                           src={URL.createObjectURL(image)}
                           alt={`Preview ${index}`}
                           className="img-fluid"
+                          id="img-fill-product"
                           onClick={() => handleImageClick(index)}
-                          style={{cursor : "pointer"}}
+                          style={{ cursor: "pointer" }}
                         />
                       ))}
                     </div>
@@ -342,14 +342,70 @@ const FormProduct = () => {
             </div>
           </div>
         </div>
+        {/* Detail product */}
+        <div className="col-lg-12 col-md-12 col-sm-12">
+          <div className="bg-white rounded-4 mt-3">
+            <div className="card">
+              <div className="d-flex justify-content-between align-items-center">
+                <h3 className="mx-4 mt-4">Thông tin bán hàng</h3>
+                {isHiddenDetailPro ? (
+                  <button
+                    className="btn me-4"
+                    type="button"
+                    onClick={() => setIsHiddenDetailPro(false)}
+                  >
+                    X
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn me-4"
+                    id="btn-add-productCate"
+                    onClick={handleClickHidden}
+                  >
+                    Thêm phân loại bán hàng
+                  </button>
+                )}
+              </div>
+
+              <div className="card-body">
+                {isHiddenDetailPro ? (
+                  <DetailProduct DataDetail={handleDataChange} />
+                ) : (
+                  <div className="d-flex justify-content-between">
+                    <TextField
+                      label="Nhập giá sản phẩm"
+                      id="outlined-size-small"
+                      size="small"
+                      name="priceDetail"
+                      value={priceAndQuantity.price}
+                      onChange={handleInputChangePriceAndQuantity}
+                      fullWidth
+                      className="me-2"
+                    />
+                    <TextField
+                      label="Nhập số lượng"
+                      id="outlined-size-small"
+                      size="small"
+                      name="quantityDetail"
+                      value={priceAndQuantity.quantity}
+                      onChange={handleInputChangePriceAndQuantity}
+                      fullWidth
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
         {/* Detailed Info */}
-        <div className="col-lg-12">
+        <div className="col-lg-12 col-md-12 col-sm-12">
           <div className="bg-white rounded-4 mt-3">
             <div className="card">
               <h3 className="mx-4 mt-4">Thông tin chi tiết</h3>
               <div className="card-body">
                 <div className="row">
-                  <div className="col-lg-6">
+                  <div className="col-lg-6 col-md-6 col-sm-6">
                     <div className="mb-4 d-flex">
                       {/* Category Component */}
                       <Category
@@ -375,7 +431,7 @@ const FormProduct = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-lg-6 border-start">
+                  <div className="col-lg-6 col-md-6 col-sm-6 border-start">
                     <div className="mb-4 d-flex">
                       <select
                         name="specializedgame"

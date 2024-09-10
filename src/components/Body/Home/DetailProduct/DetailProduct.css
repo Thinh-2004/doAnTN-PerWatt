@@ -30,43 +30,71 @@
   z-index: 1; /* Đảm bảo rằng phần tử nằm trên các phần tử khác */
 }
 
-#btn-add-card{
- border: 1px solid #00C7FF;
- transition: 0.5s;
-}
-
-#btn-add-card:hover{
-  border: 1px solid #00C7FF;
-  transform: scale(1.08); 
+#btn-add-card {
+  border: 1px solid #00c7ff;
   transition: 0.5s;
-
 }
 
-#btn-buy-now{
-  background-color: #CCF4FF;
+#btn-add-card:hover {
+  border: 1px solid #00c7ff;
+  transform: scale(1.08);
+  transition: 0.5s;
+}
+
+#btn-buy-now {
+  background-color: #ccf4ff;
   color: #004659;
   border: none;
   transition: 0.5s;
 }
 
-#btn-buy-now:hover{
-  background-color: #CCF4FF;
+#btn-buy-now:hover {
+  background-color: #ccf4ff;
   color: #004659;
   border: none;
-  transform: scale(1.08); 
+  transform: scale(1.08);
   transition: 0.5s;
 }
 
-#btn-infor-shop{
-  background-color: #CCF4FF;
+#btn-infor-shop {
+  background-color: #ccf4ff;
   color: #004659;
   border: none;
   transition: 0.5s;
 }
 
-#btn-chatMessage{
+#btn-chatMessage {
   background-color: rgb(207, 253, 161);
-  color:  rgb(66, 132, 0);
+  color: rgb(66, 132, 0);
   border: none;
   transition: 0.5s;
 }
+
+#hover-idDetailProduct {
+  background: white;
+  transition: 0.5s;
+}
+
+#hover-idDetailProduct:hover {
+  cursor: pointer;
+  background: #d5d5d5;
+  color: white;
+  transform: scale(1.05);
+}
+
+#hover-idDetailProduct:hover label {
+  color: white;
+  cursor: pointer;
+  transform: scale(1.05);
+}
+
+ #active-selected-detailProduct {
+  background: #929292;
+  color: white;
+}
+
+#active-selected-detailProduct  label{
+  color: white;
+}
+
+
