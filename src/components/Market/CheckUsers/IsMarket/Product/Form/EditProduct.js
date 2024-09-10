@@ -8,6 +8,7 @@ import useSession from "../../../../../../Session/useSession";
 import axios from "../../../../../../Localhost/Custumize-axios";
 import { Button, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import EditDetailProduct from "../../DetailProduct/EditDetailProduct";
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -18,18 +19,19 @@ const EditProduct = () => {
   const [images, setImages] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(null);
   const clickTimeout = 300; // Thời gian tối đa giữa hai lần click (milisecond)
+  const [isHiddenDetailPro, setIsHiddenDetailPro] = useState(false); //Điều kiện hiển thị chi tiết sản phẩm
   const [formEditProduct, setFormEditProduct] = useState({
     name: "",
     productcategory: "",
     trademark: "",
     warranties: "",
-    price: "",
-    quantity: "",
     size: "",
     specializedgame: "",
     description: "",
     store: idStore,
   });
+  const [editProductDetail, setEditProductDetail] = useState([]); // Nhận dữ liệu từ API
+  const [detailProduct, setDetailProduct] = useState([]); // Nhận dữ liệu từ form Detail Product
   const maxFiles = 9;
   const changeLink = useNavigate();
 
@@ -42,16 +44,38 @@ const EditProduct = () => {
         productcategory: res.data.productcategory.id,
         trademark: res.data.trademark.id,
         warranties: res.data.warranties.id,
+        productDetails: res.data.productDetails,
         store: idStore,
       });
+
+      // Đổ dữ liệu productDetails vào state
+      const detailInputs = res.data.productDetails.map((detail) => ({
+        namedetail: detail.namedetail,
+        price: detail.price,
+        quantity: detail.quantity,
+        imagedetail: detail.imagedetail,
+      }));
+      setEditProductDetail(detailInputs);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
+    // Fill dữ liệu
     fillData(id);
   }, [id]);
+
+  useEffect(() => {
+    if (editProductDetail && editProductDetail.length > 0) {
+      const hasEmptyDetails = editProductDetail.some(
+        (detail) => !detail.namedetail || !detail.imagedetail
+      );
+      setIsHiddenDetailPro(!hasEmptyDetails);
+    } else {
+      setIsHiddenDetailPro(false);
+    }
+  }, [id, editProductDetail]);
 
   // Hàm xử lí sự kiện thay đổi File
   const handleFileChange = (event) => {
@@ -107,17 +131,12 @@ const EditProduct = () => {
       productcategory,
       trademark,
       warranties,
-      price,
-      quantity,
       size,
       description,
       specializedgame,
     } = formEditProduct;
-    const pattenSize = /^(?:\d+x\d+x\d+|\d+inch(?: \d+inch)*)$/i;
     if (
       !name ||
-      !price ||
-      !quantity ||
       !size ||
       !description ||
       !productcategory ||
@@ -137,21 +156,6 @@ const EditProduct = () => {
       return false;
     }
 
-    if (price === "") {
-      toast.warning("Vui lòng nhập giá sản phẩm");
-      return false;
-    } else if (!parseFloat(price)) {
-      toast.warning("Giá sản phẩm không hợp lệ");
-      return false;
-    }
-
-    if (quantity === "") {
-      toast.warning("Vui lòng nhập số lượng.");
-      return false;
-    } else if (!parseInt(quantity)) {
-      toast.warning("Số lượng sản phẩm không hợp lệ.");
-      return false;
-    }
 
     if (description === "") {
       toast.warning("Vui lòng nhập mô tả.");
@@ -223,6 +227,13 @@ const EditProduct = () => {
     width: 1,
   });
 
+  const handleClickHidden = () => {
+    setIsHiddenDetailPro(true);
+  };
+
+  const handleDataChange = (newData) => {
+    setDetailProduct(newData);
+  };
 
   return (
     <div className="row mt-4">
@@ -247,34 +258,11 @@ const EditProduct = () => {
                       />
                     </div>
                     <div className="mb-3">
-                      <div className="d-flex justify-content-between">
-                        <TextField
-                          label="Nhập giá sản phẩm"
-                          id="outlined-size-small"
-                          size="small"
-                          name="price"
-                          value={formEditProduct.price}
-                          onChange={handleInputChange}
-                          fullWidth
-                          className="me-2"
-                        />
-                        <TextField
-                          label="Nhập số lượng"
-                          id="outlined-size-small"
-                          size="small"
-                          name="quantity"
-                          value={formEditProduct.quantity}
-                          onChange={handleInputChange}
-                          fullWidth
-                        />
-                      </div>
-                    </div>
-                    <div className="mb-3">
                       <TextField
                         id="outlined-multiline-static"
                         label="Mô tả sản phẩm"
                         multiline
-                        rows={13}
+                        rows={15}
                         name="description"
                         value={formEditProduct.description}
                         onChange={handleInputChange}
@@ -283,7 +271,7 @@ const EditProduct = () => {
                     </div>
                   </div>
                   <div className="col-lg-6">
-                  <div className="mb-3 border" id="bg-upload-img">
+                    <div className="mb-3 border" id="bg-upload-img">
                       {formEditProduct.images &&
                         formEditProduct.images.map((image, index) => (
                           <img
@@ -291,6 +279,7 @@ const EditProduct = () => {
                             src={geturlIMG(formEditProduct.id, image.imagename)}
                             alt={`Current ${index}`}
                             className="img-fluid"
+                            id="img-fill-product"
                             style={{ cursor: "pointer" }}
                             onClick={() => handleDeleteImageClick(image.id)}
                           />
@@ -301,6 +290,7 @@ const EditProduct = () => {
                           src={URL.createObjectURL(image)}
                           alt={`Preview ${index}`}
                           className="img-fluid"
+                          id="img-fill-product"
                           onClick={() => handleImageClick(index)}
                         />
                       ))}
@@ -337,6 +327,62 @@ const EditProduct = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Detail product */}
+        <div className="col-lg-12 col-md-12 col-sm-12">
+          <div className="bg-white rounded-4 mt-3">
+            <div className="card">
+              <div className="d-flex justify-content-between align-items-center">
+                <h3 className="mx-4 mt-4">Thông tin bán hàng</h3>
+                {isHiddenDetailPro ? (
+                  <button
+                    className="btn me-4"
+                    type="button"
+                    onClick={() => setIsHiddenDetailPro(false)}
+                  >
+                    X
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn me-4"
+                    id="btn-add-productCate"
+                    onClick={handleClickHidden}
+                  >
+                    Thêm phân loại bán hàng
+                  </button>
+                )}
+              </div>
+
+              <div className="card-body">
+                {isHiddenDetailPro ? (
+                  <EditDetailProduct DataDetail={handleDataChange} DataEditDetailProduct={editProductDetail}/>
+                ) : (
+                  editProductDetail.map((detailInput, index) => (
+                    <div key={index} className="d-flex justify-content-between">
+                      <TextField
+                        label="Nhập giá sản phẩm"
+                        size="small"
+                        name="price"
+                        value={detailInput.price}
+                        // onChange={(e) => handleDetailInputChange(e, index)}
+                        fullWidth
+                        className="me-2"
+                      />
+                      <TextField
+                        label="Nhập số lượng"
+                        size="small"
+                        name="quantity"
+                        value={detailInput.quantity}
+                        // onChange={(e) => handleDetailInputChange(e, index)}
+                        fullWidth
+                      />
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

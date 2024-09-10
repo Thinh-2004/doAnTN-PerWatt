@@ -9,11 +9,18 @@ import "./DetailProduct.css";
 import FindMoreProduct from "../FindMoreProduct/FindMoreProduct";
 import {
   Button,
+  Card,
+  CardActionArea,
+  CardActions,
+  CardContent,
+  CardMedia,
   Dialog,
   DialogActions,
   DialogContent,
   TextField,
+  Typography,
 } from "@mui/material";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 const DetailProduct = () => {
   const { id } = useParams();
@@ -37,11 +44,37 @@ const DetailProduct = () => {
   const geturlIMGStore = (userId, filename) => {
     return `${axios.defaults.baseURL}files/user/${userId}/${filename}`;
   };
-
+  const geturlImgDetailProduct = (detailId, filename) => {
+    return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
+  };
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(0);
+  const [totalQuantity, setTotalQuantity] = useState(0);
+  const [selectedIdDetail, setSelectedIdDetail] = useState(null);
   const loadProductDetail = async (id) => {
     try {
       const res = await axios.get(`product/${id}`);
       setFillDetailPr(res.data);
+
+      //Lọc giá sản phẩm
+      const dataMinPrice = Math.min(
+        ...res.data.productDetails.map((filter) => filter.price)
+      );
+      const dataMaxPrice = Math.max(
+        ...res.data.productDetails.map((filter) => filter.price)
+      );
+
+      setMinPrice(dataMinPrice);
+      setMaxPrice(dataMaxPrice);
+
+      //Tổng số lượng sản phẩm
+      const totalDetailQuantity = res.data.productDetails.reduce(
+        (total, detailQuantity) => total + detailQuantity.quantity,
+        0
+      );
+      setTotalQuantity(totalDetailQuantity);
+
+      //Đếm số lượng sản phẩm đã bán
       if (res.data && res.data.store && res.data.store.id) {
         const storeRes = await axios.get(`/productStore/${res.data.store.id}`);
         setCountProductStore(storeRes.data.length);
@@ -167,6 +200,20 @@ const DetailProduct = () => {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  //detailProduct
+  const handleClickIdDetail = (idDetail) => () => {
+    setSelectedIdDetail(idDetail);
+    const selectedProduct = FillDetailPr.productDetails.find(
+      (detail) => detail.id === idDetail
+    );
+
+    if (selectedProduct) {
+      setTotalQuantity(selectedProduct.quantity);
+      setMinPrice(selectedProduct.price);
+      setMaxPrice(selectedProduct.price);
+    }
   };
 
   return (
@@ -367,7 +414,6 @@ const DetailProduct = () => {
                   <span htmlFor="">
                     <strong htmlFor="">Đã bán: </strong>
                     <label htmlFor="">
-                      {" "}
                       {formatCount(countOrderBuyed || 0)}
                     </label>
                   </span>
@@ -376,7 +422,7 @@ const DetailProduct = () => {
               <div className="d-flex justify-content-end">
                 <span htmlFor="">
                   <strong htmlFor="" className="me-2">
-                    {FillDetailPr ? FillDetailPr.quantity : "N/A"}
+                    {totalQuantity ? totalQuantity : 0}
                   </strong>
                   <label htmlFor="">sản phẩm còn lại</label>
                 </span>
@@ -389,7 +435,10 @@ const DetailProduct = () => {
                   {formatPrice(3000000)}đ
                 </del>
                 <span className="text-danger fw-bold fs-3 mx-3">
-                  {formatPrice(FillDetailPr ? FillDetailPr.price : 0)}đ
+                  {minPrice === maxPrice
+                    ? formatPrice(minPrice) + " đ"
+                    : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` +
+                      " đ"}
                 </span>
               </div>
             </div>
@@ -455,7 +504,7 @@ const DetailProduct = () => {
               </div>
             </div>
             <div className="row mb-3">
-              <div className="col-lg-6 col-md-6 col-sm-6   ">
+              <div className="col-lg-6 col-md-6 col-sm-6 ">
                 <div className="d-flex justify-content-start mt-3">
                   <TextField
                     id="outlined-number"
@@ -495,6 +544,61 @@ const DetailProduct = () => {
                   >
                     <i className="bi bi-cart-plus fs-5"></i>
                   </Button>
+                </div>
+              </div>
+              <div
+                className="mt-2 mb-2"
+                hidden={
+                  !(
+                    FillDetailPr &&
+                    FillDetailPr.productDetails &&
+                    FillDetailPr.productDetails.length > 0 &&
+                    FillDetailPr.productDetails.some(
+                      (detail) => detail.namedetail !== null
+                    )
+                  )
+                }
+              >
+                <p className="p-3 fst-italic fs-5 m-0">Phân loại sản phẩm</p>
+                <div className="bg-light rounded-3 shadow border p-2 m-2 d-flex flex-wrap overflow-auto">
+                  {FillDetailPr &&
+                    FillDetailPr.productDetails &&
+                    FillDetailPr.productDetails.length > 0 &&
+                    FillDetailPr.productDetails.map((fillDetail, index) => (
+                      <div
+                        className={`d-flex align-items-center text-nowrap border rounded-2 p-2 m-2 position-relative ${
+                          selectedIdDetail === fillDetail.id
+                            ? "active-selected-detailProduct"
+                            : "hover-idDetailProduct"
+                        }`}
+                        key={fillDetail.id}
+                        id={`${
+                          selectedIdDetail === fillDetail.id
+                            ? "active-selected-detailProduct"
+                            : "hover-idDetailProduct"
+                        }`}
+                        onClick={handleClickIdDetail(fillDetail.id)}
+                      >
+                        <img
+                          src={geturlImgDetailProduct(
+                            fillDetail.id,
+                            fillDetail.imagedetail
+                          )}
+                          alt="Ảnh phân loại sản phẩm"
+                          className="img-fluid"
+                          style={{ maxWidth: "50px", maxHeight: "50px" }}
+                        />
+                        <label className="ms-2">{fillDetail.namedetail}</label>
+                        <div
+                          className="position-absolute bottom-0 end-0"
+                          hidden={selectedIdDetail !== fillDetail.id}
+                        >
+                          <CheckCircleOutlineIcon
+                            style={{ color: "#00C7FF" }}
+                          />
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>

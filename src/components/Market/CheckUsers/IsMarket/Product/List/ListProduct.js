@@ -64,9 +64,14 @@ const ListProduct = () => {
     }
   };
 
+  // const loadDetailProduct = async () => {
+  //   const res = await axios.get(`/detailProduct/14`)
+  //   console.log(res.data);
+  // }
+
   useEffect(() => {
     loadData();
-  }, [idStore, debounceSearch]); // Reload data when idStore or search changes
+  }, [idStore, debounceSearch]);
 
   const handleSort = (property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -199,6 +204,20 @@ const ListProduct = () => {
             <TableBody>
               {paginatedData.map((fill) => {
                 const firstIMG = fill.images[0];
+                const productDetails = fill.productDetails;
+
+                //Tìm giá nhỏ nhất lớn nhất trong mảng
+                const minPrice = Math.min(
+                  ...productDetails.map((filter) => filter.price)
+                );
+                const maxPrice = Math.max(
+                  ...productDetails.map((filter) => filter.price)
+                );
+
+                const totalQuantity = productDetails.reduce(
+                  (total, detailQuantity) => total + detailQuantity.quantity,
+                  0
+                );
                 return (
                   <TableRow
                     key={fill.id}
@@ -233,9 +252,13 @@ const ListProduct = () => {
                     </TableCell>
                     <TableCell align="center">{fill.trademark.name}</TableCell>
                     <TableCell align="center">
-                      {formatPrice(fill.price)}
+                      {minPrice === maxPrice
+                        ? formatPrice(minPrice) + " đ"
+                        : `${formatPrice(minPrice)} - ${formatPrice(
+                            maxPrice
+                          )}` + " đ"}
                     </TableCell>
-                    <TableCell align="center">{fill.quantity}</TableCell>
+                    <TableCell align="center">{totalQuantity}</TableCell>
                     <TableCell align="center">
                       <div className="d-flex justify-content-center">
                         <Link

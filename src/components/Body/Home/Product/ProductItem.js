@@ -98,7 +98,7 @@ const Product = ({ item, idCate, handleReset }) => {
     }, 500);
     return () => clearTimeout(timer);
   }, [debouncedItem, debouncedIdCate]);
-  
+
   // Sự kiện đặt lại giá trị cho số trang
   const handlePageChange = (e, value) => {
     setCurrentPage(value);
@@ -143,6 +143,15 @@ const Product = ({ item, idCate, handleReset }) => {
       ) : (
         records.map((fill) => {
           const firstIMG = fill.images[0];
+          const productDetails = fill.productDetails;
+
+          //Tìm giá nhỏ nhất lớn nhất trong mảng
+          const minPrice = Math.min(
+            ...productDetails.map((filter) => filter.price)
+          );
+          const maxPrice = Math.max(
+            ...productDetails.map((filter) => filter.price)
+          );
           return (
             <div
               className="col-lg-2 col-md-3 col-sm-4 mt-3 card shadow rounded-4 p-2 d-flex flex-column"
@@ -179,9 +188,13 @@ const Product = ({ item, idCate, handleReset }) => {
                   {fill.name}
                 </span>
                 <h5 id="price-product">
-                  <del className="text-secondary me-1">3,000,000 đ</del> -
-                  <span className="text-danger mx-1" id="price-product-item">
-                    {formatPrice(fill.price)} đ
+                  {/* <del className="text-secondary me-1">3,000,000 đ</del> - */}
+                  <span className="text-danger mx-1 fs-6" id="price-product-item">
+                  {minPrice === maxPrice
+                        ? formatPrice(minPrice) + " đ"
+                        : `${formatPrice(minPrice)} - ${formatPrice(
+                            maxPrice
+                          )}` + " đ"}
                   </span>
                 </h5>
                 <hr />
