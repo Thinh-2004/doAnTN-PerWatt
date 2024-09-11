@@ -11,6 +11,9 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link } from "react-router-dom";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 
 const Register = ({ onRegisterSuccess }) => {
   const [formUser, setFormUser] = useState({
@@ -31,12 +34,21 @@ const Register = ({ onRegisterSuccess }) => {
   const [isFocusedPassCofig, setIsFocusedPassCofig] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    setFormUser((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    // Kiểm tra nếu `e` là một sự kiện (từ các input khác), xử lý bình thường
+    if (e?.target) {
+      const { name, value, type, checked } = e.target;
+      setFormUser((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    }
+    // Nếu `e` là giá trị ngày từ DatePicker
+    else {
+      setFormUser((prev) => ({
+        ...prev,
+        birthdate: e, // Cập nhật giá trị ngày từ DatePicker
+      }));
+    }
   };
 
   const validate = () => {
@@ -93,11 +105,28 @@ const Register = ({ onRegisterSuccess }) => {
       } else {
         const today = new Date();
         const birthDate = new Date(birthdate);
-        const age = today.getFullYear() - birthDate.getFullYear();
-        if (birthDate > today) {
+
+        // Tính tuổi dựa trên năm, tháng, và ngày
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDifference = today.getMonth() - birthDate.getMonth();
+        const dayDifference = today.getDate() - birthDate.getDate();
+
+        // Điều chỉnh tuổi nếu tháng hiện tại hoặc ngày hiện tại chưa tới sinh nhật trong năm nay
+        if (
+          monthDifference < 0 ||
+          (monthDifference === 0 && dayDifference < 0)
+        ) {
+          age--;
+        }
+
+        if (
+          birthDate.getDate() >= today.getDate() &&
+          birthDate.getMonth() >= today.getMonth() &&
+          birthDate.getFullYear() >= today.getFullYear()
+        ) {
           toast.warning("Ngày sinh không thể lớn hơn hoặc bằng ngày hiện tại");
           return false;
-        } else if (age > 100 || age === 100) {
+        } else if (age > 100) {
           toast.warning("Tuổi không hợp lệ");
           return false;
         }
@@ -171,6 +200,18 @@ const Register = ({ onRegisterSuccess }) => {
           if (onRegisterSuccess) {
             onRegisterSuccess();
           }
+          setFormUser({
+            fullname: "",
+            password: "",
+            email: "",
+            birthdate: "",
+            gender: "",
+            role: 3, // Vai trò buyer
+            address: "",
+            phone: "",
+            configPassWord: "",
+            check: false,
+          });
         }, 2000);
       } catch (error) {
         console.error("Error response:", error.response);
@@ -203,6 +244,7 @@ const Register = ({ onRegisterSuccess }) => {
   const handleMouseDownPasswordConfig = (event) => {
     event.preventDefault();
   };
+
   return (
     <form onSubmit={handleRegister} className="form-sign">
       <h2 className="title">Đăng Ký</h2>
@@ -278,13 +320,31 @@ const Register = ({ onRegisterSuccess }) => {
           </div>
 
           <div className="mb-3">
-            <input
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                format="DD/MM/YYYY"
+                name="birthdate"
+                value={
+                  formUser.birthdate
+                    ? dayjs(formUser.birthdate).tz("Asia/Ho_Chi_Minh")
+                    : null
+                } // Chuyển đổi múi giờ về Việt Nam
+                onChange={handleChange}
+                sx={{
+                  "& .MuiInputBase-root": {
+                    width: "320px",
+                    height: "40px",
+                  },
+                }}
+              />
+            </LocalizationProvider>
+            {/* <input
               type="date"
               name="birthdate"
               value={formUser.birthdate}
               onChange={handleChange}
               className="form-control"
-            />
+            /> */}
           </div>
           <div className="mb-3">
             <TextField
