@@ -5,7 +5,6 @@ import axios from "../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
 import useDebounce from "../../../../CustumHook/useDebounce";
 import { Box, Pagination, Skeleton } from "@mui/material";
-import { Stack } from "@mui/material";
 
 trefoil.register();
 
@@ -63,7 +62,18 @@ const Product = ({ item, idCate, handleReset }) => {
   const loadData = async () => {
     try {
       const res = await axios.get("pageHome");
-      setFillAllProduct(res.data);
+
+       // Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm và lưu vào productDetails
+       const dataWithDetails = await Promise.all(
+        res.data.map(async (product) => {
+          const resDetail = await axios.get(`/detailProduct/${product.id}`);
+          return {
+            ...product,
+            productDetails: resDetail.data, // Lưu chi tiết sản phẩm vào mỗi sản phẩm
+          };
+        })
+      );
+      setFillAllProduct(dataWithDetails);
       setLoading(false);
       loadOrderBuyed(res.data);
     } catch (error) {

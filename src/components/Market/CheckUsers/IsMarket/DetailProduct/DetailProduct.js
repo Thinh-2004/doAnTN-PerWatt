@@ -6,7 +6,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { toast } from "react-toastify";
 
-const DetailProduct = ({ DataDetail, DataEditDetailProduct }) => {
+const DetailProduct = ({ DataDetail, reloadArrayDetail }) => {
   const [moveData, setMoveData] = useState([]); //để chuyển dữ liệu sang components khác xử lí
   const [temporaryData, setTemporaryData] = useState([]); //để fill dữ liệu;
   const [newTemporaryData, setNewTemporaryData] = useState({
@@ -33,6 +33,9 @@ const DetailProduct = ({ DataDetail, DataEditDetailProduct }) => {
     if (!namedetail) {
       toast.warning("Vui lòng nhập phân loại sản phẩm");
       return false;
+    } else if (namedetail.length > 200) {
+      toast.warning("Tên phân loại không được lớn hơn 200 kí tự");
+      return false;
     }
 
     if (!price) {
@@ -41,8 +44,8 @@ const DetailProduct = ({ DataDetail, DataEditDetailProduct }) => {
     } else if (!parseFloat(price)) {
       toast.warning("Giá không hợp lệ");
       return false;
-    } else if (parseFloat(price) <= 0) {
-      toast.warning("Giá không được nhỏ hơn hoặc bằng 0");
+    } else if ((parseFloat(price) <= 0) | (parseFloat(price) < 1000)) {
+      toast.warning("Giá không được nhỏ hơn 1.000");
       return false;
     }
 
@@ -72,13 +75,6 @@ const DetailProduct = ({ DataDetail, DataEditDetailProduct }) => {
         price: newTemporaryData.price,
         quantity: newTemporaryData.quantity,
         imagedetail: imagePreview,
-        imageName: newTemporaryData.imageName,
-      };
-      const filterItems = {
-        namedetail: newTemporaryData.namedetail,
-        price: newTemporaryData.price,
-        quantity: newTemporaryData.quantity,
-        imagedetail: newTemporaryData.imageName,
       };
 
       if (editingIndex !== null) {
@@ -88,11 +84,16 @@ const DetailProduct = ({ DataDetail, DataEditDetailProduct }) => {
             index === editingIndex ? newItems : item
           )
         );
+        setMoveData((prevData) =>
+          prevData.map((item, index) =>
+            index === editingIndex ? newItems : item
+          )
+        );
         setEditingIndex(null); // Kết thúc chế độ chỉnh sửa
       } else {
         // Thêm mục mới
         setTemporaryData((prevData) => [...prevData, newItems]);
-        setMoveData((prevData) => [...prevData, filterItems]);
+        setMoveData((prevData) => [...prevData, newItems]);
       }
 
       setNewTemporaryData({
@@ -104,24 +105,22 @@ const DetailProduct = ({ DataDetail, DataEditDetailProduct }) => {
         imageExtension: "",
       });
       setImagePreview("");
-      DataDetail([...moveData, filterItems]); //Truyền dữ liệu đến components khác xử lí
+      DataDetail([...moveData, newItems]); //Truyền dữ liệu đến component khác xử lý
     }
   };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    if (file) {
+    if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        setImagePreview(reader.result); // Cập nhật ảnh xem trước
         setNewTemporaryData((prevData) => ({
           ...prevData,
-          imagedetail: reader.result,
-          imageName: file.name,
-          imageExtension: file.name.split(".").pop(),
+          imagedetail: file, // Lưu trữ đối tượng file
         }));
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file); // Đọc file dưới dạng data URL
     }
   };
 
@@ -140,7 +139,9 @@ const DetailProduct = ({ DataDetail, DataEditDetailProduct }) => {
   };
 
   const handleDelete = (index) => {
-    setTemporaryData((prevData) => prevData.filter((_, i) => i !== index));
+    const updatedTemporaryData = temporaryData.filter((_, i) => i !== index);
+    setTemporaryData(updatedTemporaryData);
+    setMoveData(updatedTemporaryData); // Đảm bảo `moveData` cũng được cập nhật
   };
 
   const VisuallyHiddenInput = styled("input")({
@@ -159,6 +160,11 @@ const DetailProduct = ({ DataDetail, DataEditDetailProduct }) => {
     DataDetail(moveData);
     console.log(moveData);
   }, [moveData, DataDetail]);
+  useEffect(() => {
+    if (reloadArrayDetail) {
+      setTemporaryData([]);
+    }
+  }, [reloadArrayDetail]);
 
   return (
     <div className="bg-white shadow">
@@ -224,6 +230,16 @@ const DetailProduct = ({ DataDetail, DataEditDetailProduct }) => {
                 />
               </Button>
             </div>
+            {imagePreview && (
+              <div>
+                <div htmlFor="">Ảnh xem trước</div>
+                <img
+                  src={imagePreview}
+                  alt="Ảnh xem trước"
+                  style={{ width: "100px", height: "100px" }}
+                />
+              </div>
+            )}
             <div className="mt-2">
               <table className="table">
                 <thead>
@@ -272,15 +288,6 @@ const DetailProduct = ({ DataDetail, DataEditDetailProduct }) => {
                 </tbody>
               </table>
             </div>
-            {imagePreview && (
-              <div>
-                <img
-                  src={imagePreview}
-                  alt="Ảnh xem trước"
-                  style={{ width: "100px", height: "100px" }}
-                />
-              </div>
-            )}
           </div>
         </div>
       </div>

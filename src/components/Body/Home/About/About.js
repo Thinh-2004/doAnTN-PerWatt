@@ -22,6 +22,8 @@ const About = ({ idCategory }) => {
       }
     };
     load();
+    console.log("1" + 1);
+    console.log("1" - 1);
   }, []);
 
   const handleClick = (clickIdCategory) => {
@@ -38,20 +40,20 @@ const About = ({ idCategory }) => {
         />
         <div
           className="position-absolute start-50 translate-middle"
-          style={{ width: "90%", top: "125%" }}
+          style={{ top: "125%" }}
         >
           <div className="bg-white rounded-4 p-2 shadow" id="item-product">
             <h2 className="text-center mb-3">Danh mục</h2>
             {loading ? (
-              <div className="overflow-auto">
-                <div className="d-flex">
+              <>
+                <div className="d-flex justify-content-center">
                   {fill.slice(0, Math.ceil(fill.length / 2)).map((cate) => (
                     <div
-                      className="d-flex justify-content-center mb-3"
+                      className="d-flex justify-content-center mb-3 "
                       key={cate.id}
                     >
                       <Link
-                        className="text-decoration-none text-dark"
+                        className="text-decoration-none text-dark w-75 object-fit-cover"
                         id="featured-category-item"
                         onClick={() => handleClick(cate.id)}
                         role="button"
@@ -71,7 +73,7 @@ const About = ({ idCategory }) => {
                     </div>
                   ))}
                 </div>
-                <div className="d-flex">
+                <div className="d-flex justify-content-center">
                   {fill.slice(Math.ceil(fill.length / 2)).map((cate) => (
                     <div
                       className="d-flex justify-content-center mb-3"
@@ -97,7 +99,7 @@ const About = ({ idCategory }) => {
                     </div>
                   ))}
                 </div>
-              </div>
+              </>
             ) : (
               <l-dot-wave size="47" speed="1" color="black"></l-dot-wave>
             )}

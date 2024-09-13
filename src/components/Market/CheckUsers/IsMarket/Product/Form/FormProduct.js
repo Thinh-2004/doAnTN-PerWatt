@@ -18,7 +18,7 @@ const FormProduct = () => {
   const clickTimeout = 300; // Thời gian tối đa giữa hai lần click (milisecond)
   const [isHiddenDetailPro, setIsHiddenDetailPro] = useState(false); //Điều kiện hiển thị chi tiết sản phẩm
   const [detailProduct, setDetailProduct] = useState([]);
-
+  const [isArrayDetail, setIsArrayDetail]  = useState(false); //Đặt trang thái reload array detail
   const [formProduct, setFormProduct] = useState({
     name: "",
     productcategory: "",
@@ -31,8 +31,8 @@ const FormProduct = () => {
   });
 
   const [priceAndQuantity, setPriceAndQuantity] = useState({
-    priceDetail: "",
-    quantityDetail: "",
+    price: "",
+    quantity: "",
   });
 
   const maxFiles = 9;
@@ -95,6 +95,8 @@ const FormProduct = () => {
       specializedgame,
     } = formProduct;
 
+    const {price, quantity} = priceAndQuantity;
+
     if (
       !name &&
       !size &&
@@ -123,8 +125,30 @@ const FormProduct = () => {
         return false;
       }
 
+      // if(price === ""){
+      //   toast.warning("Cần nhập giá sản phẩm");
+      //   return false;
+      // }else if(!parseFloat(price)){
+      //   toast.warning("Giá không hợp lệ");
+      //   return false;
+      // }else if(parseFloat(price) <= 0 | parseFloat(price) > 1000){
+      //   toast.warning("Giá không được nhỏ hơn 1.000");
+      //   return false;
+      // }
+
+      // if(quantity === ""){
+      //   toast.warning("Cần nhập số lượng sản phẩm");
+      //   return false;
+      // }else if(!parseInt(quantity)){
+      //   toast.warning("Số lượng không hợp lệ");
+      //   return false;
+      // }else if(parseInt(quantity) <= 0){
+      //   toast.warning("Số lượng không được nhỏ hơn hoặc bằng 0");
+      //   return false;
+      // }
+
       if (productcategory === "") {
-        toast.warning("Cần loại sản phẩm.");
+        toast.warning("Cần chọn loại sản phẩm.");
         return false;
       }
 
@@ -147,6 +171,7 @@ const FormProduct = () => {
         toast.warning("Cần nhập kích cỡ.");
         return false;
       }
+
       return true;
     }
   };
@@ -175,8 +200,8 @@ const FormProduct = () => {
       if (detailProduct.length === 0) {
         const nullProductDetails = [
           {
-            price: priceAndQuantity.priceDetail,
-            quantity: priceAndQuantity.quantityDetail,
+            price: priceAndQuantity.price,
+            quantity: priceAndQuantity.quantity,
           },
         ];
         formData.append(
@@ -193,6 +218,9 @@ const FormProduct = () => {
             type: "application/json",
           })
         );
+          detailProduct.forEach((fileDetail) => {
+          formData.append("fileDetails", fileDetail.imagedetail);
+        })
         console.log(detailProduct);
       }
 
@@ -229,6 +257,7 @@ const FormProduct = () => {
           setImages([]);
           setDetailProduct([]); // Reset dữ liệu chi tiết sản phẩm
           setPriceAndQuantity({ price: "", quantity: "" }); // Reset giá và số lượng
+          setIsArrayDetail(true); //đặt trang thái reloadArray cho detail
         }, 500);
       } catch (error) {
         console.error("Error:", error.response?.data || error.message);
@@ -255,6 +284,7 @@ const FormProduct = () => {
 
   const handleDataChange = (newData) => {
     setDetailProduct(newData);
+    // console.log(newData);
   };
 
   return (
@@ -284,7 +314,7 @@ const FormProduct = () => {
                         id="outlined-multiline-static"
                         label="Mô tả sản phẩm"
                         multiline
-                        rows={15}
+                        rows={24}
                         name="description"
                         value={formProduct.description}
                         onChange={handleInputChange}
@@ -370,14 +400,14 @@ const FormProduct = () => {
 
               <div className="card-body">
                 {isHiddenDetailPro ? (
-                  <DetailProduct DataDetail={handleDataChange} />
+                  <DetailProduct DataDetail={handleDataChange} reloadArrayDetail={isArrayDetail} />
                 ) : (
                   <div className="d-flex justify-content-between">
                     <TextField
                       label="Nhập giá sản phẩm"
                       id="outlined-size-small"
                       size="small"
-                      name="priceDetail"
+                      name="price"
                       value={priceAndQuantity.price}
                       onChange={handleInputChangePriceAndQuantity}
                       fullWidth
@@ -387,7 +417,7 @@ const FormProduct = () => {
                       label="Nhập số lượng"
                       id="outlined-size-small"
                       size="small"
-                      name="quantityDetail"
+                      name="quantity"
                       value={priceAndQuantity.quantity}
                       onChange={handleInputChangePriceAndQuantity}
                       fullWidth

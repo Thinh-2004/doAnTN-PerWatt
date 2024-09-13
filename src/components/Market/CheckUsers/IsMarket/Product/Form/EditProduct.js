@@ -31,9 +31,10 @@ const EditProduct = () => {
     store: idStore,
   });
   const [editProductDetail, setEditProductDetail] = useState([]); // Nhận dữ liệu từ API
-  const [detailProduct, setDetailProduct] = useState([]); // Nhận dữ liệu từ form Detail Product
+
   const maxFiles = 9;
   const changeLink = useNavigate();
+  const [editDetailProduct, setEditDetailProduct] = useState([]);
 
   // Fill dữ liệu edit
   const fillData = async (id) => {
@@ -48,8 +49,13 @@ const EditProduct = () => {
         store: idStore,
       });
 
+      const resDetail = await axios.get(`/detailProduct/${res.data.id}`);
+
+      // Kiểm tra nếu resDetail trả về là mảng, nếu không, trả về mảng rỗng
+      const detailData = Array.isArray(resDetail.data) ? resDetail.data : [];
+
       // Đổ dữ liệu productDetails vào state
-      const detailInputs = res.data.productDetails.map((detail) => ({
+      const detailInputs = detailData.map((detail) => ({
         namedetail: detail.namedetail,
         price: detail.price,
         quantity: detail.quantity,
@@ -66,6 +72,7 @@ const EditProduct = () => {
     fillData(id);
   }, [id]);
 
+  //Hiển thị chi tiết sản phẩm
   useEffect(() => {
     if (editProductDetail && editProductDetail.length > 0) {
       const hasEmptyDetails = editProductDetail.some(
@@ -156,7 +163,6 @@ const EditProduct = () => {
       return false;
     }
 
-
     if (description === "") {
       toast.warning("Vui lòng nhập mô tả.");
       return false;
@@ -183,13 +189,13 @@ const EditProduct = () => {
         trademark: { id: formEditProduct.trademark },
         warranties: { id: formEditProduct.warranties },
         store: { id: formEditProduct.store },
+        productDetails: editDetailProduct,
       };
       formData.append(
         "product",
         new Blob([JSON.stringify(productToSend)], { type: "application/json" })
       );
       images.forEach((file) => formData.append("files", file));
-
       try {
         const idToast = toast.loading("Vui lòng chờ...");
         const response = await axios.put(`/productUpdate/${id}`, formData, {
@@ -232,260 +238,259 @@ const EditProduct = () => {
   };
 
   const handleDataChange = (newData) => {
-    setDetailProduct(newData);
+    setEditDetailProduct(newData);
   };
 
   return (
     <div className="row mt-4">
-      <form onSubmit={handleUpdate}>
-        {/* Product Info */}
-        <div className="col-lg-12">
-          <div className="bg-white rounded-4">
-            <div className="card">
-              <h3 className="text-center mt-4">Thông tin sản phẩm</h3>
-              <div className="card-body">
-                <div className="row">
-                  <div className="col-lg-6 border-end">
-                    <div className="mb-3">
-                      <TextField
-                        label="Nhập tên sản phẩm"
-                        id="outlined-size-small"
-                        size="small"
-                        name="name"
-                        value={formEditProduct.name}
-                        onChange={handleInputChange}
-                        fullWidth
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <TextField
-                        id="outlined-multiline-static"
-                        label="Mô tả sản phẩm"
-                        multiline
-                        rows={15}
-                        name="description"
-                        value={formEditProduct.description}
-                        onChange={handleInputChange}
-                        fullWidth
-                      />
-                    </div>
+      {/* Product Info */}
+      <div className="col-lg-12">
+        <div className="bg-white rounded-4">
+          <div className="card">
+            <h3 className="text-center mt-4">Thông tin sản phẩm</h3>
+            <div className="card-body">
+              <div className="row">
+                <div className="col-lg-6 border-end">
+                  <div className="mb-3">
+                    <TextField
+                      label="Nhập tên sản phẩm"
+                      id="outlined-size-small"
+                      size="small"
+                      name="name"
+                      value={formEditProduct.name}
+                      onChange={handleInputChange}
+                      fullWidth
+                    />
                   </div>
-                  <div className="col-lg-6">
-                    <div className="mb-3 border" id="bg-upload-img">
-                      {formEditProduct.images &&
-                        formEditProduct.images.map((image, index) => (
-                          <img
-                            key={index}
-                            src={geturlIMG(formEditProduct.id, image.imagename)}
-                            alt={`Current ${index}`}
-                            className="img-fluid"
-                            id="img-fill-product"
-                            style={{ cursor: "pointer" }}
-                            onClick={() => handleDeleteImageClick(image.id)}
-                          />
-                        ))}
-                      {images.map((image, index) => (
+                  <div className="mb-3">
+                    <TextField
+                      id="outlined-multiline-static"
+                      label="Mô tả sản phẩm"
+                      multiline
+                      rows={24}
+                      name="description"
+                      value={formEditProduct.description}
+                      onChange={handleInputChange}
+                      fullWidth
+                    />
+                  </div>
+                </div>
+                <div className="col-lg-6">
+                  <div className="mb-3 border" id="bg-upload-img">
+                    {formEditProduct.images &&
+                      formEditProduct.images.map((image, index) => (
                         <img
-                          key={`new-${index}`}
-                          src={URL.createObjectURL(image)}
-                          alt={`Preview ${index}`}
+                          key={index}
+                          src={geturlIMG(formEditProduct.id, image.imagename)}
+                          alt={`Current ${index}`}
                           className="img-fluid"
                           id="img-fill-product"
-                          onClick={() => handleImageClick(index)}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => handleDeleteImageClick(image.id)}
                         />
                       ))}
-                    </div>
-                    <div className="mb-3">
-                      <Button
-                        component="label"
-                        role={undefined}
-                        variant="contained"
-                        tabIndex={-1}
-                        startIcon={<CloudUploadIcon />}
-                        fullWidth
-                        disableElevation
-                      >
-                        Tải hình ảnh sản phẩm
-                        <VisuallyHiddenInput
-                          type="file"
-                          onChange={handleFileChange}
-                          multiple
-                        />
-                      </Button>
-                    </div>
-                    <div className="mb-3" id="remember">
-                      <p>
-                        <span className="text-danger">Lưu ý</span>
-                        <ul>
-                          <li>Chọn ảnh tối đa 9 hình ảnh</li>
-                          <li>
-                            Nhấp double click (2 lần nhấn chuột) để xóa hình cần
-                            xóa
-                          </li>
-                        </ul>
-                      </p>
-                    </div>
+                    {images.map((image, index) => (
+                      <img
+                        key={`new-${index}`}
+                        src={URL.createObjectURL(image)}
+                        alt={`Preview ${index}`}
+                        className="img-fluid"
+                        id="img-fill-product"
+                        onClick={() => handleImageClick(index)}
+                      />
+                    ))}
+                  </div>
+                  <div className="mb-3">
+                    <Button
+                      component="label"
+                      role={undefined}
+                      variant="contained"
+                      tabIndex={-1}
+                      startIcon={<CloudUploadIcon />}
+                      fullWidth
+                      disableElevation
+                    >
+                      Tải hình ảnh sản phẩm
+                      <VisuallyHiddenInput
+                        type="file"
+                        onChange={handleFileChange}
+                        multiple
+                      />
+                    </Button>
+                  </div>
+                  <div className="mb-3" id="remember">
+                    <p>
+                      <span className="text-danger">Lưu ý</span>
+                      <ul>
+                        <li>Chọn ảnh tối đa 9 hình ảnh</li>
+                        <li>
+                          Nhấp double click (2 lần nhấn chuột) để xóa hình cần
+                          xóa
+                        </li>
+                      </ul>
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        {/* Detail product */}
-        <div className="col-lg-12 col-md-12 col-sm-12">
-          <div className="bg-white rounded-4 mt-3">
-            <div className="card">
-              <div className="d-flex justify-content-between align-items-center">
-                <h3 className="mx-4 mt-4">Thông tin bán hàng</h3>
-                {isHiddenDetailPro ? (
-                  <button
-                    className="btn me-4"
-                    type="button"
-                    onClick={() => setIsHiddenDetailPro(false)}
-                  >
-                    X
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn me-4"
-                    id="btn-add-productCate"
-                    onClick={handleClickHidden}
-                  >
-                    Thêm phân loại bán hàng
-                  </button>
-                )}
-              </div>
+      </div>
+      {/* Detail product */}
+      <div className="col-lg-12 col-md-12 col-sm-12">
+        <div className="bg-white rounded-4 mt-3">
+          <div className="card">
+            <div className="d-flex justify-content-between align-items-center">
+              <h3 className="mx-4 mt-4">Thông tin bán hàng</h3>
+              {isHiddenDetailPro ? (
+                <button
+                  className="btn me-4"
+                  type="button"
+                  onClick={() => setIsHiddenDetailPro(false)}
+                  hidden={editDetailProduct.length > 1}
+                >
+                  X
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn me-4"
+                  id="btn-add-productCate"
+                  onClick={handleClickHidden}
+                >
+                  Thêm phân loại bán hàng
+                </button>
+              )}
+            </div>
 
-              <div className="card-body">
-                {isHiddenDetailPro ? (
-                  <EditDetailProduct DataDetail={handleDataChange} DataEditDetailProduct={editProductDetail}/>
-                ) : (
-                  editProductDetail.map((detailInput, index) => (
-                    <div key={index} className="d-flex justify-content-between">
-                      <TextField
-                        label="Nhập giá sản phẩm"
-                        size="small"
-                        name="price"
-                        value={detailInput.price}
-                        // onChange={(e) => handleDetailInputChange(e, index)}
-                        fullWidth
-                        className="me-2"
-                      />
-                      <TextField
-                        label="Nhập số lượng"
-                        size="small"
-                        name="quantity"
-                        value={detailInput.quantity}
-                        // onChange={(e) => handleDetailInputChange(e, index)}
-                        fullWidth
-                      />
-                    </div>
-                  ))
-                )}
-              </div>
+            <div className="card-body">
+              {isHiddenDetailPro ? (
+                <EditDetailProduct DataDetail={handleDataChange} />
+              ) : (
+                editProductDetail.map((detailInput, index) => (
+                  <div key={index} className="d-flex justify-content-between">
+                    <TextField
+                      label="Nhập giá sản phẩm"
+                      size="small"
+                      name="price"
+                      value={detailInput.price}
+                      // onChange={(e) => handleDetailInputChange(e, index)}
+                      fullWidth
+                      className="me-2"
+                    />
+                    <TextField
+                      label="Nhập số lượng"
+                      size="small"
+                      name="quantity"
+                      value={detailInput.quantity}
+                      // onChange={(e) => handleDetailInputChange(e, index)}
+                      fullWidth
+                    />
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
-        {/* Detailed Info */}
-        <div className="col-lg-12">
-          <div className="bg-white rounded-4 mt-3">
-            <div className="card">
-              <h3 className="mx-4 mt-4">Thông tin chi tiết</h3>
-              <div className="card-body">
-                <div className="row">
-                  <div className="col-lg-6">
-                    <div className="mb-4 d-flex">
-                      {/* Category Component */}
-                      <Category
-                        name="productcategory"
-                        value={formEditProduct.productcategory}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className="mb-4 d-flex">
-                      {/* Brand Component */}
-                      <Brand
-                        name="trademark"
-                        value={formEditProduct.trademark}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className="mb-4 d-flex">
-                      {/* Warranties Component */}
-                      <Warranties
-                        name="warranties"
-                        value={formEditProduct.warranties}
-                        onChange={handleInputChange}
-                      />
-                    </div>
+      </div>
+      {/* Detailed Info */}
+      <div className="col-lg-12">
+        <div className="bg-white rounded-4 mt-3">
+          <div className="card">
+            <h3 className="mx-4 mt-4">Thông tin chi tiết</h3>
+            <div className="card-body">
+              <div className="row">
+                <div className="col-lg-6">
+                  <div className="mb-4 d-flex">
+                    {/* Category Component */}
+                    <Category
+                      name="productcategory"
+                      value={formEditProduct.productcategory}
+                      onChange={handleInputChange}
+                    />
                   </div>
-                  <div className="col-lg-6 border-start">
-                    <div className="mb-4 d-flex">
-                      <select
-                        name="specializedgame"
-                        className="form-select"
-                        value={formEditProduct.specializedgame}
-                        onChange={handleInputChange}
-                      >
-                        <option value="" className="text-secondary" hidden>
-                          Chuyên dụng game
-                        </option>
-                        <option value="Y">Có</option>
-                        <option value="N">Không</option>
-                      </select>
-                    </div>
-                    <div className="mb-4 d-flex">
-                      <input
-                        type="text"
-                        placeholder="Nhập kích cỡ (dài x rộng x cao)"
-                        className="form-control"
-                        name="size"
-                        value={formEditProduct.size}
-                        onChange={handleInputChange}
-                      />
-                    </div>
+                  <div className="mb-4 d-flex">
+                    {/* Brand Component */}
+                    <Brand
+                      name="trademark"
+                      value={formEditProduct.trademark}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-4 d-flex">
+                    {/* Warranties Component */}
+                    <Warranties
+                      name="warranties"
+                      value={formEditProduct.warranties}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+                <div className="col-lg-6 border-start">
+                  <div className="mb-4 d-flex">
+                    <select
+                      name="specializedgame"
+                      className="form-select"
+                      value={formEditProduct.specializedgame}
+                      onChange={handleInputChange}
+                    >
+                      <option value="" className="text-secondary" hidden>
+                        Chuyên dụng game
+                      </option>
+                      <option value="Y">Có</option>
+                      <option value="N">Không</option>
+                    </select>
+                  </div>
+                  <div className="mb-4 d-flex">
+                    <input
+                      type="text"
+                      placeholder="Nhập kích cỡ (dài x rộng x cao)"
+                      className="form-control"
+                      name="size"
+                      value={formEditProduct.size}
+                      onChange={handleInputChange}
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        {/* Form Actions */}
-        <div className="mt-4 mb-4">
-          <button className="btn mx-2" id="btn-addProduct" type="submit">
-            Đăng sản phẩm
-          </button>
-          <button
-            className="btn mx-2"
-            id="btn-resetProduct"
-            type="button"
-            onClick={() =>
-              setFormEditProduct({
-                name: "",
-                productcategory: "",
-                trademark: "",
-                warranties: "",
-                price: "",
-                quantity: "",
-                size: "",
-                specializedgame: "",
-                description: "",
-                store: idStore,
-              })
-            }
-          >
-            Làm mới
-          </button>
-          <Link
-            className="btn mx-2"
-            id="btn-cancelProduct"
-            to={"/profileMarket/listStoreProduct"}
-          >
-            Hủy
-          </Link>
-        </div>
-      </form>
+      </div>
+      {/* Form Actions */}
+      <div className="mt-4 mb-4">
+        <button className="btn mx-2" id="btn-addProduct" onClick={handleUpdate}>
+          Cập nhật sản phẩm
+        </button>
+        <button
+          className="btn mx-2"
+          id="btn-resetProduct"
+          type="button"
+          onClick={() =>
+            setFormEditProduct({
+              name: "",
+              productcategory: "",
+              trademark: "",
+              warranties: "",
+              price: "",
+              quantity: "",
+              size: "",
+              specializedgame: "",
+              description: "",
+              store: idStore,
+            })
+          }
+        >
+          Làm mới
+        </button>
+        <Link
+          className="btn mx-2"
+          id="btn-cancelProduct"
+          to={"/profileMarket/listStoreProduct"}
+        >
+          Hủy
+        </Link>
+      </div>
     </div>
   );
 };

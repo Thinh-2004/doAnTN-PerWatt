@@ -5,20 +5,14 @@ import axios from "../../../../Localhost/Custumize-axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useSession from "../../../../Session/useSession";
 import Header from "../../../Header/Header";
-import "./DetailProduct.css";
+import "./ShowDetailProduct.css";
 import FindMoreProduct from "../FindMoreProduct/FindMoreProduct";
 import {
   Button,
-  Card,
-  CardActionArea,
-  CardActions,
-  CardContent,
-  CardMedia,
   Dialog,
   DialogActions,
   DialogContent,
   TextField,
-  Typography,
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
@@ -51,34 +45,37 @@ const DetailProduct = () => {
   const [maxPrice, setMaxPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [selectedIdDetail, setSelectedIdDetail] = useState(null);
+  const [fillDetail, setFilDetail] = useState([]);
   const loadProductDetail = async (id) => {
     try {
       const res = await axios.get(`product/${id}`);
       setFillDetailPr(res.data);
 
-      //Lọc giá sản phẩm
-      const dataMinPrice = Math.min(
-        ...res.data.productDetails.map((filter) => filter.price)
-      );
-      const dataMaxPrice = Math.max(
-        ...res.data.productDetails.map((filter) => filter.price)
-      );
+      const resDetail = await axios.get(`/detailProduct/${res.data.id}`);
+      const detailData = Array.isArray(resDetail.data) ? resDetail.data : [];
+      setFilDetail(detailData);
+
+      // Lọc giá sản phẩm
+      const prices = detailData.map((filter) => filter.price);
+      const dataMinPrice = Math.min(...prices);
+      const dataMaxPrice = Math.max(...prices);
 
       setMinPrice(dataMinPrice);
       setMaxPrice(dataMaxPrice);
 
-      //Tổng số lượng sản phẩm
-      const totalDetailQuantity = res.data.productDetails.reduce(
+      // Tổng số lượng sản phẩm
+      const totalDetailQuantity = detailData.reduce(
         (total, detailQuantity) => total + detailQuantity.quantity,
         0
       );
       setTotalQuantity(totalDetailQuantity);
 
-      //Đếm số lượng sản phẩm đã bán
+      // Đếm số lượng sản phẩm đã bán
       if (res.data && res.data.store && res.data.store.id) {
         const storeRes = await axios.get(`/productStore/${res.data.store.id}`);
         setCountProductStore(storeRes.data.length);
       }
+
       if (res.data.id) {
         const countBuyed = await axios.get(`countOrderSuccess/${res.data.id}`);
         setCountOrderBuyed(countBuyed.data);
@@ -205,7 +202,7 @@ const DetailProduct = () => {
   //detailProduct
   const handleClickIdDetail = (idDetail) => () => {
     setSelectedIdDetail(idDetail);
-    const selectedProduct = FillDetailPr.productDetails.find(
+    const selectedProduct = fillDetail.find(
       (detail) => detail.id === idDetail
     );
 
@@ -238,14 +235,17 @@ const DetailProduct = () => {
               >
                 <span className="text-white">Hết hàng</span>
               </div>
-              <div className="carousel-inner">
+              <div
+                className="carousel-inner align-content-center"
+                style={{ height: "575px" }}
+              >
                 {FillDetailPr &&
                 FillDetailPr.images &&
                 FillDetailPr.images.length > 0 ? (
                   FillDetailPr.images.map((image, index) => (
                     <div
                       key={index}
-                      className={`carousel-item ${
+                      className={`carousel-item  ${
                         index === selectedImage ? "active" : ""
                       }`}
                     >
@@ -260,9 +260,9 @@ const DetailProduct = () => {
                               ? geturlIMG(FillDetailPr.id, image.imagename)
                               : "/images/no_img.png"
                           }
-                          className="d-block"
+                          className="d-block object-fit-cover"
                           alt={FillDetailPr ? FillDetailPr.name : "No Image"}
-                          style={{ width: "100%", height: "400px" }}
+                          style={{ width: "100%", height: "100%" }}
                         />
                       </div>
                       <Dialog
@@ -550,23 +550,24 @@ const DetailProduct = () => {
                 className="mt-2 mb-2"
                 hidden={
                   !(
-                    FillDetailPr &&
-                    FillDetailPr.productDetails &&
-                    FillDetailPr.productDetails.length > 0 &&
-                    FillDetailPr.productDetails.some(
+                    fillDetail &&
+                    fillDetail.length > 0 &&
+                    fillDetail.some(
                       (detail) => detail.namedetail !== null
                     )
                   )
                 }
               >
                 <p className="p-3 fst-italic fs-5 m-0">Phân loại sản phẩm</p>
-                <div className="bg-light rounded-3 shadow border p-2 m-2 d-flex flex-wrap overflow-auto">
-                  {FillDetailPr &&
-                    FillDetailPr.productDetails &&
-                    FillDetailPr.productDetails.length > 0 &&
-                    FillDetailPr.productDetails.map((fillDetail, index) => (
+                <div
+                  className="bg-light rounded-3 p-2 m-2 d-flex flex-wrap overflow-auto"
+                  style={{ height: "70%" }}
+                >
+                  {fillDetail &&
+                    fillDetail.length > 0 &&
+                    fillDetail.map((fillDetail, index) => (
                       <div
-                        className={`d-flex align-items-center text-nowrap border rounded-2 p-2 m-2 position-relative ${
+                        className={`d-flex align-items-center text-nowrap rounded-2 p-2 m-2 position-relative ${
                           selectedIdDetail === fillDetail.id
                             ? "active-selected-detailProduct"
                             : "hover-idDetailProduct"

@@ -1,5 +1,5 @@
 #item-product {
-  max-width: 100%;
+  max-width: 90%;
   margin: auto;
   text-align: center; /* Center the content inside the div */
   transition: transform 0.3s ease; /* Smooth transition for the scale effect */
