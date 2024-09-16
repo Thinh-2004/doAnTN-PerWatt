@@ -127,7 +127,7 @@ const Product = ({ item, idCate, handleReset }) => {
         </div>
       ) : null}
       {loading || isFiltering ? (
-        Array.from(new Array(10)).map((skeleton, index) => (
+        Array.from(new Array(12)).map((skeleton, index) => (
           <div
             className="col-lg-3 col-md-3 col-sm-4 mt-3 p-2 d-flex flex-column"
             style={{ minHeight: "100%" }}

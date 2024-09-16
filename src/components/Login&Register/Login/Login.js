@@ -73,8 +73,6 @@ const Login = () => {
     return true;
   };
 
- 
-
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (event) => {
@@ -85,7 +83,9 @@ const Login = () => {
     <>
       <form onSubmit={handleSubmit} className="form-sign">
         <h2 className="title">Đăng nhập</h2>
-        <p className="subject">Hãy đăng nhập để có trải nghiệm dịch vụ tốt nhất!!!</p>
+        <p className="subject">
+          Hãy đăng nhập để có trải nghiệm dịch vụ tốt nhất!!!
+        </p>
         <TextField
           fullWidth
           className="mb-3"
@@ -139,12 +139,25 @@ const Login = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         /> */}
-        <Link to={"/forgotPass"} style={{ textDecoration: "none" }}>
-          Quên mật khẩu?
+        <Link to={"/forgotPass"} className="text-end">
+          <span htmlFor="">Quên mật khẩu?</span>
         </Link>
-        <button type="submit" className="button">
+        <button type="submit" className="button w-100">
           Đăng nhập
         </button>
+        <div>
+          <label htmlFor="">
+            &#8212;&#8212;&#8212;&#8212;&#8212;Hoặc&#8212;&#8212;&#8212;&#8212;&#8212;
+          </label>
+          <div className="mt-2">
+            <img
+              src="/images/icongoogle.jpg"
+              alt=""
+              className="w-25 h-25"
+              style={{ cursor: "pointer" }}
+            />
+          </div>
+        </div>
       </form>
     </>
   );

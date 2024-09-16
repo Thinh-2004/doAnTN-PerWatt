@@ -46,7 +46,7 @@ const DetailProduct = () => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [selectedIdDetail, setSelectedIdDetail] = useState(null);
   const [fillDetail, setFilDetail] = useState([]);
-  const loadProductDetail = async (id) => {
+  const loadProductDetail = async () => {
     try {
       const res = await axios.get(`product/${id}`);
       setFillDetailPr(res.data);
@@ -100,7 +100,7 @@ const DetailProduct = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    loadProductDetail(id);
+    loadProductDetail();
   }, [id]);
 
   // Theo dõi sự thay đổi của idClick và typeId để cuộn đến phần tử

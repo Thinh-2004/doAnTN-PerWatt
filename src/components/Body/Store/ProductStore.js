@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
 import useDebounce from "../../../CustumHook/useDebounce";
 import "./StoreStyle.css";
+import { min } from "moment/moment";
 const ProductStore = ({ item }) => {
   const { idStore } = useParams();
   const [fill, setFill] = useState([]);
@@ -12,7 +13,17 @@ const ProductStore = ({ item }) => {
   const loadData = async (idStore) => {
     try {
       const res = await axios.get(`/productStore/${idStore}`);
-      setFill(res.data);
+      //Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm
+      const dataWithDetails = await Promise.all(
+        res.data.map(async (product) => {
+          const resDetail = await axios.get(`/detailProduct/${product.id}`);
+          return {
+            ...product,
+            productDetails: resDetail.data,
+          };
+        })
+      );
+      setFill(dataWithDetails);
     } catch (error) {
       console.log(error);
     }
@@ -55,11 +66,16 @@ const ProductStore = ({ item }) => {
         <div className="row mb-5">
           {filterSearchByText.map((fill, index) => {
             const firstIMG = fill.images[0];
+            const productDetail = fill.productDetails;
+
+            //Tìm giá nhỏ nhất lớn nhất trong mảng
+            const minPrice = Math.min(...productDetail.map((filter) => filter.price));
+            const maxPrice = Math.max(...productDetail.map((filter) => filter.price));
             return (
-              <div className="col-lg-2 col-md-2 col-sm-2 mt-3" key={fill.id}>
+              <div className="col-lg-3 col-md-3 col-sm-3 mt-3" key={fill.id}>
                 <div
                   className="card shadow rounded-4 mt-4 p-2 d-flex flex-column"
-                  style={{height: "100%" }} // Đảm bảo chiều cao tự điều chỉnh
+                  style={{ height: "100%" }} // Đảm bảo chiều cao tự điều chỉnh
                   id="product-item"
                 >
                   <Link to={`/detailProduct/${fill.id}`}>
@@ -85,7 +101,11 @@ const ProductStore = ({ item }) => {
                         className="text-danger mx-1"
                         id="price-product-item"
                       >
-                        {formatPrice(fill.price)} đ
+                        {minPrice === maxPrice
+                          ? formatPrice(minPrice) + " đ"
+                          : `${formatPrice(minPrice)} - ${formatPrice(
+                              maxPrice
+                            )}` + " đ"}
                       </span>
                     </h5>
                     <hr />

@@ -110,7 +110,7 @@ const Store = () => {
           </div>
         </div>
       </div>
-      <div className="container-fluid mt-5">
+      <div className="container mt-5">
         <div className="row">
           <div className="col-lg-3 col-md-3 col-sm-3 border-end">
             <form className="d-flex justify-content-center" role="search">
