@@ -16,7 +16,7 @@ const BannerMiddle = () => {
                   src="https://cf.shopee.vn/file/vn-11134258-7r98o-m0465uem8jcd8a_xxhdpi"
                   className="d-block w-100"
                   alt="..."
-                  style={{ height: "400px" }}
+                  style={{ height: "500px" }}
                 />
               </div>
               <div className="carousel-item">
@@ -24,7 +24,7 @@ const BannerMiddle = () => {
                   src="https://file.hstatic.net/200000722513/file/web_slider_800x400_b2s.png"
                   className="d-block w-100"
                   alt="..."
-                  style={{ height: "400px" }}
+                  style={{ height: "500px" }}
                 />
               </div>
               <div className="carousel-item">
@@ -32,7 +32,7 @@ const BannerMiddle = () => {
                   src="https://file.hstatic.net/200000722513/file/banner_web_slider_800x400_xa_kho_t9.2024.jpg"
                   className="d-block w-100"
                   alt="..."
-                  style={{ height: "400px" }}
+                  style={{ height: "500px" }}
                 />
               </div>
             </div>
@@ -65,6 +65,11 @@ const BannerMiddle = () => {
         <div className="col-lg-4 col-md-4 col-lg-sm-4">
           <div className="col-lg-12 col-md-12 col-sm-12">
             <img
+              src="https://file.hstatic.net/200000722513/file/layout_web_-01.png"
+              alt=""
+              className="img-fluid"
+            />
+             <img
               src="https://file.hstatic.net/200000722513/file/layout_web_-01.png"
               alt=""
               className="img-fluid"

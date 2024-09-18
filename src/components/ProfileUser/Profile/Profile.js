@@ -14,7 +14,8 @@ import {
 import { Email } from "@mui/icons-material";
 
 const Profile = () => {
-  const [id] = useSession("id");
+  const sesion = localStorage.getItem("user");
+  const user = sesion ? JSON.parse(sesion) : null;
   const [fill, setFill] = useState({
     fullname: "",
     password: "",
@@ -35,10 +36,12 @@ const Profile = () => {
 
   const loadData = async () => {
     try {
-      const res = await axios.get(`userProFile/${id}`);
+      const res = await axios.get(`userProFile/${user.id}`);
       setFill(res.data);
       // Set the preview URL if there is an avatar
-      setPreviewAvatar(res.data.avatar ? geturlIMG(id, res.data.avatar) : "");
+      setPreviewAvatar(
+        res.data.avatar ? geturlIMG(user.id, res.data.avatar) : ""
+      );
       console.log(res.data);
     } catch (error) {
       console.log(error);
@@ -143,7 +146,7 @@ const Profile = () => {
           birthdate: fill.birthdate,
           phone: fill.phone,
           gender: fill.gender,
-          password: fill.password,
+          password: fill.password || null,
           role: {
             id: fill.role.id,
           },
@@ -153,10 +156,9 @@ const Profile = () => {
       if (fill.avatar instanceof File) {
         formData.append("avatar", fill.avatar);
       }
-
+      const idToast = toast.loading("Vui lòng chờ...");
       try {
-        const idToast = toast.loading("Vui lòng chờ...");
-        const res = await axios.put(`/user/${id}`, formData, {
+        const res = await axios.put(`/user/${user.id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -171,15 +173,24 @@ const Profile = () => {
               autoClose: 5000,
               closeButton: true,
             },
-            500
           );
           setFill(res.data); // Cập nhật thông tin sau khi lưu thành công
-          sessionStorage.setItem("fullname", res.data.fullname);
-          sessionStorage.setItem("avatar", res.data.avatar);
+          localStorage.setItem("user", JSON.stringify(res.data)); //Chuyển đổi đối tượng thành JSON
+          // sessionStorage.setItem("fullname", res.data.fullname);
+          // sessionStorage.setItem("avatar", res.data.avatar);
           loadData();
         }, 500);
       } catch (error) {
-        toast.error("Có lỗi xảy ra khi cập nhật hồ sơ");
+        toast.update(
+          idToast,
+          {
+            render: "Có lỗi xảy ra khi cập nhật hồ sơ",
+            type: "error",
+            isLoading: false,
+            autoClose: 5000,
+            closeButton: true,
+          },
+        );
         console.error(error);
       }
     }
@@ -359,7 +370,7 @@ const Profile = () => {
             <div className="row">
               <div className="col-lg-12 d-flex justify-content-center mb-3">
                 <img
-                  src={previewAvatar || geturlIMG(id, fill.avatar)}
+                  src={previewAvatar || geturlIMG(user.id, fill.avatar)}
                   alt="Avatar"
                   className="img-fluid"
                   id="img-change-avatar"

@@ -19,9 +19,6 @@ import Audio from "./VoiceSearhDialog/Audio";
 
 const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
   const [search, setSearch] = useState("");
-  const [fullName, removeFullName] = useSession("fullname");
-  const [avatar, removeAvatar] = useSession("avatar");
-  const [id, removeId] = useSession("id");
   const [count, setCount] = useState(0);
   const changeLink = useNavigate();
   const [open, setOpen] = useState(false); // mở dialog của tìm bằng hình ảnh
@@ -38,19 +35,26 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
 
   useEffect(() => {
     const count = async () => {
       try {
-        const res = await axios.get(`/countCartIdUser/${id}`);
-        setCount(res.data.length);
-        console.log(res.data.length);
+        if (user) {
+          const res = await axios.get(`/countCartIdUser/${user.id}`);
+          setCount(res.data.length);
+          // console.log(res.data.length);
+        } else {
+          console.log("Chưa có sản phẩm");
+        }
       } catch (error) {
         console.log(error);
       }
     };
     count();
-  }, [id]);
+  }, [user]);
 
   useEffect(() => {
     if (resetSearch) {
@@ -62,16 +66,20 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     if (reloadCartItems) {
       const count = async () => {
         try {
-          const res = await axios.get(`/countCartIdUser/${id}`);
-          setCount(res.data.length);
-          console.log(res.data.length);
+          if (user) {
+            const res = await axios.get(`/countCartIdUser/${user.id}`);
+            setCount(res.data.length);
+            // console.log(res.data.length);
+          } else {
+            console.log("Chưa có sản phẩm");
+          }
         } catch (error) {
           console.log(error);
         }
       };
       count();
     }
-  }, [reloadCartItems, id]);
+  }, [reloadCartItems, user]);
 
   const handleLogOut = () => {
     confirmAlert({
@@ -83,10 +91,6 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
           onClick: async () => {
             const toastId = toast.loading("Vui lòng chờ...");
             try {
-              removeFullName(); // Xóa giá trị fullname từ session
-              removeAvatar(); // Xóa giá trị avatar từ session
-              removeId(); // Xóa giá trị id từ session
-              sessionStorage.removeItem("idStore"); // Xóa giá trị idStore từ session
               setTimeout(() => {
                 toast.update(toastId, {
                   render: "Đăng xuất thành công",
@@ -95,7 +99,9 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                   autoClose: 5000,
                   closeButton: true,
                 });
-
+                //Xóa session khỏi website
+                localStorage.clear();
+                sessionStorage.clear();
                 changeLink("/"); // Chuyển hướng về trang chủ
               }, 500);
             } catch (error) {
@@ -197,7 +203,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     e.preventDefault();
 
     // Kiểm tra nếu id là null hoặc undefined
-    if (id === "" || id === undefined) {
+    if (user.id === "" || user.id === undefined) {
       confirmAlert({
         title: "Bạn đã đăng nhập chưa?",
         message: "Hãy đăng nhập để có trải nghiệm tuyệt vời hơn",
@@ -226,7 +232,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
       });
     } else {
       // Nếu id tồn tại, kiểm tra với API
-      const check = await CallAPICheckUserId(id);
+      const check = await CallAPICheckUserId(user.id);
       if (check) {
         // Nếu id tồn tại trong cửa hàng
         changeLink("/profileMarket");
@@ -241,7 +247,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     e.preventDefault();
 
     // Kiểm tra nếu id là null hoặc undefined
-    if (id === "" || id === undefined) {
+    if (user.id === "" || user.id === undefined) {
       confirmAlert({
         title: "Bạn đã đăng nhập chưa?",
         message: "Bạn cần đăng nhập để vào giỏ hàng của mình",
@@ -499,18 +505,13 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
               onClick={checkUserId}
               type="button"
               className="btn btn-icon btn-sm mx-3 rounded-4"
-              to={""}
             >
               <i className="bi bi-shop fs-4"></i>
             </Link>
-            <Link
-              type="button"
-              className="btn btn-icon btn-sm rounded-4 me-3"
-              to={""}
-            >
+            <Link type="button" className="btn btn-icon btn-sm rounded-4 me-3">
               <i className="bi bi-bell fs-4"></i>
             </Link>
-            {fullName ? (
+            {user !== null ? (
               <div className="d-flex justify-content-center align-items-center mt-2 ">
                 <div className="dropdown">
                   <button
@@ -522,12 +523,12 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                     style={{ cursor: "pointer" }}
                   >
                     <img
-                      src={geturlIMG(id, avatar)}
+                      src={geturlIMG(user.id, user.avatar)}
                       alt=""
                       className="rounded-circle img-fluid"
                       style={{ width: "30px", height: "30px" }}
                     />
-                    <span className="ms-2">{fullName}</span>
+                    <span className="ms-2">{user.fullname}</span>
                   </button>
                   <ul className="dropdown-menu">
                     <li>

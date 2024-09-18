@@ -1,13 +1,20 @@
 import React, { useState } from "react";
 import "./UnMarketStyle.css";
 import { useNavigate } from "react-router-dom";
-import useSession from "../../../../Session/useSession";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
+import { Box, TextField } from "@mui/material";
+import StoreIcon from "@mui/icons-material/Store";
+import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
+import AttachEmailIcon from "@mui/icons-material/AttachEmail";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import BusinessIcon from "@mui/icons-material/Business";
 
 const UnMatket = () => {
-  const [id] = useSession("id");
-  const [avatar] = useSession("avatar");
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
+
   const changeLink = useNavigate();
   const [formStore, setFormStore] = useState({
     namestore: "",
@@ -16,8 +23,8 @@ const UnMatket = () => {
     phone: "",
     cccdnumber: "",
     createdtime: "",
-    imgbackgound: avatar,
-    user: id,
+    imgbackgound: user.avatar,
+    user: user.id,
   });
 
   const handleChange = (e) => {
@@ -158,8 +165,8 @@ const UnMatket = () => {
       phone: "",
       cccdnumber: "",
       createdtime: "",
-      imgbackgound: avatar,
-      user: id,
+      imgbackgound: user.avatar,
+      user: user.id,
     });
   };
 
@@ -183,53 +190,153 @@ const UnMatket = () => {
                 <div className="card-body">
                   <form onSubmit={handleSubmit}>
                     <div className="mb-3">
-                      <input
+                      {/* <input
                         type="text"
                         name="namestore"
                         placeholder="Nhập tên cửa hàng"
                         className="form-control rounded-4"
                         value={formStore.namestore}
                         onChange={handleChange}
-                      />
+                      /> */}
+                      <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                        <StoreIcon
+                          sx={{
+                            color: "action.active",
+                            mr: 1,
+                            my: 0.5,
+                            fontSize: "25px",
+                          }}
+                        />
+                        <TextField
+                          id="outlined-basic"
+                          label="Nhập tên cửa hàng"
+                          variant="outlined"
+                          name="namestore"
+                          value={formStore.namestore}
+                          onChange={handleChange}
+                          size="small"
+                          fullWidth
+                        />
+                      </Box>
                     </div>
                     <div className="mb-3">
-                      <input
+                      {/* <input
                         type="text"
                         name="phone"
                         placeholder="Nhập số điện thoại"
                         className="form-control rounded-4"
                         value={formStore.phone}
                         onChange={handleChange}
-                      />
+                      /> */}
+                      <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                        <PhoneIphoneIcon
+                          sx={{
+                            color: "action.active",
+                            mr: 1,
+                            my: 0.5,
+                            fontSize: "25px",
+                          }}
+                        />
+                        <TextField
+                          id="outlined-basic"
+                          label="Nhập số điện thoại"
+                          variant="outlined"
+                          name="phone"
+                          value={formStore.phone}
+                          onChange={handleChange}
+                          size="small"
+                          fullWidth
+                        />
+                      </Box>
                     </div>
                     <div className="mb-3">
-                      <input
+                      {/* <input
                         type="email"
                         name="email"
                         placeholder="Nhập email"
                         className="form-control rounded-4"
                         value={formStore.email}
                         onChange={handleChange}
-                      />
+                      /> */}
+                      <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                        <AttachEmailIcon
+                          sx={{
+                            color: "action.active",
+                            mr: 1,
+                            my: 0.5,
+                            fontSize: "25px",
+                          }}
+                        />
+                        <TextField
+                          id="outlined-basic"
+                          label="Nhập email"
+                          variant="outlined"
+                          name="email"
+                          value={formStore.email}
+                          onChange={handleChange}
+                          size="small"
+                          fullWidth
+                        />
+                      </Box>
                     </div>
                     <div className="mb-3">
-                      <input
+                      {/* <input
                         type="text"
                         name="cccdnumber"
                         placeholder="Nhập CCCD"
                         className="form-control rounded-4"
                         value={formStore.cccdnumber}
                         onChange={handleChange}
-                      />
+                      /> */}
+                      <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                        <CreditCardIcon
+                          sx={{
+                            color: "action.active",
+                            mr: 1,
+                            my: 0.5,
+                            fontSize: "25px",
+                          }}
+                        />
+                        <TextField
+                          id="outlined-basic"
+                          label="Nhập căm cước công dân"
+                          variant="outlined"
+                          name="cccdnumber"
+                          value={formStore.cccdnumber}
+                          onChange={handleChange}
+                          size="small"
+                          fullWidth
+                        />
+                      </Box>
                     </div>
                     <div className="mb-3">
-                      <textarea
+                      {/* <textarea
                         name="address"
                         placeholder="Nhập địa chỉ của bạn"
                         className="form-control rounded-4"
                         value={formStore.address}
                         onChange={handleChange}
-                      ></textarea>
+                      ></textarea> */}
+                      <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                        <BusinessIcon
+                          sx={{
+                            color: "action.active",
+                            mr: 1,
+                            my: 0.5,
+                            fontSize: "25px",
+                          }}
+                        />
+                        <TextField
+                          id="outlined-multiline-static"
+                          label="Nhập địa chỉ cửa hàng"
+                          multiline
+                          rows={4}
+                          name="address"
+                          value={formStore.address}
+                          onChange={handleChange}
+                          fullWidth
+                        />
+                      </Box>
                     </div>
                     <button type="submit" className="btn" id="btn-submit">
                       Đăng Ký

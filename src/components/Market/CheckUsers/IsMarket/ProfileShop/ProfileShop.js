@@ -10,7 +10,9 @@ import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
 import { BadgeOutlined, PhoneCallback } from "@mui/icons-material";
 
 const ProfileShop = () => {
-  const [idUser] = useSession("id");
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
   const [idStore] = useSession("idStore");
   const [dataStore, setDataStore] = useState({
     namestore: "",
@@ -19,7 +21,7 @@ const ProfileShop = () => {
     phone: "",
     cccdnumber: "",
     imgbackgound: "",
-    user: idUser,
+    user: user.id,
   });
   const [previewAvatar, setPreviewAvatar] = useState("");
 
@@ -96,6 +98,7 @@ const ProfileShop = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
+      const idToast = toast.loading("Vui lòng chờ...");
       try {
         const formData = new FormData();
         formData.append(
@@ -107,7 +110,7 @@ const ProfileShop = () => {
             phone: dataStore.phone,
             cccdnumber: dataStore.cccdnumber,
             user: {
-              id: idUser,
+              id: user.id,
             },
           })
         );
@@ -115,7 +118,6 @@ const ProfileShop = () => {
           formData.append("imgbackgound", dataStore.imgbackgound);
         }
 
-        const idToast = toast.loading("Vui lòng chờ...");
         await axios.put(`/store/${idStore}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -133,7 +135,13 @@ const ProfileShop = () => {
         }, 500);
       } catch (error) {
         console.log(error);
-        toast.error("Đã xảy ra lỗi khi cập nhật thông tin cửa hàng");
+        toast.update(idToast, {
+          render: "Đã xảy ra lỗi khi cập nhật thông tin cửa hàng",
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
       }
     }
   };

@@ -26,7 +26,7 @@ const ListProduct = () => {
   const [fill, setFill] = useState([]); // giá trị để fill Pro vào bảng
   const [fetchData, setFetchData] = useState([]); //giá trị check === 0
   const [fillDetail, setFillDetail] = useState([]);
-  const [idStore] = useSession("idStore");
+  const [idStore] = localStorage.getItem("idStore");
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState("desc"); // 'asc' or 'desc'
   const [orderBy, setOrderBy] = useState("name"); // Sorting by price

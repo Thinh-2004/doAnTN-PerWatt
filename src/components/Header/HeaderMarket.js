@@ -13,27 +13,25 @@ const Header = () => {
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
-  const [fullName, , removeFullName] = useSession("fullname");
-  const [avatar, , removeAvatar] = useSession("avatar");
-  const [id, , removeId] = useSession("id");
+  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
   const [countOrder, setCountOrder] = useState(0);
   const [count, setCount] = useState(0);
   const changeLink = useNavigate();
   const idSotre = sessionStorage.getItem("idStore");
 
   useEffect(() => {
-    const count = async (id) => {
+    const count = async () => {
       try {
-        const res = await axios.get(`/countCartIdUser/${id}`);
+        const res = await axios.get(`/countCartIdUser/${user.id}`);
         setCount(res.data.length);
         console.log(res.data.length);
       } catch (error) {
         console.log(error);
       }
     };
-    const countOrders = async (idStore) => {
+    const countOrders = async () => {
       try {
-        const res = await axios.get(`checkOrder/${idStore}`);
+        const res = await axios.get(`checkOrder/${idSotre}`);
         setCountOrder(res.data.length);
         console.log(res.data.length);
       } catch (error) {
@@ -41,8 +39,8 @@ const Header = () => {
       }
     };
     countOrders(idSotre);
-    count(id);
-  }, [id, idSotre]);
+    count();
+  }, [user.id, idSotre]);
 
   const handleLogOut = () => {
     confirmAlert({
@@ -61,10 +59,8 @@ const Header = () => {
                 autoClose: 5000,
                 closeButton: true,
               });
-              removeFullName();
-              removeAvatar();
-              removeId();
-              sessionStorage.removeItem("idStore");
+              localStorage.clear();
+              sessionStorage.clear();
               changeLink("/");
             }, 500);
           },
@@ -88,7 +84,7 @@ const Header = () => {
 
   const checkUserId = async (e) => {
     e.preventDefault();
-    if (id === "" || id === undefined) {
+    if (user.id === "" || user.id === undefined) {
       confirmAlert({
         title: "Bạn đã đăng nhập chưa?",
         message: "Hãy đăng nhập để có trải nghiệm tuyệt vời hơn",
@@ -115,7 +111,7 @@ const Header = () => {
         ],
       });
     } else {
-      const check = await CallAPICheckUserId(id);
+      const check = await CallAPICheckUserId(user.id);
       if (check) {
         changeLink("/profileMarket");
       } else {
@@ -173,7 +169,7 @@ const Header = () => {
               </span>
             </Link>
           </div>
-          {fullName ? (
+          {user ? (
             <div className="d-flex justify-content-center align-items-center mt-2 ">
               <div className="dropdown">
                 <button
@@ -184,12 +180,12 @@ const Header = () => {
                   id="btn-sessionUser"
                 >
                   <img
-                    src={geturlIMG(id, avatar)}
+                    src={geturlIMG(user.id, user.avatar)}
                     alt=""
                     className="rounded-circle img-fluid"
                     style={{ width: "30px", height: "30px" }}
                   />
-                  <span className="ms-2">{fullName}</span>
+                  <span className="ms-2">{user.fullname}</span>
                 </button>
                 <ul className="dropdown-menu">
                   <li>
@@ -201,7 +197,7 @@ const Header = () => {
                     <hr className="p-0 m-2" />
                   </li>
                   <li>
-                    <Link className="dropdown-item" onClick={handleLogOut}>
+                    <Link className="dropdown-item text-danger" onClick={handleLogOut}>
                       Đăng xuất
                     </Link>
                   </li>

@@ -18,13 +18,21 @@ import PayBuyer from "../components/Order/PayBuyer/PayBuyer";
 import ShippingCreate from "../components/Shipping/ShippingCreate";
 import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification";
 import Successful from "../components/Order/Successful/Successful";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const RouteUsers = (props) => {
   return (
     <>
       <Routes>
         <Route path="/" element={<Home></Home>}></Route>
-        <Route path="login" element={<Form></Form>}></Route>
+        <Route
+          path="login"
+          element={
+            <GoogleOAuthProvider clientId="175283151902-4ncr5sj18h9e9akpj72mmnjbcq1mqdkg.apps.googleusercontent.com">
+              <Form></Form>
+            </GoogleOAuthProvider>
+          }
+        ></Route>
         <Route path="/cart" element={<Cart></Cart>}></Route>
         <Route path="/market" element={<Market></Market>}></Route>
         <Route path="/profileMarket/*" element={<IsMarket></IsMarket>}></Route>
@@ -61,7 +69,6 @@ const RouteUsers = (props) => {
         ></Route>
         <Route path="*">404 Not Found</Route>
       </Routes>
-      
     </>
   );
 };

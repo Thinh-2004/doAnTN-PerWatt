@@ -33,7 +33,7 @@ const Register = ({ onRegisterSuccess }) => {
   const [isFocusedPass, setIsFocusedPass] = useState(false);
   const [isFocusedPassCofig, setIsFocusedPassCofig] = useState(false);
 
-  const handleChange = (e) => {
+  const  handleChange = (e) => {
     // Kiểm tra nếu `e` là một sự kiện (từ các input khác), xử lý bình thường
     if (e?.target) {
       const { name, value, type, checked } = e.target;
@@ -326,7 +326,7 @@ const Register = ({ onRegisterSuccess }) => {
                 name="birthdate"
                 value={
                   formUser.birthdate
-                    ? dayjs(formUser.birthdate).tz("Asia/Ho_Chi_Minh")
+                    ? dayjs(formUser.birthdate)
                     : null
                 } // Chuyển đổi múi giờ về Việt Nam
                 onChange={handleChange}
