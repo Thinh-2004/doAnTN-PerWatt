@@ -42,7 +42,7 @@ const Profile = () => {
       setPreviewAvatar(
         res.data.avatar ? geturlIMG(user.id, res.data.avatar) : ""
       );
-      console.log(res.data);
+      // console.log(res.data);
     } catch (error) {
       console.log(error);
     }
@@ -164,33 +164,32 @@ const Profile = () => {
           },
         });
         setTimeout(() => {
-          toast.update(
-            idToast,
-            {
-              render: "Cập nhật thông tin thành công",
-              type: "success",
-              isLoading: false,
-              autoClose: 5000,
-              closeButton: true,
-            },
-          );
+          toast.update(idToast, {
+            render: "Cập nhật thông tin thành công",
+            type: "success",
+            isLoading: false,
+            autoClose: 5000,
+            closeButton: true,
+          });
           setFill(res.data); // Cập nhật thông tin sau khi lưu thành công
-          localStorage.setItem("user", JSON.stringify(res.data)); //Chuyển đổi đối tượng thành JSON
+          const userInfo = {
+            id: res.data.id,
+            fullname: res.data.fullname,
+            avatar: res.data.avatar,
+          };
+          localStorage.setItem("user", JSON.stringify(userInfo)); //Chuyển đổi đối tượng thành JSON
           // sessionStorage.setItem("fullname", res.data.fullname);
           // sessionStorage.setItem("avatar", res.data.avatar);
           loadData();
         }, 500);
       } catch (error) {
-        toast.update(
-          idToast,
-          {
-            render: "Có lỗi xảy ra khi cập nhật hồ sơ",
-            type: "error",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          },
-        );
+        toast.update(idToast, {
+          render: "Có lỗi xảy ra khi cập nhật hồ sơ",
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
         console.error(error);
       }
     }

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import "./HeaderStyle.css";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import useSession from "../../Session/useSession";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { confirmAlert } from "react-confirm-alert";
@@ -203,7 +202,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     e.preventDefault();
 
     // Kiểm tra nếu id là null hoặc undefined
-    if (user.id === "" || user.id === undefined) {
+    if (user === null || user === undefined) {
       confirmAlert({
         title: "Bạn đã đăng nhập chưa?",
         message: "Hãy đăng nhập để có trải nghiệm tuyệt vời hơn",
@@ -247,7 +246,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     e.preventDefault();
 
     // Kiểm tra nếu id là null hoặc undefined
-    if (user.id === "" || user.id === undefined) {
+    if (user === null || user === undefined) {
       confirmAlert({
         title: "Bạn đã đăng nhập chưa?",
         message: "Bạn cần đăng nhập để vào giỏ hàng của mình",

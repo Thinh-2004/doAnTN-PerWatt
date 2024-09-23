@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import useSession from "../../../../../Session/useSession";
 import axios from "../../../../../Localhost/Custumize-axios";
 import "./ProfileShopStyle.css";
 import { Box, Button, styled, TextField } from "@mui/material";
@@ -8,12 +7,15 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import StoreIcon from "@mui/icons-material/Store";
 import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
 import { BadgeOutlined, PhoneCallback } from "@mui/icons-material";
+import SubtitlesOutlinedIcon from "@mui/icons-material/SubtitlesOutlined";
+import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import BusinessIcon from "@mui/icons-material/Business";
 
 const ProfileShop = () => {
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
-  const [idStore] = useSession("idStore");
+  const idStore = localStorage.getItem("idStore");
   const [dataStore, setDataStore] = useState({
     namestore: "",
     address: "",
@@ -22,6 +24,11 @@ const ProfileShop = () => {
     cccdnumber: "",
     imgbackgound: "",
     user: user.id,
+    taxcode: "",
+  });
+  const [dataTaxCode, setDataTaxCode] = useState({
+    name: "",
+    address: "",
   });
   const [previewAvatar, setPreviewAvatar] = useState("");
 
@@ -29,17 +36,20 @@ const ProfileShop = () => {
     return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
   };
 
-  const loadData = async (idStore) => {
+  const loadData = async () => {
     try {
       const res = await axios.get(`store/${idStore}`);
       setDataStore(res.data);
+
+      const apiCheckTaxCode = await axios.get(`/business/${res.data.taxcode}`);
+      setDataTaxCode(apiCheckTaxCode.data.data);
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    loadData(idStore);
+    loadData();
   }, [idStore]);
 
   const handleFileChange = (e) => {
@@ -62,7 +72,7 @@ const ProfileShop = () => {
   };
 
   const validate = () => {
-    const { namestore, address, email, phone, cccdnumber } = dataStore;
+    const { namestore, address, email, phone, cccdnumber, taxcode } = dataStore;
     const pattenPhone = /0[0-9]{9}/;
     const pattenEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const pattenCccd = /^[0-9]{9,12}$/;
@@ -92,6 +102,10 @@ const ProfileShop = () => {
       return false;
     }
 
+    if (!taxcode) {
+      return true;
+    }
+
     return true;
   };
 
@@ -100,6 +114,20 @@ const ProfileShop = () => {
     if (validate()) {
       const idToast = toast.loading("Vui lòng chờ...");
       try {
+        //kiểm tra mã số thuế trước khi cập nhật
+        const checkTax = await axios.get(`/business/${dataStore.taxcode}`);
+        if (!checkTax.data.data || checkTax.status === 524) {
+          toast.update(idToast, {
+            render: "Mã số thuế không tồn tại ",
+            type: "warning",
+            isLoading: false,
+            autoClose: 5000,
+            closeButton: true,
+          });
+          return;
+        }
+
+        //Thực hiện gửi dữ liệu về backend
         const formData = new FormData();
         formData.append(
           "store",
@@ -112,6 +140,7 @@ const ProfileShop = () => {
             user: {
               id: user.id,
             },
+            taxcode: dataStore.taxcode,
           })
         );
         if (dataStore.imgbackgound instanceof File) {
@@ -135,13 +164,36 @@ const ProfileShop = () => {
         }, 500);
       } catch (error) {
         console.log(error);
-        toast.update(idToast, {
-          render: "Đã xảy ra lỗi khi cập nhật thông tin cửa hàng",
-          type: "error",
-          isLoading: false,
-          autoClose: 5000,
-          closeButton: true,
-        });
+        if (error.response) {
+          const errorMessage =
+            error.response.status === 409
+              ? error.response.data
+              : error.response.data;
+          toast.update(idToast, {
+            render: errorMessage,
+            type: "warning",
+            isLoading: false,
+            autoClose: 5000,
+            closeButton: true,
+          });
+        } else if (error.request) {
+          toast.update(idToast, {
+            render: "Máy chủ không phản hồi",
+            type: "warning",
+            isLoading: false,
+            autoClose: 5000,
+            closeButton: true,
+          });
+        } else {
+          toast.update(idToast, {
+            render: "Cập nhật thất bại",
+            type: "warning",
+            isLoading: false,
+            autoClose: 5000,
+            closeButton: true,
+          });
+        }
+        console.error("Lỗi từ backend hoặc máy chủ:", error);
       }
     }
   };
@@ -159,24 +211,25 @@ const ProfileShop = () => {
   });
 
   return (
-    <div className="card mt-4 p-3">
-      <div className="row">
-        <div className="col-lg-6 col-md-6 col-sm-6 border-end">
-          <h3 className="text-center">Thông tin kênh bán hàng của tôi</h3>
+    <form onSubmit={handleSubmit}>
+      <div className="card mt-4 p-3">
+        <div className="row">
+          <div className="col-lg-6 col-md-6 col-sm-6 border-end">
+            <h3 className="text-center">Thông tin kênh bán hàng của tôi</h3>
+          </div>
+          <div className="col-lg-6 col-md-6 col-sm-6">
+            <h3 className="text-center">Hình nền shop</h3>
+          </div>
         </div>
-        <div className="col-lg-6 col-md-6 col-sm-6">
-          <h3 className="text-center">Hình nền shop</h3>
-        </div>
-      </div>
-      <span className="p-0 m-o">
-        <hr />
-      </span>
-      <div className="card-body">
-        <form onSubmit={handleSubmit}>
+        <span className="p-0 m-0">
+          <hr />
+        </span>
+
+        <div className="card-body">
           <div className="row">
             <div className="col-lg-6 col-md-6 col-sm-6 border-end">
               <div className="row">
-                <div className="col-lg-6 col-md-6 col-sm-6">
+                <div className="col-lg-12 col-md-12 col-sm-12">
                   <div className="mb-3">
                     <Box sx={{ display: "flex", alignItems: "flex-end" }}>
                       <StoreIcon
@@ -207,106 +260,18 @@ const ProfileShop = () => {
                     /> */}
                   </div>
                   <div className="mb-3">
-                    <Box sx={{ display: "flex", alignItems: "flex-end" }}>
-                      <MarkEmailUnreadIcon
-                        sx={{
-                          color: "action.active",
-                          mr: 1,
-                          my: 0.5,
-                          fontSize: "25px",
-                        }}
-                      />
-                      <TextField
-                        fullWidth
-                        name="email"
-                        value={dataStore.email}
-                        onChange={handleInputChange}
-                        id="input-with-sx-emailStore"
-                        label="Email shop"
-                        variant="standard"
-                      />
-                    </Box>
-                    {/* <input
-                      type="email"
-                      name="email"
-                      value={dataStore.email}
+                    <TextField
+                      id="outlined-multiline-static"
+                      label="Địa chỉ cửa hàng"
+                      multiline
+                      rows={9}
+                      fullWidth
+                      defaultValue="Địa chỉ cửa hàng"
+                      name="address"
+                      value={dataStore.address}
                       onChange={handleInputChange}
-                      className="form-control"
-                      placeholder="Email cửa hàng"
-                    /> */}
-                  </div>
-                  <div className="mb-3">
-                    <Box sx={{ display: "flex", alignItems: "flex-end" }}>
-                      <PhoneCallback
-                        sx={{
-                          color: "action.active",
-                          mr: 1,
-                          my: 0.5,
-                          fontSize: "25px",
-                        }}
-                      />
-                      <TextField
-                        fullWidth
-                        name="phone"
-                        value={dataStore.phone}
-                        onChange={handleInputChange}
-                        id="input-with-sx-phoneStore"
-                        label="Số điện thoại shop"
-                        variant="standard"
-                      />
-                    </Box>
-                    {/* <input
-                      type="text"
-                      name="phone"
-                      className="form-control"
-                      value={dataStore.phone}
-                      onChange={handleInputChange}
-                      placeholder="Số điện thoại cửa hàng"
-                    /> */}
-                  </div>
-                  <div className="mb-3">
-                    <Box sx={{ display: "flex", alignItems: "flex-end" }}>
-                      <BadgeOutlined
-                        sx={{
-                          color: "action.active",
-                          mr: 1,
-                          my: 0.5,
-                          fontSize: "25px",
-                        }}
-                      />
-                      <TextField
-                        fullWidth
-                        name="cccdnumber"
-                        value={dataStore.cccdnumber}
-                        onChange={handleInputChange}
-                        id="input-with-sx-cccdSeller"
-                        label="Căn cước công dân chủ shop"
-                        variant="standard"
-                      />
-                    </Box>
-                    {/* <input
-                      type="text"
-                      name="cccdnumber"
-                      value={dataStore.cccdnumber}
-                      onChange={handleInputChange}
-                      className="form-control"
-                      placeholder="Căn cước công dân"
-                    /> */}
-                  </div>
-                </div>
-                <div className="col-lg-6 col-md-6 col-sm-6 align-content-center">
-                  <TextField
-                    id="outlined-multiline-static"
-                    label="Địa chỉ cửa hàng"
-                    multiline
-                    rows={9}
-                    fullWidth
-                    defaultValue="Địa chỉ cửa hàng"
-                    name="address"
-                    value={dataStore.address}
-                    onChange={handleInputChange}
-                  />
-                  {/* <textarea
+                    />
+                    {/* <textarea
                     name="address"
                     className="form-control"
                     placeholder="Địa chỉ cửa hàng"
@@ -314,15 +279,9 @@ const ProfileShop = () => {
                     value={dataStore.address}
                     onChange={handleInputChange}
                   ></textarea> */}
+                  </div>
                 </div>
               </div>
-              <button
-                type="submit"
-                className="btn mt-3 mb-3"
-                id="btn-update-infoShop"
-              >
-                Lưu thay đổi
-              </button>
             </div>
             <div className="col-lg-6 col-md-6 col-sm-6">
               <div>
@@ -359,9 +318,187 @@ const ProfileShop = () => {
               </div>
             </div>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+      <div className="card mt-4 p-3 mb-4">
+        <h3 className="text-start">Thông tin chi tiết</h3>
+        <span className="p-0 m-0">
+          <hr />
+        </span>
+
+        <div className="card-body">
+          <div className="row">
+            <div className="col-lg-6 col-md-6 col-sm-6 border-end">
+              <div className="mb-3">
+                <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                  <MarkEmailUnreadIcon
+                    sx={{
+                      color: "action.active",
+                      mr: 1,
+                      my: 0.5,
+                      fontSize: "25px",
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    name="email"
+                    value={dataStore.email}
+                    onChange={handleInputChange}
+                    id="input-with-sx-emailStore"
+                    label="Email shop"
+                    variant="standard"
+                  />
+                </Box>
+                {/* <input
+                      type="email"
+                      name="email"
+                      value={dataStore.email}
+                      onChange={handleInputChange}
+                      className="form-control"
+                      placeholder="Email cửa hàng"
+                    /> */}
+              </div>
+              <div className="mb-3">
+                <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                  <PhoneCallback
+                    sx={{
+                      color: "action.active",
+                      mr: 1,
+                      my: 0.5,
+                      fontSize: "25px",
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    name="phone"
+                    value={dataStore.phone}
+                    onChange={handleInputChange}
+                    id="input-with-sx-phoneStore"
+                    label="Số điện thoại shop"
+                    variant="standard"
+                  />
+                </Box>
+                {/* <input
+                      type="text"
+                      name="phone"
+                      className="form-control"
+                      value={dataStore.phone}
+                      onChange={handleInputChange}
+                      placeholder="Số điện thoại cửa hàng"
+                    /> */}
+              </div>
+              <div className="mb-3">
+                <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                  <BadgeOutlined
+                    sx={{
+                      color: "action.active",
+                      mr: 1,
+                      my: 0.5,
+                      fontSize: "25px",
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    name="cccdnumber"
+                    value={dataStore.cccdnumber}
+                    onChange={handleInputChange}
+                    id="input-with-sx-cccdSeller"
+                    label="Căn cước công dân chủ shop"
+                    variant="standard"
+                  />
+                </Box>
+                {/* <input
+                      type="text"
+                      name="cccdnumber"
+                      value={dataStore.cccdnumber}
+                      onChange={handleInputChange}
+                      className="form-control"
+                      placeholder="Căn cước công dân"
+                    /> */}
+              </div>
+              <button
+                type="submit"
+                className="btn mt-3"
+                id="btn-update-infoShop"
+              >
+                Lưu thay đổi
+              </button>
+            </div>
+            <div className="col-lg-6 col-md-6 col-sm-6">
+              <div className="mb-3">
+                <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                  <SubtitlesOutlinedIcon
+                    sx={{
+                      color: "action.active",
+                      mr: 1,
+                      my: 0.5,
+                      fontSize: "25px",
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    name="taxcode"
+                    value={dataStore.taxcode}
+                    onChange={handleInputChange}
+                    id="input-with-sx-taxCodeSeller"
+                    label="Mã thuế của shop"
+                    variant="standard"
+                  />
+                </Box>
+              </div>
+              <div className="mb-3">
+                <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                  <StorefrontOutlinedIcon
+                    sx={{
+                      color: "action.active",
+                      mr: 1,
+                      my: 0.5,
+                      fontSize: "25px",
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    name="name"
+                    value={dataTaxCode?.name}
+                    onChange={handleInputChange}
+                    id="input-with-sx-taxNameSeller"
+                    label="Tên người kinh doanh"
+                    variant="standard"
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Box>
+              </div>
+              <div className="mb-3">
+                <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                  <BusinessIcon
+                    sx={{
+                      color: "action.active",
+                      mr: 1,
+                      my: 0.5,
+                      fontSize: "25px",
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    name="address"
+                    value={dataTaxCode?.address}
+                    onChange={handleInputChange}
+                    id="input-with-sx-taxAddressSeller"
+                    label="địa chỉ đăng ký kinh doanh"
+                    variant="standard"
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Box>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
   );
 };
 

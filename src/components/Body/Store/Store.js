@@ -5,13 +5,29 @@ import { useParams } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
 import ProductStore from "./ProductStore";
 import Footer from "../../Footer/Footer";
-import { Box, Button, CardContent, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CardContent,
+  FormControl,
+  Input,
+  InputAdornment,
+  InputLabel,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 const Store = () => {
   const { idStore } = useParams();
   const [fill, setFill] = useState([]);
   const [search, setSearch] = useState("");
   const [countProductStore, setCountProductStore] = useState(0);
+  const [fillCateInStore, setFillCateInStore] = useState([]);
+  const [idCateProduct, setIdCateProduct] = useState(0);
+  const [checkResetInputSearch, setCheckResetInputSearch] = useState(false);
+
   const geturlBgStore = (storeId, filename) => {
     return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
   };
@@ -22,9 +38,14 @@ const Store = () => {
     try {
       const res = await axios.get(`store/${idStore}`);
       setFill(res.data);
+
       if (res.data && res.data.id) {
         const storeRes = await axios.get(`/productStore/${res.data.id}`);
         setCountProductStore(storeRes.data.length);
+        const cateProductByStore = await axios.get(
+          `CateProductInStore/${res.data.id}`
+        );
+        setFillCateInStore(cateProductByStore.data);
       }
     } catch (error) {
       console.log(error);
@@ -33,9 +54,26 @@ const Store = () => {
   useEffect(() => {
     loadData(idStore);
   }, [idStore]);
+
+  useEffect(() => {
+    if (checkResetInputSearch) {
+      setSearch("");
+      setIdCateProduct(0);
+    }
+  }, [checkResetInputSearch]);
+
   const handleTextSearch = (e) => {
     setSearch(e.target.value);
+    setIdCateProduct(0);
   };
+
+  const handleClickIdCateProduct = (idCateProduct) => {
+    setCheckResetInputSearch(false);
+    setIdCateProduct(idCateProduct);
+    setSearch("");
+    // console.log(idCateProduct);
+  };
+
   return (
     <>
       <Header></Header>
@@ -112,27 +150,64 @@ const Store = () => {
       </div>
       <div className="container mt-5">
         <div className="row">
-          <div className="col-lg-3 col-md-3 col-sm-3 border-end">
-            <form className="d-flex justify-content-center" role="search">
-              <input
-                className="form-control rounded-3 bg-body-secondary"
+          <div className="col-lg-3 col-md-3 col-sm-3 border-end bg-white rounded-3">
+            <form className="d-flex justify-content-center mt-3" role="search">
+              {/* <input
+                className="form-control rounded-3"
                 type="search"
                 placeholder="Bạn cần tìm gì"
                 aria-label="Search"
                 style={{ width: "400px", border: "1px solid" }}
                 value={search}
                 onChange={handleTextSearch}
-              />
+              /> */}
+              <Box
+                sx={{ display: "flex", alignItems: "flex-end", width: "100%" }}
+              >
+                <SearchIcon sx={{ color: "action.active", mr: 1, my: 0.5 }} />
+                <TextField
+                  id="standard-search"
+                  label="Bạn cần tìm gì?"
+                  type="search"
+                  variant="standard"
+                  size="small"
+                  value={search}
+                  onChange={handleTextSearch}
+                  fullWidth
+                />
+              </Box>
             </form>
+            {/* <FormControl variant="standard">
+              <InputLabel htmlFor="input-with-icon-adornment">
+                Bạn cần tìm gì?
+              </InputLabel>
+              <Input
+                id="input-with-icon-adornment"
+                startAdornment={
+                  <InputAdornment position="start">
+                    <AccountCircle />
+                  </InputAdornment>
+                }
+                fullWidth
+              />
+            </FormControl> */}
             <div className="border-bottom">
               <h4 className="mt-3">Danh mục cửa hàng</h4>
               <Box sx={{ width: "100%" }}>
-                <Stack spacing={2}>
-                  <Button>Item 1</Button>
-                  <Button>Item 2</Button>
-                  <Button>Item 3</Button>
-                  <Button>Item 6</Button>
-                  <Button>Item 5</Button>
+                <Stack spacing={1}>
+                  {fillCateInStore.map((fill, index) => (
+                    <Button
+                      value={fill.id}
+                      onClick={() => handleClickIdCateProduct(fill.id)}
+                      className="inherit-text"
+                      style={{
+                        textDecoration: "inherit",
+                        color: "inherit",
+                      }}
+                    >
+                      {fill.name}
+                    </Button>
+                  ))}
                 </Stack>
               </Box>
             </div>
@@ -196,10 +271,12 @@ const Store = () => {
               </div>
             </div>
           </div>
-          <div className="col-lg-9 col-md-9 col-sm-9">
-            <div className="mt-4">
-              <ProductStore item={search}></ProductStore>
-            </div>
+          <div className="col-lg-9 col-md-9 col-sm-9 ">
+            <ProductStore
+              item={search}
+              idCate={idCateProduct}
+              resetSearch={setCheckResetInputSearch}
+            ></ProductStore>
           </div>
         </div>
       </div>

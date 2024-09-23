@@ -29,7 +29,7 @@ const DetailProduct = () => {
   const [typeId, setTypeId] = useState("");
   const findMoreProductRef = useRef(null); // Tạo ref cho phần tử cần cuộn đến
   const [countOrderBuyed, setCountOrderBuyed] = useState(0); // Lưu số lượng đã bán cho mỗi sản phẩm
-  const [isCountCart, setIsCountAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
+  const [isCountCart, setIsCountCart] = useState(false); //Truyền dữ liệu từ cha đến con
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1); //trạng thái cho số lượng trước khi thêm giỏ hàng
   const geturlIMG = (productId, filename) => {
@@ -54,6 +54,9 @@ const DetailProduct = () => {
       const resDetail = await axios.get(`/detailProduct/${res.data.id}`);
       const detailData = Array.isArray(resDetail.data) ? resDetail.data : [];
       setFilDetail(detailData);
+      console.log(detailData);
+      const test = detailData.reduce((fill) => fill.quantity);
+      console.log(test);
 
       // Lọc giá sản phẩm
       const prices = detailData.map((filter) => filter.price);
@@ -161,7 +164,7 @@ const DetailProduct = () => {
     try {
       const response = await axios.post("/cart/add", cartItem);
       console.log("Added to cart:", response.data);
-      setIsCountAddCart(true);
+      setIsCountCart(true);
       toast.success("Thêm sản phẩm thành công!");
     } catch (error) {
       toast.error("Thêm sản phẩm thất bại!" + error);
@@ -202,9 +205,7 @@ const DetailProduct = () => {
   //detailProduct
   const handleClickIdDetail = (idDetail) => () => {
     setSelectedIdDetail(idDetail);
-    const selectedProduct = fillDetail.find(
-      (detail) => detail.id === idDetail
-    );
+    const selectedProduct = fillDetail.find((detail) => detail.id === idDetail);
 
     if (selectedProduct) {
       setTotalQuantity(selectedProduct.quantity);
@@ -552,9 +553,7 @@ const DetailProduct = () => {
                   !(
                     fillDetail &&
                     fillDetail.length > 0 &&
-                    fillDetail.some(
-                      (detail) => detail.namedetail !== null
-                    )
+                    fillDetail.some((detail) => detail.namedetail !== null)
                   )
                 }
               >

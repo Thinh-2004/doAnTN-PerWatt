@@ -15,7 +15,7 @@ const EditProduct = () => {
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
-  const [idStore] = useSession("idStore");
+  const [idStore] = localStorage.getItem("idStore");
   const [images, setImages] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(null);
   const clickTimeout = 300; // Thời gian tối đa giữa hai lần click (milisecond)
@@ -196,8 +196,8 @@ const EditProduct = () => {
         new Blob([JSON.stringify(productToSend)], { type: "application/json" })
       );
       images.forEach((file) => formData.append("files", file));
+      const idToast = toast.loading("Vui lòng chờ...");
       try {
-        const idToast = toast.loading("Vui lòng chờ...");
         const response = await axios.put(`/productUpdate/${id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -216,7 +216,13 @@ const EditProduct = () => {
         }, 500);
       } catch (error) {
         console.error("Error:", error.response?.data || error.message);
-        toast.error("Đã xảy ra lỗi khi đăng sản phẩm!");
+        toast.update(idToast, {
+          render: "Đã xảy ra lỗi khi đăng sản phẩm!",
+          type: "error",
+          isLoading: false,
+          closeButton: true,
+          autoClose: 5000,
+        });
       }
     }
   };

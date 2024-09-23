@@ -28,6 +28,9 @@ const ProfileUser = () => {
     ? JSON.parse(localStorage.getItem("user"))
     : null;
   const id = user.id;
+  const [checkPassword, setCheckPsasword] = useState({
+    password: "",
+  });
 
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
@@ -36,8 +39,12 @@ const ProfileUser = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await axios.get(`userProFile/${user.id}`);
+        const res = await axios.get(`userProFile/${id}`);
         setFill(res.data);
+
+        const resUser = await axios.get(`userProFile/${id}`);
+        setCheckPsasword(resUser.data.password);
+        console.log(checkPassword);
       } catch (error) {
         console.log(error);
         toast.error(
@@ -46,7 +53,7 @@ const ProfileUser = () => {
       }
     };
     loadData();
-  }, [user.id]);
+  }, [id, checkPassword]);
 
   const onClickChangePass = async (e) => {
     e.preventDefault();
@@ -81,7 +88,6 @@ const ProfileUser = () => {
   const handleMouseUpPassword = (event) => {
     event.preventDefault();
   };
-
 
   return (
     <div>
@@ -120,7 +126,7 @@ const ProfileUser = () => {
                   <li className="mb-2">
                     {isChangePassClicked ? (
                       <span className="text-muted">Đổi mật khẩu</span>
-                    ) : user.password === null ? (
+                    ) : checkPassword === null ? (
                       <Link
                         type="button"
                         className="text-primary"

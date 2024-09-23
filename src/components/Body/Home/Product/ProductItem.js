@@ -34,7 +34,13 @@ const Product = ({ item, idCate, handleReset }) => {
             .toLowerCase()
             .includes(debouncedItem.toLowerCase())
         : true;
-      return (matchesSearch || matchesCategoryName) && matchesCategory;
+
+        const matchesTrademark = debouncedItem
+        ? product.trademark.name
+            .toLowerCase()
+            .includes(debouncedItem.toLowerCase())
+        : true;
+      return (matchesSearch || matchesCategoryName || matchesTrademark) && matchesCategory;
     });
   }, [debouncedItem, debouncedIdCate, fillAllProduct]);
 
