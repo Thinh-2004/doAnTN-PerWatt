@@ -11,6 +11,7 @@ import MainUserSeller from "./StatisticalOrders/MainUserSeller";
 import ProfileShop from "./ProfileShop/ProfileShop";
 import OrderSeller from "./Order/OrderSeller";
 import OrderDetailBuyer from "./OrderDetail/OrderDetailBuyer";
+import NotificationCard from "../../../Notification&Message&Comment/Notification/SellerNotification";
 
 const IsMarket = () => {
   const [id] = useSession("id");

@@ -16,6 +16,9 @@ import Store from "../components/UI&UX/Body/Store/Store";
 import Order from "../components/Order/OrderBuyer/OrderBuyer";
 import OrderDetail from "../components/Order/OrderDetail/OrderDetail";
 import PayBuyer from "../components/Order/PayBuyer/PayBuyer";
+import BuyerNotification from "../components/Notification&Message&Comment/Notification/BuyerNotification"
+import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification";
+
 
 const RouteUsers = (props) => {
   return (
@@ -42,7 +45,9 @@ const RouteUsers = (props) => {
         <Route path="/otp" element={<OTP />}></Route>
         <Route path="/resetPassword" element={<ResetPassword />}></Route>
         <Route path="/pageStore/:idStore" element={<Store />}></Route>
-
+      
+        <Route path="/notifications" element={<NotificationCard></NotificationCard>}></Route>
+        <Route path="/buyerNotification" element={<BuyerNotification></BuyerNotification>}></Route>
         <Route path="/order" element={<Order></Order>}></Route>
         <Route
           path="/OrderDetail"

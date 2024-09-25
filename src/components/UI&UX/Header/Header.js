@@ -14,7 +14,10 @@ const Header = ({contextSearch}) => {
   const [fullName, removeFullName] = useSession("fullname");
   const [avatar, removeAvatar] = useSession("avatar");
   const [id, removeId] = useSession("id");
+
   const [count, setCount] = useState(0);
+  const [countOrder, setCountOrder] = useState(0);
+  const idSotre = sessionStorage.getItem("idStore");
   const changeLink = useNavigate();
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
@@ -33,6 +36,28 @@ const Header = ({contextSearch}) => {
     count(id);
   }, [id]);
 
+  const countOrders = async (idStore) => {
+    try {
+      
+      const [inTransitOrdersRes, canceledOrdersRes] = await Promise.all([
+        axios.get(`/checkOrderReadyToShip/${idStore}`), // Đơn hàng đang vận chuyển
+        axios.get(`/canceledOrders/${idStore}`)  // Đơn hàng đã hủy
+      ]);
+  
+      // Tính tổng số đơn hàng đang vận chuyển và đã hủy
+      const inTransitOrderCount = inTransitOrdersRes.data.length;
+      const canceledOrderCount = canceledOrdersRes.data.length;
+  
+      // Cập nhật tổng số thông báo vào state
+      setCountOrder(inTransitOrderCount + canceledOrderCount);
+    } catch (error) {
+      console.log("Lỗi khi lấy dữ liệu đơn hàng:", error);
+    }
+  };
+  
+  // Gọi hàm countOrders khi idStore thay đổi
+ 
+    
   const handleLogOut = () => {
     confirmAlert({
       title: "Đăng xuất tài khoản",
@@ -247,10 +272,13 @@ const Header = ({contextSearch}) => {
             </Link>
             <Link
               type="button"
-              className="btn btn-icon btn-sm rounded-4 me-3"
-              to={"/login"}
+              className="btn btn-icon btn-sm position-relative rounded-4 me-3"
+              to={"/buyerNotification"}
             >
               <i className="bi bi-bell fs-4"></i>
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {countOrder}
+              </span>
             </Link>
           </div>
           {fullName ? (

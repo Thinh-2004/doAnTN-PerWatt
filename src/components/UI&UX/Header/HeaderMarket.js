@@ -13,9 +13,11 @@ const Header = () => {
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
+  const [countOrder, setCountOrder] = useState(0);
   const [fullName, , removeFullName] = useSession("fullname");
   const [avatar, , removeAvatar] = useSession("avatar");
   const [id, , removeId] = useSession("id");
+  const idStore = sessionStorage.getItem("idStore")
   const [count, setCount] = useState(0);
   const changeLink = useNavigate();
 
@@ -29,6 +31,28 @@ const Header = () => {
         console.log(error);
       }
     };
+    const countOrders = async (idStore) => {
+      try {
+        // Gọi API lấy đơn hàng mới, đơn hàng đã giao và đơn hàng đã hủy song song
+        const [newOrdersRes, deliveredOrdersRes, canceledOrdersRes] = await Promise.all([
+          axios.get(`/checkOrder/${idStore}`),
+          axios.get(`/deliveredOrders/${idStore}`),
+          axios.get(`/canceledOrders/${idStore}`)  // Thêm API lấy đơn hàng đã hủy
+        ]);
+
+        // Tính tổng số đơn hàng
+        const newOrderCount = newOrdersRes.data.length;
+        const deliveredOrderCount = deliveredOrdersRes.data.length;
+        const canceledOrderCount = canceledOrdersRes.data.length;
+
+        // Cập nhật tổng số đơn hàng vào state
+        setCountOrder(newOrderCount + deliveredOrderCount + canceledOrderCount);
+      } catch (error) {
+        console.log("Lỗi khi lấy dữ liệu đơn hàng:", error);
+      }
+    };
+
+    countOrders(idStore);
     count(id);
   }, [id]);
 
@@ -152,10 +176,13 @@ const Header = () => {
             </Link>
             <Link
               type="button"
-              className="btn btn-icon btn-sm rounded-4 me-3"
-              to={"/login"}
+              className="btn btn-icon btn-sm  position-relative rounded-4 me-3"
+              to={"/notifications"}
             >
               <i className="bi bi-bell fs-4"></i>
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {countOrder}
+              </span>
             </Link>
           </div>
           {fullName ? (
