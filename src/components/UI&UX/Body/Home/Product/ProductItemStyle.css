@@ -1,10 +1,25 @@
 #product-item{
     text-decoration: none;
     transition: 0.5s;
+    height: 300px;
 
 }
 #product-item:hover{
-    transform: scale(1.08); /* Slightly scale up the div on hover */
+    transform: scale(1.02); /* Slightly scale up the div on hover */
     z-index: 1; /* Ensure the scaled-up div is on top */
     transition: 0.5s;
 }
+#product-name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Số dòng tối đa */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+  }
+  #price-product del , #price-product-item{
+    font-size: 12px;
+  }
+
+  
+  

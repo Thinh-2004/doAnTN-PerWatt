@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 nheht
+=======
+thinhtq
+>>>>>>> 40fd316744c323aedf45c55345ded2b5abfa3efe

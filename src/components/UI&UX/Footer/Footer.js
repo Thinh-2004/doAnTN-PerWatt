@@ -2,7 +2,7 @@ import React from "react";
 import "./FooteStyle.css";
 const Footer = () => {
   return (
-    <div className="bg">
+    <div className="bg ">
       <hr className="mt-4" />
       <div className="row container-fluid p-5">
         <div className="col-lg-3">
