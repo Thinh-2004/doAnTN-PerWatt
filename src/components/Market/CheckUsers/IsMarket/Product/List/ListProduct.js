@@ -25,7 +25,7 @@ bouncy.register();
 const ListProduct = () => {
   const [fill, setFill] = useState([]); // giá trị để fill Pro vào bảng
   const [fetchData, setFetchData] = useState([]); //giá trị check === 0
-  const [fillDetail, setFillDetail] = useState([]);
+  // const [fillDetail, setFillDetail] = useState([]);
   const [idStore] = localStorage.getItem("idStore");
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState("desc"); // 'asc' or 'desc'
@@ -67,7 +67,7 @@ const ListProduct = () => {
         })
       );
       setFetchData(res.data);
-      setFillDetail(dataWithDetails);
+      // setFillDetail(dataWithDetails);
       setFill(dataWithDetails);
       setLoading(false);
     } catch (error) {
@@ -331,7 +331,7 @@ const ListProduct = () => {
                         <Link
                           className="btn"
                           id="btn-edit"
-                          to={`/profileMarket/updateProduct/${fill.id}`}
+                          to={`/profileMarket/updateProduct/${fill.slug}`}
                         >
                           <i className="bi bi-pencil-square"></i>
                         </Link>
@@ -345,7 +345,7 @@ const ListProduct = () => {
                         <Link
                           className="btn"
                           id="btn-showDetail"
-                          to={`/profileMarket/checkItemProduct/${fill.id}`}
+                          to={`/profileMarket/checkItemProduct/${fill.slug}`}
                         >
                           <i className="bi bi-eye"></i>
                         </Link>

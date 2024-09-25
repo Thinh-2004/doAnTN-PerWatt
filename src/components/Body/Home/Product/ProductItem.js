@@ -15,6 +15,7 @@ const Product = ({ item, idCate, handleReset }) => {
   const debouncedItem = useDebounce(item);
   const debouncedIdCate = useDebounce(idCate);
   const [countOrderBuyed, setCountOrderBuyed] = useState({});
+  // const [totalQuantity, setTotalQuantity] = useState(0);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1); //Trang hiện tại
@@ -35,12 +36,15 @@ const Product = ({ item, idCate, handleReset }) => {
             .includes(debouncedItem.toLowerCase())
         : true;
 
-        const matchesTrademark = debouncedItem
+      const matchesTrademark = debouncedItem
         ? product.trademark.name
             .toLowerCase()
             .includes(debouncedItem.toLowerCase())
         : true;
-      return (matchesSearch || matchesCategoryName || matchesTrademark) && matchesCategory;
+      return (
+        (matchesSearch || matchesCategoryName || matchesTrademark) &&
+        matchesCategory
+      );
     });
   }, [debouncedItem, debouncedIdCate, fillAllProduct]);
 
@@ -69,8 +73,8 @@ const Product = ({ item, idCate, handleReset }) => {
     try {
       const res = await axios.get("pageHome");
 
-       // Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm và lưu vào productDetails
-       const dataWithDetails = await Promise.all(
+      // Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm và lưu vào productDetails
+      const dataWithDetails = await Promise.all(
         res.data.map(async (product) => {
           const resDetail = await axios.get(`/detailProduct/${product.id}`);
           return {
@@ -168,6 +172,12 @@ const Product = ({ item, idCate, handleReset }) => {
           const maxPrice = Math.max(
             ...productDetails.map((filter) => filter.price)
           );
+
+          //tính tổng số lượng sản phẩm 
+          const totalQuantity = productDetails.reduce(
+            (total, detailQuantity) => total + detailQuantity.quantity,
+            0
+          );
           return (
             <div
               className="col-lg-2 col-md-3 col-sm-4 mt-3 card shadow rounded-4 p-2 d-flex flex-column"
@@ -176,7 +186,7 @@ const Product = ({ item, idCate, handleReset }) => {
               id="home-product-item"
             >
               <Link
-                to={`/detailProduct/${fill.id}`}
+                to={`/detailProduct/${fill.slug}`}
                 className="position-relative d-flex justify-content-center"
                 style={{ height: "50%" }}
               >
@@ -189,12 +199,22 @@ const Product = ({ item, idCate, handleReset }) => {
                   className="img-fluid rounded-4"
                   alt="Product"
                 />
-                {fill.quantity === 0 && (
+                {totalQuantity === 0 && (
                   <div
                     className="position-absolute top-0 start-50 translate-middle text-danger"
                     id="bg-sold-out"
                   >
                     <span className="text-white text-center">Hết hàng</span>
+                  </div>
+                )}
+                {fill?.store?.taxcode && (
+                  <div class="position-absolute bottom-0 end-0">
+                    <img
+                      src="/images/IconShopMall.png"
+                      alt=""
+                      className="rounded-circle"
+                      style={{ width: "15%", height: "15%" }}
+                    />
                   </div>
                 )}
               </Link>
@@ -205,12 +225,14 @@ const Product = ({ item, idCate, handleReset }) => {
                 </span>
                 <h5 id="price-product">
                   {/* <del className="text-secondary me-1">3,000,000 đ</del> - */}
-                  <span className="text-danger mx-1 fs-6" id="price-product-item">
-                  {minPrice === maxPrice
-                        ? formatPrice(minPrice) + " đ"
-                        : `${formatPrice(minPrice)} - ${formatPrice(
-                            maxPrice
-                          )}` + " đ"}
+                  <span
+                    className="text-danger mx-1 fs-6"
+                    id="price-product-item"
+                  >
+                    {minPrice === maxPrice
+                      ? formatPrice(minPrice) + " đ"
+                      : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` +
+                        " đ"}
                   </span>
                 </h5>
                 <hr />

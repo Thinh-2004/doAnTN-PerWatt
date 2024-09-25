@@ -9,10 +9,6 @@ import {
   Box,
   Button,
   CardContent,
-  FormControl,
-  Input,
-  InputAdornment,
-  InputLabel,
   Stack,
   TextField,
   Typography,
@@ -96,18 +92,26 @@ const Store = () => {
         <div className="container position-absolute start-50 translate-middle mt-3">
           <div className="row">
             <div className="col-lg-8 col-md-8 col-sm-8">
-              <div className=" d-flex justify-content-start m-3">
+              <div className=" d-flex justify-content-start">
                 <img
                   src={
                     fill && fill.user && fill.user.avatar
                       ? geturlAvtUser(fill.user.id, fill.user.avatar)
-                      : ""
+                      : null
                   }
                   alt=""
                   id="logo-store"
                 />
                 <label className=" d-flex align-items-end mx-4 fs-6 fw-bold text-dark">
-                  {fill.namestore}
+                  {fill.namestore} &nbsp;&nbsp;&nbsp;
+                  {fill?.taxcode && (
+                    <img
+                      src="/images/IconShopMall.png"
+                      alt=""
+                      className="rounded-circle"
+                      style={{ width: "5%", height: "30%" }}
+                    />
+                  )}
                 </label>
               </div>
             </div>
@@ -150,7 +154,10 @@ const Store = () => {
       </div>
       <div className="container mt-5">
         <div className="row">
-          <div className="col-lg-3 col-md-3 col-sm-3 border-end bg-white rounded-3">
+          <div
+            className="col-lg-3 col-md-3 col-sm-3 border-end bg-white rounded-3"
+            style={{ height: "90%" }}
+          >
             <form className="d-flex justify-content-center mt-3" role="search">
               {/* <input
                 className="form-control rounded-3"
@@ -191,29 +198,31 @@ const Store = () => {
                 fullWidth
               />
             </FormControl> */}
-            <div className="border-bottom">
-              <h4 className="mt-3">Danh mục cửa hàng</h4>
-              <Box sx={{ width: "100%" }}>
-                <Stack spacing={1}>
-                  {fillCateInStore.map((fill, index) => (
-                    <Button
-                      value={fill.id}
-                      onClick={() => handleClickIdCateProduct(fill.id)}
-                      className="inherit-text"
-                      style={{
-                        textDecoration: "inherit",
-                        color: "inherit",
-                      }}
-                    >
-                      {fill.name}
-                    </Button>
-                  ))}
-                </Stack>
-              </Box>
-            </div>
             <div className="border-bottom ">
+              <h4 className="mt-3">Danh mục cửa hàng</h4>
+              <div className="overflow-auto" style={{ height: "450px" }}>
+                <Box sx={{ width: "100%" }}>
+                  <Stack spacing={1}>
+                    {fillCateInStore.map((fill, index) => (
+                      <Button
+                        value={fill.id}
+                        onClick={() => handleClickIdCateProduct(fill.id)}
+                        className="inherit-text"
+                        style={{
+                          textDecoration: "inherit",
+                          color: "inherit",
+                        }}
+                      >
+                        {fill.name}
+                      </Button>
+                    ))}
+                  </Stack>
+                </Box>
+              </div>
+            </div>
+            <div className="border-bottom mb-5 ">
               <h4 className="mt-3">Mã khuyến mãi</h4>
-              <div className="overflow-auto" style={{ height: "330px" }}>
+              <div className="overflow-auto" style={{ height: "400px" }}>
                 <CardContent className="bg-white mt-2">
                   <Typography
                     sx={{ fontSize: 14 }}

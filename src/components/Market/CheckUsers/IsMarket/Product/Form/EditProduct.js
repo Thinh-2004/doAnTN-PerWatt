@@ -4,18 +4,17 @@ import Category from "../../CategoryProduct/Category";
 import Brand from "../../Brand/Brand";
 import Warranties from "../../Warranties/Warranties";
 import { toast } from "react-toastify";
-import useSession from "../../../../../../Session/useSession";
 import axios from "../../../../../../Localhost/Custumize-axios";
 import { Button, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditDetailProduct from "../../DetailProduct/EditDetailProduct";
 
 const EditProduct = () => {
-  const { id } = useParams();
+  const slug = useParams();
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
-  const [idStore] = localStorage.getItem("idStore");
+  const idStore = localStorage.getItem("idStore");
   const [images, setImages] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(null);
   const clickTimeout = 300; // Thời gian tối đa giữa hai lần click (milisecond)
@@ -37,9 +36,9 @@ const EditProduct = () => {
   const [editDetailProduct, setEditDetailProduct] = useState([]);
 
   // Fill dữ liệu edit
-  const fillData = async (id) => {
+  const fillData = async () => {
     try {
-      const res = await axios.get(`product/${id}`);
+      const res = await axios.get(`product/${slug.slug}`);
       setFormEditProduct({
         ...res.data,
         productcategory: res.data.productcategory.id,
@@ -48,6 +47,7 @@ const EditProduct = () => {
         productDetails: res.data.productDetails,
         store: idStore,
       });
+      console.log(res.data);
 
       const resDetail = await axios.get(`/detailProduct/${res.data.id}`);
 
@@ -69,8 +69,8 @@ const EditProduct = () => {
 
   useEffect(() => {
     // Fill dữ liệu
-    fillData(id);
-  }, [id]);
+    fillData();
+  }, []);
 
   //Hiển thị chi tiết sản phẩm
   useEffect(() => {
@@ -82,7 +82,7 @@ const EditProduct = () => {
     } else {
       setIsHiddenDetailPro(false);
     }
-  }, [id, editProductDetail]);
+  }, [slug, editProductDetail]);
 
   // Hàm xử lí sự kiện thay đổi File
   const handleFileChange = (event) => {
@@ -116,7 +116,7 @@ const EditProduct = () => {
   const handleDeleteImageClick = async (idImage) => {
     try {
       await axios.delete(`image/${idImage}`);
-      fillData(id);
+      fillData();
     } catch (error) {
       console.log(error);
     }
@@ -198,11 +198,15 @@ const EditProduct = () => {
       images.forEach((file) => formData.append("files", file));
       const idToast = toast.loading("Vui lòng chờ...");
       try {
-        const response = await axios.put(`/productUpdate/${id}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const response = await axios.put(
+          `/productUpdate/${formEditProduct.id}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
         setTimeout(() => {
           toast.update(idToast, {
             render: "Cập nhật sản phẩm thành công",
@@ -371,7 +375,10 @@ const EditProduct = () => {
 
             <div className="card-body">
               {isHiddenDetailPro ? (
-                <EditDetailProduct DataDetail={handleDataChange} />
+                <EditDetailProduct
+                  DataDetail={handleDataChange}
+                  idProduct={formEditProduct}
+                />
               ) : (
                 editProductDetail.map((detailInput, index) => (
                   <div key={index} className="d-flex justify-content-between">

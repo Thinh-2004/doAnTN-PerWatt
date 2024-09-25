@@ -37,11 +37,11 @@ const RouteUsers = (props) => {
         <Route path="/market" element={<Market></Market>}></Route>
         <Route path="/profileMarket/*" element={<IsMarket></IsMarket>}></Route>
         <Route
-          path="detailProduct/:id"
+          path="detailProduct/:slug"
           element={<DetailProduct></DetailProduct>}
         ></Route>
         <Route
-          path="profileMarket/checkItemProduct/:id"
+          path="profileMarket/checkItemProduct/:slug"
           element={<CheckItemProduct></CheckItemProduct>}
         ></Route>
         <Route path="/user/*" element={<ProfileUser></ProfileUser>}></Route>

@@ -3,7 +3,6 @@ import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import useSession from "../../../../Session/useSession";
 import Header from "../../../Header/Header";
 import "./ShowDetailProduct.css";
 import FindMoreProduct from "../FindMoreProduct/FindMoreProduct";
@@ -17,8 +16,7 @@ import {
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 const DetailProduct = () => {
-  const { id } = useParams();
-  const [idUser] = useSession("id");
+  const { slug } = useParams();
   const changeLink = useNavigate();
   const [FillDetailPr, setFillDetailPr] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -29,9 +27,11 @@ const DetailProduct = () => {
   const [typeId, setTypeId] = useState("");
   const findMoreProductRef = useRef(null); // Tạo ref cho phần tử cần cuộn đến
   const [countOrderBuyed, setCountOrderBuyed] = useState(0); // Lưu số lượng đã bán cho mỗi sản phẩm
-  const [isCountCart, setIsCountCart] = useState(false); //Truyền dữ liệu từ cha đến con
+  const [isCountCart, setIsCountAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1); //trạng thái cho số lượng trước khi thêm giỏ hàng
+  const [productDetailIds, setproductDetailIds] = useState(null);
+
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -48,21 +48,17 @@ const DetailProduct = () => {
   const [fillDetail, setFilDetail] = useState([]);
   const loadProductDetail = async () => {
     try {
-      const res = await axios.get(`product/${id}`);
+      const res = await axios.get(`product/${slug}`);
       setFillDetailPr(res.data);
 
       const resDetail = await axios.get(`/detailProduct/${res.data.id}`);
       const detailData = Array.isArray(resDetail.data) ? resDetail.data : [];
       setFilDetail(detailData);
-      console.log(detailData);
-      const test = detailData.reduce((fill) => fill.quantity);
-      console.log(test);
 
       // Lọc giá sản phẩm
       const prices = detailData.map((filter) => filter.price);
       const dataMinPrice = Math.min(...prices);
       const dataMaxPrice = Math.max(...prices);
-
       setMinPrice(dataMinPrice);
       setMaxPrice(dataMaxPrice);
 
@@ -104,7 +100,7 @@ const DetailProduct = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     loadProductDetail();
-  }, [id]);
+  }, [slug]);
 
   // Theo dõi sự thay đổi của idClick và typeId để cuộn đến phần tử
   useEffect(() => {
@@ -124,8 +120,10 @@ const DetailProduct = () => {
   };
 
   const addToCart = async (productId) => {
-    const userId = idUser; // Thay thế bằng ID người dùng thực tế
-    if (userId == null || userId === "") {
+    const user = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : null; // Thay thế bằng ID người dùng thực tế
+    if (user.id == null || user.id === "") {
       confirmAlert({
         title: "Bạn chưa đăng nhập",
         message:
@@ -157,14 +155,16 @@ const DetailProduct = () => {
 
     const cartItem = {
       quantity: quantity,
-      user: { id: userId },
-      product: { id: productId },
+      user: { id: user.id },
+      productDetail: { id: productDetailIds },
     };
+    // console.log("ở đây nè id product " + productDetailIds);
+    // console.log("ở đây nè số lượng " + quantity);
 
     try {
       const response = await axios.post("/cart/add", cartItem);
       console.log("Added to cart:", response.data);
-      setIsCountCart(true);
+      setIsCountAddCart(true);
       toast.success("Thêm sản phẩm thành công!");
     } catch (error) {
       toast.error("Thêm sản phẩm thất bại!" + error);
@@ -174,7 +174,8 @@ const DetailProduct = () => {
 
   const handleChangeQuantity = (e) => {
     var value = parseInt(e.target.value, 10); // chuyển đổi giá trị được nhập vào và chuyển đổi số thập phân (10)
-    if (value > FillDetailPr.quantity) value = FillDetailPr.quantity;
+    if (value > totalQuantity)
+      value = totalQuantity;
     else if (value < 1) value = 1;
     setQuantity(value);
   };
@@ -202,7 +203,6 @@ const DetailProduct = () => {
     setOpen(false);
   };
 
-  //detailProduct
   const handleClickIdDetail = (idDetail) => () => {
     setSelectedIdDetail(idDetail);
     const selectedProduct = fillDetail.find((detail) => detail.id === idDetail);
@@ -211,8 +211,21 @@ const DetailProduct = () => {
       setTotalQuantity(selectedProduct.quantity);
       setMinPrice(selectedProduct.price);
       setMaxPrice(selectedProduct.price);
+      setQuantity(1);
     }
+
+    setproductDetailIds(idDetail);
   };
+
+  useEffect(() => {
+    //số lượng của sản phẩm chi tiết
+    if (fillDetail.length === 1) {
+      setproductDetailIds(fillDetail[0].id);
+    } else {
+      setproductDetailIds(null);
+    }
+    console.log(totalQuantity);
+  }, [fillDetail]);
 
   return (
     <>
@@ -228,14 +241,12 @@ const DetailProduct = () => {
                 className="position-absolute top-50 start-50 translate-middle rounded-3"
                 id="text-sold-out"
                 style={{
-                  display:
-                    FillDetailPr && FillDetailPr.quantity === 0
-                      ? "inline"
-                      : "none",
+                  display: totalQuantity === 0 ? "inline" : "none",
                 }}
               >
-                <span className="text-white">Hết hàng</span>
+                <span className="text-white ">Hết hàng</span>
               </div>
+
               <div
                 className="carousel-inner align-content-center"
                 style={{ height: "575px" }}
@@ -261,7 +272,7 @@ const DetailProduct = () => {
                               ? geturlIMG(FillDetailPr.id, image.imagename)
                               : "/images/no_img.png"
                           }
-                          className="d-block object-fit-cover"
+                          className="d-block object-fit-cover rounded-5"
                           alt={FillDetailPr ? FillDetailPr.name : "No Image"}
                           style={{ width: "100%", height: "100%" }}
                         />
@@ -307,6 +318,7 @@ const DetailProduct = () => {
                   </div>
                 )}
               </div>
+
               <button
                 className="carousel-control-prev"
                 type="button"
@@ -378,7 +390,7 @@ const DetailProduct = () => {
                             ? geturlIMG(FillDetailPr.id, image.imagename)
                             : "/images/no_img.png"
                         }
-                        className="img-thumbnail"
+                        className="img-thumbnail rounded-3"
                         alt=""
                         style={{ width: "100px", height: "100px" }}
                       />
@@ -389,6 +401,14 @@ const DetailProduct = () => {
           <div className="col-md-8 col-lg-8 col-sm-8 d-flex flex-column">
             <div className="p-3 border-bottom">
               <h1 className="fst-italic" id="productName">
+                {FillDetailPr?.store?.taxcode && (
+                  <img
+                    src="/images/IconShopMall.png"
+                    alt=""
+                    className="rounded-circle me-2"
+                    style={{ width: "4%", height: "4%" }}
+                  />
+                )}
                 {FillDetailPr ? FillDetailPr.name : "No Name"}
               </h1>
             </div>
@@ -461,7 +481,7 @@ const DetailProduct = () => {
                       >
                         {FillDetailPr && FillDetailPr.productcategory
                           ? FillDetailPr.productcategory.name
-                          : "N/A"}
+                          : null}
                       </Link>
                     </li>
                     <li>
@@ -477,7 +497,7 @@ const DetailProduct = () => {
                       >
                         {FillDetailPr && FillDetailPr.trademark
                           ? FillDetailPr.trademark.name
-                          : "N/A"}
+                          : null}
                       </Link>
                     </li>
                     <li>
@@ -485,11 +505,11 @@ const DetailProduct = () => {
                       <span>
                         {FillDetailPr && FillDetailPr.warranties
                           ? FillDetailPr.warranties.name
-                          : "N/A"}
+                          : null}
                       </span>
                     </li>
                     <li>
-                      <label htmlFor="">Kích thước:</label>{" "}
+                      <label htmlFor="">Kích thước:</label>
                       <span>{FillDetailPr ? FillDetailPr.size : "N/A"}</span>
                     </li>
                     <li>
@@ -529,7 +549,7 @@ const DetailProduct = () => {
                   <Button
                     className="btn w-75 h-75 rounded-3"
                     id="btn-buy-now"
-                    disabled={FillDetailPr && FillDetailPr.quantity === 0}
+                    disabled={totalQuantity === 0}
                     disableElevation
                   >
                     <i className="bi bi-cash fs-5"></i>
@@ -538,10 +558,14 @@ const DetailProduct = () => {
                     className="btn mx-2 w-75 h-25 rounded-3"
                     disableElevation
                     id="btn-add-card"
-                    onClick={() =>
-                      addToCart(FillDetailPr ? FillDetailPr.id : null)
-                    }
-                    disabled={FillDetailPr && FillDetailPr.quantity === 0}
+                    onClick={() => {
+                      if (!productDetailIds || productDetailIds.length > 1) {
+                        toast.warning("Bạn chưa chọn loại sản phẩm");
+                      } else {
+                        addToCart(FillDetailPr ? FillDetailPr.id : null);
+                      }
+                    }}
+                    disabled={totalQuantity === 0}
                   >
                     <i className="bi bi-cart-plus fs-5"></i>
                   </Button>
@@ -552,7 +576,7 @@ const DetailProduct = () => {
                 hidden={
                   !(
                     fillDetail &&
-                    fillDetail.length > 0 &&
+                    fillDetail.length > 1 &&
                     fillDetail.some((detail) => detail.namedetail !== null)
                   )
                 }
@@ -578,6 +602,11 @@ const DetailProduct = () => {
                             : "hover-idDetailProduct"
                         }`}
                         onClick={handleClickIdDetail(fillDetail.id)}
+                        style={{
+                          opacity: fillDetail.quantity === 0 ? 0.5 : 1,
+                          pointerEvents:
+                            fillDetail.quantity === 0 ? "none" : "auto",
+                        }}
                       >
                         <img
                           src={geturlImgDetailProduct(
@@ -588,7 +617,23 @@ const DetailProduct = () => {
                           className="img-fluid"
                           style={{ maxWidth: "50px", maxHeight: "50px" }}
                         />
+
                         <label className="ms-2">{fillDetail.namedetail}</label>
+
+                        {fillDetail.quantity === 0 && (
+                          <div
+                            className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center rounded-3"
+                            style={{
+                              backgroundColor: "rgba(0, 0, 0, 0.5)",
+                              color: "white",
+                              fontWeight: "bold",
+                              zIndex: 1,
+                            }}
+                          >
+                            Hết hàng
+                          </div>
+                        )}
+
                         <div
                           className="position-absolute bottom-0 end-0"
                           hidden={selectedIdDetail !== fillDetail.id}
@@ -619,17 +664,24 @@ const DetailProduct = () => {
                   }
                   alt=""
                   id="avt-store"
+                  onClick={handleViewStoreInfo}
+                  style={{ cursor: "pointer" }}
                 />
               </div>
               <div className=" mt-3 ">
                 <div className="text-center">
-                  <span htmlFor="" className="fs-6">
+                  <span
+                    htmlFor=""
+                    className="fs-6"
+                    onClick={handleViewStoreInfo}
+                    style={{ cursor: "pointer" }}
+                  >
                     {FillDetailPr && FillDetailPr.store
                       ? FillDetailPr.store.namestore
                       : "N/A"}
                   </span>
                 </div>
-                <div className="d-flex justify-content-center">
+                <div className="d-flex">
                   <button
                     className="btn btn-sm mx-2"
                     onClick={handleViewStoreInfo}

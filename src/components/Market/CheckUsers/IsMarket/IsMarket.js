@@ -18,11 +18,11 @@ import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const IsMarket = () => {
-  const [id] = useSession("id");
+  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
   useEffect(() => {
     const searchIdStoreByIdUser = async () => {
       try {
-        const res = await axios.get(`/searchStore/${id}`);
+        const res = await axios.get(`/searchStore/${user.id}`);
         sessionStorage.setItem("idStore", res.data.id);
       } catch (error) {
         // Xử lý lỗi nếu có
@@ -31,10 +31,10 @@ const IsMarket = () => {
     };
 
     // Gọi hàm fetchData khi id thay đổi
-    if (id) {
+    if (user.id) {
       searchIdStoreByIdUser();
     }
-  }, [id]);
+  }, [user.id]);
   return (
     <>
       <HeaderMarket />
@@ -99,7 +99,7 @@ const IsMarket = () => {
                     <li>
                       <Link
                         style={{ textDecoration: "none" }}
-                        to={`/profileMarket/orderSeller/${id}`}
+                        to={`/profileMarket/orderSeller/${user.id}`}
                       >
                         Tất cả
                       </Link>
@@ -260,7 +260,7 @@ const IsMarket = () => {
             <Route path="/" element={<MainUserSeller />} />
             <Route path="/listStoreProduct" element={<ListProduct />} />
             <Route path="/FormStoreProduct" element={<FormProduct />} />
-            <Route path="updateProduct/:id" element={<EditProduct />} />
+            <Route path="updateProduct/:slug" element={<EditProduct />} />
             <Route path="/profileShop" element={<ProfileShop />} />
             <Route
               path="orderDetailSeller/:id"

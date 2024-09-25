@@ -22,7 +22,7 @@ const Brand = ({ name, value, onChange }) => {
     if (filterIdNoBrand) {
       setIdNoBrand(filterIdNoBrand.id);
     }
-  },[]);
+  },[fillBrand]);
   // Nhóm các danh mục theo chữ cái đầu tiên của tên
   const groupedTrade = fillBrand.reduce((acc, brand) => {
     const firstLetter = brand.name.charAt(0).toUpperCase(); //Lấy chữ cái đầu tiền

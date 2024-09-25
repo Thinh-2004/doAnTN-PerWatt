@@ -5,17 +5,16 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
 
-const EditDetailProduct = ({ DataDetail }) => {
-  const { id } = useParams(); //Lấy id Product
+const EditDetailProduct = ({ DataDetail, idProduct }) => {
+  const  id  = idProduct.id; //Lấy id Product
   const [fillData, setFillData] = useState([]); //để fill dữ liệu;
   const [moveData, setMoveData] = useState([]); //để chuyển dữ liệu sang components khác xử lí
   const [newTemporaryData, setNewTemporaryData] = useState({
     namedetail: "",
     price: "",
     quantity: "",
-    imagedetail: null, // Sử dụng null thay vì Data URL
+    imagedetail: null, 
   });
   const [imagePreview, setImagePreview] = useState("");
   const [imageEdit, setImageEdit] = useState("");

@@ -115,16 +115,18 @@ const ProfileShop = () => {
       const idToast = toast.loading("Vui lòng chờ...");
       try {
         //kiểm tra mã số thuế trước khi cập nhật
-        const checkTax = await axios.get(`/business/${dataStore.taxcode}`);
-        if (!checkTax.data.data || checkTax.status === 524) {
-          toast.update(idToast, {
-            render: "Mã số thuế không tồn tại ",
-            type: "warning",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          return;
+        if (dataStore.taxcode) {
+          const checkTax = await axios.get(`/business/${dataStore.taxcode}`);
+          if (!checkTax.data.data || checkTax.status === 524) {
+            toast.update(idToast, {
+              render: "Mã số thuế không tồn tại ",
+              type: "warning",
+              isLoading: false,
+              autoClose: 5000,
+              closeButton: true,
+            });
+            return;
+          }
         }
 
         //Thực hiện gửi dữ liệu về backend
@@ -480,7 +482,7 @@ const ProfileShop = () => {
                       fontSize: "25px",
                     }}
                   />
-                  <TextField
+                  {/* <TextField
                     fullWidth
                     name="address"
                     value={dataTaxCode?.address}
@@ -488,6 +490,19 @@ const ProfileShop = () => {
                     id="input-with-sx-taxAddressSeller"
                     label="địa chỉ đăng ký kinh doanh"
                     variant="standard"
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  /> */}
+                  <TextField
+                    fullWidth
+                    name="address"
+                    value={dataTaxCode?.address}
+                    onChange={handleInputChange}
+                    id="outlined-multiline-static"
+                    label="Multiline"
+                    multiline
+                    rows={2}
                     InputProps={{
                       readOnly: true,
                     }}

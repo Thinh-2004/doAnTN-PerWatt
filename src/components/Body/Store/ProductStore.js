@@ -3,7 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
 import useDebounce from "../../../CustumHook/useDebounce";
 import "./StoreStyle.css";
-import { Box, Skeleton } from "@mui/material";
+import { Box, Button, Pagination, Skeleton } from "@mui/material";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 const ProductStore = ({ item, idCate, resetSearch }) => {
   const { idStore } = useParams();
   const [fill, setFill] = useState([]);
@@ -12,6 +14,8 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
   //Debounce
   const debouncedItem = useDebounce(item);
   const debouncedIdCate = useDebounce(idCate);
+  const [sortOption, setSortOption] = useState("newest"); // Trạng thái cho sắp xếp
+  const [isAscending, setIsAscending] = useState(true); // Trạng thái tăng/giảm giá
 
   const loadData = async (idStore) => {
     try {
@@ -33,17 +37,25 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
       setLoading(true);
     }
   };
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     loadData(idStore);
   }, [idStore]);
+
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
+
   const formatPrice = (value) => {
     if (!value) return "";
     return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
   };
+
+  //Pagination
+  const [currentPage, setCurrentPage] = useState(1); // trang hiện tại là 1
+  const itemInPage = 20;
+
   //Lọc sản phẩm
   const filterSearchByText = useMemo(() => {
     return fill.filter((product) => {
@@ -71,6 +83,40 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
     });
   }, [debouncedIdCate, debouncedItem, fill]);
 
+  // Hàm sắp xếp sản phẩm
+  const sortedProducts = useMemo(() => {
+    const products = [...filterSearchByText];
+    if (sortOption === "newest") {
+      // Sắp xếp theo ID giảm dần
+      return products.sort((a, b) => b.id - a.id); // Giảm dần
+    }
+    if (sortOption === "price") {
+      return products.sort((a, b) => {
+        const priceA = Math.min(...a.productDetails.map((p) => p.price));
+        const priceB = Math.min(...b.productDetails.map((p) => p.price));
+        return isAscending ? priceA - priceB : priceB - priceA;
+      });
+    }
+    return products;
+  }, [filterSearchByText, sortOption, isAscending]);
+
+  // Hàm xử lý khi nhấn nút sắp xếp theo giá
+  const handleSortByPrice = () => {
+    setSortOption("price");
+    setIsAscending(!isAscending); // Đảo ngược trạng thái tăng/giảm giá
+  };
+
+  //Tính toán
+  const lastIndex = currentPage * itemInPage; // đi đến trang tiếp theo
+  const firstIndex = lastIndex - itemInPage; // Trở về trang (ví dụ 40 -20)
+  const records = sortedProducts.slice(firstIndex, lastIndex); //cắt danh sách cần hiển thị
+  const pageCount = Math.ceil(filterSearchByText.length / itemInPage); //Ceil làm tròn số trang
+
+  // Sự kiện đặt lại giá trị cho số trang
+  const handlePageChange = (e, value) => {
+    setCurrentPage(value);
+    console.log(value);
+  };
   const handleResetSearch = () => {
     resetSearch(true);
   };
@@ -92,7 +138,8 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
           style={{ cursor: "pointer" }}
           onClick={handleResetSearch}
         >
-          <i className="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm của cửa hàng 
+          <i className="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm của cửa
+          hàng
         </div>
       ) : null}
       {loading || isFiltering ? (
@@ -130,7 +177,46 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
         </>
       ) : (
         <div className="row mb-5">
-          {filterSearchByText.map((fill, index) => {
+          <div className="d-flex justify-content-between">
+            <div>
+              <Button
+                variant="outlined"
+                sx={{ margin: "4px" }}
+                onClick={() => setSortOption("newest")}
+              >
+                Mới nhất
+              </Button>
+              <Button variant="outlined" sx={{ margin: "4px" }}>
+                Bán chạy
+              </Button>
+
+              {isAscending ? (
+                <Button
+                  variant="outlined"
+                  sx={{ margin: "4px" }}
+                  onClick={handleSortByPrice}
+                >
+                  <ArrowUpwardIcon /> Giá tăng dần
+                </Button>
+              ) : (
+                <Button
+                  variant="outlined"
+                  sx={{ margin: "4px" }}
+                  onClick={handleSortByPrice}
+                >
+                  <ArrowDownwardIcon /> Giá giảm dần
+                </Button>
+              )}
+            </div>
+            <Pagination
+              count={pageCount}
+              page={currentPage}
+              onChange={handlePageChange}
+              variant="outlined"
+              color="primary"
+            />
+          </div>
+          {records.map((fill, index) => {
             const firstIMG = fill.images[0];
             const productDetail = fill.productDetails;
 
@@ -141,6 +227,12 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
             const maxPrice = Math.max(
               ...productDetail.map((filter) => filter.price)
             );
+
+            //tính tổng số lượng sản phẩm
+            const totalQuantity = productDetail.reduce(
+              (total, detailQuantity) => total + detailQuantity.quantity,
+              0
+            );
             return (
               <div className="col-lg-3 col-md-3 col-sm-3 mt-3" key={fill.id}>
                 <div
@@ -148,8 +240,10 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
                   style={{ height: "100%" }} // Đảm bảo chiều cao tự điều chỉnh
                   id="product-item"
                 >
-                  <Link to={`/detailProduct/${fill.id}`}
-                  className="d-flex justify-content-center">
+                  <Link
+                    to={`/detailProduct/${fill.slug}`}
+                    className="position-relative d-flex justify-content-center"
+                  >
                     <img
                       src={
                         firstIMG
@@ -160,6 +254,24 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
                       alt="..."
                       style={{ width: "200px", height: "150px" }}
                     />
+                    {totalQuantity === 0 && (
+                      <div
+                        className="position-absolute top-0 start-50 translate-middle text-danger"
+                        id="bg-sold-out"
+                      >
+                        <span className="text-white text-center">Hết hàng</span>
+                      </div>
+                    )}
+                    {fill?.store?.taxcode && (
+                      <div class="position-absolute bottom-0 end-0">
+                        <img
+                          src="/images/IconShopMall.png"
+                          alt=""
+                          className="rounded-circle"
+                          style={{ width: "15%", height: "15%" }}
+                        />
+                      </div>
+                    )}
                   </Link>
                   <div className="mt-2 flex-grow-1 d-flex flex-column justify-content-between">
                     {/* Thêm flex-grow-1 */}
@@ -176,7 +288,7 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
                           ? formatPrice(minPrice) + " đ"
                           : `${formatPrice(minPrice)} - ${formatPrice(
                               maxPrice
-                            )}` + " đ"}
+                            )} đ`}
                       </span>
                     </h5>
                     <hr />
@@ -209,6 +321,15 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
           })}
         </div>
       )}
+      <div className="mt-3 mb-3 d-flex justify-content-center">
+        <Pagination
+          count={pageCount}
+          page={currentPage}
+          onChange={handlePageChange}
+          variant="outlined"
+          color="primary"
+        />
+      </div>
     </>
   );
 };

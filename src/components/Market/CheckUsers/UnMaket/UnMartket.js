@@ -39,23 +39,26 @@ const UnMatket = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (validate()) {
       const toastId = toast.loading("Vui lòng chờ...");
       try {
         // Kiểm tra mã số thuế
-        const checkTax = await axios.get(`/business/${formStore.taxcode}`);
-        if (!checkTax.data.data || checkTax.status === 524) {
-          toast.update(toastId, {
-            render: "Mã số thuế không tồn tại hoặc đã được sử dụng ở nơi khác",
-            type: "warning",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          return;
+        if (formStore.taxcode) {
+          const checkTax = await axios.get(`/business/${formStore.taxcode}`);
+          if (!checkTax.data.data || checkTax.status === 524) {
+            toast.update(toastId, {
+              render:
+                "Mã số thuế không tồn tại hoặc đã được sử dụng ở nơi khác",
+              type: "warning",
+              isLoading: false,
+              autoClose: 5000,
+              closeButton: true,
+            });
+            return; //Stop if taxcode not valid
+          }
         }
-  
+
         // Tạo đối tượng để gửi đến backend
         const storeToSend = {
           ...formStore,
@@ -63,10 +66,10 @@ const UnMatket = () => {
             id: formStore.user,
           },
         };
-  
+
         // Gửi yêu cầu POST đến backend
         const response = await axios.post("store", storeToSend);
-  
+
         // Nếu yêu cầu thành công
         toast.update(toastId, {
           render: "Đăng ký kênh bán thành công",
@@ -75,20 +78,20 @@ const UnMatket = () => {
           autoClose: 5000,
           closeButton: true,
         });
-  
+
         // Lưu id store vào localStorage
         localStorage.setItem("idStore", response.data.id);
-  
+
         // Chuyển hướng đến trang profileMarket
         changeLink("/profileMarket");
-  
       } catch (error) {
         // Xử lý lỗi từ backend
         if (error.response) {
-          const errorMessage = error.response.status === 409 
-            ? error.response.data 
-            : error.response.data;
-  
+          const errorMessage =
+            error.response.status === 409
+              ? error.response.data
+              : error.response.data;
+
           toast.update(toastId, {
             render: errorMessage,
             type: "warning",
@@ -119,7 +122,6 @@ const UnMatket = () => {
       }
     }
   };
-  
 
   const validate = () => {
     const { namestore, address, email, phone, cccdnumber, taxcode } = formStore;
@@ -170,11 +172,10 @@ const UnMatket = () => {
 
       if (!taxcode) {
         return true;
-      } 
-      // else if (!/^\d{10}$|^\d{13}$/.test(taxcode)) {
-      //   toast.warning("Mã số thuế không hợp lệ. Phải có 10 hoặc 12 chữ số");
-      //   return false;
-      // }
+      } else if (!/^\d{10}$|^\d{13}$/.test(taxcode)) {
+        toast.warning("Mã số thuế không hợp lệ. Phải có 10 hoặc 12 chữ số");
+        return false;
+      }
     }
     return true;
   };
