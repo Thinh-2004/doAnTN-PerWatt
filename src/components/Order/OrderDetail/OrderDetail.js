@@ -4,6 +4,7 @@ import Footer from "../../Footer/Footer";
 import axios from "../../../Localhost/Custumize-axios";
 import { useParams } from "react-router-dom";
 import { tailspin } from "ldrs";
+import { Button } from "@mui/material";
 
 const OrderDetail = () => {
   const [orderDetails, setOrderDetails] = useState([]);
@@ -35,7 +36,7 @@ const OrderDetail = () => {
 
   const groupByStore = (details) => {
     return details.reduce((groups, detail) => {
-      const storeId = detail.product.store.id;
+      const storeId = detail.productDetail.product.store.id;
       if (!groups[storeId]) {
         groups[storeId] = [];
       }
@@ -55,21 +56,21 @@ const OrderDetail = () => {
       <div className="container">
         <div className="card mt-3">
           <div className="card-body">
-            <a className="btn btn-primary" href="/order">
+            <Button variant="contained" href="/order">
               <i class="bi bi-caret-left-fill"></i>
-            </a>
+            </Button>
           </div>
         </div>
 
         {Object.keys(groupedByStore).map((storeId) => {
           const storeProducts = groupedByStore[storeId];
-          const store = storeProducts[0].product.store;
+          const store = storeProducts[0].productDetail.product.store;
           const order = storeProducts[0].order;
           return (
             <div
               className="card mt-3"
               key={storeId}
-              style={{ position: "relative", minHeight: "200px" }} 
+              style={{ position: "relative", minHeight: "200px" }}
             >
               {!isCardLoaded && (
                 <l-tailspin
@@ -104,13 +105,13 @@ const OrderDetail = () => {
                     <h5 id="nameShop" className="mt-1">
                       {store.namestore}
                     </h5>
-                   
                   </div>
                   <div className="mt-1">Mã đơn hàng: {order.id}</div>
                 </div>
                 <hr />
                 {storeProducts.map((orderDetail, index) => {
-                  const firstIMG = orderDetail.product.images?.[0];
+                  const firstIMG =
+                    orderDetail.productDetail.product.images?.[0];
                   return (
                     <div className="d-flex mb-3" key={index}>
                       <div
@@ -123,7 +124,7 @@ const OrderDetail = () => {
                       >
                         <img
                           src={geturlIMG(
-                            orderDetail.product.id,
+                            orderDetail.productDetail.product.id,
                             firstIMG.imagename
                           )}
                           id="img"
@@ -138,9 +139,21 @@ const OrderDetail = () => {
                         />
                       </div>
                       <div className="col-5 mt-3 mx-2">
-                        <div id="fontSizeTitle">{orderDetail.product.name}</div>
+                        <div id="fontSizeTitle">
+                          {orderDetail.productDetail.product.name}
+                        </div>
                         <div id="fontSize">
-                          {`${orderDetail.product.productcategory.name}, ${orderDetail.product.trademark.name}, ${orderDetail.product.warranties.name}`}
+                          {
+                            [
+                              orderDetail.productDetail.namedetail,
+                              orderDetail.productDetail.product.productcategory
+                                .name,
+                              orderDetail.productDetail.product.trademark.name,
+                              orderDetail.productDetail.product.warranties.name,
+                            ]
+                              .filter(Boolean) // Lọc bỏ các giá trị null hoặc rỗng
+                              .join(", ") // Nối các chuỗi lại với nhau bằng dấu phẩy và khoảng trắng
+                          }
                         </div>
                       </div>
                       <div className="col-8 mx-3 mt-5">
@@ -152,9 +165,9 @@ const OrderDetail = () => {
                             Số lượng: {orderDetail.quantity}
                           </div>
                           <div className="col-4">
-                            Thành tiền:
+                            Thành tiền:{" "}
                             {formatPrice(
-                              orderDetail.product.price * orderDetail.quantity
+                              orderDetail.price * orderDetail.quantity
                             ) + " VNĐ"}
                           </div>
                         </div>
@@ -167,12 +180,12 @@ const OrderDetail = () => {
                   <div className="col-6">
                     <div>Họ và tên người nhận: {order.user.fullname}</div>
                     <div>Số điện thoại: {order.user.phone}</div>
-                    <div>Địa chỉ giao hàng: {order.shippinginfor.address}</div>
+                    <div>Địa chỉ nhận hàng: {order.shippinginfor.address}</div>
                   </div>
                   <div className="col-6 text-end">
                     <div className="card mt-3">
                       <div className="card-body">
-                        Tổng cộng:
+                        Tổng cộng:{" "}
                         {formatPrice(
                           storeProducts.reduce(
                             (sum, detail) =>

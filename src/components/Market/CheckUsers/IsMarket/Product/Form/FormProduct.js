@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import Category from "../../CategoryProduct/Category";
 import Brand from "../../Brand/Brand";
 import Warranties from "../../Warranties/Warranties";
-import useSession from "../../../../../../Session/useSession";
 import axios from "../../../../../../Localhost/Custumize-axios";
 import { Button, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -38,7 +37,6 @@ const FormProduct = () => {
   const [charCount, setCharCount] = useState(0); // State để lưu số từ
   const [charCountDesception, setCharCountDesception] = useState(0); // State để lưu số từ
   const maxCharLimitName = 100; // Giới hạn ký tự
-  const maxCharLimitDesception = 250; // Giới hạn ký tự
   const maxFiles = 9;
 
   // Xử lý khi người dùng chọn tệp
@@ -95,7 +93,7 @@ const FormProduct = () => {
       setCharCount(charCount);
     }
 
-    if(name === "description"){
+    if (name === "description") {
       const charCountDescription = value.length;
       setCharCountDesception(charCountDescription);
     }
@@ -149,24 +147,24 @@ const FormProduct = () => {
         return false;
       }
 
-      // if(price === ""){
+      // if (price === "") {
       //   toast.warning("Cần nhập giá sản phẩm");
       //   return false;
-      // }else if(!parseFloat(price)){
+      // } else if (!parseFloat(price)) {
       //   toast.warning("Giá không hợp lệ");
       //   return false;
-      // }else if(parseFloat(price) <= 0 | parseFloat(price) > 1000){
+      // } else if ((parseFloat(price) <= 0) | (parseFloat(price) > 1000)) {
       //   toast.warning("Giá không được nhỏ hơn 1.000");
       //   return false;
       // }
 
-      // if(quantity === ""){
+      // if (quantity === "") {
       //   toast.warning("Cần nhập số lượng sản phẩm");
       //   return false;
-      // }else if(!parseInt(quantity)){
+      // } else if (!parseInt(quantity)) {
       //   toast.warning("Số lượng không hợp lệ");
       //   return false;
-      // }else if(parseInt(quantity) <= 0){
+      // } else if (parseInt(quantity) <= 0) {
       //   toast.warning("Số lượng không được nhỏ hơn hoặc bằng 0");
       //   return false;
       // }
@@ -442,6 +440,7 @@ const FormProduct = () => {
                       onChange={handleInputChangePriceAndQuantity}
                       fullWidth
                       className="me-2"
+                      disabled={isArrayDetail}
                     />
                     <TextField
                       label="Nhập số lượng"
@@ -451,6 +450,7 @@ const FormProduct = () => {
                       value={priceAndQuantity.quantity}
                       onChange={handleInputChangePriceAndQuantity}
                       fullWidth
+                      disabled={isArrayDetail}
                     />
                   </div>
                 )}

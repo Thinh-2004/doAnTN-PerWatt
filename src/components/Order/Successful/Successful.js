@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import useSession from "../../../Session/useSession";
@@ -9,13 +9,18 @@ import { Button } from "@mui/material";
 const Successful = () => {
   const [products, setProducts] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("6");
-  const [idUser] = useSession("id");
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const statusVNPay = query.get("vnp_ResponseCode");
   const vnp_OrderInfo = query.get("vnp_OrderInfo");
   const addressIds = vnp_OrderInfo.split(",").pop().trim();
   const cartIds = vnp_OrderInfo.split(",").slice(0, -1).join(",").trim();
+
+  // Sử dụng ref để kiểm soát việc gọi API
+  const hasCalledAPI = useRef(false);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -33,14 +38,14 @@ const Successful = () => {
     };
 
     loadProducts();
-  }, [cartIds, idUser]);
+  }, [cartIds]);
 
   const groupByStore = (products) => {
     return products.reduce((groups, product) => {
-      const storeId = product.product.store.id;
+      const storeId = product.productDetail.product.store.id;
       if (!groups[storeId]) {
         groups[storeId] = {
-          store: product.product.store,
+          store: product.productDetail.product.store,
           products: [],
         };
       }
@@ -51,12 +56,12 @@ const Successful = () => {
 
   useEffect(() => {
     const handleOrderVNPay = async () => {
-      try {
-        // if (!selectedShippingInfo) {
-        //   toast.error("Vui lòng chọn địa chỉ nhận hàng!");
-        //   return;
-        // }
+      // Kiểm tra nếu đã gọi API thì không gọi lại
+      if (hasCalledAPI.current) {
+        return;
+      }
 
+      try {
         // Nhóm các sản phẩm theo storeId
         const groupedProducts = groupByStore(products);
 
@@ -65,25 +70,27 @@ const Successful = () => {
           const { store, products: storeProducts } = groupedProducts[storeId];
 
           const order = {
-            user: { id: idUser },
+            user: { id: user.id },
             paymentmethod: { id: selectedPaymentMethod },
             shippinginfor: { id: addressIds },
-            fee: { id: 1 },
             store: { id: storeId },
             paymentdate: new Date().toISOString(),
             orderstatus: "Đang chờ duyệt",
           };
 
           const orderDetails = storeProducts.map((product) => ({
-            product: { id: product.product.id },
+            productDetail: { id: product.productDetail.id },
             quantity: product.quantity,
-            price: product.product.price,
+            price: product.productDetail.price,
           }));
 
           console.log(order);
           console.log(orderDetails);
 
           if (statusVNPay === "00") {
+            // Đánh dấu đã gọi API
+            hasCalledAPI.current = true;
+
             // Tạo đơn hàng cho từng cửa hàng
             const response = await axios.post("/api/payment/createVnPayOrder", {
               order,
@@ -100,8 +107,11 @@ const Successful = () => {
       }
     };
 
-    handleOrderVNPay();
-  }, [products, idUser, selectedPaymentMethod, addressIds]);
+    // Chỉ gọi handleOrderVNPay nếu statusVNPay là "00"
+    if (statusVNPay === "00") {
+      handleOrderVNPay();
+    }
+  }, [products, selectedPaymentMethod, addressIds, statusVNPay, user.id]);
 
   return (
     <div>
@@ -111,7 +121,7 @@ const Successful = () => {
             <div className="card text-center">
               <div className="card-body">
                 <div className="col-12">
-                  <img src="/images/7efs.gif" />
+                  <img src="/images/7efs.gif" alt="Thanh toán thành công" />
                 </div>
                 <h1>Thanh toán thành công</h1>
                 <div className="my-5">
@@ -149,7 +159,7 @@ const Successful = () => {
             <div className="card text-center">
               <div className="card-body">
                 <div className="col-12">
-                  <img src="/images/4Bmb.gif" />
+                  <img src="/images/cancelVNPAY.jpg" alt="Đơn hàng bị hủy" />
                 </div>
                 <h1 className="mt-5">Bạn đã hủy đơn hàng</h1>
                 <div className="my-5">
@@ -174,7 +184,7 @@ const Successful = () => {
                     }}
                     disableElevation
                   >
-                   Bạn muốn mua lại không!
+                    Bạn muốn mua lại không!
                   </Button>
                 </div>
               </div>

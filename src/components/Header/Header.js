@@ -47,6 +47,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
           // console.log(res.data.length);
         } else {
           console.log("Chưa có sản phẩm");
+          setCount(0);
         }
       } catch (error) {
         console.log(error);

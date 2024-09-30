@@ -125,6 +125,7 @@ const Product = ({ item, idCate, handleReset }) => {
     console.log(value);
   };
 
+
   return (
     <>
       {debouncedItem || debouncedIdCate ? (
@@ -173,7 +174,7 @@ const Product = ({ item, idCate, handleReset }) => {
             ...productDetails.map((filter) => filter.price)
           );
 
-          //tính tổng số lượng sản phẩm 
+          //tính tổng số lượng sản phẩm
           const totalQuantity = productDetails.reduce(
             (total, detailQuantity) => total + detailQuantity.quantity,
             0
@@ -189,6 +190,7 @@ const Product = ({ item, idCate, handleReset }) => {
                 to={`/detailProduct/${fill.slug}`}
                 className="position-relative d-flex justify-content-center"
                 style={{ height: "50%" }}
+                
               >
                 <img
                   src={

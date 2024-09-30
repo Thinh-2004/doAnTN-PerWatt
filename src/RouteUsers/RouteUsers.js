@@ -51,7 +51,7 @@ const RouteUsers = (props) => {
         ></Route>
         <Route path="/otp" element={<OTP />}></Route>
         <Route path="/resetPassword" element={<ResetPassword />}></Route>
-        <Route path="/pageStore/:idStore" element={<Store />}></Route>
+        <Route path="/pageStore/:slugStore" element={<Store />}></Route>
 
         <Route path="/order" element={<Order></Order>}></Route>
         <Route

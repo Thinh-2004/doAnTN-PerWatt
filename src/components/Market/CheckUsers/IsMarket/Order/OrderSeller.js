@@ -56,6 +56,11 @@ const OrderSeller = () => {
 
     if (idStore) {
       load();
+
+      //check data và reload
+      const interval = setInterval(load, 5000); // Kiểm tra mỗi 5 giây
+
+      return () => clearInterval(interval); // Dọn dẹp khi component bị hủy
     }
   }, [idStore]);
 
@@ -71,7 +76,7 @@ const OrderSeller = () => {
 
   return (
     <div>
-    <h1 className="text-center mt-4 mb-4">Quản lý đơn hàng của Shop</h1>
+      <h1 className="text-center mt-4 mb-4">Quản lý đơn hàng của Shop</h1>
       <div className="container">
         <div className="card mt-3">
           <div className="card-body">
@@ -297,7 +302,9 @@ const OrderSeller = () => {
               <div className="text-start" style={{ marginLeft: "20px" }}>
                 {orderDetails.length > 0 && (
                   <>
-                  <div>Họ tên khách hàng: {orderDetails[0].order.user.fullname}</div>
+                    <div>
+                      Họ tên khách hàng: {orderDetails[0].order.user.fullname}
+                    </div>
                     <div>Số điện thoại: {orderDetails[0].order.user.phone}</div>
                     <div>
                       Địa chỉ giao hàng:{" "}

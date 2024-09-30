@@ -7,7 +7,7 @@ import { Box, Button, Pagination, Skeleton } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 const ProductStore = ({ item, idCate, resetSearch }) => {
-  const { idStore } = useParams();
+  const { slugStore } = useParams();
   const [fill, setFill] = useState([]);
   const [isFiltering, setIsFiltering] = useState(false); //Skelenton
   const [loading, setLoading] = useState(true); //Load data
@@ -17,9 +17,9 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
   const [sortOption, setSortOption] = useState("newest"); // Trạng thái cho sắp xếp
   const [isAscending, setIsAscending] = useState(true); // Trạng thái tăng/giảm giá
 
-  const loadData = async (idStore) => {
+  const loadData = async () => {
     try {
-      const res = await axios.get(`/productStore/${idStore}`);
+      const res = await axios.get(`/productStore/${slugStore}`);
       //Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm
       const dataWithDetails = await Promise.all(
         res.data.map(async (product) => {
@@ -40,8 +40,8 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    loadData(idStore);
-  }, [idStore]);
+    loadData();
+  }, [slugStore]);
 
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;

@@ -123,7 +123,7 @@ const DetailProduct = () => {
     const user = localStorage.getItem("user")
       ? JSON.parse(localStorage.getItem("user"))
       : null; // Thay thế bằng ID người dùng thực tế
-    if (user.id == null || user.id === "") {
+    if (user == null || user === "") {
       confirmAlert({
         title: "Bạn chưa đăng nhập",
         message:
@@ -187,9 +187,9 @@ const DetailProduct = () => {
   };
 
   const handleViewStoreInfo = () => {
-    const storeId = FillDetailPr.store.id;
-    if (storeId) {
-      changeLink(`/pageStore/${storeId}`); // Điều hướng đến trang thông tin của store
+    const slugStore = FillDetailPr.store.slug;
+    if (slugStore) {
+      changeLink(`/pageStore/${slugStore}`); // Điều hướng đến trang thông tin của store
     }
   };
 

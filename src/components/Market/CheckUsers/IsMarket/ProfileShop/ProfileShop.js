@@ -25,6 +25,7 @@ const ProfileShop = () => {
     imgbackgound: "",
     user: user.id,
     taxcode: "",
+    slug : "",
   });
   const [dataTaxCode, setDataTaxCode] = useState({
     name: "",
@@ -134,6 +135,7 @@ const ProfileShop = () => {
         formData.append(
           "store",
           JSON.stringify({
+            id : idStore,
             namestore: dataStore.namestore,
             address: dataStore.address,
             email: dataStore.email,
@@ -143,6 +145,7 @@ const ProfileShop = () => {
               id: user.id,
             },
             taxcode: dataStore.taxcode,
+            slug : dataStore.slug,
           })
         );
         if (dataStore.imgbackgound instanceof File) {

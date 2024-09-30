@@ -16,7 +16,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 
 const Store = () => {
-  const { idStore } = useParams();
+  const idStore = localStorage.getItem("idStore");
   const [fill, setFill] = useState([]);
   const [search, setSearch] = useState("");
   const [countProductStore, setCountProductStore] = useState(0);
@@ -30,13 +30,13 @@ const Store = () => {
   const geturlAvtUser = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
-  const loadData = async (idStore) => {
+  const loadData = async () => {
     try {
       const res = await axios.get(`store/${idStore}`);
       setFill(res.data);
 
       if (res.data && res.data.id) {
-        const storeRes = await axios.get(`/productStore/${res.data.id}`);
+        const storeRes = await axios.get(`/productStore/${res.data.slug}`);
         setCountProductStore(storeRes.data.length);
         const cateProductByStore = await axios.get(
           `CateProductInStore/${res.data.id}`
@@ -48,7 +48,7 @@ const Store = () => {
     }
   };
   useEffect(() => {
-    loadData(idStore);
+    loadData();
   }, [idStore]);
 
   useEffect(() => {
@@ -201,16 +201,21 @@ const Store = () => {
             <div className="border-bottom ">
               <h4 className="mt-3">Danh mục cửa hàng</h4>
               <div className="overflow-auto" style={{ height: "450px" }}>
-                <Box sx={{ width: "100%" }}>
+                <Box
+                  sx={{
+                    width: "100%",
+                  }}
+                >
                   <Stack spacing={1}>
                     {fillCateInStore.map((fill, index) => (
                       <Button
                         value={fill.id}
                         onClick={() => handleClickIdCateProduct(fill.id)}
                         className="inherit-text"
-                        style={{
+                        sx={{
                           textDecoration: "inherit",
                           color: "inherit",
+                          justifyContent: "flex-start", // Đảm bảo căn lề trái cho nội dung của Button
                         }}
                       >
                         {fill.name}

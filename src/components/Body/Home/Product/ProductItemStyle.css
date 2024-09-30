@@ -1,32 +1,44 @@
-#home-product-item{
-    text-decoration: none;
-    transition: 0.5s;
-    height: 300px;
-    margin-left: 5px;
-    margin-right: 5px;
-
+#home-product-item {
+  text-decoration: none;
+  /* transition: 0.5s; */
+  animation: slide-down 0.5s ease-out; /* Gọi animation */
+  height: 300px;
+  margin-left: 5px;
+  margin-right: 5px;
 }
-#home-product-item:hover{
-    transform: scale(1.02); /* Slightly scale up the div on hover */
-    z-index: 1; /* Ensure the scaled-up div is on top */
-    transition: 0.5s;
+
+@keyframes slide-down {
+  0% {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+#home-product-item:hover {
+  transform: scale(1.02); /* Slightly scale up the div on hover */
+  z-index: 1; /* Ensure the scaled-up div is on top */
+  transition: 0.5s;
 }
 #product-name {
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* Số dòng tối đa */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 15px;
-  }
-  #price-product del , #price-product-item{
-    font-size: 12px;
-  }
-#bg-sold-out{
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Số dòng tối đa */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 15px;
+}
+#price-product del,
+#price-product-item {
+  font-size: 12px;
+}
+#bg-sold-out {
   background-color: rgba(0, 0, 0, 0.8);
   padding: 5px;
   margin: 2px;
   border-radius: 7%;
 }
-  
-  
+

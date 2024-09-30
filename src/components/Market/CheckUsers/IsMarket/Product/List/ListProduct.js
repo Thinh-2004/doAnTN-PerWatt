@@ -26,7 +26,7 @@ const ListProduct = () => {
   const [fill, setFill] = useState([]); // giá trị để fill Pro vào bảng
   const [fetchData, setFetchData] = useState([]); //giá trị check === 0
   // const [fillDetail, setFillDetail] = useState([]);
-  const [idStore] = localStorage.getItem("idStore");
+  const idStore = localStorage.getItem("idStore");
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState("desc"); // 'asc' or 'desc'
   const [orderBy, setOrderBy] = useState("name"); // Sorting by price
@@ -46,7 +46,8 @@ const ListProduct = () => {
 
   const loadData = async () => {
     try {
-      const res = await axios.get(`/productStore/${idStore}`);
+      const resStore = await axios.get(`/store/${idStore}`)
+      const res = await axios.get(`/productStore/${resStore.data.slug}`);
       const filteredData = res.data.filter((product) => {
         const searchTerm = debounceSearch.toLowerCase();
         return (

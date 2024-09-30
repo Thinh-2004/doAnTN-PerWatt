@@ -4,8 +4,8 @@ import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../Localhost/Custumize-axios";
-import useSession from "../../Session/useSession";
 import { tailspin } from "ldrs";
+import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import { FaBan } from "react-icons/fa";
 
@@ -14,12 +14,15 @@ import { FaBan } from "react-icons/fa";
 const Cart = () => {
   const [fill, setFill] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [groupSelection, setGroupSelection] = useState({});
   const [selectAll, setSelectAll] = useState(false);
   const [isCardLoaded, setIsCardLoaded] = useState(false);
   const [isCountCart, setIsCountAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
+  const changeLink = useNavigate();
 
   tailspin.register();
 
@@ -119,6 +122,35 @@ const Cart = () => {
     });
   };
 
+  const deleteProduct = async (productId) => {
+    confirmAlert({
+      title: "Xóa sản phẩm khỏi giỏ hàng",
+      message: "Bạn có chắc chắn muốn xóa sản phẩm này không?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            try {
+              await axios.delete(`/cartDelete/${productId}`);
+              setIsCountAddCart(true);
+              setSelectedProductIds(
+                selectedProductIds.filter((id) => id !== productId)
+              );
+              fetchCart();
+              toast.success("Sản phẩm đã được xóa khỏi giỏ hàng");
+            } catch (error) {
+              console.error("Lỗi xóa sản phẩm:", error);
+              toast.error("Có lỗi xảy ra khi xóa sản phẩm");
+            }
+          },
+        },
+        {
+          label: "Không",
+        },
+      ],
+    });
+  };
+
   // Hàm để cập nhật tổng giá trị giỏ hàng
   const updateTotalPrice = () => {
     const newTotalPrice = fill.reduce(
@@ -200,12 +232,16 @@ const Cart = () => {
     const newFill = [...fill];
     const cart = newFill[index];
 
-    if (newQuantity >= 0 && newQuantity <= cart.productDetail.quantity) {
+    // Đảm bảo số lượng mới không vượt quá số lượng sản phẩm có sẵn
+    if (newQuantity >= cart.productDetail.quantity) {
+      cart.quantity = cart.productDetail.quantity;
+    } else if (newQuantity >= 0) {
       cart.quantity = newQuantity;
-      setFill(newFill);
-      await updateQuantity(cart.id, newQuantity);
-      updateTotalPrice();
     }
+
+    setFill(newFill);
+    await updateQuantity(cart.id, cart.quantity);
+    updateTotalPrice();
   };
 
   // Hàm để định dạng giá tiền
@@ -291,6 +327,7 @@ const Cart = () => {
                             left: "50%",
                             transform: "translate(-50%, -50%)",
                             zIndex: 10,
+                            transition: "all 2s",
                           }}
                         ></l-tailspin>
                       )}
@@ -355,18 +392,32 @@ const Cart = () => {
                             cart.productDetail.product.images?.[0];
                           return (
                             <div className="d-flex mt-3 mb-3" key={index}>
-                              <input
-                                className="form-check-input mt-4 me-3"
-                                type="checkbox"
-                                id={`checkBox-${cart.id}`}
-                                checked={selectedProductIds.includes(cart.id)}
-                                onChange={(e) =>
-                                  handleCheckboxChange(
-                                    cart.id,
-                                    e.target.checked
-                                  )
-                                }
-                              />
+                              {cart.productDetail.quantity === 0 ? (
+                                <button
+                                  className="btn btn-danger mt-4 me-1"
+                                  style={{
+                                    height: "calc(1.5em + 0.75rem + 2px)", // Điều chỉnh chiều cao
+                                  }}
+                                  onClick={() => deleteProduct(cart.id)}
+                                  title="Xóa sản phẩm"
+                                >
+                                  <i className="bi bi-trash3-fill"></i>
+                                </button>
+                              ) : (
+                                <input
+                                  className="form-check-input mt-4 me-3"
+                                  type="checkbox"
+                                  id={`checkBox-${cart.id}`}
+                                  checked={selectedProductIds.includes(cart.id)}
+                                  onChange={(e) =>
+                                    handleCheckboxChange(
+                                      cart.id,
+                                      e.target.checked
+                                    )
+                                  }
+                                />
+                              )}
+
                               <div
                                 style={{
                                   position: "relative",
@@ -379,7 +430,7 @@ const Cart = () => {
                                     cart &&
                                     cart.productDetail &&
                                     cart.productDetail.product
-                                      ? `/detailProduct/${cart.productDetail.product.id}`
+                                      ? `/detailProduct/${cart.productDetail.product.slug}`
                                       : "#"
                                   } // Nếu cart hoặc productDetail chưa có, không điều hướng
                                 >
@@ -392,9 +443,10 @@ const Cart = () => {
                                             cart.productDetail.id,
                                             cart.productDetail.imagedetail
                                           )
-                                        : 
-                                         geturlIMG(cart.productDetail.product.id, firstIMG.imagename)
-                                        
+                                        : geturlIMG(
+                                            cart.productDetail.product.id,
+                                            firstIMG.imagename
+                                          )
                                     }
                                     alt="Product"
                                     style={{
@@ -403,7 +455,7 @@ const Cart = () => {
                                       objectFit: "contain",
                                       display: "block",
                                       margin: "0 auto",
-                                      backgroundColor: "#f0f0f0",
+                                      backgroundColor: "#ffff",
                                     }}
                                     className="rounded-3"
                                     onLoad={() => {
@@ -425,11 +477,22 @@ const Cart = () => {
                                   )}
                                 </Link>
                               </div>
-                              <div className="col-4 mt-3 mx-2">
+                              <div className="col-4 mt-3 mx-1">
                                 <div id="fontSizeTitle">
                                   {cart.productDetail.product.name}
                                 </div>
                                 <div id="fontSize">
+                                  {/* <select className="form-select">
+                                    {storeProducts.map((item, index) => (
+                                      <option
+                                        key={index}
+                                        value={item.productDetail.id}
+                                      >
+                                        {item.productDetail.namedetail}
+                                      </option>
+                                    ))}
+                                  </select> */}
+
                                   {
                                     [
                                       cart.productDetail.namedetail,
@@ -444,12 +507,17 @@ const Cart = () => {
                                   }
                                 </div>
                               </div>
-                              <div className="col-7 ">
-                                <div className="d-flex mt-3" id="spinner">
+                              <div className="col-6">
+                                <div
+                                  className="d-flex mt-3"
+                                  id="spinner"
+                                  disabled={cart.productDetail.quantity === 0}
+                                >
                                   <button
                                     className="btn border rounded-0 rounded-start"
                                     id="buttonDown"
                                     onClick={() => handleDecrease(index)}
+                                    disabled={cart.productDetail.quantity === 0}
                                   >
                                     <i className="bi bi-dash-lg"></i>
                                   </button>
@@ -458,16 +526,15 @@ const Cart = () => {
                                     min={0}
                                     className="form-control rounded-0 w-50"
                                     value={
-                                      cart.productDetail.quantity === 0
-                                        ? 0
-                                        : cart.quantity
+                                      cart.quantity !== 0 ? cart.quantity : 0
                                     }
                                     onChange={(e) =>
                                       handleQuantityChange(
                                         index,
                                         Number(e.target.value)
                                       )
-                                    } // Xử lý thay đổi số lượng
+                                    }
+                                    disabled={cart.productDetail.quantity === 0}
                                   />
 
                                   <button
@@ -483,7 +550,8 @@ const Cart = () => {
                                     onClick={() => handleIncrease(index)}
                                     disabled={
                                       cart.quantity >=
-                                      cart.productDetail.quantity
+                                        cart.productDetail.quantity ||
+                                      cart.productDetail.quantity === 0
                                     }
                                   >
                                     <i className="bi bi-plus-lg"></i>
@@ -543,7 +611,7 @@ const Cart = () => {
                   disabled={
                     selectedProductIds.length === 0 ||
                     anySelectedProductOutOfStock()
-                  } // Disable when no product is selected or any product has quantity 0
+                  }
                 >
                   Đặt hàng
                 </button>
