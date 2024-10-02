@@ -1,24 +1,61 @@
-#logo-store{
-    width: 20%;
-    height: 80px;
-    border-radius: 50%;
-    border: 1px solid;
+#logo-store {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 1px solid;
 }
-#btn-choose{
-    width: 50%;
+#btn-follow {
+  width: 50%;
+  background-color: rgb(228, 255, 182);
+  color: rgb(58, 92, 0);
+  border: none;
 }
-#backgound-img{
-    width: 100%;
-    height: 300px;
+
+#btn-chatMess {
+  width: 50%;
+  background-color: rgb(214, 236, 255);
+  color: rgb(0, 50, 94);
+  border: none;
 }
-#btn-comback-home{
-    border: 1px solid;
-    transition: 0.5s;
+
+#background-img-filter {
+  filter: blur(10px);
+  width: 100%;
+  height: 300px;
 }
-#btn-comback-home:hover{
-    background-color:  #00c7ff;
-    color: white;
-    transform: scale(1.08);
-    transition: 0.5s;
-    
+#background-img {
+  filter: drop-shadow(0 0 15px);
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  mask-image: radial-gradient(
+    circle,
+    rgba(0, 0, 0, 1) 70%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+#btn-comback-home {
+  border: 1px solid;
+  transition: 0.5s;
+}
+#btn-comback-home:hover {
+  background-color: #00c7ff;
+  color: white;
+  transform: scale(1.08);
+  transition: 0.5s;
+}
+
+#product-item {
+  text-decoration: none;
+  height: 300px;
+  transition: transform 0.5s ease-out;
+  animation: slide-down 0.5s ease-out; /* Gọi animation */
+  outline: white;
+}
+#product-item:hover {
+  transform: scale(1.02);
+  transition: transform 0.5s;
+  z-index: 1;
+  outline: 2px solid #00c7ff;
 }

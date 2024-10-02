@@ -7,25 +7,58 @@ import { Link } from "react-router-dom";
 import useSession from "../../../Session/useSession";
 import { format } from "date-fns";
 import { confirmAlert } from "react-confirm-alert";
+import { tailspin } from "ldrs";
+import PropTypes from "prop-types";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Box from "@mui/material/Box";
+import { Button } from "@mui/material";
+
+const CustomTabPanel = (props) => {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+};
+
+CustomTabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+};
 
 const Order = () => {
   const [fill, setFill] = useState([]);
-  const [idUser] = useSession("id");
-  const [activeTab, setActiveTab] = useState("pills-home");
-  const [isCancelButtonHidden, setIsCancelButtonHidden] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  const [value, setValue] = useState(0);
+  tailspin.register();
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get(`orderFill/${idUser}`);
-        setFill(res.data);
-        console.log(res.data);
+        const res = await axios.get(`orderFill/${user.id}`);
+        const sortedData = res.data.sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
+        setFill(sortedData);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
     load();
-  }, [idUser]);
+  }, [user.id]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -34,18 +67,19 @@ const Order = () => {
 
   const handleCancelOrder = (orderId) => {
     confirmAlert({
-      title : "Hủy đơn hàng",
-      message : "Bạn có muốn hủy đơn không?",
-      buttons : [
+      title: "Hủy đơn hàng",
+      message: "Bạn có muốn hủy đơn không?",
+      buttons: [
         {
-          label : "Có",
-          onClick : async () =>{
+          label: "Có",
+          onClick: async () => {
             try {
               await axios.put(`/order/${orderId}/status`, { status: "Hủy" });
-              setIsCancelButtonHidden(true);
-              setFill(
-                fill.map((order) =>
-                  order.id === orderId ? { ...order, orderstatus: "Hủy" } : order
+              setFill((prevFill) =>
+                prevFill.map((order) =>
+                  order.id === orderId
+                    ? { ...order, orderstatus: "Hủy" }
+                    : order
                 )
               );
             } catch (error) {
@@ -53,19 +87,16 @@ const Order = () => {
             }
           },
         },
-        {
-          label : "Không"
-        }
-      ]
-    })
-    
+        { label: "Không" },
+      ],
+    });
   };
 
   const handleMarkAsReceived = async (orderId) => {
     try {
       await axios.put(`/order/${orderId}/status`, { status: "Hoàn thành" });
-      setFill(
-        fill.map((order) =>
+      setFill((prevFill) =>
+        prevFill.map((order) =>
           order.id === orderId ? { ...order, orderstatus: "Hoàn thành" } : order
         )
       );
@@ -73,18 +104,86 @@ const Order = () => {
       console.log(error);
     }
   };
+  const renderOrders = (filterFn) => {
+    const filteredOrders = fill.filter(filterFn);
+    if (loading) {
+      return (
+        <div className="text-center">
+          <l-tailspin
+            size="40"
+            stroke="5"
+            speed="0.9"
+            color="black"
+          ></l-tailspin>
+        </div>
+      );
+    }
+    if (filteredOrders.length === 0) {
+      return <div className="text-center">Chưa có sản phẩm</div>;
+    }
+    return filteredOrders.map((order) => (
+      <div className="card rounded-3 mt-3" id="cartItem" key={order.id}>
+        <div className="card-body">
+          <div className="d-flex">
+            <div className="col-3">{order.orderstatus}</div>
+            <div className="col-3">{formatDate(order.paymentdate)}</div>
+            <div className="col-3">{order.paymentmethod.type}</div>
+            <div className="col-2">
+              <Link
+                to={`/orderDetail/${order.id}`}
+                className="rounded-3"
+                style={{
+                  display: "inline-block",
+                  height: "40px",
+                  width: "40px",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                    minWidth: "unset",
+                    padding: 0,
+                  }}
+                >
+                  <i className="bi bi-eye-fill fs-5"></i>
+                </Button>
+              </Link>
+            </div>
+            <div className="col-2">
+              {order.orderstatus === "Chờ giao hàng" && (
+                <button
+                  className="btn btn-success me-2"
+                  onClick={() => handleMarkAsReceived(order.id)}
+                >
+                  Đã nhận hàng
+                </button>
+              )}
+              {order.orderstatus !== "Hủy" && (
+                <Button
+                  onClick={() => handleCancelOrder(order.id)}
+                  style={{
+                    height: "40px",
+                    width: "40px",
+                    minWidth: "unset",
+                    padding: 0,
+                    backgroundColor: "rgb(255, 184, 184)", // Thêm dấu ngoặc kép
+                    color: "rgb(198, 0, 0)", // Thêm dấu ngoặc kép
+                  }}
+                >
+                  <i className="bi bi-cart-x-fill"></i>
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    ));
+  };
 
-  const isCancelButtonVisible = (order) => {
-    return (
-      (activeTab === "pills-home" &&
-        order.orderstatus !== "Chờ giao hàng" &&
-        order.orderstatus !== "Hoàn thành") ||
-      (activeTab === "pills-profile" &&
-        order.orderstatus === "Đang chờ duyệt") ||
-      (activeTab === "pills-contact" &&
-        order.orderstatus === "Chờ giao hàng") ||
-      (activeTab === "pills-cancelled" && order.orderstatus === "Hủy")
-    );
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
   };
 
   return (
@@ -92,405 +191,73 @@ const Order = () => {
       <Header />
       <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
       <div className="container">
-        <div className="card mt-3">
-          <div className="card-body">
-            <ul
-              className="nav nav-pills mb-3 sticky-top"
-              id="pills-tab"
-              role="tablist"
+        <Box sx={{ width: "100%", background: "white" }} className="rounded-3">
+          <Box
+            sx={{
+              borderBottom: 1,
+              borderColor: "divider",
+              borderRadius: "10px",
+              overflow: "hidden",
+            }}
+            className="rounded-3"
+          >
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              aria-label="basic tabs example"
+              sx={{ backgroundColor: "white" }} // Thêm backgroundColor cho Tabs
             >
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link active"
-                  id="pills-home-tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#pills-home"
-                  type="button"
-                  role="tab"
-                  aria-controls="pills-home"
-                  aria-selected="true"
-                  onClick={() => setActiveTab("pills-home")}
-                >
-                  Tất cả
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link"
-                  id="pills-profile-tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#pills-profile"
-                  type="button"
-                  role="tab"
-                  aria-controls="pills-profile"
-                  aria-selected="false"
-                  onClick={() => setActiveTab("pills-profile")}
-                >
-                  Đang chờ duyệt
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link"
-                  id="pills-contact-tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#pills-contact"
-                  type="button"
-                  role="tab"
-                  aria-controls="pills-contact"
-                  aria-selected="false"
-                  onClick={() => setActiveTab("pills-contact")}
-                >
-                  Chờ giao hàng
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link"
-                  id="pills-completed-tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#pills-completed"
-                  type="button"
-                  role="tab"
-                  aria-controls="pills-completed"
-                  aria-selected="false"
-                  onClick={() => setActiveTab("pills-completed")}
-                >
-                  Hoàn thành
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link"
-                  id="pills-cancelled-tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#pills-cancelled"
-                  type="button"
-                  role="tab"
-                  aria-controls="pills-cancelled"
-                  aria-selected="false"
-                  onClick={() => setActiveTab("pills-cancelled")}
-                >
-                  Hủy
-                </button>
-              </li>
-            </ul>
-            <div className="tab-content" id="pills-tabContent">
-              {/* Tab: Tất cả */}
-              <div
-                className="tab-pane fade show active"
-                id="pills-home"
-                role="tabpanel"
-                aria-labelledby="pills-home-tab"
-                tabIndex="0"
-              >
-                <div className="card rounded-3 sticky-top" id="cartTitle">
-                  <div className="card-body">
-                    <div className="d-flex">
-                      <div className="col-3">Trạng thái</div>
-                      <div className="col-3">Ngày đặt hàng</div>
-                      <div className="col-3">Phương thức thanh toán</div>
-                      <div className="col-2">Chi tiết</div>
-                      <div className="col-2">Hành động</div>
-                    </div>
+              {[
+                "Tất cả",
+                "Đang chờ duyệt",
+                "Chờ giao hàng",
+                "Hoàn thành",
+                "Hủy",
+              ].map((tab, index) => (
+                <Tab label={tab} key={index} />
+              ))}
+            </Tabs>
+          </Box>
+          {[
+            "Tất cả",
+            "Đang chờ duyệt",
+            "Chờ giao hàng",
+            "Hoàn thành",
+            "Hủy",
+          ].map((tab, index) => (
+            <CustomTabPanel value={value} index={index} key={index}>
+              <div className="card rounded-3 sticky-top" id="cartTitle">
+                <div className="card-body">
+                  <div className="d-flex">
+                    <div className="col-3">Trạng thái</div>
+                    <div className="col-3">Ngày đặt hàng</div>
+                    <div className="col-3">Phương thức thanh toán</div>
+                    <div className="col-2">Chi tiết</div>
+                    <div className="col-2">Hành động</div>
                   </div>
                 </div>
-                <div className="mt-5">
-                  {fill.length === 0 ? (
-                    <div className="text-center">
-                      <h4>Chưa có đơn hàng nào</h4>
-                    </div>
-                  ) : (
-                    fill.map((order) => (
-                      <div
-                        className="card rounded-3 mt-3"
-                        id="cartItem"
-                        key={order.id}
-                      >
-                        <div className="card-body">
-                          <div className="d-flex">
-                            <div className="col-3">{order.orderstatus}</div>
-                            <div className="col-3">
-                              {formatDate(order.paymentdate)}
-                            </div>
-                            <div className="col-3">
-                              {order.paymentmethod.type}
-                            </div>
-                            <div className="col-2">
-                              <Link to={`/orderDetail/${order.id}`}>
-                                <button className="btn btn-primary">
-                                  <i className="bi bi-eye-fill"></i>
-                                </button>
-                              </Link>
-                            </div>
-                            <div className="col-2">
-                              {isCancelButtonVisible(order) && (
-                                <button
-                                  className="btn btn-danger me-2"
-                                  onClick={() => handleCancelOrder(order.id)}
-                                  style={{ display:  order.orderstatus === "Hủy" ? "none" : "inline" }}
-                                >
-                                  Hủy
-                                </button>
-                              )}
-
-                              {order.orderstatus === "Chờ giao hàng" && (
-                                <button
-                                  className="btn btn-success me-2"
-                                  onClick={() => handleMarkAsReceived(order.id)}
-                                >
-                                  Đã nhận hàng
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
               </div>
-              {/* Tab: Đang chờ duyệt */}
-              <div
-                className="tab-pane fade"
-                id="pills-profile"
-                role="tabpanel"
-                aria-labelledby="pills-profile-tab"
-                tabIndex="0"
-              >
-                <div className="card rounded-3 sticky-top" id="cartTitle">
-                  <div className="card-body">
-                    <div className="d-flex">
-                      <div className="col-3">Trạng thái</div>
-                      <div className="col-3">Ngày đặt hàng</div>
-                      <div className="col-3">Phương thức thanh toán</div>
-                      <div className="col-2">Chi tiết</div>
-                      <div className="col-2">Hành động</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-5">
-                  {fill.length === 0 ? (
-                    <div className="text-center">
-                      <h4>Chưa có đơn hàng nào</h4>
-                    </div>
-                  ) : (
-                    fill
-                      .filter((order) => order.orderstatus === "Đang chờ duyệt")
-                      .map((order) => (
-                        <div
-                          className="card rounded-3 mt-3"
-                          id="cartItem"
-                          key={order.id}
-                        >
-                          <div className="card-body">
-                            <div className="d-flex">
-                              <div className="col-3">{order.orderstatus}</div>
-                              <div className="col-3">
-                                {formatDate(order.paymentdate)}
-                              </div>
-                              <div className="col-3">
-                                {order.paymentmethod.type}
-                              </div>
-                              <div className="col-2">
-                                <Link to={`/orderDetail/${order.id}`}>
-                                  <button className="btn btn-primary">
-                                    <i className="bi bi-eye-fill"></i>
-                                  </button>
-                                </Link>
-                              </div>
-                              <div className="col-2">
-                                <button
-                                  className="btn btn-danger me-2"
-                                  onClick={() => handleCancelOrder(order.id)}
-                                >
-                                  Hủy
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                  )}
-                </div>
+              <div className="mt-5">
+                {renderOrders((order) => {
+                  switch (tab) {
+                    case "Tất cả":
+                      return true;
+                    case "Đang chờ duyệt":
+                      return order.orderstatus === "Đang chờ duyệt";
+                    case "Chờ giao hàng":
+                      return order.orderstatus === "Chờ giao hàng";
+                    case "Hoàn thành":
+                      return order.orderstatus === "Hoàn thành";
+                    case "Hủy":
+                      return order.orderstatus === "Hủy";
+                    default:
+                      return false;
+                  }
+                })}
               </div>
-              {/* Tab: Chờ giao hàng */}
-              <div
-                className="tab-pane fade"
-                id="pills-contact"
-                role="tabpanel"
-                aria-labelledby="pills-contact-tab"
-                tabIndex="0"
-              >
-                <div className="card rounded-3 sticky-top" id="cartTitle">
-                  <div className="card-body">
-                    <div className="d-flex">
-                      <div className="col-3">Trạng thái</div>
-                      <div className="col-3">Ngày đặt hàng</div>
-                      <div className="col-3">Phương thức thanh toán</div>
-                      <div className="col-2">Chi tiết</div>
-                      <div className="col-2">Hành động</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-5">
-                  {fill.length === 0 ? (
-                    <div className="text-center">
-                      <h4>Chưa có đơn hàng nào</h4>
-                    </div>
-                  ) : (
-                    fill
-                      .filter((order) => order.orderstatus === "Chờ giao hàng")
-                      .map((order) => (
-                        <div
-                          className="card rounded-3 mt-3"
-                          id="cartItem"
-                          key={order.id}
-                        >
-                          <div className="card-body">
-                            <div className="d-flex">
-                              <div className="col-3">{order.orderstatus}</div>
-                              <div className="col-3">
-                                {formatDate(order.paymentdate)}
-                              </div>
-                              <div className="col-3">
-                                {order.paymentmethod.type}
-                              </div>
-                              <div className="col-2">
-                                <Link to={`/orderDetail/${order.id}`}>
-                                  <button className="btn btn-primary">
-                                    <i className="bi bi-eye-fill"></i>
-                                  </button>
-                                </Link>
-                              </div>
-                              <div className="col-2">
-                                <button
-                                  className="btn btn-success me-2"
-                                  onClick={() => handleMarkAsReceived(order.id)}
-                                >
-                                  Đã nhận hàng
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                  )}
-                </div>
-              </div>
-              {/* Tab: Hoàn thành */}
-              <div
-                className="tab-pane fade"
-                id="pills-completed"
-                role="tabpanel"
-                aria-labelledby="pills-completed-tab"
-                tabIndex="0"
-              >
-                <div className="card rounded-3 sticky-top" id="cartTitle">
-                  <div className="card-body">
-                    <div className="d-flex">
-                      <div className="col-3">Trạng thái</div>
-                      <div className="col-3">Ngày đặt hàng</div>
-                      <div className="col-3">Phương thức thanh toán</div>
-                      <div className="col-3">Chi tiết</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-5">
-                  {fill.length === 0 ? (
-                    <div className="text-center">
-                      <h4>Chưa có đơn hàng nào</h4>
-                    </div>
-                  ) : (
-                    fill
-                      .filter((order) => order.orderstatus === "Hoàn thành")
-                      .map((order) => (
-                        <div
-                          className="card rounded-3 mt-3"
-                          id="cartItem"
-                          key={order.id}
-                        >
-                          <div className="card-body">
-                            <div className="d-flex">
-                              <div className="col-3">{order.orderstatus}</div>
-                              <div className="col-3">
-                                {formatDate(order.paymentdate)}
-                              </div>
-                              <div className="col-3">
-                                {order.paymentmethod.type}
-                              </div>
-                              <div className="col-3">
-                                <Link to={`/orderDetail/${order.id}`}>
-                                  <button className="btn btn-primary">
-                                    <i className="bi bi-eye-fill"></i>
-                                  </button>
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                  )}
-                </div>
-              </div>
-              {/* Tab: Hủy */}
-              <div
-                className="tab-pane fade"
-                id="pills-cancelled"
-                role="tabpanel"
-                aria-labelledby="pills-cancelled-tab"
-                tabIndex="0"
-              >
-                <div className="card rounded-3 sticky-top" id="cartTitle">
-                  <div className="card-body">
-                    <div className="d-flex">
-                      <div className="col-3">Trạng thái</div>
-                      <div className="col-3">Ngày đặt hàng</div>
-                      <div className="col-3">Phương thức thanh toán</div>
-                      <div className="col-3">Chi tiết</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-5">
-                  {fill.length === 0 ? (
-                    <div className="text-center">
-                      <h4>Chưa có đơn hàng nào</h4>
-                    </div>
-                  ) : (
-                    fill
-                      .filter((order) => order.orderstatus === "Hủy")
-                      .map((order) => (
-                        <div
-                          className="card rounded-3 mt-3"
-                          id="cartItem"
-                          key={order.id}
-                        >
-                          <div className="card-body">
-                            <div className="d-flex">
-                              <div className="col-3">{order.orderstatus}</div>
-                              <div className="col-3">
-                                {formatDate(order.paymentdate)}
-                              </div>
-                              <div className="col-3">
-                                {order.paymentmethod.type}
-                              </div>
-                              <div className="col-3">
-                                <Link to={`/orderDetail/${order.id}`}>
-                                  <button className="btn btn-primary">
-                                    <i className="bi bi-eye-fill"></i>
-                                  </button>
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+            </CustomTabPanel>
+          ))}
+        </Box>
       </div>
       <Footer />
     </div>

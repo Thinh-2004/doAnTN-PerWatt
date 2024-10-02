@@ -1,0 +1,100 @@
+#btn-children-img {
+  border: none;
+  background-color: white;
+}
+#btn-children-img:hover {
+  border: none;
+  background-color: white;
+}
+#avt-store {
+  width: 70px; /* hoặc bất kỳ kích thước nào bạn muốn */
+  height: 70px; /* đảm bảo chiều cao và chiều rộng bằng nhau */
+  border-radius: 50%;
+  border: 1px solid;
+}
+#description {
+  white-space: pre-wrap; /* Giữ lại các khoảng trắng và xuống dòng */
+}
+#productName {
+  font-size: calc(
+    16px + (24 - 16) * (100vw - 300px) / (1600 - 300)
+  ); /* Thu nhỏ cỡ chữ khi cần thiết */
+}
+
+#text-sold-out {
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 5px;
+  margin: 2px;
+  width: 220px; /* Điều chỉnh kích thước phần tử cho phù hợp */
+  text-align: center;
+  z-index: 1; /* Đảm bảo rằng phần tử nằm trên các phần tử khác */
+}
+
+#btn-add-card {
+  border: 1px solid #00c7ff;
+  transition: 0.5s;
+}
+
+#btn-add-card:hover {
+  border: 1px solid #00c7ff;
+  transform: scale(1.08);
+  transition: 0.5s;
+}
+
+#btn-buy-now {
+  background-color: #ccf4ff;
+  color: #004659;
+  border: none;
+  transition: 0.5s;
+}
+
+#btn-buy-now:hover {
+  background-color: #ccf4ff;
+  color: #004659;
+  border: none;
+  transform: scale(1.08);
+  transition: 0.5s;
+}
+
+#btn-infor-shop {
+  background-color: #ccf4ff;
+  color: #004659;
+  border: none;
+  transition: 0.5s;
+}
+
+#btn-chatMessage {
+  background-color: rgb(207, 253, 161);
+  color: rgb(66, 132, 0);
+  border: none;
+  transition: 0.5s;
+}
+
+#hover-idDetailProduct {
+  border: none;
+  background: white;
+  transition: 0.5s;
+}
+
+#hover-idDetailProduct:hover {
+  cursor: pointer;
+  outline: 1px solid #00c7ff;
+  color: #00c7ff;
+   transform: scale(1.05); 
+   transition: 0.5s; 
+}
+
+#hover-idDetailProduct:hover label {
+  color: #00c7ff;
+  cursor: pointer;
+}
+
+#active-selected-detailProduct {
+  outline: 1px solid #00c7ff;
+  color: #00c7ff;
+  transition: 0.5s;
+}
+
+#active-selected-detailProduct label {
+  color: #00c7ff;
+}

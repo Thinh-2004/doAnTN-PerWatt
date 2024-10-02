@@ -1,7 +1,8 @@
 #bg-upload-img {
   width: 100%;
-  height: 340px;
+  height: 540px;
   padding: 10px 10px;
+  object-fit: cover;
 }
 #bg-upload-img img {
   width: 20%;
@@ -13,24 +14,24 @@
   color: grey;
 }
 #btn-addProduct {
-  background-color: #00c7ff;
-  color: white;
+  background-color: rgb(218, 255, 180);
+  color: rgb(45, 91, 0);
   transition: 0.5s;
 }
 #btn-addProduct:hover {
-  background-color: #00c7ff;
-  color: white;
+  background-color: rgb(218, 255, 180);
+  color: rgb(45, 91, 0);
   transform: scale(1.08);
   transition: 0.5s;
 }
 #btn-resetProduct {
-    background-color: #5bc0de;
-    color: white;
+  background-color: #c5c5c5;
+  color: #222222;
   transition: 0.5s;
 }
 #btn-resetProduct:hover {
-    background-color: #5bc0de;
-    color: white;
+  background-color: #c5c5c5;
+  color: #222222;
   transform: scale(1.08);
   transition: 0.5s;
 }
@@ -39,19 +40,35 @@
   border: 1px solid;
   color: black;
   transition: 0.5s;
+  border: none;
 }
 #btn-cancelProduct:hover {
   background-color: white;
   color: black;
   transform: scale(1.08);
-  
+
   transition: 0.5s;
 }
-#btn-close{
+#btn-close {
   transition: 0.5s;
-  }
-#btn-close:hover{
-background-color: red;
-transform: scale(1.08);
-transition: 0.5s;
 }
+#btn-close:hover {
+  background-color: red;
+  transform: scale(1.08);
+  transition: 0.5s;
+}
+#btn-add-productCate{
+  width: 15%;
+  height: 50%;
+  background-color: rgb(218, 255, 180);
+  color: rgb(45, 91, 0);
+  transition: 0.5s;
+}
+#btn-add-productCate:hover {
+  background-color: rgb(218, 255, 180);
+  color: rgb(45, 91, 0);
+  transform: scale(1.08);
+  transition: 0.5s;
+}
+
+

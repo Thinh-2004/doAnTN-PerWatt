@@ -6,9 +6,9 @@ import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 
 const HeaderAdmin = () => {
-  const [fullName, removeFullName] = useSession("fullname");
-  const [avatar, removeAvatar] = useSession("avatar");
-  const [id, removeId] = useSession("id");
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
   const changeLink = useNavigate();
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
@@ -23,10 +23,6 @@ const HeaderAdmin = () => {
           onClick: async () => {
             const toastId = toast.loading("Vui lòng chờ...");
             try {
-              removeFullName(); // Xóa giá trị fullname từ session
-              removeAvatar(); // Xóa giá trị avatar từ session
-              removeId(); // Xóa giá trị id từ session
-              sessionStorage.removeItem("idStore"); // Xóa giá trị idStore từ session
               setTimeout(() => {
                 toast.update(toastId, {
                   render: "Đăng xuất thành công",
@@ -35,7 +31,8 @@ const HeaderAdmin = () => {
                   autoClose: 5000,
                   closeButton: true,
                 });
-
+                localStorage.clear();
+                sessionStorage.clear(); // Xóa giá trị idStore từ session
                 changeLink("/"); // Chuyển hướng về trang chủ
               }, 500);
             } catch (error) {
@@ -64,7 +61,9 @@ const HeaderAdmin = () => {
         <Link to={"/"}>
           <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
         </Link>
-        <div className="d-flex align-items-center"><h2>Giao diện Admin</h2></div>
+        <div className="d-flex align-items-center">
+          <h2>Giao diện Admin</h2>
+        </div>
       </div>
       <div className="align-content-center m-3">
         <div className="d-flex">
@@ -75,7 +74,7 @@ const HeaderAdmin = () => {
               to={"/admin/info"}
             >
               Hồ sơ của tôi
-            </Link> 
+            </Link>
             <Link
               type="button"
               className="btn btn-icon btn-sm rounded-4 me-3"
@@ -93,12 +92,12 @@ const HeaderAdmin = () => {
                 id="btn-sessionUser"
               >
                 <img
-                  src={geturlIMG(id, avatar)}
+                  src={geturlIMG(user.id, user.avatar)}
                   alt=""
                   className="rounded-circle img-fluid"
                   style={{ width: "30px", height: "30px" }}
                 />
-                <span className="ms-2">{fullName}</span>
+                <span className="ms-2">{user.fullname}</span>
               </button>
             </div>
           </div>

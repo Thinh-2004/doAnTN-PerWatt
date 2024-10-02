@@ -11,15 +11,23 @@ import MainUserSeller from "./StatisticalOrders/MainUserSeller";
 import ProfileShop from "./ProfileShop/ProfileShop";
 import OrderSeller from "./Order/OrderSeller";
 import OrderDetailBuyer from "./OrderDetail/OrderDetailBuyer";
+<<<<<<< HEAD
 import SellerDashboard from "./StatisticalOrders/SellerDashboard";
 
+=======
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import Typography from "@mui/material/Typography";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+>>>>>>> dd21b21b0bc2a54983e134b4ddcd45f242e52ec0
 
 const IsMarket = () => {
-  const [id] = useSession("id");
+  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
   useEffect(() => {
     const searchIdStoreByIdUser = async () => {
       try {
-        const res = await axios.get(`/searchStore/${id}`);
+        const res = await axios.get(`/searchStore/${user.id}`);
         sessionStorage.setItem("idStore", res.data.id);
       } catch (error) {
         // Xử lý lỗi nếu có
@@ -28,38 +36,29 @@ const IsMarket = () => {
     };
 
     // Gọi hàm fetchData khi id thay đổi
-    if (id) {
+    if (user.id) {
       searchIdStoreByIdUser();
     }
-  }, [id]);
+  }, [user.id]);
   return (
     <>
       <HeaderMarket />
       <div className="row container-fluid ">
-        <div className="col-lg-3 p-0 m-0">
-          <div
-            className="accordion  overflow-y-scroll"
-            id="accordionPanelsStayOpenExample"
-          >
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button
-                  className="accordion-button"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#panelsStayOpen-collapseOne"
-                  aria-expanded="true"
-                  aria-controls="panelsStayOpen-collapseOne"
-                >
+        <div className="col-lg-3 p-0 m-0 overflow-y-scroll" style={{height : "800px"}}>
+          <div className="">
+            <Accordion defaultExpanded>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1-content"
+                id="panel1-header"
+              >
+                <Typography>
                   <i className="bi bi-box fs-4"></i>
                   <span className="mx-3">Quản lý sản phẩm</span>
-                </button>
-              </h2>
-              <div
-                id="panelsStayOpen-collapseOne"
-                className="accordion-collapse collapse show"
-              >
-                <div className="accordion-body">
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography>
                   <ul
                     style={{ listStyleType: "none", textDecoration: "none" }}
                     className="p-0 m-0"
@@ -81,28 +80,23 @@ const IsMarket = () => {
                       </Link>
                     </li>
                   </ul>
-                </div>
-              </div>
-            </div>
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button
-                  className="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#panelsStayOpen-collapseTwo"
-                  aria-expanded="false"
-                  aria-controls="panelsStayOpen-collapseTwo"
-                >
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel2-content"
+                id="panel2-header"
+              >
+                <Typography>
                   <i className="bi bi-clipboard fs-4"></i>
                   <span className="mx-3">Quản lý đơn hàng</span>
-                </button>
-              </h2>
-              <div
-                id="panelsStayOpen-collapseTwo"
-                className="accordion-collapse collapse"
-              >
-                <div className="accordion-body">
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography>
                   <ul
                     style={{ listStyleType: "none", textDecoration: "none" }}
                     className="p-0 m-0"
@@ -110,7 +104,7 @@ const IsMarket = () => {
                     <li>
                       <Link
                         style={{ textDecoration: "none" }}
-                        to={`/profileMarket/orderSeller/${id}`}
+                        to={`/profileMarket/orderSeller/${user.id}`}
                       >
                         Tất cả
                       </Link>
@@ -148,28 +142,23 @@ const IsMarket = () => {
                       </Link>
                     </li>
                   </ul>
-                </div>
-              </div>
-            </div>
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button
-                  className="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#panelsStayOpen-collapseThree"
-                  aria-expanded="false"
-                  aria-controls="panelsStayOpen-collapseThree"
-                >
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel2-content"
+                id="panel2-header"
+              >
+                <Typography>
                   <i className="bi bi-wallet2 fs-4"></i>
                   <span className="mx-3">Tài chính</span>
-                </button>
-              </h2>
-              <div
-                id="panelsStayOpen-collapseThree"
-                className="accordion-collapse collapse"
-              >
-                <div className="accordion-body">
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography>
                   <ul
                     style={{ listStyleType: "none", textDecoration: "none" }}
                     className="p-0 m-0"
@@ -193,28 +182,23 @@ const IsMarket = () => {
                       </Link>
                     </li>
                   </ul>
-                </div>
-              </div>
-            </div>
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button
-                  className="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#panelsStayOpen-collapseFour"
-                  aria-expanded="false"
-                  aria-controls="panelsStayOpen-collapseFour"
-                >
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel2-content"
+                id="panel2-header"
+              >
+                <Typography>
                   <i className="bi bi-shop-window fs-4"></i>
                   <span className="mx-3">Quản lý shop</span>
-                </button>
-              </h2>
-              <div
-                id="panelsStayOpen-collapseFour"
-                className="accordion-collapse collapse"
-              >
-                <div className="accordion-body">
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography>
                   <ul
                     style={{ listStyleType: "none", textDecoration: "none" }}
                     className="p-0 m-0"
@@ -241,28 +225,23 @@ const IsMarket = () => {
                       </Link>
                     </li>
                   </ul>
-                </div>
-              </div>
-            </div>
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button
-                  className="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#panelsStayOpen-collapseFive"
-                  aria-expanded="false"
-                  aria-controls="panelsStayOpen-collapseFive"
-                >
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel2-content"
+                id="panel2-header"
+              >
+                <Typography>
                   <i class="bi bi-tag fs-4"></i>
                   <span className="mx-3">Khuyến mãi của shop</span>
-                </button>
-              </h2>
-              <div
-                id="panelsStayOpen-collapseFive"
-                className="accordion-collapse collapse"
-              >
-                <div className="accordion-body">
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography>
                   <ul
                     style={{ listStyleType: "none", textDecoration: "none" }}
                     className="p-0 m-0"
@@ -276,9 +255,9 @@ const IsMarket = () => {
                       </Link>
                     </li>
                   </ul>
-                </div>
-              </div>
-            </div>
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
           </div>
         </div>
         <div className="col-lg-9">
@@ -286,7 +265,7 @@ const IsMarket = () => {
             <Route path="/" element={<SellerDashboard/>} />
             <Route path="/listStoreProduct" element={<ListProduct />} />
             <Route path="/FormStoreProduct" element={<FormProduct />} />
-            <Route path="updateProduct/:id" element={<EditProduct />} />
+            <Route path="updateProduct/:slug" element={<EditProduct />} />
             <Route path="/profileShop" element={<ProfileShop />} />
             <Route
               path="orderDetailSeller/:id"
