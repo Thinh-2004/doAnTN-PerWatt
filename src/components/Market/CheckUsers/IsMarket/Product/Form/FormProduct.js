@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import "./FormProduct.css";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -9,6 +9,7 @@ import axios from "../../../../../../Localhost/Custumize-axios";
 import { Button, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DetailProduct from "../../DetailProduct/DetailProduct";
+import { message } from "antd";
 
 const FormProduct = () => {
   const idStore = localStorage.getItem("idStore");
@@ -27,11 +28,6 @@ const FormProduct = () => {
     specializedgame: "",
     description: "",
     store: idStore,
-  });
-
-  const [priceAndQuantity, setPriceAndQuantity] = useState({
-    price: "",
-    quantity: "",
   });
 
   const [charCount, setCharCount] = useState(0); // State để lưu số từ
@@ -69,18 +65,10 @@ const FormProduct = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Cập nhật formProduct và priceAndQuantity
     setFormProduct((prevFormProduct) => ({
       ...prevFormProduct,
       [name]: value,
     }));
-
-    if (name === "price" || name === "quantity") {
-      setPriceAndQuantity((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
 
     // Kiểm tra số ký tự trước khi cập nhật
     if (name === "name" && value.length > maxCharLimitName) {
@@ -98,13 +86,8 @@ const FormProduct = () => {
       setCharCountDesception(charCountDescription);
     }
   };
-  const handleInputChangePriceAndQuantity = (e) => {
-    const { name, value } = e.target;
-    setPriceAndQuantity((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+
+  const detailProductRef = useRef();
 
   const validate = () => {
     const {
@@ -117,7 +100,14 @@ const FormProduct = () => {
       specializedgame,
     } = formProduct;
 
-    const { price, quantity } = priceAndQuantity;
+    if (detailProductRef.current) {
+      const { valid, message } = detailProductRef.current.validateChild();
+
+      if (!valid) {
+        toast.warning(message);
+        return false;
+      }
+    }
 
     if (
       !name &&
@@ -146,28 +136,6 @@ const FormProduct = () => {
         toast.warning("Mô tả sản phẩm phải lớn hơn hoặc tối thiểu 250 kí tự");
         return false;
       }
-
-      // if (price === "") {
-      //   toast.warning("Cần nhập giá sản phẩm");
-      //   return false;
-      // } else if (!parseFloat(price)) {
-      //   toast.warning("Giá không hợp lệ");
-      //   return false;
-      // } else if ((parseFloat(price) <= 0) | (parseFloat(price) > 1000)) {
-      //   toast.warning("Giá không được nhỏ hơn 1.000");
-      //   return false;
-      // }
-
-      // if (quantity === "") {
-      //   toast.warning("Cần nhập số lượng sản phẩm");
-      //   return false;
-      // } else if (!parseInt(quantity)) {
-      //   toast.warning("Số lượng không hợp lệ");
-      //   return false;
-      // } else if (parseInt(quantity) <= 0) {
-      //   toast.warning("Số lượng không được nhỏ hơn hoặc bằng 0");
-      //   return false;
-      // }
 
       if (productcategory === "") {
         toast.warning("Cần chọn loại sản phẩm.");
@@ -204,8 +172,9 @@ const FormProduct = () => {
       // Tạo FormData để gửi đến server
       const formData = new FormData();
       // Kết hợp dữ liệu từ formProduct
+      const { price, quantity, ...rest } = formProduct; // Sử dụng destructuring để loại bỏ
       const productToSend = {
-        ...formProduct,
+        ...rest,
         productcategory: { id: formProduct.productcategory },
         trademark: { id: formProduct.trademark },
         warranties: { id: formProduct.warranties },
@@ -218,34 +187,21 @@ const FormProduct = () => {
       );
       console.log(productToSend);
 
-      // Kiểm tra nếu detailProduct rỗng
-      if (detailProduct.length === 0) {
-        const nullProductDetails = [
-          {
-            price: priceAndQuantity.price,
-            quantity: priceAndQuantity.quantity,
-          },
-        ];
-        formData.append(
-          "productDetails",
-          new Blob([JSON.stringify(nullProductDetails)], {
-            type: "application/json",
-          })
-        );
-        console.log(nullProductDetails);
-      } else {
-        formData.append(
-          "productDetails",
-          new Blob([JSON.stringify(detailProduct)], {
-            type: "application/json",
-          })
-        );
+      formData.append(
+        "productDetails",
+        new Blob([JSON.stringify(detailProduct)], {
+          type: "application/json",
+        })
+      );
+      console.log(detailProduct);
+      //Kiểm tra detailProduct có phải là mảng
+      if (Array.isArray(detailProduct)) {
         detailProduct.forEach((fileDetail) => {
           formData.append("fileDetails", fileDetail.imagedetail);
         });
+      } else {
         console.log(detailProduct);
       }
-
       // Thêm các tệp tin vào FormData
       images.forEach((file) => {
         formData.append("files", file);
@@ -278,7 +234,6 @@ const FormProduct = () => {
           });
           setImages([]);
           setDetailProduct([]); // Reset dữ liệu chi tiết sản phẩm
-          setPriceAndQuantity({ price: "", quantity: "" }); // Reset giá và số lượng
           setIsArrayDetail(true); //đặt trang thái reloadArray cho detail
         }, 500);
       } catch (error) {
@@ -304,10 +259,10 @@ const FormProduct = () => {
     width: 1,
   });
 
-  const handleDataChange = (newData) => {
-    setDetailProduct(newData);
-    // console.log(newData);
-  };
+  const handleDataChange = useCallback((dataDetail) => {
+    setDetailProduct(dataDetail);
+    console.log(dataDetail);
+  }, []);
 
   return (
     <div className="row mt-4">
@@ -424,36 +379,12 @@ const FormProduct = () => {
               </div>
 
               <div className="card-body">
-                {isHiddenDetailPro ? (
-                  <DetailProduct
-                    DataDetail={handleDataChange}
-                    reloadArrayDetail={isArrayDetail}
-                  />
-                ) : (
-                  <div className="d-flex justify-content-between">
-                    <TextField
-                      label="Nhập giá sản phẩm"
-                      id="outlined-size-small"
-                      size="small"
-                      name="price"
-                      value={priceAndQuantity.price}
-                      onChange={handleInputChangePriceAndQuantity}
-                      fullWidth
-                      className="me-2"
-                      disabled={isArrayDetail}
-                    />
-                    <TextField
-                      label="Nhập số lượng"
-                      id="outlined-size-small"
-                      size="small"
-                      name="quantity"
-                      value={priceAndQuantity.quantity}
-                      onChange={handleInputChangePriceAndQuantity}
-                      fullWidth
-                      disabled={isArrayDetail}
-                    />
-                  </div>
-                )}
+                <DetailProduct
+                  DataDetail={handleDataChange}
+                  reloadArrayDetail={isArrayDetail}
+                  isChangeForm={isHiddenDetailPro}
+                  ref={detailProductRef}
+                />
               </div>
             </div>
           </div>
@@ -531,20 +462,19 @@ const FormProduct = () => {
             className="btn mx-2"
             id="btn-resetProduct"
             type="button"
-            onClick={() =>
+            onClick={() => {
               setFormProduct({
                 name: "",
                 productcategory: "",
                 trademark: "",
                 warranties: "",
-                price: "",
-                quantity: "",
                 size: "",
                 specializedgame: "",
                 description: "",
                 store: idStore,
-              })
-            }
+              });
+              setIsArrayDetail(true);
+            }}
           >
             Làm mới
           </button>

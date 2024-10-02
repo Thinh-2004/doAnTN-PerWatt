@@ -1,10 +1,11 @@
 #home-product-item {
   text-decoration: none;
-  /* transition: 0.5s; */
+  transition: transform 0.5s ease-out;
   animation: slide-down 0.5s ease-out; /* Gọi animation */
   height: 300px;
   margin-left: 5px;
   margin-right: 5px;
+  outline: white;
 }
 
 @keyframes slide-down {
@@ -19,10 +20,12 @@
 }
 
 #home-product-item:hover {
-  transform: scale(1.02); /* Slightly scale up the div on hover */
-  z-index: 1; /* Ensure the scaled-up div is on top */
-  transition: 0.5s;
+  transform: scale(1.02); 
+  transition: transform 0.5s;
+  z-index: 1; 
+  outline: 2px solid #00C7FF;
 }
+
 #product-name {
   display: -webkit-box;
   -webkit-line-clamp: 2; /* Số dòng tối đa */

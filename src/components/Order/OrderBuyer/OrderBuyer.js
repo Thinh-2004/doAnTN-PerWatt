@@ -58,11 +58,6 @@ const Order = () => {
       }
     };
     load();
-
-    //check data và reload
-    const interval = setInterval(load, 5000); // Kiểm tra mỗi 5 giây
-
-    return () => clearInterval(interval); // Dọn dẹp khi component bị hủy
   }, [user.id]);
 
   const formatDate = (dateString) => {

@@ -72,17 +72,7 @@ const EditProduct = () => {
     fillData();
   }, []);
 
-  //Hiển thị chi tiết sản phẩm
-  useEffect(() => {
-    if (editProductDetail && editProductDetail.length > 0) {
-      const hasEmptyDetails = editProductDetail.some(
-        (detail) => !detail.namedetail || !detail.imagedetail
-      );
-      setIsHiddenDetailPro(!hasEmptyDetails);
-    } else {
-      setIsHiddenDetailPro(false);
-    }
-  }, [slug, editProductDetail]);
+  
 
   // Hàm xử lí sự kiện thay đổi File
   const handleFileChange = (event) => {
@@ -367,6 +357,7 @@ const EditProduct = () => {
                   className="btn me-4"
                   id="btn-add-productCate"
                   onClick={handleClickHidden}
+                  hidden={editDetailProduct.length > 1}
                 >
                   Thêm phân loại bán hàng
                 </button>
@@ -374,34 +365,11 @@ const EditProduct = () => {
             </div>
 
             <div className="card-body">
-              {isHiddenDetailPro ? (
-                <EditDetailProduct
-                  DataDetail={handleDataChange}
-                  idProduct={formEditProduct}
-                />
-              ) : (
-                editProductDetail.map((detailInput, index) => (
-                  <div key={index} className="d-flex justify-content-between">
-                    <TextField
-                      label="Nhập giá sản phẩm"
-                      size="small"
-                      name="price"
-                      value={detailInput.price}
-                      // onChange={(e) => handleDetailInputChange(e, index)}
-                      fullWidth
-                      className="me-2"
-                    />
-                    <TextField
-                      label="Nhập số lượng"
-                      size="small"
-                      name="quantity"
-                      value={detailInput.quantity}
-                      // onChange={(e) => handleDetailInputChange(e, index)}
-                      fullWidth
-                    />
-                  </div>
-                ))
-              )}
+              <EditDetailProduct
+                DataDetail={handleDataChange}
+                idProduct={formEditProduct}
+                isChangeFormEdit={isHiddenDetailPro}
+              />
             </div>
           </div>
         </div>

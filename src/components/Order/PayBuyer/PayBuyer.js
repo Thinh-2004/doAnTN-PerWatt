@@ -49,6 +49,7 @@ const PayBuyer = () => {
         }
         const paymentResponse = await axios.get("/paymentMethod");
         setPaymentMethods(paymentResponse.data);
+        console.log(paymentResponse.data);
 
         if (user.id) {
           const shippingInfoResponse = await axios.get(
@@ -84,7 +85,6 @@ const PayBuyer = () => {
   };
 
   const groupedProducts = groupByStore(products);
-
   const handlePayment = async () => {
     try {
       // Tính tổng số tiền cho tất cả các sản phẩm
@@ -162,57 +162,12 @@ const PayBuyer = () => {
           order,
           orderDetails,
         });
-        console.log(order);
-        console.log(orderDetails);
       }
 
       toast.success("Đặt hàng thành công!");
       navigate("/order");
     } catch (error) {
       toast.error("Đặt hàng thất bại!");
-    }
-  };
-
-  const handleOrderVNPay = async () => {
-    try {
-      if (!selectedShippingInfo) {
-        toast.error("Vui lòng chọn địa chỉ nhận hàng!");
-        return;
-      }
-
-      // Nhóm các sản phẩm theo storeId
-      const groupedProducts = groupByStore(products);
-
-      // Lặp qua từng nhóm cửa hàng và tạo đơn hàng riêng biệt
-      for (const storeId in groupedProducts) {
-        const { store, products: storeProducts } = groupedProducts[storeId];
-
-        const order = {
-          user: { id: user.id },
-          paymentmethod: { id: selectedPaymentMethod },
-          shippinginfor: { id: selectedShippingInfo },
-          store: { id: storeId },
-          paymentdate: new Date().toISOString(),
-          orderstatus: "Đang chờ duyệt",
-        };
-
-        const orderDetails = storeProducts.map((product) => ({
-          product: { id: product.productDetail.id },
-          quantity: product.quantity,
-          price: product.productDetail.price,
-        }));
-
-        // Tạo đơn hàng cho từng cửa hàng
-        await axios.post("/orderCreateVnPay", {
-          order,
-          orderDetails,
-        });
-      }
-
-      toast.success("Đặt hàng thành công!");
-      navigate("/order");
-    } catch (error) {
-      toast.error("Đặt hàng thất bại!" + error);
     }
   };
 
@@ -227,7 +182,6 @@ const PayBuyer = () => {
         address: newAddress,
         user: { id: user.id },
       });
-
       setShippingInfo([...shippingInfo, response.data]);
       setNewAddress("");
       toast.success("Thêm địa chỉ thành công!");
@@ -236,21 +190,58 @@ const PayBuyer = () => {
     }
   };
 
+  const handleMomo = async () => {
+    // Tính tổng số tiền cho tất cả các sản phẩm
+    const totalAmount = Object.values(groupedProducts).reduce(
+      (sum, { products }) => {
+        return (
+          sum +
+          products.reduce((productSum, product) => {
+            return productSum + product.productDetail.price * product.quantity;
+          }, 0)
+        );
+      },
+      0
+    );
+
+    // Lấy thông tin về các sản phẩm
+    const productList = Object.values(groupedProducts).flatMap(({ products }) =>
+      products.map((product) => ({
+        name: product.productDetail.product.name,
+        quantity: product.quantity,
+        id: product.productDetail.id,
+      }))
+    );
+
+    sessionStorage.setItem("productList", JSON.stringify(productList));
+
+    // Sử dụng tổng số tiền đã tính toán
+    const data = { amount: totalAmount };
+    const response = await axios.get("/pay", {
+      params: data,
+    });
+    const paymentUrl = response.data; // Lấy URL thanh toán từ response
+    window.location.href = paymentUrl; // Chuyển hướng người dùng đến URL thanh toán
+  };
+
   const handleCombinedAction = async () => {
-    try {
-      if (selectedPaymentMethod === "6") {
-        // Nếu chọn VN Pay, thực hiện cả đặt hàng và thanh toán
-        // await handleOrderVNPay();
-        await handlePayment();
-      } else if (selectedPaymentMethod === "1") {
-        // Nếu chọn thanh toán khi nhận hàng, chỉ thực hiện đặt hàng
-        await handleOrder();
-      } else {
-        toast.error("Vui lòng chọn phương thức thanh toán!");
+    if (!selectedShippingInfo) {
+      toast.warning("Bạn chưa chọn địa chỉ nhận hàng!");
+    } else {
+      try {
+        if (selectedPaymentMethod === "6") {
+          await handlePayment();
+        } else if (selectedPaymentMethod === "1") {
+          await handleOrder();
+        } else if (selectedPaymentMethod === "8") {
+          await handleMomo();
+        } else {
+          toast.error("Vui lòng chọn phương thức thanh toán!");
+        }
+      } catch (error) {
+        console.error("Có lỗi xảy ra khi thực hiện các chức năng:", error);
+        toast.error("Có lỗi xảy ra khi thực hiện các chức năng.");
       }
-    } catch (error) {
-      console.error("Có lỗi xảy ra khi thực hiện các chức năng:", error);
-      toast.error("Có lỗi xảy ra khi thực hiện các chức năng.");
     }
   };
 
@@ -403,40 +394,43 @@ const PayBuyer = () => {
         )}
         <div className="card mt-3">
           <div className="row card-body">
-            <div className="col-6 align-tiems-center">
-              <div className="form-check">
-                <input
-                  className="form-check-input mt-3"
-                  type="radio"
-                  name="paymentMethod"
-                  id="paymentMethod1"
-                  value="1"
-                  checked={selectedPaymentMethod === "1"}
-                  onChange={() => setSelectedPaymentMethod("1")}
-                />
-                <label
-                  className="form-check-label me-3"
-                  htmlFor="paymentMethod1"
-                >
-                  Thanh toán khi nhận hàng
-                </label>
-                <img src="/images/COD.png" alt="" style={{ width: "8%" }} />
-              </div>
-              <div className="form-check">
-                <input
-                  className="form-check-input mt-3"
-                  type="radio"
-                  name="paymentMethod"
-                  id="paymentMethod2"
-                  value="6"
-                  checked={selectedPaymentMethod === "6"}
-                  onChange={() => setSelectedPaymentMethod("6")}
-                />
-                <label className="form-check-label" htmlFor="paymentMethod2">
-                  Thanh toán bằng VN Pay
-                </label>
-                <img src="/images/VNPAY.png" alt="" style={{ width: "8%" }} />
-              </div>
+            <div className="col-6 align-items-center">
+              {paymentMethods.map((method) => (
+                <div className="form-check" key={method.id}>
+                  <div className="d-flex align-items-center">
+                    <input
+                      className="form-check-input me-1 mb-1"
+                      type="radio"
+                      name="paymentMethod"
+                      id={`paymentMethod${method.id}`}
+                      value={method.id}
+                      checked={selectedPaymentMethod === String(method.id)}
+                      onChange={() =>
+                        setSelectedPaymentMethod(String(method.id))
+                      }
+                    />
+                    <label
+                      className="form-check-label me-3"
+                      htmlFor={`paymentMethod${method.id}`}
+                    >
+                      {method.type}
+                    </label>
+                    <img
+                      src={`/images/${
+                        method.id === 1
+                          ? "COD.png"
+                          : method.id === 6
+                          ? "VNPay.png"
+                          : method.id === 8
+                          ? "MoMo.jpg"
+                          : "default.png"
+                      }`}
+                      alt={method.type}
+                      style={{ width: "8%" }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="col-6">
@@ -507,11 +501,7 @@ const PayBuyer = () => {
             </div>
           </div>
           <div className="card-body">
-            <button
-              className="btn btn-primary"
-              onClick={handleCombinedAction}
-              disabled={!selectedShippingInfo} // Vô hiệu hóa nút khi địa chỉ chưa được chọn
-            >
+            <button className="btn btn-primary" onClick={handleCombinedAction}>
               Đặt hàng
             </button>
           </div>

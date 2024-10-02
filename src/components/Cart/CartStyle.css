@@ -54,27 +54,27 @@
   transition: box-shadow 0.5s ease;
 }
 
-#fontSizeTitle{
+#fontSizeTitle {
   font-size: 15px;
 }
 
-#fontSize{
+#fontSize {
   font-size: 11px;
   background-color: rgb(245, 245, 245);
   padding: 5px;
   border-radius: 10px;
 }
 
-#spinner{
+#spinner {
   margin-top: 30px;
   margin-left: 150px;
 }
-#price{
+#price {
   margin-left: 150px;
   font-size: 18px;
 }
 
-#hr{
+#hr {
   margin: 12px;
   margin-bottom: 0px;
 }
@@ -82,9 +82,3 @@
 .card {
   border: none;
 }
-
-body {
-  font-family: "Roboto", sans-serif;
-  transition: 1s;
-}
-

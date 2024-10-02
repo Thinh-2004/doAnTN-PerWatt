@@ -6,15 +6,20 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { toast } from "react-toastify";
 
-const EditDetailProduct = ({ DataDetail, idProduct }) => {
-  const  id  = idProduct.id; //Lấy id Product
+const EditDetailProduct = ({ DataDetail, idProduct, isChangeFormEdit }) => {
   const [fillData, setFillData] = useState([]); //để fill dữ liệu;
-  const [moveData, setMoveData] = useState([]); //để chuyển dữ liệu sang components khác xử lí
+  const [isHiddenDetailPro, setIsHiddenDetailPro] = useState(isChangeFormEdit); //Điều kiện hiển thị chi tiết sản phẩm
   const [newTemporaryData, setNewTemporaryData] = useState({
     namedetail: "",
     price: "",
     quantity: "",
-    imagedetail: null, 
+    imagedetail: null,
+  });
+  const [dataEdit, setDataEdit] = useState({
+    namedetail: "",
+    price: "",
+    quantity: "",
+    imagedetail: null,
   });
   const [imagePreview, setImagePreview] = useState("");
   const [imageEdit, setImageEdit] = useState("");
@@ -23,35 +28,108 @@ const EditDetailProduct = ({ DataDetail, idProduct }) => {
     return `${axios.defaults.baseURL}files/detailProduct/${detailProductId}/${filename}`;
   };
 
+  const formatPrice = (value) => {
+    // Xóa các ký tự không phải số
+    const numberString = value.replace(/\D/g, "");
+
+    if (numberString === "") return "";
+
+    // Format lại giá trị với dấu phẩy phân cách
+    return Number(numberString).toLocaleString();
+  };
+
   const loadData = async () => {
     try {
-      const res = await axios.get(`/detailProduct/${id}`);
+      const res = await axios.get(`/detailProduct/${idProduct.id}`);
       setFillData(res.data);
-      setMoveData(res.data);
+      // Kiểm tra dữ liệu trả về
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        setDataEdit(res.data[0]);
+      } else {
+        console.warn("Dữ liệu trả về không hợp lệ hoặc mảng trống.");
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (idProduct) {
+      loadData();
+    }
+  }, [idProduct]);
 
-  const handleInputChange = (e) => {
+  //Hiển thị bảng chi tiết sản phẩm
+  useEffect(() => {
+    if (fillData && fillData.length > 1) {
+      const hasEmptyDetails = fillData.some(
+        (detail) => !detail.namedetail || !detail.imagedetail
+      );
+      setIsHiddenDetailPro(!hasEmptyDetails);
+    } else if (fillData && fillData.length <= 1) {
+      setIsHiddenDetailPro(false);
+    }
+  }, [fillData]);
+
+  //Set boolean để thay đổi giao diện phân loại không cần components cha
+  useEffect(() => {
+    setIsHiddenDetailPro(isChangeFormEdit);
+  }, [isChangeFormEdit]);
+
+  const handleFormInputChange = (id, e) => {
     const { name, value } = e.target;
-    setNewTemporaryData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+
+    setFillData((prevData) => {
+      const newData = prevData.map((item) => {
+        if (item.id === id) {
+          if (name === "price") {
+            const numberString = value.replace(/\D/g, "");
+            return {
+              ...item,
+              [name]: numberString,
+            };
+          } else {
+            return {
+              ...item,
+              [name]: value,
+            };
+          }
+        }
+        return item;
+      });
+      return newData;
+    });
   };
 
-  const validate = () => {
+  const handleListInputChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "price") {
+      const numberString = value.replace(/\D/g, "");
+      const formattedValue =
+        numberString === "" ? "" : formatPrice(numberString);
+
+      setNewTemporaryData((prevData) => ({
+        ...prevData,
+        [name]: numberString,
+        formattedPrice: formattedValue,
+      }));
+    } else {
+      setNewTemporaryData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
+  };
+
+  const validateIsTrue = () => {
     const { namedetail, price, quantity, imagedetail } = newTemporaryData;
+    const priceString = String(price);
 
     if (!namedetail) {
       toast.warning("Vui lòng nhập phân loại sản phẩm");
       return false;
-    }else if(namedetail.length > 200){
+    } else if (namedetail.length > 200) {
       toast.warning("Tên phân loại không được lớn hơn 200 kí tự");
       return false;
     }
@@ -62,7 +140,7 @@ const EditDetailProduct = ({ DataDetail, idProduct }) => {
     } else if (!parseFloat(price)) {
       toast.warning("Giá không hợp lệ");
       return false;
-    } else if (parseFloat(price) <= 0 | parseFloat(price) < 1000) {
+    } else if (priceString.replace(/\D/g, "") < 1000) {
       toast.warning("Giá không được nhỏ hơn 1.000");
       return false;
     }
@@ -85,10 +163,37 @@ const EditDetailProduct = ({ DataDetail, idProduct }) => {
 
     return true;
   };
+  const validateIsFalse = () => {
+    const { price, quantity } = dataEdit;
+    const priceString = String(price);
+    if (!price) {
+      toast.warning("Vui lòng nhập giá phân loại sản phẩm");
+      return false;
+    } else if (!parseFloat(price)) {
+      toast.warning("Giá không hợp lệ");
+      return false;
+    } else if (priceString.replace(/\D/g, "") < 1000) {
+      toast.warning("Giá không được nhỏ hơn 1.000");
+      return false;
+    }
+
+    if (!quantity) {
+      toast.warning("Vui lòng nhập số lượng phân loại sản phẩm.");
+      return false;
+    } else if (!parseInt(quantity)) {
+      toast.warning("Số lượng phân loại sản phẩm không hợp lệ.");
+      return false;
+    } else if (parseInt(quantity) <= 0) {
+      toast.warning("Số lượng không được nhỏ hơn hoặc bằng 0");
+      return false;
+    }
+
+    return true;
+  };
 
   const handleAddOrUpdate = async (e) => {
     e.preventDefault();
-    if (validate()) {
+    if (validateIsTrue()) {
       const formData = new FormData();
       // Thêm file vào FormData
       if (newTemporaryData.imagedetail) {
@@ -101,7 +206,7 @@ const EditDetailProduct = ({ DataDetail, idProduct }) => {
         price: newTemporaryData.price,
         quantity: newTemporaryData.quantity,
         product: {
-          id: id,
+          id: idProduct.id,
         },
       };
 
@@ -113,7 +218,6 @@ const EditDetailProduct = ({ DataDetail, idProduct }) => {
             headers: { "Content-Type": "multipart/form-data" },
           });
           loadData();
-          setMoveData((prevData) => [...prevData, productDetailToSend]);
           setImageEdit("");
           setEditingIndex(null);
         } else {
@@ -122,7 +226,6 @@ const EditDetailProduct = ({ DataDetail, idProduct }) => {
           });
           setFillData((prevData) => [...prevData, res.data]);
           loadData();
-          setMoveData((prevData) => [...prevData, productDetailToSend]);
         }
         // Reset form
         setNewTemporaryData({
@@ -132,7 +235,6 @@ const EditDetailProduct = ({ DataDetail, idProduct }) => {
           imagedetail: null,
         });
         setImagePreview("");
-        DataDetail([...moveData, productDetailToSend]); //Truyền dữ liệu đến components khác xử lí
         toast.success("Lưu dữ liệu thành công");
       } catch (error) {
         console.error(error.response.data);
@@ -141,9 +243,44 @@ const EditDetailProduct = ({ DataDetail, idProduct }) => {
     }
   };
 
-  useEffect(() => {
-    DataDetail(moveData);
-  }, [moveData, DataDetail]);
+  const handleUpdate = async (id) => {
+    if (validateIsFalse()) {
+      const detailToUpdate = fillData.find((item) => item.id === id);
+
+      const formData = new FormData();
+      // Thêm file vào FormData
+      if (newTemporaryData.imagedetail) {
+        formData.append("file", newTemporaryData.imagedetail);
+      }
+
+      // Thêm JSON của productDetail vào FormData
+      const productDetailToSend = {
+        namedetail: detailToUpdate.namedetail || null,
+        price: detailToUpdate.price,
+        quantity: detailToUpdate.quantity,
+        product: {
+          id: idProduct.id,
+        },
+        imagedetail: detailToUpdate.imagedetail || null,
+      };
+      console.log(productDetailToSend);
+
+      formData.append("productDetail", JSON.stringify(productDetailToSend));
+
+      try {
+        await axios.put(`/detailProduct/${id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        toast.success("Cập nhật thành công");
+        loadData();
+        setImageEdit("");
+        setEditingIndex(null);
+      } catch (error) {
+        toast.error("Cập nhật thất bại");
+        console.log(error);
+      }
+    }
+  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -198,142 +335,187 @@ const EditDetailProduct = ({ DataDetail, idProduct }) => {
       <div className="bg-white shadow">
         <div className="card">
           <div className="card-body">
-            <div className="row">
-              <div className="col-lg-4 col-md-4 col-sm-4">
-                <TextField
-                  label="Nhập tên phân loại"
-                  id="outlined-size-small"
-                  size="small"
-                  name="namedetail"
-                  value={newTemporaryData.namedetail}
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-              </div>
-              <div className="col-lg-4 col-md-4 col-sm-4">
-                <TextField
-                  label="Nhập giá sản phẩm"
-                  id="outlined-size-small"
-                  size="small"
-                  name="price"
-                  value={newTemporaryData.price}
-                  onChange={handleInputChange}
-                  fullWidth
-                  className="me-2"
-                />
-              </div>
-              <div className="col-lg-4 col-md-4 col-sm-4">
-                <TextField
-                  label="Nhập số lượng"
-                  id="outlined-size-small"
-                  size="small"
-                  name="quantity"
-                  value={newTemporaryData.quantity}
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-              </div>
-              <div className="mt-2 mb-2">
-                <Button
-                  color="success"
-                  style={{ textTransform: "none", fontSize: "15px" }}
-                  onClick={handleAddOrUpdate}
-                  className="me-4"
-                  type="submit"
-                >
-                  {editingIndex !== null ? "Cập nhật" : "Thêm"}
-                </Button>
-                <Button
-                  component="label"
-                  role={undefined}
-                  tabIndex={-1}
-                  startIcon={<CloudUploadIcon />}
-                  color="inherit"
-                  disableElevation
-                >
-                  Tải hình phân loại
-                  <VisuallyHiddenInput
-                    type="file"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                  />
-                </Button>
-              </div>
-              {imageEdit ? (
-                <div>
-                  <div htmlFor="">Ảnh được chỉnh sửa</div>
-                  <img
-                    src={geturlIMG(editingIndex, imageEdit)}
-                    alt="Ảnh xem edit"
-                    style={{ width: "100px", height: "100px" }}
-                    className="img-fluid rounded-3"
+            {isHiddenDetailPro ? ( //Show bảng và form phân loại
+              <div className="row">
+                <div className="col-lg-4 col-md-4 col-sm-4">
+                  <TextField
+                    label="Nhập tên phân loại"
+                    id="outlined-size-small"
+                    size="small"
+                    name="namedetail"
+                    value={newTemporaryData.namedetail}
+                    onChange={handleListInputChange}
+                    fullWidth
                   />
                 </div>
-              ) : (
-                <div hidden={imagePreview === ""}>
-                  <div>Ảnh xem trước</div>
-                  <img
-                    src={imagePreview}
-                    alt="Ảnh xem trước"
-                    style={{ width: "100px", height: "100px" }}
-                    className="img-fluid rounded-3"
+                <div className="col-lg-4 col-md-4 col-sm-4">
+                  <TextField
+                    label="Nhập giá sản phẩm"
+                    id="outlined-size-small"
+                    size="small"
+                    name="price"
+                    value={formatPrice(newTemporaryData.price.toString())}
+                    onChange={handleListInputChange}
+                    fullWidth
+                    className="me-2"
                   />
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="mt-2">
-          <table
-            className="table text-center"
-            style={{ verticalAlign: "middle" }}
-          >
-            <thead>
-              <tr>
-                <th scope="col">Hình</th>
-                <th scope="col">Tên phân loại</th>
-                <th scope="col">Giá phân loại</th>
-                <th scope="col">Số lượng phân loại</th>
-                <th scope="col">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fillData.map((fill) => (
-                <tr key={fill.id}>
-                  <td>
+                <div className="col-lg-4 col-md-4 col-sm-4">
+                  <TextField
+                    label="Nhập số lượng"
+                    id="outlined-size-small"
+                    size="small"
+                    name="quantity"
+                    value={newTemporaryData.quantity}
+                    onChange={handleListInputChange}
+                    fullWidth
+                  />
+                </div>
+                <div className="mt-2 mb-2">
+                  <Button
+                    color="success"
+                    style={{ textTransform: "none", fontSize: "15px" }}
+                    onClick={handleAddOrUpdate}
+                    className="me-4"
+                    type="submit"
+                  >
+                    {editingIndex !== null ? "Cập nhật" : "Thêm"}
+                  </Button>
+                  <Button
+                    component="label"
+                    role={undefined}
+                    tabIndex={-1}
+                    startIcon={<CloudUploadIcon />}
+                    color="inherit"
+                    disableElevation
+                  >
+                    Tải hình phân loại
+                    <VisuallyHiddenInput
+                      type="file"
+                      onChange={handleFileChange}
+                      accept="image/*"
+                    />
+                  </Button>
+                </div>
+                {imageEdit ? (
+                  <div>
+                    <div htmlFor="">Ảnh được chỉnh sửa</div>
                     <img
-                      src={geturlIMG(fill.id, fill.imagedetail)}
-                      alt="Hình ảnh"
+                      src={geturlIMG(editingIndex, imageEdit)}
+                      alt="Ảnh xem edit"
                       style={{ width: "100px", height: "100px" }}
                       className="img-fluid rounded-3"
                     />
-                  </td>
-                  <td>{fill.namedetail}</td>
-                  <td>{fill.price}</td>
-                  <td>{fill.quantity}</td>
-                  <td>
-                    <Button
-                      onClick={() => handleEdit(fill.id)} // Truyền id vào đây
-                      color="primary"
-                      startIcon={<EditIcon />}
-                      size="small"
-                      className="me-2"
+                  </div>
+                ) : (
+                  <div hidden={imagePreview === ""}>
+                    <div>Ảnh xem trước</div>
+                    <img
+                      src={imagePreview}
+                      alt="Ảnh xem trước"
+                      style={{ width: "100px", height: "100px" }}
+                      className="img-fluid rounded-3"
+                    />
+                  </div>
+                )}
+                <div className="mt-2">
+                  <table
+                    className="table text-center"
+                    style={{ verticalAlign: "middle" }}
+                  >
+                    <thead>
+                      <tr>
+                        <th scope="col">Hình</th>
+                        <th scope="col">Tên phân loại</th>
+                        <th scope="col">Giá phân loại</th>
+                        <th scope="col">Số lượng phân loại</th>
+                        <th scope="col">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fillData.map((fill) => (
+                        <tr key={fill.id}>
+                          <td>
+                            <img
+                              src={geturlIMG(fill.id, fill.imagedetail)}
+                              alt="Hình ảnh"
+                              style={{ width: "100px", height: "100px" }}
+                              className="img-fluid rounded-3"
+                            />
+                          </td>
+                          <td>{fill.namedetail}</td>
+                          <td>{formatPrice(fill.price.toString())}</td>
+                          <td>{fill.quantity}</td>
+                          <td>
+                            <Button
+                              onClick={() => handleEdit(fill.id)} // Truyền id vào đây
+                              color="primary"
+                              startIcon={<EditIcon />}
+                              size="small"
+                              className="me-2"
+                            >
+                              Sửa
+                            </Button>
+                            <Button
+                              onClick={() => handleDelete(fill.id)}
+                              color="error"
+                              startIcon={<DeleteIcon />}
+                              size="small"
+                            >
+                              Xóa
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              //Show form phâm loại
+              <>
+                {fillData.map((detailInput, index) => (
+                  <>
+                    <div
+                      key={detailInput.id}
+                      className="d-flex justify-content-between"
                     >
-                      Sửa
-                    </Button>
+                      <TextField
+                        label="Nhập giá sản phẩm"
+                        size="small"
+                        name="price"
+                        value={formatPrice(detailInput.price.toString())}
+                        onChange={(e) =>
+                          handleFormInputChange(detailInput.id, e)
+                        }
+                        fullWidth
+                        className="me-2"
+                      />
+                      <TextField
+                        label="Nhập số lượng"
+                        size="small"
+                        name="quantity"
+                        value={detailInput.quantity}
+                        onChange={(e) =>
+                          handleFormInputChange(detailInput.id, e)
+                        }
+                        fullWidth
+                      />
+                    </div>
                     <Button
-                      onClick={() => handleDelete(fill.id)}
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      size="small"
+                      color="success"
+                      style={{ textTransform: "none", fontSize: "15px" }}
+                      onClick={() => handleUpdate(detailInput.id)}
+                      className="mx-2 mt-2 me-2"
+                      type="button"
                     >
-                      Xóa
+                      Cập nhật
                     </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </>
+                ))}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </>

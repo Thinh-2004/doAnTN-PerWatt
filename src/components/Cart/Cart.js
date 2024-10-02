@@ -4,6 +4,7 @@ import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../Localhost/Custumize-axios";
+import useSession from "../../Session/useSession";
 import { tailspin } from "ldrs";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
@@ -266,6 +267,13 @@ const Cart = () => {
     );
   };
 
+  const [showFlyingImage, setShowFlyingImage] = useState(false);
+
+  const handleFlyingImageClick = () => {
+    setShowFlyingImage(true);
+    setTimeout(() => setShowFlyingImage(false), 1000); // Hide the image after 1 second
+  };
+
   return (
     <div>
       <Header reloadCartItems={isCountCart} />
@@ -430,7 +438,7 @@ const Cart = () => {
                                     cart &&
                                     cart.productDetail &&
                                     cart.productDetail.product
-                                      ? `/detailProduct/${cart.productDetail.product.slug}`
+                                      ? `/detailProduct/${cart.productDetail.product.id}`
                                       : "#"
                                   } // Nếu cart hoặc productDetail chưa có, không điều hướng
                                 >
@@ -482,16 +490,25 @@ const Cart = () => {
                                   {cart.productDetail.product.name}
                                 </div>
                                 <div id="fontSize">
-                                  {/* <select className="form-select">
-                                    {storeProducts.map((item, index) => (
-                                      <option
-                                        key={index}
-                                        value={item.productDetail.id}
-                                      >
-                                        {item.productDetail.namedetail}
-                                      </option>
-                                    ))}
-                                  </select> */}
+                                  {storeProducts.every(
+                                    (item) =>
+                                      item.productDetail.namedetail === null
+                                  ) ? null : (
+                                    <select className="form-select">
+                                      {storeProducts.map(
+                                        (item, index) =>
+                                          item.productDetail.namedetail !==
+                                            null && (
+                                            <option
+                                              key={index}
+                                              value={item.productDetail.id}
+                                            >
+                                              {item.productDetail.namedetail}
+                                            </option>
+                                          )
+                                      )}
+                                    </select>
+                                  )}
 
                                   {
                                     [

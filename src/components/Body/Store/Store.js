@@ -16,12 +16,13 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 
 const Store = () => {
-  const idStore = localStorage.getItem("idStore");
+  const getIdBySlugStore = useParams();
   const [fill, setFill] = useState([]);
   const [search, setSearch] = useState("");
   const [countProductStore, setCountProductStore] = useState(0);
   const [fillCateInStore, setFillCateInStore] = useState([]);
   const [idCateProduct, setIdCateProduct] = useState(0);
+  const [numberDateAccept, setNumberDateAccept] = useState(0);
   const [checkResetInputSearch, setCheckResetInputSearch] = useState(false);
 
   const geturlBgStore = (storeId, filename) => {
@@ -32,12 +33,15 @@ const Store = () => {
   };
   const loadData = async () => {
     try {
-      const res = await axios.get(`store/${idStore}`);
+      //Lấy data store by slug param
+      const storeRes = await axios.get(`/productStore/${getIdBySlugStore.slugStore}`);
+      setCountProductStore(storeRes.data.length);
+      //Lấy infoStore by storeRes
+      const res = await axios.get(`store/${storeRes.data[0].store.id}`);
       setFill(res.data);
 
+      //Kiểm tra infoStore trước khi call API
       if (res.data && res.data.id) {
-        const storeRes = await axios.get(`/productStore/${res.data.slug}`);
-        setCountProductStore(storeRes.data.length);
         const cateProductByStore = await axios.get(
           `CateProductInStore/${res.data.id}`
         );
@@ -49,7 +53,7 @@ const Store = () => {
   };
   useEffect(() => {
     loadData();
-  }, [idStore]);
+  }, [getIdBySlugStore]);
 
   useEffect(() => {
     if (checkResetInputSearch) {
@@ -69,6 +73,30 @@ const Store = () => {
     setSearch("");
     // console.log(idCateProduct);
   };
+
+  const calculateAccountDuration = (accountCreatedDate) => {
+    const createdDate = new Date(accountCreatedDate);
+    const now = new Date();
+  
+    const diffInMilliseconds = now - createdDate;
+    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
+  
+    if (diffInDays <= 7) {
+      return "Mới tham gia";
+    }
+  
+    const diffInMonths = (now.getFullYear() - createdDate.getFullYear()) * 12 + (now.getMonth() - createdDate.getMonth());
+  
+    if (diffInMonths >= 12) {
+      const years = Math.floor(diffInMonths / 12);
+      return years + (years === 1 ? " năm" : " năm");
+    } else if (diffInMonths > 0) {
+      return diffInMonths + (diffInMonths === 1 ? " tháng" : " tháng");
+    } else {
+      return diffInDays + " ngày";
+    }
+  }
+  
 
   return (
     <>
@@ -138,8 +166,8 @@ const Store = () => {
               <label htmlFor="">900</label>{" "}
             </span>
             <span>
-              <i class="bi bi-node-plus"></i> Tham gia:{" "}
-              <label htmlFor="">900</label>{" "}
+              <i class="bi bi-node-plus"></i> Tham gia:
+              <label htmlFor="">&nbsp;{calculateAccountDuration(fill.createdtime)}</label>{" "}
             </span>
             <span>
               <i class="bi bi-person-plus-fill"></i> Đang theo dõi:{" "}
