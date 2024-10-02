@@ -1,0 +1,15 @@
+.editable-row td {
+  white-space: nowrap; /* Không cho phép nội dung xuống dòng */
+  overflow: hidden; /* Ẩn phần nội dung vượt quá chiều rộng */
+  text-overflow: ellipsis; /* Thêm dấu ba chấm cho nội dung bị ẩn */
+}
+
+.productImageClassDa1 {
+  max-width: 100%; /* Đảm bảo hình ảnh không vượt quá chiều rộng của ô */
+  height: auto; /* Giữ tỷ lệ hình ảnh */
+  border-radius: 5px;
+}
+
+.br{
+  box-shadow: 0 0.0625rem 0.3125rem rgba(0, 0, 0, 0.1);
+}

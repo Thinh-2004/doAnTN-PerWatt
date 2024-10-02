@@ -3,13 +3,28 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "../../../Localhost/Custumize-axios";
-import useSession from "../../../Session/useSession";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+
   const navigate = useNavigate();
+
+  // Hàm tìm kiếm cửa hàng theo ID người dùng
+  const searchStoreByidUser = async (isUser) => {
+    try {
+      const searchStoreById = await axios.get(`searchStore/${isUser}`);
+      if (searchStoreById.data === null) {
+        console.log("chưa có cửa hàng");
+      } else {
+        // Lưu idStore vào localStorage và sessionStorage
+        localStorage.setItem("idStore", searchStoreById.data.id);
+        sessionStorage.setItem("idStore", searchStoreById.data.id);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm cửa hàng:", error.message);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,13 +32,27 @@ const Login = () => {
     if (validate()) {
       const idToast = toast.loading("Vui lòng chờ...");
       try {
-        const res = await axios.post("/login", { email, password }); // Thay đổi phương thức từ GET thành POST
+        const res = await axios.post("/login", { email, password });
         if (res.status === 200) {
           const { user } = res.data;
+
+          // Lọc các thông tin cần lưu
+          const userInfo = {
+            id: user.id,
+            fullname: user.fullname,
+            avatar: user.avatar,
+          };
+
           // Lưu thông tin vào sessionStorage
           sessionStorage.setItem("fullname", user.fullname);
           sessionStorage.setItem("id", user.id);
           sessionStorage.setItem("avatar", user.avatar);
+
+          // Lưu thông tin vào localStorage
+          localStorage.setItem("user", JSON.stringify(userInfo));
+
+          // Tìm kiếm cửa hàng của người dùng theo ID
+          await searchStoreByidUser(user.id);
 
           setTimeout(() => {
             toast.update(idToast, {
@@ -92,6 +121,7 @@ const Login = () => {
           Đăng nhập
         </button>
       </form>
+      <ToastContainer />
     </>
   );
 };

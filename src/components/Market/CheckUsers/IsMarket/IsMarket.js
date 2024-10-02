@@ -11,6 +11,8 @@ import MainUserSeller from "./StatisticalOrders/MainUserSeller";
 import ProfileShop from "./ProfileShop/ProfileShop";
 import OrderSeller from "./Order/OrderSeller";
 import OrderDetailBuyer from "./OrderDetail/OrderDetailBuyer";
+import SellerDashboard from "./StatisticalOrders/SellerDashboard";
+
 
 const IsMarket = () => {
   const [id] = useSession("id");
@@ -281,7 +283,7 @@ const IsMarket = () => {
         </div>
         <div className="col-lg-9">
           <Routes>
-            <Route path="/" element={<MainUserSeller />} />
+            <Route path="/" element={<SellerDashboard/>} />
             <Route path="/listStoreProduct" element={<ListProduct />} />
             <Route path="/FormStoreProduct" element={<FormProduct />} />
             <Route path="updateProduct/:id" element={<EditProduct />} />

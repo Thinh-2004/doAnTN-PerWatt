@@ -82,7 +82,7 @@ const Product = ({ item, idCate }) => {
       return `${(count / 1000).toFixed(1)}K`;
     } else {
       // Nếu không thỏa các điều kiện, chuyển đổi số lượng thành chuỗi.
-      return count.toString();
+      return count;
     }
   };
 
