@@ -22,8 +22,8 @@ const Store = () => {
   const [countProductStore, setCountProductStore] = useState(0);
   const [fillCateInStore, setFillCateInStore] = useState([]);
   const [idCateProduct, setIdCateProduct] = useState(0);
-  const [numberDateAccept, setNumberDateAccept] = useState(0);
   const [checkResetInputSearch, setCheckResetInputSearch] = useState(false);
+  // const idStore = localStorage.getItem("idStore");
 
   const geturlBgStore = (storeId, filename) => {
     return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
@@ -75,24 +75,26 @@ const Store = () => {
   };
 
   const calculateAccountDuration = (accountCreatedDate) => {
+    //Khởi tạo ngày từ CSDL và ngày hiện tại
     const createdDate = new Date(accountCreatedDate);
     const now = new Date();
   
-    const diffInMilliseconds = now - createdDate;
-    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
+    const diffInMilliseconds = now - createdDate; //Tính khoảng cách (Tính bằng mili)
+    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24)); //Chuyển đổi kết quả mili giây thành ngày
   
-    if (diffInDays <= 7) {
+    if (diffInDays <= 7) { //Nhỏ hơn 7 ngày
       return "Mới tham gia";
     }
   
+    //Tính tổng số tháng 
     const diffInMonths = (now.getFullYear() - createdDate.getFullYear()) * 12 + (now.getMonth() - createdDate.getMonth());
   
-    if (diffInMonths >= 12) {
+    if (diffInMonths >= 12) { //Kết quả lớn hơn 12 tháng
       const years = Math.floor(diffInMonths / 12);
       return years + (years === 1 ? " năm" : " năm");
-    } else if (diffInMonths > 0) {
+    } else if (diffInMonths > 0) {//Kết quả số tháng lớn hơn 0 nhưng nhỏ hơn 12
       return diffInMonths + (diffInMonths === 1 ? " tháng" : " tháng");
-    } else {
+    } else {//Ngược lại lấy số ngày
       return diffInDays + " ngày";
     }
   }
@@ -131,13 +133,13 @@ const Store = () => {
                   id="logo-store"
                 />
                 <label className=" d-flex align-items-end mx-4 fs-6 fw-bold text-dark">
-                  {fill.namestore} &nbsp;&nbsp;&nbsp;
+                  {fill.namestore} &nbsp;&nbsp;
                   {fill?.taxcode && (
                     <img
                       src="/images/IconShopMall.png"
                       alt=""
                       className="rounded-circle"
-                      style={{ width: "5%", height: "30%" }}
+                      style={{ width: "4.2%", height: "30%" }}
                     />
                   )}
                 </label>

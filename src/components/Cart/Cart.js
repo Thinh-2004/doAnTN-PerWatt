@@ -4,7 +4,6 @@ import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../Localhost/Custumize-axios";
-import useSession from "../../Session/useSession";
 import { tailspin } from "ldrs";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
@@ -358,7 +357,8 @@ const Cart = () => {
                               }
                             />
                             <Link
-                              to={`/pageStore/${store.id}`} // Sử dụng dấu ngoặc nhọn để truyền chuỗi động
+                              to={`/pageStore/${store.slug}`} // Sử dụng dấu ngoặc nhọn để truyền chuỗi động
+                              className="align-content-center"
                             >
                               <img
                                 src={getAvtUser(
@@ -380,16 +380,25 @@ const Cart = () => {
                                 alt=""
                               />
                             </Link>
-                            <h5 id="nameShop" className="mt-1">
+                            <h5 id="nameShop" className="mt-1 ">
                               <Link
-                                className="inherit-text"
-                                to={`/pageStore/${store.id}`}
+                                className="inherit-text d-flex align-items-center"
+                                to={`/pageStore/${store.slug}`}
                                 style={{
                                   textDecoration: "inherit",
                                   color: "inherit",
                                 }}
                               >
                                 {store.namestore}
+                                &nbsp;&nbsp;
+                                {store.taxcode ? (
+                                  <img
+                                    src="/images/IconShopMall.png"
+                                    alt="logo Shop mail"
+                                    className="rounded-circle"
+                                    style={{ width: "4%", height: "30%" }}
+                                  />
+                                ) : null}
                               </Link>
                             </h5>
                           </div>
@@ -438,7 +447,7 @@ const Cart = () => {
                                     cart &&
                                     cart.productDetail &&
                                     cart.productDetail.product
-                                      ? `/detailProduct/${cart.productDetail.product.id}`
+                                      ? `/detailProduct/${cart.productDetail.product.slug}`
                                       : "#"
                                   } // Nếu cart hoặc productDetail chưa có, không điều hướng
                                 >

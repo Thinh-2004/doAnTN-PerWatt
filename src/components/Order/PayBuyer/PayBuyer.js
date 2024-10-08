@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "../../Header/Header";
 import Footer from "../../Footer/Footer";
 import axios from "../../../Localhost/Custumize-axios";
-import useSession from "../../../Session/useSession";
 import { toast } from "react-toastify";
 import { tailspin } from "ldrs";
 
@@ -272,7 +271,7 @@ const PayBuyer = () => {
                 <div className="card-body">
                   <div className="d-flex align-items-center">
                     <Link
-                      to={`/pageStore/${store.id}`} // Sử dụng dấu ngoặc nhọn để truyền chuỗi động
+                      to={`/pageStore/${store.slug}`} // Sử dụng dấu ngoặc nhọn để truyền chuỗi động
                     >
                       <img
                         src={getAvtUser(
@@ -296,14 +295,23 @@ const PayBuyer = () => {
                     </Link>
                     <h5 id="nameShop" className="mt-1">
                       <Link
-                        className="inherit-text"
-                        to={`/pageStore/${store.id}`}
+                        className="inherit-text align-items-center"
+                        to={`/pageStore/${store.slug}`}
                         style={{
                           textDecoration: "inherit",
                           color: "inherit",
                         }}
                       >
                         {store.namestore}
+                        &nbsp;&nbsp;
+                        {store.taxcode ? (
+                          <img
+                            src="/images/IconShopMall.png"
+                            alt="logo Shop mail"
+                            className="rounded-circle"
+                            style={{ width: "4%", height: "30%" }}
+                          />
+                        ) : null}
                       </Link>
                     </h5>
                   </div>

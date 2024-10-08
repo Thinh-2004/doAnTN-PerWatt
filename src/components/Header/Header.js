@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./HeaderStyle.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useMatch, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -17,6 +17,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Audio from "./VoiceSearhDialog/Audio";
 
 const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
+  const match = useMatch("/findMoreProduct/:name"); //Kiểm tra đường dẫn có chứa tham số động
   const [search, setSearch] = useState("");
   const [count, setCount] = useState(0);
   const changeLink = useNavigate();
@@ -372,122 +373,136 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
             <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
           </Link>
         </div>
-        <div
-          className="col-auto flex-grow-1"
-          hidden={window.location.pathname !== "/"}
-        >
-          <form className="d-flex" role="search">
-            <input
-              className="form-control rounded-start-4 me-3"
-              type="search"
-              placeholder="Bạn cần tìm gì"
-              aria-label="Search"
-              style={{ width: "auto" }}
-              value={search}
-              onChange={handleTextSearch}
-            />
-            <div>
-              <Button
-                variant="outlined"
-                onClick={handleClickOpenVoice}
-                className="me-2"
-              >
-                <i className="bi bi-mic"></i>
-              </Button>
-              <Dialog
-                open={openVoice}
-                onClose={handleCloseVoice}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-                disableScrollLock={true} //Ngăn chặn mất thanh cuộn
-                fullWidth
-              >
-                <DialogContent>
-                  <div id="alert-dialog-description" className="text-center">
-                    <div className="d-flex justify-content-center align-content-center">
-                      <Audio checkRecording={isRecording} />
-                    </div>
-                    <label htmlFor="" className="fs-4">
-                      {search ? search : ""}
-                    </label>
-                  </div>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleCloseVoice}>Dừng ghi âm</Button>
-                  <Button onClick={handleStartRecording}>Ghi âm</Button>
-                </DialogActions>
-              </Dialog>
-
-              <Button
-                variant="outlined"
-                onClick={handleClickOpen}
-                className="rounded-end-4"
-              >
-                <i className="bi bi-images"></i>
-              </Button>
-              <Dialog
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-                disableScrollLock={true} //Ngăn chặn mất thanh cuộn
-                fullWidth
-              >
-                <DialogTitle id="alert-dialog-title" className="text-center">
-                  Chọn hình ảnh cần tìm
-                </DialogTitle>
-                <DialogContent>
-                  <DialogContentText id="alert-dialog-description">
-                    <div
-                      id="find-product-bg-img"
-                      className="d-flex justify-content-center align-content-center"
-                    >
-                      {image && image !== null ? (
-                        <img
-                          src={image}
-                          alt="Uploaded"
-                          style={{ maxWidth: "100%", maxHeight: "100%" }}
-                        />
-                      ) : (
-                        <label htmlFor="" className="align-content-center fs-2">
-                          Bạn cần tìm sản phẩm gì?
-                        </label>
-                      )}
-                    </div>
-                    {predictions.map((fill) => (
-                      <div>
-                        <label htmlFor="">
-                          {fill.className} : {fill.probability.toFixed(2)}
-                        </label>
+        {window.location.pathname === "/" && (
+          <div className="col-auto flex-grow-1">
+            <form className="d-flex" role="search">
+              <input
+                className="form-control rounded-start-4 me-3"
+                type="search"
+                placeholder="Bạn cần tìm gì"
+                aria-label="Search"
+                style={{ width: "auto" }}
+                value={search}
+                onChange={handleTextSearch}
+              />
+              <div>
+                <Button
+                  variant="outlined"
+                  onClick={handleClickOpenVoice}
+                  className="me-2"
+                >
+                  <i className="bi bi-mic"></i>
+                </Button>
+                <Dialog
+                  open={openVoice}
+                  onClose={handleCloseVoice}
+                  aria-labelledby="alert-dialog-title"
+                  aria-describedby="alert-dialog-description"
+                  disableScrollLock={true} //Ngăn chặn mất thanh cuộn
+                  fullWidth
+                >
+                  <DialogContent>
+                    <div id="alert-dialog-description" className="text-center">
+                      <div className="d-flex justify-content-center align-content-center">
+                        <Audio checkRecording={isRecording} />
                       </div>
-                    ))}
-                    <div className="mt-3">
-                      <Button
-                        component="label"
-                        variant="contained"
-                        tabIndex={-1}
-                        fullWidth
-                      >
-                        <i className="bi bi-images"></i>
-                        <VisuallyHiddenInput
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                        />
-                      </Button>
+                      <label htmlFor="" className="fs-4">
+                        {search ? search : ""}
+                      </label>
                     </div>
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleClose}>Hủy</Button>
-                  <Button onClick={predict} disabled={!image}>
-                    Tìm kiếm
-                  </Button>
-                </DialogActions>
-              </Dialog>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCloseVoice}>Dừng ghi âm</Button>
+                    <Button onClick={handleStartRecording}>Ghi âm</Button>
+                  </DialogActions>
+                </Dialog>
+
+                <Button
+                  variant="outlined"
+                  onClick={handleClickOpen}
+                  className="rounded-end-4"
+                >
+                  <i className="bi bi-images"></i>
+                </Button>
+                <Dialog
+                  open={open}
+                  onClose={handleClose}
+                  aria-labelledby="alert-dialog-title"
+                  aria-describedby="alert-dialog-description"
+                  disableScrollLock={true} //Ngăn chặn mất thanh cuộn
+                  fullWidth
+                >
+                  <DialogTitle id="alert-dialog-title" className="text-center">
+                    Chọn hình ảnh cần tìm
+                  </DialogTitle>
+                  <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                      <div
+                        id="find-product-bg-img"
+                        className="d-flex justify-content-center align-content-center"
+                      >
+                        {image && image !== null ? (
+                          <img
+                            src={image}
+                            alt="Uploaded"
+                            style={{ maxWidth: "100%", maxHeight: "100%" }}
+                          />
+                        ) : (
+                          <label
+                            htmlFor=""
+                            className="align-content-center fs-2"
+                          >
+                            Bạn cần tìm sản phẩm gì?
+                          </label>
+                        )}
+                      </div>
+                      {predictions.map((fill) => (
+                        <div>
+                          <label htmlFor="">
+                            {fill.className} : {fill.probability.toFixed(2)}
+                          </label>
+                        </div>
+                      ))}
+                      <div className="mt-3">
+                        <Button
+                          component="label"
+                          variant="contained"
+                          tabIndex={-1}
+                          fullWidth
+                        >
+                          <i className="bi bi-images"></i>
+                          <VisuallyHiddenInput
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                          />
+                        </Button>
+                      </div>
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleClose}>Hủy</Button>
+                    <Button onClick={predict} disabled={!image}>
+                      Tìm kiếm
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </div>
+            </form>
+          </div>
+        )}
+        {match && (
+          <div className="col-auto flex-grow-1">
+            <div
+              className="fs-5"
+              style={{
+                color: "#001F3F",
+              }}
+            >
+              Trang tìm kiếm sản phẩm có liên quan
             </div>
-          </form>
-        </div>
+          </div>
+        )}
 
         <div className="col-auto">
           <div className="d-flex align-content-center m-3">

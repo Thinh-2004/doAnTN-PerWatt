@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
 import "./ProductItemStyle.css";
-import { Link } from "react-router-dom";
 import axios from "../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
 import useDebounce from "../../../../CustumHook/useDebounce";
-import { Box, Pagination, Skeleton } from "@mui/material";
+import { Pagination } from "@mui/material";
+import SkeletonLoad from "../../../../Skeleton/SkeletonLoad";
+// import SkeletonLoad from "./SkeletonLoad";
+import ListItem from "./ListItem";
 
 trefoil.register();
 
@@ -14,8 +16,6 @@ const Product = ({ item, idCate, handleReset }) => {
   const [isFiltering, setIsFiltering] = useState(false);
   const debouncedItem = useDebounce(item);
   const debouncedIdCate = useDebounce(idCate);
-  const [countOrderBuyed, setCountOrderBuyed] = useState({});
-  // const [totalQuantity, setTotalQuantity] = useState(0);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1); //Trang hiện tại
@@ -54,21 +54,6 @@ const Product = ({ item, idCate, handleReset }) => {
   const records = filterBySearchAndCategory.slice(firstIndex, lastIndex); //cắt danh sách fill sp cần show
   const pageCount = Math.ceil(filterBySearchAndCategory.length / itemInPage); //ceil để làm tròn số số trang
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-
-  const formatPrice = (value) => {
-    return value ? Number(value).toLocaleString("vi-VN") : "";
-  };
-
-  const formatCount = (count) => {
-    if (count === null || count === "") return "0";
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}tr`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
-    return count;
-  };
-
   const loadData = async () => {
     try {
       const res = await axios.get("pageHome");
@@ -77,34 +62,35 @@ const Product = ({ item, idCate, handleReset }) => {
       const dataWithDetails = await Promise.all(
         res.data.map(async (product) => {
           const resDetail = await axios.get(`/detailProduct/${product.id}`);
+
+          // Duyệt qua từng chi tiết sản phẩm để lấy số lượng đã bán
+          const countOrderBy = await Promise.all(
+            resDetail.data.map(async (detail) => {
+              const res = await axios.get(`countOrderSuccess/${detail.id}`);
+              return res.data; // Trả về số lượng đã bán cho chi tiết sản phẩm
+            })
+          );
+
+          // Tính tổng số lượng sản phẩm đã bán cho tất cả chi tiết sản phẩm
+          const countQuantityOrderBy = countOrderBy.reduce(
+            (acc, quantity) => acc + quantity,
+            0
+          );
+
           return {
             ...product,
-            productDetails: resDetail.data, // Lưu chi tiết sản phẩm vào mỗi sản phẩm
+            productDetails: resDetail.data,
+            countQuantityOrderBy, // lưu tổng số lượng đã bán
           };
         })
       );
+
       setFillAllProduct(dataWithDetails);
       setLoading(false);
-      loadOrderBuyed(res.data);
     } catch (error) {
       console.error(error);
       setLoading(true);
     }
-  };
-
-  const loadOrderBuyed = async (products) => {
-    const orderCounts = await Promise.all(
-      products.map(async (product) => {
-        try {
-          const res = await axios.get(`countOrderSuccess/${product.id}`);
-          return { [product.id]: res.data };
-        } catch (error) {
-          console.error(error);
-          return { [product.id]: 0 };
-        }
-      })
-    );
-    setCountOrderBuyed(Object.assign({}, ...orderCounts));
   };
 
   useEffect(() => {
@@ -117,14 +103,13 @@ const Product = ({ item, idCate, handleReset }) => {
       setIsFiltering(false);
     }, 500);
     return () => clearTimeout(timer);
-  }, [debouncedItem, debouncedIdCate]);
+  }, [debouncedItem, debouncedIdCate, lastIndex, firstIndex]);
 
   // Sự kiện đặt lại giá trị cho số trang
   const handlePageChange = (e, value) => {
     setCurrentPage(value);
     console.log(value);
   };
-
 
   return (
     <>
@@ -138,19 +123,7 @@ const Product = ({ item, idCate, handleReset }) => {
         </div>
       ) : null}
       {loading || isFiltering ? (
-        Array.from(new Array(12)).map((skeleton, index) => (
-          <div
-            className="col-lg-3 col-md-3 col-sm-4 mt-3 p-2 d-flex flex-column"
-            style={{ minHeight: "100%" }}
-            key={index}
-          >
-            <Box sx={{ width: 310, marginRight: 0.5, my: 5 }}>
-              <Skeleton variant="rectangular" width={310} height={118} />
-              <Skeleton />
-              <Skeleton width="60%" />
-            </Box>
-          </div>
-        ))
+        <SkeletonLoad />
       ) : filterBySearchAndCategory.length === 0 ? (
         <div className="text-center">
           <h4>
@@ -162,99 +135,7 @@ const Product = ({ item, idCate, handleReset }) => {
           <label className="fs-4">Thông tin bạn tìm không tồn tại</label>
         </div>
       ) : (
-        records.map((fill) => {
-          const firstIMG = fill.images[0];
-          const productDetails = fill.productDetails;
-
-          //Tìm giá nhỏ nhất lớn nhất trong mảng
-          const minPrice = Math.min(
-            ...productDetails.map((filter) => filter.price)
-          );
-          const maxPrice = Math.max(
-            ...productDetails.map((filter) => filter.price)
-          );
-
-          //tính tổng số lượng sản phẩm
-          const totalQuantity = productDetails.reduce(
-            (total, detailQuantity) => total + detailQuantity.quantity,
-            0
-          );
-          return (
-            <div
-              className="col-lg-2 col-md-3 col-sm-4 mt-3 card shadow rounded-4 p-2 d-flex flex-column"
-              style={{ minHeight: "100%" }}
-              key={fill.id}
-              id="home-product-item"
-            >
-              <Link
-                to={`/detailProduct/${fill.slug}`}
-                className="position-relative d-flex justify-content-center"
-                style={{ height: "50%" }}
-                
-              >
-                <img
-                  src={
-                    firstIMG
-                      ? geturlIMG(fill.id, firstIMG.imagename)
-                      : "/images/no_img.png"
-                  }
-                  className="img-fluid rounded-4"
-                  alt="Product"
-                />
-                {totalQuantity === 0 && (
-                  <div
-                    className="position-absolute top-0 start-50 translate-middle text-danger"
-                    id="bg-sold-out"
-                  >
-                    <span className="text-white text-center">Hết hàng</span>
-                  </div>
-                )}
-                {fill?.store?.taxcode && (
-                  <div class="position-absolute bottom-0 end-0">
-                    <img
-                      src="/images/IconShopMall.png"
-                      alt=""
-                      className="rounded-circle"
-                      style={{ width: "15%", height: "15%" }}
-                    />
-                  </div>
-                )}
-              </Link>
-
-              <div className="mt-2 flex-grow-1 d-flex flex-column justify-content-between">
-                <span className="fw-bold fst-italic" id="product-name">
-                  {fill.name}
-                </span>
-                <h5 id="price-product">
-                  {/* <del className="text-secondary me-1">3,000,000 đ</del> - */}
-                  <span
-                    className="text-danger mx-1 fs-6"
-                    id="price-product-item"
-                  >
-                    {minPrice === maxPrice
-                      ? formatPrice(minPrice) + " đ"
-                      : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` +
-                        " đ"}
-                  </span>
-                </h5>
-                <hr />
-              </div>
-
-              <div className="d-flex justify-content-between align-items-end">
-                <div>
-                  {[...Array(5)].map((_, index) => (
-                    <i key={index} className="bi bi-star-fill text-warning"></i>
-                  ))}
-                </div>
-                <div>
-                  <span style={{ fontSize: "12px" }}>
-                    Đã bán: {formatCount(countOrderBuyed[fill.id]) || 0}
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })
+        <ListItem data={records} />
       )}
       <div className="mt-3 mb-3 d-flex justify-content-center">
         <Pagination

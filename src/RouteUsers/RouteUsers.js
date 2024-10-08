@@ -19,6 +19,7 @@ import ShippingCreate from "../components/Shipping/ShippingCreate";
 import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification";
 import Successful from "../components/Order/Successful/Successful";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import FindMoreProduct from "../components/Body/Home/FindMoreProduct/FindMoreProduct";
 
 const RouteUsers = (props) => {
   return (
@@ -67,6 +68,7 @@ const RouteUsers = (props) => {
           path="/notifications"
           element={<NotificationCard></NotificationCard>}
         ></Route>
+        <Route path="/findMoreProduct/:name" element={<FindMoreProduct/>}></Route>
         <Route path="*">404 Not Found</Route>
       </Routes>
     </>

@@ -8,6 +8,7 @@ import axios from "../../../../../../Localhost/Custumize-axios";
 import { Button, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditDetailProduct from "../../DetailProduct/EditDetailProduct";
+import { load } from "@teachablemachine/image";
 
 const EditProduct = () => {
   const slug = useParams();
@@ -29,7 +30,6 @@ const EditProduct = () => {
     description: "",
     store: idStore,
   });
-  const [editProductDetail, setEditProductDetail] = useState([]); // Nhận dữ liệu từ API
 
   const maxFiles = 9;
   const changeLink = useNavigate();
@@ -61,7 +61,7 @@ const EditProduct = () => {
         quantity: detail.quantity,
         imagedetail: detail.imagedetail,
       }));
-      setEditProductDetail(detailInputs);
+      setEditDetailProduct(detailInputs);
     } catch (error) {
       console.error(error);
     }
@@ -71,8 +71,6 @@ const EditProduct = () => {
     // Fill dữ liệu
     fillData();
   }, []);
-
-  
 
   // Hàm xử lí sự kiện thay đổi File
   const handleFileChange = (event) => {
@@ -179,7 +177,6 @@ const EditProduct = () => {
         trademark: { id: formEditProduct.trademark },
         warranties: { id: formEditProduct.warranties },
         store: { id: formEditProduct.store },
-        productDetails: editDetailProduct,
       };
       formData.append(
         "product",
@@ -237,9 +234,28 @@ const EditProduct = () => {
     setIsHiddenDetailPro(true);
   };
 
-  const handleDataChange = (newData) => {
-    setEditDetailProduct(newData);
-  };
+  useEffect(() => {
+    // Chỉ cập nhật state nếu giá trị thay đổi
+    if (editDetailProduct.length > 1) {
+      setIsHiddenDetailPro(true);
+    } else {
+      setIsHiddenDetailPro(false);
+    }
+  }, [editDetailProduct]);
+
+  const [receiveDataDetail, setReceiveDataDetail] = useState(0);
+
+  const handleReceiveData = (data) => {
+    setReceiveDataDetail(data);
+  }
+
+  useEffect(() => {
+    if(receiveDataDetail === 1){
+      fillData();
+    }else {
+      fillData();
+    }
+  }, [receiveDataDetail])
 
   return (
     <div className="row mt-4">
@@ -357,7 +373,7 @@ const EditProduct = () => {
                   className="btn me-4"
                   id="btn-add-productCate"
                   onClick={handleClickHidden}
-                  hidden={editDetailProduct.length > 1}
+                  hidden={editDetailProduct.length < 1}
                 >
                   Thêm phân loại bán hàng
                 </button>
@@ -366,9 +382,9 @@ const EditProduct = () => {
 
             <div className="card-body">
               <EditDetailProduct
-                DataDetail={handleDataChange}
                 idProduct={formEditProduct}
                 isChangeFormEdit={isHiddenDetailPro}
+                CountData={handleReceiveData}
               />
             </div>
           </div>

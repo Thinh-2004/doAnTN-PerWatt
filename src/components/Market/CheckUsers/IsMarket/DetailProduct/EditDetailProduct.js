@@ -6,7 +6,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { toast } from "react-toastify";
 
-const EditDetailProduct = ({ DataDetail, idProduct, isChangeFormEdit }) => {
+const EditDetailProduct = ({CountData, idProduct, isChangeFormEdit }) => {
   const [fillData, setFillData] = useState([]); //để fill dữ liệu;
   const [isHiddenDetailPro, setIsHiddenDetailPro] = useState(isChangeFormEdit); //Điều kiện hiển thị chi tiết sản phẩm
   const [newTemporaryData, setNewTemporaryData] = useState({
@@ -79,25 +79,44 @@ const EditDetailProduct = ({ DataDetail, idProduct, isChangeFormEdit }) => {
   const handleFormInputChange = (id, e) => {
     const { name, value } = e.target;
 
-    setFillData((prevData) => {
-      const newData = prevData.map((item) => {
-        if (item.id === id) {
-          if (name === "price") {
-            const numberString = value.replace(/\D/g, "");
-            return {
-              ...item,
-              [name]: numberString,
-            };
-          } else {
-            return {
-              ...item,
-              [name]: value,
-            };
-          }
+    // setDataEdit((prevData) => {
+    //   const newData = prevData.map((item) => {
+    //     if (item.id === id) {
+    //       if (name === "price") {
+    //         const numberString = value.replace(/\D/g, "");
+    //         return {
+    //           ...item,
+    //           [name]: numberString,
+    //         };
+    //       } else {
+    //         return {
+    //           ...item,
+    //           [name]: value,
+    //         };
+    //       }
+    //     }
+    //     return item;
+    //   });
+    //   return newData;
+    // });
+
+    // Cập nhật trực tiếp cho đối tượng dataEdit
+    setDataEdit((prevData) => {
+      if (prevData.id === id) {
+        if (name === "price") {
+          const numberString = value.replace(/\D/g, "");
+          return {
+            ...prevData,
+            [name]: numberString, // Cập nhật trường price
+          };
+        } else {
+          return {
+            ...prevData,
+            [name]: value, // Cập nhật các trường khác
+          };
         }
-        return item;
-      });
-      return newData;
+      }
+      return prevData;
     });
   };
 
@@ -146,12 +165,12 @@ const EditDetailProduct = ({ DataDetail, idProduct, isChangeFormEdit }) => {
     }
 
     if (!quantity) {
-      toast.warning("Vui lòng nhập số lượng phân loại sản phẩm.");
+      toast.warning("Vui lòng nhập số lượng sản phẩm.");
       return false;
     } else if (!parseInt(quantity)) {
       toast.warning("Số lượng phân loại sản phẩm không hợp lệ.");
       return false;
-    } else if (parseInt(quantity) <= 0) {
+    } else if (parseInt(quantity) < 0) {
       toast.warning("Số lượng không được nhỏ hơn hoặc bằng 0");
       return false;
     }
@@ -183,7 +202,7 @@ const EditDetailProduct = ({ DataDetail, idProduct, isChangeFormEdit }) => {
     } else if (!parseInt(quantity)) {
       toast.warning("Số lượng phân loại sản phẩm không hợp lệ.");
       return false;
-    } else if (parseInt(quantity) <= 0) {
+    } else if (parseInt(quantity) < 0) {
       toast.warning("Số lượng không được nhỏ hơn hoặc bằng 0");
       return false;
     }
@@ -244,8 +263,13 @@ const EditDetailProduct = ({ DataDetail, idProduct, isChangeFormEdit }) => {
   };
 
   const handleUpdate = async (id) => {
+    console.log(id);
     if (validateIsFalse()) {
-      const detailToUpdate = fillData.find((item) => item.id === id);
+      // const detailToUpdate = fillData.find((item) => item.id === id);
+      // Kiểm tra nếu dataEdit là mảng
+      const detailToUpdate = Array.isArray(dataEdit)
+        ? dataEdit.find((item) => item.id === id)
+        : dataEdit; // Nếu dataEdit không phải là mảng, dùng trực tiếp đối tượng
 
       const formData = new FormData();
       // Thêm file vào FormData
@@ -330,12 +354,24 @@ const EditDetailProduct = ({ DataDetail, idProduct, isChangeFormEdit }) => {
     width: 1,
   });
 
+  useEffect(() => {
+    // Chỉ cập nhật state nếu giá trị thay đổi
+    if (fillData.length > 1) {
+      setIsHiddenDetailPro(true);
+      CountData(2);
+    } else {
+      setIsHiddenDetailPro(false);
+      CountData(1);
+    }
+  }, [fillData]);
+
+
   return (
     <>
       <div className="bg-white shadow">
         <div className="card">
           <div className="card-body">
-            {isHiddenDetailPro ? ( //Show bảng và form phân loại
+            {isHiddenDetailPro  ? ( //Show bảng và form phân loại
               <div className="row">
                 <div className="col-lg-4 col-md-4 col-sm-4">
                   <TextField
@@ -474,7 +510,7 @@ const EditDetailProduct = ({ DataDetail, idProduct, isChangeFormEdit }) => {
             ) : (
               //Show form phâm loại
               <>
-                {fillData.map((detailInput, index) => (
+                {/* {fillData.map((detailInput, index) => (
                   <>
                     <div
                       key={detailInput.id}
@@ -512,7 +548,36 @@ const EditDetailProduct = ({ DataDetail, idProduct, isChangeFormEdit }) => {
                       Cập nhật
                     </Button>
                   </>
-                ))}
+
+                ))} */}
+                <div className="d-flex justify-content-between">
+                  <TextField
+                    label="Nhập giá sản phẩm"
+                    size="small"
+                    name="price"
+                    value={formatPrice(dataEdit.price.toString())}
+                    onChange={(e) => handleFormInputChange(dataEdit.id, e)}
+                    fullWidth
+                    className="me-2"
+                  />
+                  <TextField
+                    label="Nhập số lượng"
+                    size="small"
+                    name="quantity"
+                    value={dataEdit.quantity}
+                    onChange={(e) => handleFormInputChange(dataEdit.id, e)}
+                    fullWidth
+                  />
+                </div>
+                <Button
+                  color="success"
+                  style={{ textTransform: "none", fontSize: "15px" }}
+                  onClick={() => handleUpdate(dataEdit.id)}
+                  className="mx-2 mt-2 me-2"
+                  type="button"
+                >
+                  Cập nhật
+                </Button>
               </>
             )}
           </div>

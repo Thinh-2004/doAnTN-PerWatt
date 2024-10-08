@@ -38,6 +38,7 @@ const Profile = () => {
     try {
       const res = await axios.get(`userProFile/${user.id}`);
       setFill(res.data);
+      console.log(res.data);
       // Set the preview URL if there is an avatar
       setPreviewAvatar(
         res.data.avatar ? geturlIMG(user.id, res.data.avatar) : ""
@@ -138,21 +139,23 @@ const Profile = () => {
     e.preventDefault();
     if (validate()) {
       const formData = new FormData();
+      const userToSend = {
+        fullname: fill.fullname,
+        email: fill.email,
+        birthdate: fill.birthdate,
+        phone: fill.phone,
+        gender: fill.gender,
+        password: fill.password || null,
+        role: {
+          id: fill.role.id,
+        },
+        address: fill.address,
+      };
       formData.append(
         "user",
-        JSON.stringify({
-          fullname: fill.fullname,
-          email: fill.email,
-          birthdate: fill.birthdate,
-          phone: fill.phone,
-          gender: fill.gender,
-          password: fill.password || null,
-          role: {
-            id: fill.role.id,
-          },
-          address: fill.address,
-        })
+        JSON.stringify(userToSend)
       );
+      console.log(userToSend);
       if (fill.avatar instanceof File) {
         formData.append("avatar", fill.avatar);
       }
@@ -163,6 +166,7 @@ const Profile = () => {
             "Content-Type": "multipart/form-data",
           },
         });
+
         setTimeout(() => {
           toast.update(idToast, {
             render: "Cập nhật thông tin thành công",

@@ -80,8 +80,8 @@
   cursor: pointer;
   outline: 1px solid #00c7ff;
   color: #00c7ff;
-   transform: scale(1.05); 
-   transition: 0.5s; 
+  transform: scale(1.05);
+  transition: 0.5s;
 }
 
 #hover-idDetailProduct:hover label {
@@ -98,3 +98,4 @@
 #active-selected-detailProduct label {
   color: #00c7ff;
 }
+

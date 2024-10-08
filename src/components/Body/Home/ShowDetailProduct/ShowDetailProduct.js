@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../Header/Header";
 import "./ShowDetailProduct.css";
-import FindMoreProduct from "../FindMoreProduct/FindMoreProduct";
 import {
   Button,
   Dialog,
@@ -23,9 +22,6 @@ const DetailProduct = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [countProductStore, setCountProductStore] = useState(0);
   const itemsPerPage = 4;
-  const [idClick, setIdClick] = useState("");
-  const [typeId, setTypeId] = useState("");
-  const findMoreProductRef = useRef(null); // Tạo ref cho phần tử cần cuộn đến
   const [countOrderBuyed, setCountOrderBuyed] = useState(0); // Lưu số lượng đã bán cho mỗi sản phẩm
   const [isCountCart, setIsCountAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
   const [open, setOpen] = useState(false);
@@ -48,9 +44,11 @@ const DetailProduct = () => {
   const [fillDetail, setFilDetail] = useState([]);
   const loadProductDetail = async () => {
     try {
+      //api gọi sản phẩm
       const res = await axios.get(`product/${slug}`);
       setFillDetailPr(res.data);
 
+      //api gọi detail product
       const resDetail = await axios.get(`/detailProduct/${res.data.id}`);
       const detailData = Array.isArray(resDetail.data) ? resDetail.data : [];
       setFilDetail(detailData);
@@ -69,15 +67,31 @@ const DetailProduct = () => {
       );
       setTotalQuantity(totalDetailQuantity);
 
-      // Đếm số lượng sản phẩm đã bán
+      // Đếm số lượng sản phẩm đã đăng bán
       if (res.data && res.data.store && res.data.store.id) {
-        const storeRes = await axios.get(`/productStore/${res.data.store.id}`);
+        const storeRes = await axios.get(
+          `/countBySlugProduct/${res.data.store.id}`
+        );
         setCountProductStore(storeRes.data.length);
       }
 
-      if (res.data.id) {
-        const countBuyed = await axios.get(`countOrderSuccess/${res.data.id}`);
-        setCountOrderBuyed(countBuyed.data);
+      //Đếm số lượng sản phẩm đã bán được
+      if (resDetail.data) {
+        //Duyệt từng chi tiết sản phẩm để lấy số lượng đã bán
+        const countOrderBy = await Promise.all(
+          resDetail.data.map(async (detail) => {
+            const res = await axios.get(`countOrderSuccess/${detail.id}`);
+            return res.data;
+          })
+        );
+
+        //Tính tổng số lượng đã bán được
+        const countQuantityOrderBy = countOrderBy.reduce(
+          (count, quantity) => count + quantity,
+          0
+        );
+        setCountOrderBuyed(countQuantityOrderBy);
+        console.log(countQuantityOrderBy);
       }
     } catch (error) {
       console.log(error);
@@ -101,13 +115,6 @@ const DetailProduct = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     loadProductDetail();
   }, [slug]);
-
-  // Theo dõi sự thay đổi của idClick và typeId để cuộn đến phần tử
-  useEffect(() => {
-    if (findMoreProductRef.current) {
-      findMoreProductRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [idClick, typeId]);
 
   const handleSelectImage = (index) => {
     setSelectedImage(index);
@@ -163,7 +170,7 @@ const DetailProduct = () => {
 
     try {
       const response = await axios.post("/cart/add", cartItem);
-      console.log("Added to cart:", response.data);
+      // console.log("Added to cart:", response.data);
       setIsCountAddCart(true);
       toast.success("Thêm sản phẩm thành công!");
     } catch (error) {
@@ -174,16 +181,9 @@ const DetailProduct = () => {
 
   const handleChangeQuantity = (e) => {
     var value = parseInt(e.target.value, 10); // chuyển đổi giá trị được nhập vào và chuyển đổi số thập phân (10)
-    if (value > totalQuantity)
-      value = totalQuantity;
+    if (value > totalQuantity) value = totalQuantity;
     else if (value < 1) value = 1;
     setQuantity(value);
-  };
-
-  const handleClickIdCateOrIdBrand = (idCateOrBrand, typeId) => {
-    setIdClick(idCateOrBrand);
-    setTypeId(typeId);
-    console.log(idCateOrBrand, typeId);
   };
 
   const handleViewStoreInfo = () => {
@@ -224,7 +224,7 @@ const DetailProduct = () => {
     } else {
       setproductDetailIds(null);
     }
-    console.log(totalQuantity);
+    // console.log(totalQuantity);
   }, [fillDetail]);
 
   return (
@@ -472,12 +472,7 @@ const DetailProduct = () => {
                       <label htmlFor="">Loại sản phẩm:</label>{" "}
                       <Link
                         style={{ textDecoration: "none" }}
-                        onClick={() =>
-                          handleClickIdCateOrIdBrand(
-                            FillDetailPr.productcategory.id,
-                            "category"
-                          )
-                        }
+                        to={`/findMoreProduct/${FillDetailPr?.productcategory?.name}`}
                       >
                         {FillDetailPr && FillDetailPr.productcategory
                           ? FillDetailPr.productcategory.name
@@ -488,12 +483,7 @@ const DetailProduct = () => {
                       <label htmlFor="">Thương hiệu:</label>{" "}
                       <Link
                         style={{ textDecoration: "none" }}
-                        onClick={() =>
-                          handleClickIdCateOrIdBrand(
-                            FillDetailPr.trademark.id,
-                            "brand"
-                          )
-                        }
+                        to={`/findMoreProduct/${FillDetailPr?.trademark?.name}`}
                       >
                         {FillDetailPr && FillDetailPr.trademark
                           ? FillDetailPr.trademark.name
@@ -725,12 +715,6 @@ const DetailProduct = () => {
               <hr />
             </span>
           </div>
-        </div>
-        <div ref={findMoreProductRef}>
-          <FindMoreProduct
-            idClick={idClick}
-            filterType={typeId}
-          ></FindMoreProduct>
         </div>
       </div>
     </>
