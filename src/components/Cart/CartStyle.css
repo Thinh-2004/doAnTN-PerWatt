@@ -3,6 +3,10 @@
   width: 100px;
 }
 
+#smooth {
+  transition: 0.5s;
+}
+
 #imgShop {
   height: 30px;
   width: 30px;
@@ -33,6 +37,15 @@
 
 #button {
   transition: 0.5s;
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
+  width: 100%;
+}
+
+#button:disabled {
+  background-color: rgb(255, 184, 184); /* Màu nền khi bị vô hiệu hóa */
+  color: rgb(198, 0, 0); /* Màu chữ khi bị vô hiệu hóa */
+  opacity: 0.5; /* Thêm một chút độ trong suốt để phân biệt */
 }
 
 #button:hover {
@@ -41,6 +54,31 @@
 }
 
 #button:active {
+  transform: scale(0.98);
+  transition: 0.1s;
+}
+
+#deleteButton {
+  transition: 0.5s;
+  height: 40px;
+  width: 40px;
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
+  min-width: 0;
+}
+
+#deleteButton:disabled {
+  background-color: rgb(255, 184, 184); /* Màu nền khi bị vô hiệu hóa */
+  color: rgb(198, 0, 0); /* Màu chữ khi bị vô hiệu hóa */
+  opacity: 0.5; /* Thêm một chút độ trong suốt để phân biệt */
+}
+
+#deleteButton:hover {
+  transform: scale(1.01);
+  transition: 0.5s;
+}
+
+#deleteButton:active {
   transform: scale(0.98);
   transition: 0.1s;
 }
@@ -81,4 +119,9 @@
 
 .card {
   border: none;
+}
+
+#buttonDelete {
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
 }

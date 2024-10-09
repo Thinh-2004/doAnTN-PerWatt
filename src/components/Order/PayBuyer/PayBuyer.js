@@ -3,8 +3,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "../../Header/Header";
 import Footer from "../../Footer/Footer";
 import axios from "../../../Localhost/Custumize-axios";
+import useSession from "../../../Session/useSession";
 import { toast } from "react-toastify";
 import { tailspin } from "ldrs";
+import "./PayBuyerStyle.css";
 
 const PayBuyer = () => {
   const [products, setProducts] = useState([]);
@@ -18,12 +20,9 @@ const PayBuyer = () => {
   const navigate = useNavigate();
   const query = new URLSearchParams(location.search);
   const cartIds = query.get("cartIds");
-  const [selectedProductIds, setSelectedProductIds] = useState([]);
   tailspin.register();
 
-  const user = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
-    : null;
+  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
 
   // Hàm để lấy URL ảnh sản phẩm
   const geturlIMG = (productId, filename) =>
@@ -44,7 +43,6 @@ const PayBuyer = () => {
         if (cartIds) {
           const response = await axios.get(`/cart?id=${cartIds}`);
           setProducts(response.data);
-          setSelectedProductIds(products);
         }
         const paymentResponse = await axios.get("/paymentMethod");
         setPaymentMethods(paymentResponse.data);
@@ -84,6 +82,7 @@ const PayBuyer = () => {
   };
 
   const groupedProducts = groupByStore(products);
+
   const handlePayment = async () => {
     try {
       // Tính tổng số tiền cho tất cả các sản phẩm
@@ -181,6 +180,7 @@ const PayBuyer = () => {
         address: newAddress,
         user: { id: user.id },
       });
+
       setShippingInfo([...shippingInfo, response.data]);
       setNewAddress("");
       toast.success("Thêm địa chỉ thành công!");
@@ -253,7 +253,7 @@ const PayBuyer = () => {
   return (
     <div>
       <Header />
-      <div className="col-8 offset-2">
+      <div id="smooth" className="col-12 col-md-10 col-lg-8 offset-lg-2">
         {loading ? (
           <div className="d-flex justify-content-center mt-3">
             <l-tailspin
@@ -270,49 +270,27 @@ const PayBuyer = () => {
               <div className="card mt-3" key={storeId}>
                 <div className="card-body">
                   <div className="d-flex align-items-center">
-                    <Link
-                      to={`/pageStore/${store.slug}`} // Sử dụng dấu ngoặc nhọn để truyền chuỗi động
-                    >
-                      <img
-                        src={getAvtUser(
-                          store.user.id,
-                          store.user.avatar,
-                          store.id
-                        )}
-                        id="imgShop"
-                        className="mx-2 object-fit-cover"
-                        style={{
-                          width: "30px",
-                          height: "30px",
-                          objectFit: "contain",
-                          display: "block",
-                          margin: "0 auto",
-                          backgroundColor: "#f0f0f0",
-                          borderRadius: "100%",
-                        }}
-                        alt=""
-                      />
-                    </Link>
+                    <img
+                      src={getAvtUser(
+                        store.user.id,
+                        store.user.avatar,
+                        store.id
+                      )}
+                      id="imgShop"
+                      className="mx-2 object-fit-cover"
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        objectFit: "contain",
+                        display: "block",
+                        margin: "0 auto",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: "100%",
+                      }}
+                      alt=""
+                    />
                     <h5 id="nameShop" className="mt-1">
-                      <Link
-                        className="inherit-text align-items-center"
-                        to={`/pageStore/${store.slug}`}
-                        style={{
-                          textDecoration: "inherit",
-                          color: "inherit",
-                        }}
-                      >
-                        {store.namestore}
-                        &nbsp;&nbsp;
-                        {store.taxcode ? (
-                          <img
-                            src="/images/IconShopMall.png"
-                            alt="logo Shop mail"
-                            className="rounded-circle"
-                            style={{ width: "4%", height: "30%" }}
-                          />
-                        ) : null}
-                      </Link>
+                      {store.namestore}
                     </h5>
                   </div>
                   <hr id="hr" />
@@ -430,7 +408,7 @@ const PayBuyer = () => {
                           : method.id === 6
                           ? "VNPay.png"
                           : method.id === 8
-                          ? "MoMo.jpg"
+                          ? "MoMo.png"
                           : "default.png"
                       }`}
                       alt={method.type}

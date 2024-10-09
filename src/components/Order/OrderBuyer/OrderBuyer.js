@@ -3,7 +3,6 @@ import "./OrderStyle.css";
 import Header from "../../Header/Header";
 import Footer from "../../Footer/Footer";
 import axios from "../../../Localhost/Custumize-axios";
-import { Link } from "react-router-dom";
 import useSession from "../../../Session/useSession";
 import { format } from "date-fns";
 import { confirmAlert } from "react-confirm-alert";
@@ -104,6 +103,7 @@ const Order = () => {
       console.log(error);
     }
   };
+
   const renderOrders = (filterFn) => {
     const filteredOrders = fill.filter(filterFn);
     if (loading) {
@@ -129,33 +129,27 @@ const Order = () => {
             <div className="col-3">{formatDate(order.paymentdate)}</div>
             <div className="col-3">{order.paymentmethod.type}</div>
             <div className="col-2">
-              <Link
-                to={`/orderDetail/${order.id}`}
-                className="rounded-3"
+              <Button
+                variant="contained"
+                href={`/orderDetail/${order.id}`}
                 style={{
-                  display: "inline-block",
                   height: "40px",
                   width: "40px",
+                  backgroundColor: "rgb(204,244,255)",
+                  color: "rgb(0,70,89)",
+                  minWidth: 0,
                 }}
+                disableElevation
               >
-                <Button
-                  variant="contained"
-                  style={{
-                    height: "100%",
-                    width: "100%",
-                    minWidth: "unset",
-                    padding: 0,
-                  }}
-                >
-                  <i className="bi bi-eye-fill fs-5"></i>
-                </Button>
-              </Link>
+                <i className="bi bi-eye-fill fs-5"></i>
+              </Button>
             </div>
             <div className="col-2">
               {order.orderstatus === "Chờ giao hàng" && (
                 <button
                   className="btn btn-success me-2"
                   onClick={() => handleMarkAsReceived(order.id)}
+                  disableElevation
                 >
                   Đã nhận hàng
                 </button>
@@ -166,11 +160,11 @@ const Order = () => {
                   style={{
                     height: "40px",
                     width: "40px",
-                    minWidth: "unset",
-                    padding: 0,
-                    backgroundColor: "rgb(255, 184, 184)", // Thêm dấu ngoặc kép
-                    color: "rgb(198, 0, 0)", // Thêm dấu ngoặc kép
+                    backgroundColor: "rgb(255, 184, 184)",
+                    color: "rgb(198, 0, 0)",
+                    minWidth: 0,
                   }}
+                  disableElevation
                 >
                   <i className="bi bi-cart-x-fill"></i>
                 </Button>
@@ -190,7 +184,7 @@ const Order = () => {
     <div>
       <Header />
       <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
-      <div className="container">
+      <div className="container" style={{ transition: "0.5s" }}>
         <Box sx={{ width: "100%", background: "white" }} className="rounded-3">
           <Box
             sx={{

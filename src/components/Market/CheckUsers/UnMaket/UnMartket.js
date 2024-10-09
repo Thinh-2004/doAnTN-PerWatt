@@ -20,6 +20,7 @@ const UnMatket = () => {
   const changeLink = useNavigate();
   const [formStore, setFormStore] = useState({
     namestore: "",
+    addressDetail: "",
     email: "",
     phone: "",
     cccdnumber: "",
@@ -31,14 +32,14 @@ const UnMatket = () => {
 
   //Kiểm tra điều kiện reset components con
   const [isReset, setIsReset] = useState(false);
-  
+
   //Dữ liệu từ FormSelectAddress
-  const [apiAddress, setApiAddress] = useState("")
+  const [apiAddress, setApiAddress] = useState("");
 
   const handleDataApiAddress = (data) => {
     setApiAddress(data);
     console.log(data);
-  }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,7 +49,6 @@ const UnMatket = () => {
     }));
   };
 
- 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -74,7 +74,7 @@ const UnMatket = () => {
         // Tạo đối tượng để gửi đến backend
         const storeToSend = {
           ...formStore,
-          address : apiAddress,
+          address: formStore.addressDetail + ", " + apiAddress,
           user: {
             id: formStore.user,
           },
@@ -94,6 +94,7 @@ const UnMatket = () => {
 
         // Lưu id store vào localStorage
         localStorage.setItem("idStore", response.data.id);
+        handleReset();
 
         // Chuyển hướng đến trang profileMarket
         changeLink("/profileMarket");
@@ -137,7 +138,8 @@ const UnMatket = () => {
   };
 
   const validate = () => {
-    const { namestore, email, phone, cccdnumber, taxcode } = formStore;
+    const { namestore, addressDetail, email, phone, cccdnumber, taxcode } =
+      formStore;
     //Biểu thức chính quy
     const pattenPhone = /0[0-9]{9}/;
     const pattenEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -181,6 +183,9 @@ const UnMatket = () => {
       if (apiAddress === "" || apiAddress === null) {
         toast.warning("Vui lòng chọn địa chỉ đầy đủ");
         return false;
+      } else if (addressDetail === "" || addressDetail === null) {
+        toast.warning("Vui lòng nhập số nhà hoặc đường");
+        return false;
       }
 
       if (!taxcode) {
@@ -196,6 +201,7 @@ const UnMatket = () => {
   const handleReset = () => {
     setFormStore({
       namestore: "",
+      addressDetail: "",
       email: "",
       phone: "",
       cccdnumber: "",
@@ -227,14 +233,6 @@ const UnMatket = () => {
                 <div className="card-body">
                   <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                      {/* <input
-                        type="text"
-                        name="namestore"
-                        placeholder="Nhập tên cửa hàng"
-                        className="form-control rounded-4"
-                        value={formStore.namestore}
-                        onChange={handleChange}
-                      /> */}
                       <Box sx={{ display: "flex", alignItems: "flex-end" }}>
                         <StoreIcon
                           sx={{
@@ -257,14 +255,6 @@ const UnMatket = () => {
                       </Box>
                     </div>
                     <div className="mb-4">
-                      {/* <input
-                        type="text"
-                        name="phone"
-                        placeholder="Nhập số điện thoại"
-                        className="form-control rounded-4"
-                        value={formStore.phone}
-                        onChange={handleChange}
-                      /> */}
                       <Box sx={{ display: "flex", alignItems: "flex-end" }}>
                         <PhoneIphoneIcon
                           sx={{
@@ -287,14 +277,6 @@ const UnMatket = () => {
                       </Box>
                     </div>
                     <div className="mb-4">
-                      {/* <input
-                        type="email"
-                        name="email"
-                        placeholder="Nhập email"
-                        className="form-control rounded-4"
-                        value={formStore.email}
-                        onChange={handleChange}
-                      /> */}
                       <Box sx={{ display: "flex", alignItems: "flex-end" }}>
                         <AttachEmailIcon
                           sx={{
@@ -317,14 +299,6 @@ const UnMatket = () => {
                       </Box>
                     </div>
                     <div className="mb-4">
-                      {/* <input
-                        type="text"
-                        name="cccdnumber"
-                        placeholder="Nhập CCCD"
-                        className="form-control rounded-4"
-                        value={formStore.cccdnumber}
-                        onChange={handleChange}
-                      /> */}
                       <Box sx={{ display: "flex", alignItems: "flex-end" }}>
                         <CreditCardIcon
                           sx={{
@@ -347,13 +321,6 @@ const UnMatket = () => {
                       </Box>
                     </div>
                     <div className="mb-4">
-                      {/* <textarea
-                        name="address"
-                        placeholder="Nhập địa chỉ của bạn"
-                        className="form-control rounded-4"
-                        value={formStore.address}
-                        onChange={handleChange}
-                      ></textarea> */}
                       <Box sx={{ display: "flex", alignItems: "flex-start" }}>
                         <BusinessIcon
                           sx={{
@@ -363,27 +330,28 @@ const UnMatket = () => {
                             fontSize: "25px",
                           }}
                         />
-                        {/* <TextField
-                          id="outlined-multiline-static"
-                          label="Nhập địa chỉ cửa hàng"
-                          multiline
-                          rows={4}
-                          name="address"
-                          value={formStore.address}
-                          onChange={handleChange}
-                          fullWidth
-                        /> */}
-                        <FormSelectAdress apiAddress={handleDataApiAddress} resetForm={isReset} />
+                        <div className="w-100">
+                          <FormSelectAdress
+                            apiAddress={handleDataApiAddress}
+                            resetForm={isReset}
+                          />
+                          <TextField
+                            className="mt-3"
+                            id="outlined-multiline-static"
+                            label="Đường/Số nhà"
+                            multiline
+                            placeholder="Ví dụ: Số nhà 123, Đường ABC,"
+                            rows={2}
+                            name="addressDetail"
+                            value={formStore.addressDetail}
+                            onChange={handleChange}
+                            fullWidth
+                          />
+                        </div>
                       </Box>
                     </div>
+
                     <div className="mb-4">
-                      {/* <textarea
-                        name="address"
-                        placeholder="Nhập địa chỉ của bạn"
-                        className="form-control rounded-4"
-                        value={formStore.address}
-                        onChange={handleChange}
-                      ></textarea> */}
                       <Box sx={{ display: "flex", alignItems: "flex-end" }}>
                         <SubtitlesIcon
                           sx={{

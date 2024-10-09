@@ -3,14 +3,15 @@ import axios from "../../Localhost/Custumize-axios";
 import { useNavigate } from "react-router-dom";
 import "./ForgotPassword.css";
 import { toast } from "react-toastify";
+import { Button, TextField } from "@mui/material";
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
 
   const sendOtp = async (e) => {
     e.preventDefault();
+    const id = toast.loading("Vui lòng chờ...");
     try {
-      const id = toast.loading("Vui lòng chờ...");
       const response = await axios.post("api/send-otp", {
         toEmail: email,
       });
@@ -20,7 +21,7 @@ const ForgotPassword = () => {
           render: responseData.message,
           type: "success",
           isLoading: false,
-          autoClose: 5000,
+          autoClose: 1500,
           closeButton: true,
         });
         navigate("/otp");
@@ -30,7 +31,13 @@ const ForgotPassword = () => {
       sessionStorage.setItem("email", responseData.email);
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi!";
-      toast.error(errorMessage);
+      toast.update(id, {
+        render: errorMessage,
+        type: "error",
+        isLoading: false,
+        autoClose: 1500,
+        closeButton: true,
+      });
     }
   };
 
@@ -38,22 +45,19 @@ const ForgotPassword = () => {
     <div className="container" id="container">
       <div className="form-container shadow" id="form-container">
         <h2 id="title">Quên mật khẩu</h2>
-        <p>Vui lòng điền tài khoản bạn sử dụng để đăng nhập</p>
         <form onSubmit={sendOtp}>
           <div className="form-group" id="form-group">
-            <label id="title-email">Email</label>
-            <input
-              type="email"
-              placeholder="Vui lòng nhập Email"
-              id="enter-form"
-              required
+            <TextField
+              id="outlined-basic"
+              label="Vui lòng nhập Email"
+              variant="outlined"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-            />
+              size="small"
+              fullWidth
+              />
           </div>
-          <button type="submit" id="btn-submit">
-            Gửi
-          </button>
+         <Button  fullWidth disableElevation color="error" type="submit" variant="contained">TIẾP THEO</Button>
         </form>
       </div>
     </div>

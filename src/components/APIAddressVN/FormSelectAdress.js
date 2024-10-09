@@ -39,19 +39,19 @@ const FormSelectAdress = ({ apiAddress, resetForm, editFormAddress }) => {
       const findwardsName = await APITinhThanh.get(
         `https://provinces.open-api.vn/api/w/${selectedWard}`
       );
-    //   console.log(
-    //     findProvinceName.data.name +
-    //       ", " +
-    //       findDistrictsName.data.name +
-    //       ", " +
-    //       findwardsName.data.name
-    //   );
+      //   console.log(
+      //     findProvinceName.data.name +
+      //       ", " +
+      //       findDistrictsName.data.name +
+      //       ", " +
+      //       findwardsName.data.name
+      //   );
       apiAddress(
-        findProvinceName.data.name +
+        findwardsName.data.name +
           ", " +
           findDistrictsName.data.name +
           ", " +
-          findwardsName.data.name
+          findProvinceName.data.name
       );
     } catch (error) {
       console.log(error);
@@ -87,9 +87,10 @@ const FormSelectAdress = ({ apiAddress, resetForm, editFormAddress }) => {
   useEffect(() => {
     const splitName = editFormAddress?.split(",").map((fill) => fill.trim());
     if (splitName?.length >= 3) {
-      setNameProvinces(splitName[0]);
-      setNameDistricts(splitName[1]);
       setNameWards(splitName[2]);
+      setNameDistricts(splitName[3]);
+      setNameProvinces(splitName[4]);
+      
     }
 
     const loadEditAddress = async () => {

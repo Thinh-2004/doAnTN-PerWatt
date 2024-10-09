@@ -13,24 +13,19 @@ import {
   TextField,
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ListImageDetailProduct from "./ListImageDetailProduct";
 
 const DetailProduct = () => {
   const { slug } = useParams();
   const changeLink = useNavigate();
   const [FillDetailPr, setFillDetailPr] = useState(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [selectedImage, setSelectedImage] = useState(0);
   const [countProductStore, setCountProductStore] = useState(0);
-  const itemsPerPage = 4;
   const [countOrderBuyed, setCountOrderBuyed] = useState(0); // Lưu số lượng đã bán cho mỗi sản phẩm
   const [isCountCart, setIsCountAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
-  const [open, setOpen] = useState(false);
+
   const [quantity, setQuantity] = useState(1); //trạng thái cho số lượng trước khi thêm giỏ hàng
   const [productDetailIds, setproductDetailIds] = useState(null);
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
   const geturlIMGStore = (userId, filename) => {
     return `${axios.defaults.baseURL}files/user/${userId}/${filename}`;
   };
@@ -41,7 +36,7 @@ const DetailProduct = () => {
   const [maxPrice, setMaxPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [selectedIdDetail, setSelectedIdDetail] = useState(null);
-  const [fillDetail, setFilDetail] = useState([]);
+  const [fillDetail, setFilDetail] = useState([]); //fill phân loại sản phẩm
   const loadProductDetail = async () => {
     try {
       //api gọi sản phẩm
@@ -116,11 +111,6 @@ const DetailProduct = () => {
     loadProductDetail();
   }, [slug]);
 
-  const handleSelectImage = (index) => {
-    setSelectedImage(index);
-    setCurrentPage(Math.floor(index / itemsPerPage));
-  };
-
   const formatPrice = (value) => {
     if (!value) return "";
     return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
@@ -193,16 +183,6 @@ const DetailProduct = () => {
     }
   };
 
-  const [popUpImage, setPopUpImage] = useState(null);
-  const handleClickOpen = (image) => {
-    setPopUpImage(image);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   const handleClickIdDetail = (idDetail) => () => {
     setSelectedIdDetail(idDetail);
     const selectedProduct = fillDetail.find((detail) => detail.id === idDetail);
@@ -227,177 +207,54 @@ const DetailProduct = () => {
     // console.log(totalQuantity);
   }, [fillDetail]);
 
+  //Hàm cắt chuỗi địa chỉ
+  const splitByAddress = (address) => {
+    const parts = address?.split(",");
+    if (parts?.length > 0) {
+      return parts[4];
+    }
+  };
+
+  const calculateAccountDuration = (accountCreatedDate) => {
+    //Khởi tạo ngày từ CSDL và ngày hiện tại
+    const createdDate = new Date(accountCreatedDate);
+    const now = new Date();
+
+    const diffInMilliseconds = now - createdDate; //Tính khoảng cách (Tính bằng mili)
+    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24)); //Chuyển đổi kết quả mili giây thành ngày
+
+    if (diffInDays <= 7) {
+      //Nhỏ hơn 7 ngày
+      return "Mới tham gia";
+    }
+
+    //Tính tổng số tháng
+    const diffInMonths =
+      (now.getFullYear() - createdDate.getFullYear()) * 12 +
+      (now.getMonth() - createdDate.getMonth());
+
+    if (diffInMonths >= 12) {
+      //Kết quả lớn hơn 12 tháng
+      const years = Math.floor(diffInMonths / 12);
+      return years + (years === 1 ? " năm" : " năm");
+    } else if (diffInMonths > 0) {
+      //Kết quả số tháng lớn hơn 0 nhưng nhỏ hơn 12
+      return diffInMonths + (diffInMonths === 1 ? " tháng" : " tháng");
+    } else {
+      //Ngược lại lấy số ngày
+      return diffInDays + " ngày";
+    }
+  };
+
   return (
     <>
       <Header reloadCartItems={isCountCart} />
       <div className="container mt-4">
         <div className="row bg-white rounded-4">
-          <div className="col-md-4 col-lg-4 col-sm-4 border-end">
-            <div
-              id="carouselExampleDark"
-              className="carousel carousel-dark slide position-relative"
-            >
-              <div
-                className="position-absolute top-50 start-50 translate-middle rounded-3"
-                id="text-sold-out"
-                style={{
-                  display: totalQuantity === 0 ? "inline" : "none",
-                }}
-              >
-                <span className="text-white ">Hết hàng</span>
-              </div>
-
-              <div
-                className="carousel-inner align-content-center"
-                style={{ height: "575px" }}
-              >
-                {FillDetailPr &&
-                FillDetailPr.images &&
-                FillDetailPr.images.length > 0 ? (
-                  FillDetailPr.images.map((image, index) => (
-                    <div
-                      key={index}
-                      className={`carousel-item  ${
-                        index === selectedImage ? "active" : ""
-                      }`}
-                    >
-                      <div
-                        variant="outlined"
-                        onClick={() => handleClickOpen(image)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <img
-                          src={
-                            FillDetailPr
-                              ? geturlIMG(FillDetailPr.id, image.imagename)
-                              : "/images/no_img.png"
-                          }
-                          className="d-block object-fit-cover rounded-5"
-                          alt={FillDetailPr ? FillDetailPr.name : "No Image"}
-                          style={{ width: "100%", height: "100%" }}
-                        />
-                      </div>
-                      <Dialog
-                        open={open}
-                        keepMounted
-                        onClose={handleClose}
-                        aria-describedby="alert-dialog-slide-description"
-                        disableScrollLock={true}
-                        fullWidth
-                        maxWidth="xl"
-                      >
-                        <DialogContent>
-                          <img
-                            src={
-                              popUpImage
-                                ? geturlIMG(
-                                    FillDetailPr.id,
-                                    popUpImage.imagename
-                                  )
-                                : ""
-                            }
-                            className="d-block"
-                            alt={FillDetailPr ? FillDetailPr.name : "No Image"}
-                            style={{ width: "100%", height: "100%" }}
-                          />
-                        </DialogContent>
-                        <DialogActions>
-                          <Button onClick={handleClose}>Thoát</Button>
-                        </DialogActions>
-                      </Dialog>
-                    </div>
-                  ))
-                ) : (
-                  <div className="carousel-item active">
-                    <img
-                      src="/images/no_img.png"
-                      className="d-block"
-                      alt=""
-                      style={{ width: "100%", height: "400px" }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <button
-                className="carousel-control-prev"
-                type="button"
-                data-bs-target="#carouselExampleDark"
-                data-bs-slide="prev"
-                onClick={() =>
-                  handleSelectImage(
-                    (selectedImage - 1 + (FillDetailPr?.images?.length || 1)) %
-                      (FillDetailPr?.images?.length || 1)
-                  )
-                }
-              >
-                <span
-                  className="carousel-control-prev-icon"
-                  aria-hidden="true"
-                ></span>
-                <span className="visually-hidden">Previous</span>
-              </button>
-              <button
-                className="carousel-control-next"
-                type="button"
-                data-bs-target="#carouselExampleDark"
-                data-bs-slide="next"
-                onClick={() =>
-                  handleSelectImage(
-                    (selectedImage + 1) % (FillDetailPr?.images?.length || 1)
-                  )
-                }
-              >
-                <span
-                  className="carousel-control-next-icon"
-                  aria-hidden="true"
-                ></span>
-                <span className="visually-hidden">Next</span>
-              </button>
-            </div>
-            <div className="d-flex mt-2">
-              {FillDetailPr &&
-                FillDetailPr.images &&
-                FillDetailPr.images.length > 0 &&
-                FillDetailPr.images
-                  .slice(
-                    currentPage * itemsPerPage,
-                    (currentPage + 1) * itemsPerPage
-                  )
-                  .map((image, index) => (
-                    <button
-                      id="btn-children-img"
-                      key={index}
-                      type="button"
-                      data-bs-target="#carouselExampleDark"
-                      data-bs-slide-to={index}
-                      className={`carousel-indicator-button mb-2 ${
-                        index === selectedImage % itemsPerPage ? "active" : ""
-                      }`}
-                      aria-current={
-                        index === selectedImage % itemsPerPage
-                          ? "true"
-                          : "false"
-                      }
-                      aria-label={`Slide ${index + 1}`}
-                      onClick={() =>
-                        handleSelectImage(currentPage * itemsPerPage + index)
-                      }
-                    >
-                      <img
-                        src={
-                          FillDetailPr
-                            ? geturlIMG(FillDetailPr.id, image.imagename)
-                            : "/images/no_img.png"
-                        }
-                        className="img-thumbnail rounded-3"
-                        alt=""
-                        style={{ width: "100px", height: "100px" }}
-                      />
-                    </button>
-                  ))}
-            </div>
-          </div>
+          <ListImageDetailProduct
+            dataImage={FillDetailPr}
+            totalQuantity={totalQuantity}
+          />
           <div className="col-md-8 col-lg-8 col-sm-8 d-flex flex-column">
             <div className="p-3 border-bottom">
               <h1 className="fst-italic" id="productName">
@@ -688,10 +545,46 @@ const DetailProduct = () => {
           </div>
           <div className="col-lg-8 col-md-8 col-sm-8">
             <div className="row mt-4">
-              <div className="col-lg-4 col-md-4 col-sm-4">
-                <div className="d-flex justify-content-between">
-                  <label htmlFor="">Sản phẩm đã đăng bán:</label>
-                  <span>{countProductStore}</span>
+              <div className="row">
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3 border-end">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="fst-italic">Sản phẩm đã đăng bán:</label>
+                    <span className="text-primary">{countProductStore}</span>
+                  </div>
+                </div>
+
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="fst-italic">Địa chỉ:</label>
+                    <span className="text-primary">
+                      {splitByAddress(FillDetailPr?.store.address)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="fst-italic">Người theo dõi:</label>
+                    <span className="text-primary">999</span>
+                  </div>
+                </div>
+
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="fst-italic">Đã tham gia:</label>
+                    <span className="text-primary">
+                      {calculateAccountDuration(
+                        FillDetailPr?.store.createdtime
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="fst-italic">Đánh giá cửa hàng:</label>
+                    <span className="text-primary">100</span>
+                  </div>
                 </div>
               </div>
             </div>

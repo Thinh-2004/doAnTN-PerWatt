@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import axios from "../../Localhost/Custumize-axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import "./OtpStyle.css";
+import { Button } from "@mui/material";
+
 const VerifyOTP = () => {
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState(Array(6).fill(''));
+  const inputRefs = useRef([]);
+
   const navigate = useNavigate();
 
   const verifyOtp = async (e) => {
@@ -12,14 +17,11 @@ const VerifyOTP = () => {
     const email = sessionStorage.getItem("email");
 
     try {
-      const response = await axios.post(
-        "api/verify-otp",
-        {
-          otp,
-          generatedOTP,
-          email,
-        }
-      );
+      const response = await axios.post("api/verify-otp", {
+        otp: otp.join(''),
+        generatedOTP,
+        email,
+      });
       toast.success(response.data || "OTP đã được xác nhận!");
       navigate("/resetPassword");
     } catch (error) {
@@ -27,27 +29,58 @@ const VerifyOTP = () => {
     }
   };
 
+  const handleOtpChange = (event, index) => {
+    const { value } = event.target;
+    const newOtp = [...otp];
+    
+    if (value.match(/[0-9]/)) {
+      newOtp[index] = value;
+      setOtp(newOtp);
+      
+      // Move to the next input field if not the last one
+      if (index < otp.length - 1) {
+        inputRefs.current[index + 1].focus();
+      }
+    } else if (value === '') {
+      // Handle backspace
+      newOtp[index] = '';
+      setOtp(newOtp);
+
+      if (index > 0) {
+        inputRefs.current[index - 1].focus();
+      }
+    }
+  };
+
   return (
-    <div className="container" id="container">
-      <div className="form-container" id="form-container">
-        <h2 id="title">Xác nhận OTP</h2>
+    <div className="otp-container-wrapper" id="otp-container-wrapper">
+      <div className="otp-form-container" id="otp-form-container">
+        <h2 id="otp-title">Xác nhận OTP</h2>
         <form onSubmit={verifyOtp}>
-          <div className="form-group" id="form-group">
-            <label id="title-email">OTP</label>
-            <input
-              type="text"
-              placeholder="Vui lòng nhập OTP"
-              required
-              id="enter-form"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-            />
+          <div className="otp-fields-container" id="otp-fields-container">
+            {otp.map((value, index) => (
+              <input
+                key={index}
+                type="text"
+                maxLength="1"
+                className="otp-field"
+                ref={el => inputRefs.current[index] = el}
+                value={value}
+                onChange={(e) => handleOtpChange(e, index)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Backspace' && !value && index > 0) {
+                    setTimeout(() => {
+                      inputRefs.current[index - 1].focus();
+                    }, 0);
+                  }
+                }}
+              />
+            ))}
           </div>
-          <button type="submit" id="btn-submit">Xác nhận</button>
+          <Button style={{ width: "85%"}} disableElevation color="error" type="submit" variant="contained">TIẾP THEO</Button>
         </form>
       </div>
     </div>
   );
 };
-
 export default VerifyOTP;

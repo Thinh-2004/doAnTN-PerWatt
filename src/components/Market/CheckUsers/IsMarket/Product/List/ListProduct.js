@@ -37,6 +37,7 @@ const ListProduct = () => {
     try {
       const resStore = await axios.get(`/store/${idStore}`);
       const res = await axios.get(`/productStore/${resStore.data.slug}`);
+
       const filteredData = res.data.filter((product) => {
         const searchTerm = debounceSearch.toLowerCase();
         // Kiểm tra nếu sản phẩm có ID danh mục
@@ -70,7 +71,6 @@ const ListProduct = () => {
       setFetchData(res.data);
       // setFillDetail(dataWithDetails);
       setFill(dataWithDetails);
-      setLoading(false);
     } catch (error) {
       console.log(error);
       setLoading(true);
@@ -79,34 +79,35 @@ const ListProduct = () => {
   };
 
   useEffect(() => {
-    loadData();
-  }, [debounceSearch, idCateOption]);
+    setLoading(true);
+    const timer = setTimeout(() => {
+      loadData();
+      setLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [debounceSearch, idCateOption, isFilterQuantitySoldOut]);
 
   useEffect(() => {
-    setLoading(true);
+    // setLoading(true);
     if (search) {
       setIdCateOption(null);
       setIsFilterQuantitySoldOut(false);
     }
-    setLoading(false);
+    // setLoading(false);
   }, [search]);
 
   useEffect(() => {
-    setLoading(true);
     if (idCateOption) {
       setSearch("");
       setIsFilterQuantitySoldOut(false);
     }
-    setLoading(false);
   }, [idCateOption]);
 
   useEffect(() => {
-    setLoading(true);
     if (isFilterQuantitySoldOut) {
       setSearch("");
       setIdCateOption(null);
     }
-    setLoading(false);
   }, [isFilterQuantitySoldOut]);
 
   const handleSort = useCallback(
@@ -275,12 +276,12 @@ const ListProduct = () => {
           <div className="mt-4 mb-4 d-flex justify-content-center">
             <l-bouncy size="60" speed="0.75" color="black"></l-bouncy>
           </div>
-        ) : fetchData.length === 0 ? (
+        ) : fetchData.length === 0 && !fill ? (
           <>
             <hr />
             <h1 className="text-center">Bạn chưa đăng bán sản phẩm.</h1>
           </>
-        ) : paginatedData.length === 0 ? (
+        ) : paginatedData.length === 0 && search !== "" ? (
           <>
             <hr />
             <h1 className="text-center">Sản phẩm bạn tìm không tồn tại.</h1>

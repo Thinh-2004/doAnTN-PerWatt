@@ -1,14 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import useSession from "../../../Session/useSession";
 import axios from "../../../Localhost/Custumize-axios";
-import Header from "../../Header/Header";
 import { Button } from "@mui/material";
 
 const Successful = () => {
   const [products, setProducts] = useState([]);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("6");
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
@@ -18,27 +15,6 @@ const Successful = () => {
   const vnp_OrderInfo = query.get("vnp_OrderInfo");
   const addressIds = vnp_OrderInfo.split(",").pop().trim();
   const cartIds = vnp_OrderInfo.split(",").slice(0, -1).join(",").trim();
-
-  // Sử dụng ref để kiểm soát việc gọi API
-  const hasCalledAPI = useRef(false);
-
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        if (cartIds) {
-          const response = await axios.get(`/cart?id=${cartIds}`);
-          setProducts(response.data);
-        }
-      } catch (error) {
-        console.error(
-          "Error fetching data:",
-          error.response ? error.response.data : error.message
-        );
-      }
-    };
-
-    loadProducts();
-  }, [cartIds]);
 
   const groupByStore = (products) => {
     return products.reduce((groups, product) => {
@@ -55,23 +31,30 @@ const Successful = () => {
   };
 
   useEffect(() => {
-    const handleOrderVNPay = async () => {
-      // Kiểm tra nếu đã gọi API thì không gọi lại
-      if (hasCalledAPI.current) {
-        return;
-      }
-
+    (async () => {
       try {
-        // Nhóm các sản phẩm theo storeId
+        const response = await axios.get(`/cart?id=${cartIds}`);
+        setProducts(response.data);
+      } catch (error) {
+        console.error(
+          "Error fetching data:",
+          error.response ? error.response.data : error.message
+        );
+      }
+    })();
+  }, [user.id]);
+
+  useEffect(() => {
+    (async () => {
+      try {
         const groupedProducts = groupByStore(products);
 
-        // Lặp qua từng nhóm cửa hàng và tạo đơn hàng riêng biệt
         for (const storeId in groupedProducts) {
-          const { store, products: storeProducts } = groupedProducts[storeId];
+          const { products: storeProducts } = groupedProducts[storeId];
 
           const order = {
             user: { id: user.id },
-            paymentmethod: { id: selectedPaymentMethod },
+            paymentmethod: { tyle: "Thanh toán bằng VN Pay" },
             shippinginfor: { id: addressIds },
             store: { id: storeId },
             paymentdate: new Date().toISOString(),
@@ -83,35 +66,21 @@ const Successful = () => {
             quantity: product.quantity,
             price: product.productDetail.price,
           }));
-
-          console.log(order);
-          console.log(orderDetails);
-
+          //00 = thành công
           if (statusVNPay === "00") {
-            // Đánh dấu đã gọi API
-            hasCalledAPI.current = true;
-
-            // Tạo đơn hàng cho từng cửa hàng
-            const response = await axios.post("/api/payment/createVnPayOrder", {
+            await axios.post("/api/payment/createVnPayOrder", {
               order,
               orderDetails,
             });
           } else {
-            console.log("bug");
             return;
           }
         }
       } catch (error) {
-        // toast.error("Đặt hàng thất bại!");
         console.log(error);
       }
-    };
-
-    // Chỉ gọi handleOrderVNPay nếu statusVNPay là "00"
-    if (statusVNPay === "00") {
-      handleOrderVNPay();
-    }
-  }, [products, selectedPaymentMethod, addressIds, statusVNPay, user.id]);
+    })();
+  }, [products]);
 
   return (
     <div>
@@ -121,7 +90,7 @@ const Successful = () => {
             <div className="card text-center">
               <div className="card-body">
                 <div className="col-12">
-                  <img src="/images/7efs.gif" alt="Thanh toán thành công" />
+                  <img src="/images/7efs.gif" alt="" />
                 </div>
                 <h1>Thanh toán thành công</h1>
                 <div className="my-5">
@@ -159,7 +128,7 @@ const Successful = () => {
             <div className="card text-center">
               <div className="card-body">
                 <div className="col-12">
-                  <img src="/images/cancelVNPAY.jpg" alt="Đơn hàng bị hủy" />
+                  <img src="/images/4Bmb.gif" alt="" />
                 </div>
                 <h1 className="mt-5">Bạn đã hủy đơn hàng</h1>
                 <div className="my-5">

@@ -14,7 +14,6 @@ import { Link } from "react-router-dom";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import FormSelectAdress from "../../APIAddressVN/FormSelectAdress";
 
 const Register = ({ onRegisterSuccess }) => {
   const [formUser, setFormUser] = useState({
@@ -35,17 +34,6 @@ const Register = ({ onRegisterSuccess }) => {
   const [showPasswordConfig, setShowPasswordConfig] = React.useState(false);
   const [isFocusedPass, setIsFocusedPass] = useState(false);
   const [isFocusedPassCofig, setIsFocusedPassCofig] = useState(false);
-
-  //dữ liệu từ FormSelectAddress
-  const [apiAddress, setApiAddress] = useState("");
-
-  //Kiểm tra điều kiện reset components con
-  const [isReset, setIsReset] = useState(false);
-
-  const handleDataApiAddress = (data) => {
-    setApiAddress(data);
-    // console.log(data);
-  };
 
   const handleChange = (e) => {
     // Kiểm tra nếu `e` là một sự kiện (từ các input khác), xử lý bình thường
@@ -167,11 +155,6 @@ const Register = ({ onRegisterSuccess }) => {
         return false;
       }
 
-      if (apiAddress === null || apiAddress === "") {
-        toast.warning("Hãy chọn thông tin địa chỉ đầy đủ.");
-        return false;
-      }
-
       if (!check) {
         toast.warning("Bạn chưa chấp nhận điều khoản và dịch vụ của chúng tôi");
         return false;
@@ -196,7 +179,7 @@ const Register = ({ onRegisterSuccess }) => {
           role: {
             id: formUser.role,
           },
-          address: apiAddress,
+          address: null,
           phone: formUser.phone,
         };
         const res = await axios.post("/user", userToSend);
@@ -220,7 +203,6 @@ const Register = ({ onRegisterSuccess }) => {
             configPassWord: "",
             check: false,
           });
-          setIsReset(true);
           if (onRegisterSuccess) {
             onRegisterSuccess();
           }
@@ -260,6 +242,9 @@ const Register = ({ onRegisterSuccess }) => {
   return (
     <form onSubmit={handleRegister} className="form-sign">
       <h2 className="title">Đăng Ký</h2>
+      <p className="subject">
+        Đăng ký tài khoản để được trải nghiệm hết các tính năng của chúng tôi!!!
+      </p>
       <div className="row">
         <div className="col-lg-12">
           <div className="mb-3">
@@ -272,14 +257,6 @@ const Register = ({ onRegisterSuccess }) => {
               label="Nhập họ tên"
               variant="standard"
             />
-            {/* <input
-              type="text"
-              name="fullname"
-              value={formUser.fullname}
-              onChange={handleChange}
-              placeholder="Nhập họ và tên"
-              className="form-control"
-            /> */}
           </div>
           <div className="mb-3">
             <TextField
@@ -291,14 +268,6 @@ const Register = ({ onRegisterSuccess }) => {
               label="Nhập email"
               variant="standard"
             />
-            {/* <input
-              type="text"
-              name="email"
-              value={formUser.email}
-              onChange={handleChange}
-              placeholder="Email"
-              className="form-control"
-            /> */}
           </div>
           <div className="d-flex justify-content-start">
             <div>
@@ -346,13 +315,6 @@ const Register = ({ onRegisterSuccess }) => {
                 }}
               />
             </LocalizationProvider>
-            {/* <input
-              type="date"
-              name="birthdate"
-              value={formUser.birthdate}
-              onChange={handleChange}
-              className="form-control"
-            /> */}
           </div>
           <div className="mb-3">
             <TextField
@@ -364,14 +326,6 @@ const Register = ({ onRegisterSuccess }) => {
               id="phone-basic"
               variant="standard"
             />
-            {/* <input
-              type="text"
-              name="phone"
-              value={formUser.phone}
-              onChange={handleChange}
-              placeholder="Nhập số điện thoại"
-              className="form-control"
-            /> */}
           </div>
         </div>
         <div className="col-lg-12">
@@ -405,14 +359,6 @@ const Register = ({ onRegisterSuccess }) => {
                     }
                   />
                 </FormControl>
-                {/* <input
-                  type="password"
-                  name="password"
-                  value={formUser.password}
-                  onChange={handleChange}
-                  placeholder="Mật khẩu"
-                  className="form-control"
-                /> */}
               </div>
             </div>
             <div className="col-lg-6">
@@ -448,43 +394,16 @@ const Register = ({ onRegisterSuccess }) => {
                     }
                   />
                 </FormControl>
-                {/* <input
-                  type="password"
-                  onChange={handleChange}
-                  value={formUser.configPassWord}
-                  name="configPassWord"
-                  placeholder="Nhập lại mk"
-                  className="form-control mb-3"
-                /> */}
               </div>
             </div>
           </div>
           {/* <div className="mb-3">
-            <TextField
-              fullWidth
-              name="address"
-              value={formUser.address}
-              onChange={handleChange}
-              id="outlined-multiline-static"
-              label="Nhập địa chỉ của bạn"
-              multiline
-              rows={2}
-            />
-            <textarea
-              name="address"
-              value={formUser.address}
-              onChange={handleChange}
-              className="form-control"
-              placeholder="Nhập địa chỉ của bạn"
-            ></textarea>
-          </div> */}
-          <div className="mb-3">
             <FormSelectAdress
               apiAddress={handleDataApiAddress}
               resetForm={isReset}
             />
-          </div>
-          <div className="p-0 m-0 d-flex justify-content-center">
+          </div> */}
+          <div className="p-0 m-0 d-flex justify-content-start">
             <input
               type="checkbox"
               className="form-check me-2"
@@ -499,7 +418,7 @@ const Register = ({ onRegisterSuccess }) => {
           </div>
         </div>
       </div>
-      <button type="submit" className="button">
+      <button type="submit" className="button w-100">
         Đăng ký
       </button>
     </form>

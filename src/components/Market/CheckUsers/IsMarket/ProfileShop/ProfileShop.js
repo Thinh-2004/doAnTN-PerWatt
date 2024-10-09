@@ -19,10 +19,12 @@ const ProfileShop = () => {
   const idStore = localStorage.getItem("idStore");
   const [dataStore, setDataStore] = useState({
     namestore: "",
+    showAddress: "",
     address: "",
     email: "",
     phone: "",
     cccdnumber: "",
+    createdtime : "",
     imgbackgound: "",
     user: user.id,
     taxcode: "",
@@ -44,7 +46,16 @@ const ProfileShop = () => {
   const loadData = async () => {
     try {
       const res = await axios.get(`store/${idStore}`);
-      setDataStore(res.data);
+
+      //Hàm cắt chuỗi địa chỉ để hiển thị
+      const parts = res.data?.address.split(",");
+      if (parts?.length > 0) {
+        setDataStore({
+          ...res.data,
+          address: parts[0] + "," + parts[1],
+          showAddress: res.data.address,
+        });
+      }
 
       const apiCheckTaxCode = await axios.get(`/business/${res.data.taxcode}`);
       setDataTaxCode(apiCheckTaxCode.data.data);
@@ -89,6 +100,14 @@ const ProfileShop = () => {
 
     if (namestore.length < 10) {
       toast.warning("Tên cửa hàng phải tối thiểu 10 kí tự");
+      return false;
+    }
+
+    if (dataAddress === "" || dataAddress === null) {
+      toast.warning("Hãy chọn địa chỉ đầy đủ");
+      return false;
+    } else if (address === "" || address === null) {
+      toast.warning("Đường hoặc số nhà không được để trống");
       return false;
     }
 
@@ -141,10 +160,11 @@ const ProfileShop = () => {
           JSON.stringify({
             id: idStore,
             namestore: dataStore.namestore,
-            address: dataAddress,
+            address: dataStore.address + ", " + dataAddress,
             email: dataStore.email,
             phone: dataStore.phone,
             cccdnumber: dataStore.cccdnumber,
+            createdtime : dataStore.createdtime,
             user: {
               id: user.id,
             },
@@ -155,6 +175,7 @@ const ProfileShop = () => {
         if (dataStore.imgbackgound instanceof File) {
           formData.append("imgbackgound", dataStore.imgbackgound);
         }
+        console.log(formData);
 
         await axios.put(`/store/${idStore}`, formData, {
           headers: {
@@ -221,7 +242,7 @@ const ProfileShop = () => {
 
   const handleDataAddress = (data) => {
     setDataAddress(data);
-    console.log(data);
+    // console.log(data);
   };
 
   return (
@@ -277,31 +298,34 @@ const ProfileShop = () => {
                     <TextField
                       id="outlined-read-only-input"
                       label="Địa chỉ cửa hàng"
-                      defaultValue={dataStore.address}
                       multiline
                       rows={4}
                       fullWidth
-                      name="address"
-                      value={dataStore.address}
                       slotProps={{
                         input: {
                           readOnly: true,
                         },
                       }}
+                      // defaultValue={dataStore.address}
+                      value={dataStore.showAddress}
                     />
-                    {/* <textarea
-                    name="address"
-                    className="form-control"
-                    placeholder="Địa chỉ cửa hàng"
-                    rows={8}
-                    value={dataStore.address}
-                    onChange={handleInputChange}
-                  ></textarea> */}
                   </div>
                   <div className="mb-3">
                     <FormSelectAdress
-                      editFormAddress={dataStore.address}
+                      editFormAddress={dataStore.showAddress}
                       apiAddress={handleDataAddress}
+                    />
+                    <TextField
+                      className="mt-3"
+                      id="outlined-multiline-static"
+                      label="Đường/Số nhà"
+                      multiline
+                      placeholder="Ví dụ: Số nhà 123, Đường ABC,"
+                      rows={2}
+                      name="address"
+                      value={dataStore.address}
+                      onChange={handleInputChange}
+                      fullWidth
                     />
                   </div>
                 </div>
@@ -522,7 +546,7 @@ const ProfileShop = () => {
                     value={dataTaxCode?.address}
                     onChange={handleInputChange}
                     id="outlined-multiline-static"
-                    label="Multiline"
+                    label="Địa chỉ"
                     multiline
                     rows={2}
                     InputProps={{
