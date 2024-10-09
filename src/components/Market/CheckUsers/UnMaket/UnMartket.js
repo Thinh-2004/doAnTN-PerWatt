@@ -10,6 +10,7 @@ import AttachEmailIcon from "@mui/icons-material/AttachEmail";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import BusinessIcon from "@mui/icons-material/Business";
 import SubtitlesIcon from "@mui/icons-material/Subtitles";
+import FormSelectAdress from "../../../APIAddressVN/FormSelectAdress";
 
 const UnMatket = () => {
   const user = localStorage.getItem("user")
@@ -19,7 +20,6 @@ const UnMatket = () => {
   const changeLink = useNavigate();
   const [formStore, setFormStore] = useState({
     namestore: "",
-    address: "",
     email: "",
     phone: "",
     cccdnumber: "",
@@ -29,6 +29,17 @@ const UnMatket = () => {
     taxcode: "",
   });
 
+  //Kiểm tra điều kiện reset components con
+  const [isReset, setIsReset] = useState(false);
+  
+  //Dữ liệu từ FormSelectAddress
+  const [apiAddress, setApiAddress] = useState("")
+
+  const handleDataApiAddress = (data) => {
+    setApiAddress(data);
+    console.log(data);
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormStore((prevFormStore) => ({
@@ -37,6 +48,7 @@ const UnMatket = () => {
     }));
   };
 
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -62,6 +74,7 @@ const UnMatket = () => {
         // Tạo đối tượng để gửi đến backend
         const storeToSend = {
           ...formStore,
+          address : apiAddress,
           user: {
             id: formStore.user,
           },
@@ -124,12 +137,12 @@ const UnMatket = () => {
   };
 
   const validate = () => {
-    const { namestore, address, email, phone, cccdnumber, taxcode } = formStore;
+    const { namestore, email, phone, cccdnumber, taxcode } = formStore;
     //Biểu thức chính quy
     const pattenPhone = /0[0-9]{9}/;
     const pattenEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const pattenCccd = /^[0-9]{9,12}$/; // Ví dụ kiểm tra số CCCD gồm 9-12 chữ số
-    if (!namestore && !address && !email && !phone && !cccdnumber) {
+    if (!namestore && !email && !phone && !cccdnumber) {
       toast.warning("Cần nhập tất cả thông tin");
       return false;
     } else {
@@ -165,8 +178,8 @@ const UnMatket = () => {
         return false;
       }
 
-      if (address === "") {
-        toast.warning("Vui lòng nhập địa chỉ cửa hàng");
+      if (apiAddress === "" || apiAddress === null) {
+        toast.warning("Vui lòng chọn địa chỉ đầy đủ");
         return false;
       }
 
@@ -183,7 +196,6 @@ const UnMatket = () => {
   const handleReset = () => {
     setFormStore({
       namestore: "",
-      address: "",
       email: "",
       phone: "",
       cccdnumber: "",
@@ -192,6 +204,7 @@ const UnMatket = () => {
       user: user.id,
       taxcode: "",
     });
+    setIsReset(true);
   };
 
   return (
@@ -213,7 +226,7 @@ const UnMatket = () => {
               <div className="col-lg-12">
                 <div className="card-body">
                   <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
+                    <div className="mb-4">
                       {/* <input
                         type="text"
                         name="namestore"
@@ -243,7 +256,7 @@ const UnMatket = () => {
                         />
                       </Box>
                     </div>
-                    <div className="mb-3">
+                    <div className="mb-4">
                       {/* <input
                         type="text"
                         name="phone"
@@ -273,7 +286,7 @@ const UnMatket = () => {
                         />
                       </Box>
                     </div>
-                    <div className="mb-3">
+                    <div className="mb-4">
                       {/* <input
                         type="email"
                         name="email"
@@ -303,7 +316,7 @@ const UnMatket = () => {
                         />
                       </Box>
                     </div>
-                    <div className="mb-3">
+                    <div className="mb-4">
                       {/* <input
                         type="text"
                         name="cccdnumber"
@@ -333,7 +346,7 @@ const UnMatket = () => {
                         />
                       </Box>
                     </div>
-                    <div className="mb-3">
+                    <div className="mb-4">
                       {/* <textarea
                         name="address"
                         placeholder="Nhập địa chỉ của bạn"
@@ -341,7 +354,7 @@ const UnMatket = () => {
                         value={formStore.address}
                         onChange={handleChange}
                       ></textarea> */}
-                      <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                      <Box sx={{ display: "flex", alignItems: "flex-start" }}>
                         <BusinessIcon
                           sx={{
                             color: "action.active",
@@ -350,7 +363,7 @@ const UnMatket = () => {
                             fontSize: "25px",
                           }}
                         />
-                        <TextField
+                        {/* <TextField
                           id="outlined-multiline-static"
                           label="Nhập địa chỉ cửa hàng"
                           multiline
@@ -359,10 +372,11 @@ const UnMatket = () => {
                           value={formStore.address}
                           onChange={handleChange}
                           fullWidth
-                        />
+                        /> */}
+                        <FormSelectAdress apiAddress={handleDataApiAddress} resetForm={isReset} />
                       </Box>
                     </div>
-                    <div className="mb-3">
+                    <div className="mb-4">
                       {/* <textarea
                         name="address"
                         placeholder="Nhập địa chỉ của bạn"

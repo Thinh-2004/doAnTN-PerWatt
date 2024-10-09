@@ -87,8 +87,8 @@ const ListProduct = () => {
     if (search) {
       setIdCateOption(null);
       setIsFilterQuantitySoldOut(false);
-      setLoading(false);
     }
+    setLoading(false);
   }, [search]);
 
   useEffect(() => {
@@ -96,8 +96,8 @@ const ListProduct = () => {
     if (idCateOption) {
       setSearch("");
       setIsFilterQuantitySoldOut(false);
-      setLoading(false);
     }
+    setLoading(false);
   }, [idCateOption]);
 
   useEffect(() => {

@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import FormSelectAdress from "../../APIAddressVN/FormSelectAdress";
 
 const Register = ({ onRegisterSuccess }) => {
   const [formUser, setFormUser] = useState({
@@ -28,12 +29,25 @@ const Register = ({ onRegisterSuccess }) => {
     configPassWord: "",
     check: false,
   });
+
+  //Hidden or show pass
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfig, setShowPasswordConfig] = React.useState(false);
   const [isFocusedPass, setIsFocusedPass] = useState(false);
   const [isFocusedPassCofig, setIsFocusedPassCofig] = useState(false);
 
-  const  handleChange = (e) => {
+  //dữ liệu từ FormSelectAddress
+  const [apiAddress, setApiAddress] = useState("");
+
+  //Kiểm tra điều kiện reset components con
+  const [isReset, setIsReset] = useState(false);
+
+  const handleDataApiAddress = (data) => {
+    setApiAddress(data);
+    // console.log(data);
+  };
+
+  const handleChange = (e) => {
     // Kiểm tra nếu `e` là một sự kiện (từ các input khác), xử lý bình thường
     if (e?.target) {
       const { name, value, type, checked } = e.target;
@@ -58,7 +72,6 @@ const Register = ({ onRegisterSuccess }) => {
       email,
       birthdate,
       gender,
-      address,
       phone,
       configPassWord,
       check,
@@ -74,7 +87,6 @@ const Register = ({ onRegisterSuccess }) => {
       !email &&
       !birthdate &&
       !gender &&
-      !address &&
       !phone &&
       !check
     ) {
@@ -155,8 +167,8 @@ const Register = ({ onRegisterSuccess }) => {
         return false;
       }
 
-      if (!address) {
-        toast.warning("Hãy nhập địa chỉ");
+      if (apiAddress === null || apiAddress === "") {
+        toast.warning("Hãy chọn thông tin địa chỉ đầy đủ.");
         return false;
       }
 
@@ -184,7 +196,7 @@ const Register = ({ onRegisterSuccess }) => {
           role: {
             id: formUser.role,
           },
-          address: formUser.address,
+          address: apiAddress,
           phone: formUser.phone,
         };
         const res = await axios.post("/user", userToSend);
@@ -197,9 +209,6 @@ const Register = ({ onRegisterSuccess }) => {
             autoClose: 5000,
             closeButton: true,
           });
-          if (onRegisterSuccess) {
-            onRegisterSuccess();
-          }
           setFormUser({
             fullname: "",
             password: "",
@@ -207,11 +216,14 @@ const Register = ({ onRegisterSuccess }) => {
             birthdate: "",
             gender: "",
             role: 3, // Vai trò buyer
-            address: "",
             phone: "",
             configPassWord: "",
             check: false,
           });
+          setIsReset(true);
+          if (onRegisterSuccess) {
+            onRegisterSuccess();
+          }
         }, 2000);
       } catch (error) {
         console.error("Error response:", error.response);
@@ -324,15 +336,11 @@ const Register = ({ onRegisterSuccess }) => {
               <DatePicker
                 format="DD/MM/YYYY"
                 name="birthdate"
-                value={
-                  formUser.birthdate
-                    ? dayjs(formUser.birthdate)
-                    : null
-                } // Chuyển đổi múi giờ về Việt Nam
+                value={formUser.birthdate ? dayjs(formUser.birthdate) : null} // Chuyển đổi múi giờ về Việt Nam
                 onChange={handleChange}
                 sx={{
                   "& .MuiInputBase-root": {
-                    width: "320px",
+                    width: "400px",
                     height: "40px",
                   },
                 }}
@@ -367,10 +375,10 @@ const Register = ({ onRegisterSuccess }) => {
           </div>
         </div>
         <div className="col-lg-12">
-          <div className="row">
+          <div className="row mb-3">
             <div className="col-lg-6">
               <div className="mb-3">
-                <FormControl sx={{ m: 1 }} variant="standard" fullWidth>
+                <FormControl variant="standard" fullWidth>
                   <InputLabel htmlFor="enterPass-adornment-password">
                     Nhập mật khẩu
                   </InputLabel>
@@ -409,7 +417,7 @@ const Register = ({ onRegisterSuccess }) => {
             </div>
             <div className="col-lg-6">
               <div className="mb-3">
-                <FormControl sx={{ m: 1 }} variant="standard" fullWidth>
+                <FormControl variant="standard" fullWidth>
                   <InputLabel htmlFor="enterConfig-adornment-password">
                     Xác thực mật khẩu
                   </InputLabel>
@@ -451,7 +459,7 @@ const Register = ({ onRegisterSuccess }) => {
               </div>
             </div>
           </div>
-          <div className="mb-3">
+          {/* <div className="mb-3">
             <TextField
               fullWidth
               name="address"
@@ -462,15 +470,21 @@ const Register = ({ onRegisterSuccess }) => {
               multiline
               rows={2}
             />
-            {/* <textarea
+            <textarea
               name="address"
               value={formUser.address}
               onChange={handleChange}
               className="form-control"
               placeholder="Nhập địa chỉ của bạn"
-            ></textarea> */}
+            ></textarea>
+          </div> */}
+          <div className="mb-3">
+            <FormSelectAdress
+              apiAddress={handleDataApiAddress}
+              resetForm={isReset}
+            />
           </div>
-          <div className="p-0 m-0 d-flex">
+          <div className="p-0 m-0 d-flex justify-content-center">
             <input
               type="checkbox"
               className="form-check me-2"

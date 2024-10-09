@@ -10,6 +10,7 @@ import { BadgeOutlined, PhoneCallback } from "@mui/icons-material";
 import SubtitlesOutlinedIcon from "@mui/icons-material/SubtitlesOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import BusinessIcon from "@mui/icons-material/Business";
+import FormSelectAdress from "../../../../APIAddressVN/FormSelectAdress";
 
 const ProfileShop = () => {
   const user = localStorage.getItem("user")
@@ -25,7 +26,7 @@ const ProfileShop = () => {
     imgbackgound: "",
     user: user.id,
     taxcode: "",
-    slug : "",
+    slug: "",
   });
   const [dataTaxCode, setDataTaxCode] = useState({
     name: "",
@@ -36,6 +37,9 @@ const ProfileShop = () => {
   const geturlIMG = (storeId, filename) => {
     return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
   };
+
+  //Satet lữu dữ liệu của formSelectAddress
+  const [dataAddress, setDataAddress] = useState("");
 
   const loadData = async () => {
     try {
@@ -135,9 +139,9 @@ const ProfileShop = () => {
         formData.append(
           "store",
           JSON.stringify({
-            id : idStore,
+            id: idStore,
             namestore: dataStore.namestore,
-            address: dataStore.address,
+            address: dataAddress,
             email: dataStore.email,
             phone: dataStore.phone,
             cccdnumber: dataStore.cccdnumber,
@@ -145,7 +149,7 @@ const ProfileShop = () => {
               id: user.id,
             },
             taxcode: dataStore.taxcode,
-            slug : dataStore.slug,
+            slug: dataStore.slug,
           })
         );
         if (dataStore.imgbackgound instanceof File) {
@@ -215,6 +219,11 @@ const ProfileShop = () => {
     width: 1,
   });
 
+  const handleDataAddress = (data) => {
+    setDataAddress(data);
+    console.log(data);
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="card mt-4 p-3">
@@ -235,7 +244,7 @@ const ProfileShop = () => {
             <div className="col-lg-6 col-md-6 col-sm-6 border-end">
               <div className="row">
                 <div className="col-lg-12 col-md-12 col-sm-12">
-                  <div className="mb-3">
+                  <div className="mb-4">
                     <Box sx={{ display: "flex", alignItems: "flex-end" }}>
                       <StoreIcon
                         sx={{
@@ -266,15 +275,19 @@ const ProfileShop = () => {
                   </div>
                   <div className="mb-3">
                     <TextField
-                      id="outlined-multiline-static"
+                      id="outlined-read-only-input"
                       label="Địa chỉ cửa hàng"
+                      defaultValue={dataStore.address}
                       multiline
-                      rows={9}
+                      rows={4}
                       fullWidth
-                      defaultValue="Địa chỉ cửa hàng"
                       name="address"
                       value={dataStore.address}
-                      onChange={handleInputChange}
+                      slotProps={{
+                        input: {
+                          readOnly: true,
+                        },
+                      }}
                     />
                     {/* <textarea
                     name="address"
@@ -284,6 +297,12 @@ const ProfileShop = () => {
                     value={dataStore.address}
                     onChange={handleInputChange}
                   ></textarea> */}
+                  </div>
+                  <div className="mb-3">
+                    <FormSelectAdress
+                      editFormAddress={dataStore.address}
+                      apiAddress={handleDataAddress}
+                    />
                   </div>
                 </div>
               </div>

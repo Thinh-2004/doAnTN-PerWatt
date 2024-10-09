@@ -4,9 +4,9 @@
  
   .container-login {
     position: relative;
-    width: 880px;
+    width: 980px;
     max-width: 100%;
-    min-height: 630px;
+    min-height: 730px;
     background: #fff;
     border-radius: 10px;
     overflow: hidden;
@@ -37,7 +37,7 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    padding: 0 50px;
+    padding: 0 30px;
     height: 100%;
     text-align: center;
   }

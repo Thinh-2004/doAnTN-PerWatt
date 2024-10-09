@@ -9,7 +9,6 @@ import axios from "../../../../../../Localhost/Custumize-axios";
 import { Button, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DetailProduct from "../../DetailProduct/DetailProduct";
-import { message } from "antd";
 
 const FormProduct = () => {
   const idStore = localStorage.getItem("idStore");
