@@ -1,62 +1,76 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import "./ListProductStyle.css";
 import axios from "../../../../../../Localhost/Custumize-axios";
-import useSession from "../../../../../../Session/useSession";
+
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import { bouncy } from "ldrs";
-import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableSortLabel,
-  TablePagination,
-  TextField,
-} from "@mui/material";
+import { Paper, TableContainer, TablePagination } from "@mui/material";
 import useDebounce from "../../../../../../CustumHook/useDebounce";
+
+import ProductTable from "./ProductTable";
+import ToolbarListProduct from "./ToolbarListProduct";
 
 bouncy.register();
 
 const ListProduct = () => {
   const [fill, setFill] = useState([]); // giá trị để fill Pro vào bảng
   const [fetchData, setFetchData] = useState([]); //giá trị check === 0
-  const [idStore] = useSession("idStore");
+  const idStore = localStorage.getItem("idStore");
   const [loading, setLoading] = useState(true);
-  const [order, setOrder] = useState("asc"); // 'asc' or 'desc'
-  const [orderBy, setOrderBy] = useState("price"); // Sorting by price
+  const [order, setOrder] = useState("desc"); // 'asc' or 'desc'
+  const [orderBy, setOrderBy] = useState("name"); // Sorting by price
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  //Tìm kiếm
   const [search, setSearch] = useState("");
   const debounceSearch = useDebounce(search, 500);
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
+  //Chọn option danh mục sản phẩm
+  const [idCateOption, setIdCateOption] = useState("");
 
-  const formatPrice = (value) => {
-    if (!value) return "";
-    return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
-  };
+  const [isFilterQuantitySoldOut, setIsFilterQuantitySoldOut] = useState(false); //Trạng thái lọc quantity sold out
 
   const loadData = async () => {
     try {
-      const res = await axios.get(`/productStore/${idStore}`);
+      const resStore = await axios.get(`/store/${idStore}`);
+      const res = await axios.get(`/productStore/${resStore.data.slug}`);
+
       const filteredData = res.data.filter((product) => {
         const searchTerm = debounceSearch.toLowerCase();
+        // Kiểm tra nếu sản phẩm có ID danh mục
+        const categoryMatch = idCateOption
+          ? product.productcategory &&
+            product.productcategory.id === idCateOption
+          : true; // Nếu không có ID danh mục, không lọc theo danh mục
         return (
-          product.name.toLowerCase().includes(searchTerm) ||
-          product.productcategory.name.toLowerCase().includes(searchTerm) ||
-          product.trademark.name.toLowerCase().includes(searchTerm)
+          (product.name.toLowerCase().includes(searchTerm) ||
+            (product.productcategory &&
+              product.productcategory.name
+                .toLowerCase()
+                .includes(searchTerm)) ||
+            (product.trademark &&
+              product.trademark.name.toLowerCase().includes(searchTerm))) &&
+          categoryMatch // Thêm điều kiện lọc theo ID danh mục
         );
       });
+
+      // Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm và lưu vào productDetails
+      const dataWithDetails = await Promise.all(
+        filteredData.map(async (product) => {
+          const resDetail = await axios.get(`/detailProduct/${product.id}`);
+          return {
+            ...product,
+            productDetails: resDetail.data, // Lưu chi tiết sản phẩm vào mỗi sản phẩm
+          };
+        })
+      );
+
       setFetchData(res.data);
-      setFill(filteredData);
-      setLoading(false);
+      // setFillDetail(dataWithDetails);
+      setFill(dataWithDetails);
     } catch (error) {
       console.log(error);
       setLoading(true);
@@ -64,20 +78,46 @@ const ListProduct = () => {
     }
   };
 
-  // const loadDetailProduct = async () => {
-  //   const res = await axios.get(`/detailProduct/14`)
-  //   console.log(res.data);
-  // }
+  useEffect(() => {
+    setLoading(true);
+    const timer = setTimeout(() => {
+      loadData();
+      setLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [debounceSearch, idCateOption, isFilterQuantitySoldOut]);
 
   useEffect(() => {
-    loadData();
-  }, [idStore, debounceSearch]);
+    // setLoading(true);
+    if (search) {
+      setIdCateOption(null);
+      setIsFilterQuantitySoldOut(false);
+    }
+    // setLoading(false);
+  }, [search]);
 
-  const handleSort = (property) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
+  useEffect(() => {
+    if (idCateOption) {
+      setSearch("");
+      setIsFilterQuantitySoldOut(false);
+    }
+  }, [idCateOption]);
+
+  useEffect(() => {
+    if (isFilterQuantitySoldOut) {
+      setSearch("");
+      setIdCateOption(null);
+    }
+  }, [isFilterQuantitySoldOut]);
+
+  const handleSort = useCallback(
+    (property) => {
+      const isAsc = orderBy === property && order === "asc";
+      setOrder(isAsc ? "desc" : "asc");
+      setOrderBy(property);
+    },
+    [order, orderBy]
+  );
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -119,18 +159,92 @@ const ListProduct = () => {
     });
   };
 
-  const sortedData = fill.slice().sort((a, b) => {
-    if (order === "asc") {
-      return a[orderBy] > b[orderBy] ? 1 : -1;
-    } else {
-      return a[orderBy] < b[orderBy] ? 1 : -1;
-    }
+  // Xử lý dữ liệu
+  const mergedData = fill.map((product) => {
+    //Sắp xếp Tăng Giảm theo giá
+    const productDetailsSorted = product.productDetails
+      ? product.productDetails.slice().sort((a, b) => {
+          if (order === "asc") {
+            return a.price > b.price ? 1 : -1;
+          } else {
+            return a.price < b.price ? 1 : -1;
+          }
+        })
+      : [];
+
+    //sắp xếp giá lớn nhất
+    const maxPrice = productDetailsSorted.length
+      ? Math.max(...productDetailsSorted.map((detail) => detail.price))
+      : 0;
+
+    //Tổng số lượng
+    const totalQuantity = productDetailsSorted.reduce(
+      (total, detailQuantity) => total + detailQuantity.quantity,
+      0
+    );
+
+    return {
+      ...product,
+      productDetails: productDetailsSorted,
+      maxPrice,
+      totalQuantity,
+    };
   });
 
+  const filteredData = mergedData.filter(
+    (product) => product.totalQuantity === 0
+  );
+
+  //Sử dụng useMeMo tránh việc tính toán lại các array dependencies
+  const sortedData = useMemo(() => {
+    if (isFilterQuantitySoldOut) {
+      return filteredData.slice().sort((a, b) => {
+        if (orderBy === "name") {
+          return order === "asc" ? a.id - b.id : b.id - a.id;
+        } else if (orderBy === "maxPrice") {
+          return order === "asc"
+            ? a.maxPrice - b.maxPrice
+            : b.maxPrice - a.maxPrice;
+        } else if (orderBy === "quantity") {
+          return order === "asc"
+            ? a.totalQuantity - b.totalQuantity
+            : b.totalQuantity - a.totalQuantity;
+        }
+        return 0; //Trường hợp không cần sắp xếp
+      });
+    }
+    return mergedData.slice().sort((a, b) => {
+      if (orderBy === "name") {
+        return order === "asc" ? a.id - b.id : b.id - a.id;
+      } else if (orderBy === "maxPrice") {
+        return order === "asc"
+          ? a.maxPrice - b.maxPrice
+          : b.maxPrice - a.maxPrice;
+      } else if (orderBy === "quantity") {
+        return order === "asc"
+          ? a.totalQuantity - b.totalQuantity
+          : b.totalQuantity - a.totalQuantity;
+      }
+      return 0; //Trường hợp không cần sắp xếp
+    });
+  }, [filteredData, isFilterQuantitySoldOut, mergedData, order, orderBy]);
+  // Phân trang sau khi sắp xếp
   const paginatedData = sortedData.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
+
+  const handleClickFilterSoldOutByQuantity = useCallback(() => {
+    setIsFilterQuantitySoldOut((pre) => !pre);
+  }, []);
+
+  const handleOptionChange = (event, newValue) => {
+    if (!newValue) {
+      setIdCateOption(null);
+      return;
+    }
+    setIdCateOption(newValue.id); // Lưu id
+  };
 
   return (
     <div className="card mt-4 mb-4">
@@ -145,16 +259,16 @@ const ListProduct = () => {
           </Link>
         </button>
       </div>
-      <div className="mx-4">
-        <TextField
-          id="outlined-search"
-          label="Nhập từ khóa bạn cần tìm kiếm (Tên, Loại, Hãng)."
-          type="search"
-          size="small"
-          fullWidth
-          name="searchProduct"
-          onChange={(e) => setSearch(e.target.value)} // Update search state on input change
-          value={search}
+      <div className="mx-4 d-flex">
+        <ToolbarListProduct
+          search={search}
+          setSearch={setSearch}
+          handleOptionChange={handleOptionChange}
+          idCateOption={idCateOption}
+          handleClickFilterSoldOutByQuantity={
+            handleClickFilterSoldOutByQuantity
+          }
+          isFilterQuantitySoldOut={isFilterQuantitySoldOut}
         />
       </div>
       <TableContainer component={Paper} id="table-container">
@@ -162,133 +276,24 @@ const ListProduct = () => {
           <div className="mt-4 mb-4 d-flex justify-content-center">
             <l-bouncy size="60" speed="0.75" color="black"></l-bouncy>
           </div>
-        ) : fetchData.length === 0 ? (
+        ) : fetchData.length === 0 && !fill ? (
           <>
             <hr />
             <h1 className="text-center">Bạn chưa đăng bán sản phẩm.</h1>
           </>
-        ) : paginatedData.length === 0 ? (
+        ) : paginatedData.length === 0 && search !== "" ? (
           <>
             <hr />
             <h1 className="text-center">Sản phẩm bạn tìm không tồn tại.</h1>
           </>
         ) : (
-          <Table id="table" sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="center">Hình</TableCell>
-                <TableCell align="center">
-                  <TableSortLabel
-                    active={orderBy === "name"}
-                    direction={orderBy === "name" ? order : "asc"}
-                    onClick={() => handleSort("name")}
-                  >
-                    Sản phẩm
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell align="center">Loại</TableCell>
-                <TableCell align="center">Hãng</TableCell>
-                <TableCell align="center">
-                  <TableSortLabel
-                    active={orderBy === "price"}
-                    direction={orderBy === "price" ? order : "asc"}
-                    onClick={() => handleSort("price")}
-                  >
-                    Giá
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell align="center">SL</TableCell>
-                <TableCell align="center">Thao tác</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedData.map((fill) => {
-                const firstIMG = fill.images[0];
-                const productDetails = fill.productDetails;
-
-                //Tìm giá nhỏ nhất lớn nhất trong mảng
-                const minPrice = Math.min(
-                  ...productDetails.map((filter) => filter.price)
-                );
-                const maxPrice = Math.max(
-                  ...productDetails.map((filter) => filter.price)
-                );
-
-                const totalQuantity = productDetails.reduce(
-                  (total, detailQuantity) => total + detailQuantity.quantity,
-                  0
-                );
-                return (
-                  <TableRow
-                    key={fill.id}
-                    sx={{
-                      "&:last-child td, &:last-child th": { border: 0 },
-                    }}
-                  >
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      className="d-flex justify-content-center"
-                    >
-                      {firstIMG ? (
-                        <img
-                          src={geturlIMG(fill.id, firstIMG.imagename)}
-                          alt=""
-                          className="img-fluid"
-                          id="img-product-item"
-                        />
-                      ) : (
-                        <img
-                          src="/images/no_img.png"
-                          alt=""
-                          className="img-fluid"
-                          id="img-product-item"
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell align="center">{fill.name}</TableCell>
-                    <TableCell align="center">
-                      {fill.productcategory.name}
-                    </TableCell>
-                    <TableCell align="center">{fill.trademark.name}</TableCell>
-                    <TableCell align="center">
-                      {minPrice === maxPrice
-                        ? formatPrice(minPrice) + " đ"
-                        : `${formatPrice(minPrice)} - ${formatPrice(
-                            maxPrice
-                          )}` + " đ"}
-                    </TableCell>
-                    <TableCell align="center">{totalQuantity}</TableCell>
-                    <TableCell align="center">
-                      <div className="d-flex justify-content-center">
-                        <Link
-                          className="btn"
-                          id="btn-edit"
-                          to={`/profileMarket/updateProduct/${fill.id}`}
-                        >
-                          <i className="bi bi-pencil-square"></i>
-                        </Link>
-                        <button
-                          className="btn mx-2"
-                          id="btn-delete"
-                          onClick={(e) => handleSubmitDelete(fill.id)}
-                        >
-                          <i className="bi bi-trash"></i>
-                        </button>
-                        <Link
-                          className="btn"
-                          id="btn-showDetail"
-                          to={`/profileMarket/checkItemProduct/${fill.id}`}
-                        >
-                          <i className="bi bi-eye"></i>
-                        </Link>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <ProductTable
+            data={paginatedData}
+            orderBy={orderBy}
+            order={order}
+            handleSort={handleSort}
+            handleSubmitDelete={handleSubmitDelete}
+          />
         )}
       </TableContainer>
       <TablePagination

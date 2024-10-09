@@ -13,9 +13,10 @@ import {
   OutlinedInput,
 } from "@mui/material";
 
-
-const ChangePass = ({checkStatus}) => {
-  const [id] = useSession("id");
+const ChangePass = ({ checkStatus }) => {
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
   const changeLink = useNavigate();
   const [showPasswordNew, setShowPasswordNew] = useState(false);
   const [showPasswordConfig, setNewShowPasswordConfig] = useState(false);
@@ -35,16 +36,16 @@ const ChangePass = ({checkStatus}) => {
   const [configPass, setConfigPass] = useState("");
 
   useEffect(() => {
-    const loadData = async (id) => {
+    const loadData = async () => {
       try {
-        const res = await axios.get(`userProFile/${id}`);
+        const res = await axios.get(`userProFile/${user.id}`);
         setFormPass(res.data);
       } catch (error) {
         console.log(error);
       }
     };
-    loadData(id);
-  }, [id]);
+    loadData();
+  }, [user.id]);
 
   const validate = () => {
     const patternPassword = /^(?=.*[a-zA-Z]).{8,}$/;
@@ -96,10 +97,9 @@ const ChangePass = ({checkStatus}) => {
       if (formPass.avatar instanceof File) {
         formData.append("avatar", formPass.avatar);
       }
-
+      const idToast = toast.loading("Vui lòng chờ...");
       try {
-        const idToast = toast.loading("Vui lòng chờ...");
-        const res = await axios.put(`/user/${id}`, formData, {
+        const res = await axios.put(`/user/${user.id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -112,15 +112,25 @@ const ChangePass = ({checkStatus}) => {
             autoClose: 5000,
             closeButton: true,
           });
-          sessionStorage.setItem("fullname", res.data.fullname);
-          sessionStorage.setItem("avatar", res.data.avatar);
-          if(checkStatus){
+          const userInfo = {
+            id: res.data.id,
+            fullname: res.data.fullname,
+            avatar: res.data.avatar,
+          };
+          localStorage.setItem("user", JSON.stringify(userInfo));
+          if (checkStatus) {
             checkStatus();
           }
           changeLink("/user");
         }, 500);
       } catch (error) {
-        toast.error("Có lỗi xảy ra khi cập nhật hồ sơ");
+        toast.update(idToast, {
+          render: "Có lỗi xảy ra khi cập nhật hồ sơ",
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
         console.error(error.response ? error.response.data : error.message);
       }
     }
@@ -223,7 +233,9 @@ const ChangePass = ({checkStatus}) => {
               placeholder="Xác nhận khẩu mới"
             /> */}
           </div>
-          <button className="btn mb-4 mx-2" id="btn-changePass">Xác nhận</button>
+          <button className="btn mb-4 mx-2" id="btn-changePass">
+            Xác nhận
+          </button>
         </div>
       </form>
     </div>

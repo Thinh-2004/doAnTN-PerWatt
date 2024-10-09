@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../../../Localhost/Custumize-axios";
 
-const Brand = ({name, value, onChange }) => {
+const Brand = ({ name, value, onChange }) => {
   const [fillBrand, setFillBrand] = useState([]);
-
+  const [idNoBrand, setIdNoBrand] = useState(null);
   useEffect(() => {
     const load = async () => {
       try {
@@ -15,6 +15,14 @@ const Brand = ({name, value, onChange }) => {
     };
     load();
   }, []);
+
+  useEffect(() => {
+    //Tìm id no brand
+    const filterIdNoBrand = fillBrand.find((find) => find.name === "No brand");
+    if (filterIdNoBrand) {
+      setIdNoBrand(filterIdNoBrand.id);
+    }
+  },[fillBrand]);
   // Nhóm các danh mục theo chữ cái đầu tiên của tên
   const groupedTrade = fillBrand.reduce((acc, brand) => {
     const firstLetter = brand.name.charAt(0).toUpperCase(); //Lấy chữ cái đầu tiền
@@ -35,10 +43,10 @@ const Brand = ({name, value, onChange }) => {
         value={value}
         onChange={onChange}
       >
-        <option value="" selected hidden>
+        <option selected hidden>
           Vui lòng chọn thương hiệu
         </option>
-        <option value="NO">No brand</option>
+        <option value={idNoBrand}>No brand</option>
         {Object.keys(groupedTrade).map((letter) => (
           <optgroup label={letter === "#" ? "# -" : letter + " -"} key={letter}>
             {groupedTrade[letter].map((fill) => (

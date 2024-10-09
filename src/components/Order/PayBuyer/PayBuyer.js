@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "../../Header/Header";
 import Footer from "../../Footer/Footer";
 import axios from "../../../Localhost/Custumize-axios";
 import useSession from "../../../Session/useSession";
 import { toast } from "react-toastify";
 import { tailspin } from "ldrs";
+import "./PayBuyerStyle.css";
 
 const PayBuyer = () => {
   const [products, setProducts] = useState([]);
@@ -21,15 +22,20 @@ const PayBuyer = () => {
   const cartIds = query.get("cartIds");
   tailspin.register();
 
-  const [idUser] = useSession("id");
-  console.log(selectedShippingInfo);
+  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
+  // Hàm để lấy URL ảnh sản phẩm
+  const geturlIMG = (productId, filename) =>
+    `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
+
+  // Hàm để lấy URL ảnh đại diện của người dùng
+  const getAvtUser = (idUser, filename) =>
+    `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
+
+  const geturlIMGDetail = (productDetailId, filename) => {
+    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
   };
-  const getAvtUser = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
+
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
@@ -40,10 +46,11 @@ const PayBuyer = () => {
         }
         const paymentResponse = await axios.get("/paymentMethod");
         setPaymentMethods(paymentResponse.data);
+        console.log(paymentResponse.data);
 
-        if (idUser) {
+        if (user.id) {
           const shippingInfoResponse = await axios.get(
-            `/shippingInfo?userId=${idUser}`
+            `/shippingInfo?userId=${user.id}`
           );
           setShippingInfo(shippingInfoResponse.data);
         }
@@ -58,14 +65,14 @@ const PayBuyer = () => {
     };
 
     loadProducts();
-  }, [cartIds, idUser]);
+  }, [cartIds, user.id]);
 
   const groupByStore = (products) => {
     return products.reduce((groups, product) => {
-      const storeId = product.product.store.id;
+      const storeId = product.productDetail.product.store.id;
       if (!groups[storeId]) {
         groups[storeId] = {
-          store: product.product.store,
+          store: product.productDetail.product.store,
           products: [],
         };
       }
@@ -84,7 +91,9 @@ const PayBuyer = () => {
           return (
             sum +
             products.reduce((productSum, product) => {
-              return productSum + product.product.price * product.quantity;
+              return (
+                productSum + product.productDetail.price * product.quantity
+              );
             }, 0)
           );
         },
@@ -95,7 +104,7 @@ const PayBuyer = () => {
       const productList = Object.values(groupedProducts).flatMap(
         ({ products }) =>
           products.map((product) => ({
-            name: product.product.name,
+            name: product.productDetail.product.name,
             quantity: product.quantity,
           }))
       );
@@ -132,67 +141,22 @@ const PayBuyer = () => {
         const { store, products: storeProducts } = groupedProducts[storeId];
 
         const order = {
-          user: { id: idUser },
+          user: { id: user.id },
           paymentmethod: { id: selectedPaymentMethod },
           shippinginfor: { id: selectedShippingInfo },
-          // fee: { id: 1 },
           store: { id: storeId },
           paymentdate: new Date().toISOString(),
           orderstatus: "Đang chờ duyệt",
         };
 
         const orderDetails = storeProducts.map((product) => ({
-          product: { id: product.product.id },
+          productDetail: { id: product.productDetail.id },
           quantity: product.quantity,
-          price: product.product.price,
+          price: product.productDetail.price,
         }));
 
         // Tạo đơn hàng cho từng cửa hàng
-        await axios.post("/orderCreate", {
-          order,
-          orderDetails,
-        });
-      }
-
-      toast.success("Đặt hàng thành công!");
-      navigate("/order");
-    } catch (error) {
-      toast.error("Đặt hàng thất bại!");
-    }
-  };
-
-  const handleOrderVNPay = async () => {
-    try {
-      if (!selectedShippingInfo) {
-        toast.error("Vui lòng chọn địa chỉ nhận hàng!");
-        return;
-      }
-
-      // Nhóm các sản phẩm theo storeId
-      const groupedProducts = groupByStore(products);
-
-      // Lặp qua từng nhóm cửa hàng và tạo đơn hàng riêng biệt
-      for (const storeId in groupedProducts) {
-        const { store, products: storeProducts } = groupedProducts[storeId];
-
-        const order = {
-          user: { id: idUser },
-          paymentmethod: { id: selectedPaymentMethod },
-          shippinginfor: { id: selectedShippingInfo },
-          // fee: { id: 1 },
-          store: { id: storeId },
-          paymentdate: new Date().toISOString(),
-          orderstatus: "Đang chờ duyệt",
-        };
-
-        const orderDetails = storeProducts.map((product) => ({
-          product: { id: product.product.id },
-          quantity: product.quantity,
-          price: product.product.price,
-        }));
-
-        // Tạo đơn hàng cho từng cửa hàng
-        await axios.post("/orderCreateVnPay", {
+        await axios.post("/api/orderCreate", {
           order,
           orderDetails,
         });
@@ -214,7 +178,7 @@ const PayBuyer = () => {
 
       const response = await axios.post("/shippingInfoCreate", {
         address: newAddress,
-        user: { id: idUser },
+        user: { id: user.id },
       });
 
       setShippingInfo([...shippingInfo, response.data]);
@@ -225,28 +189,71 @@ const PayBuyer = () => {
     }
   };
 
+  const handleMomo = async () => {
+    // Tính tổng số tiền cho tất cả các sản phẩm
+    const totalAmount = Object.values(groupedProducts).reduce(
+      (sum, { products }) => {
+        return (
+          sum +
+          products.reduce((productSum, product) => {
+            return productSum + product.productDetail.price * product.quantity;
+          }, 0)
+        );
+      },
+      0
+    );
+
+    // Lấy thông tin về các sản phẩm
+    const productList = Object.values(groupedProducts).flatMap(({ products }) =>
+      products.map((product) => ({
+        name: product.productDetail.product.name,
+        quantity: product.quantity,
+        id: product.productDetail.id,
+      }))
+    );
+
+    sessionStorage.setItem("productList", JSON.stringify(productList));
+
+    // Sử dụng tổng số tiền đã tính toán
+    const data = { amount: totalAmount };
+    const response = await axios.get("/pay", {
+      params: data,
+    });
+    const paymentUrl = response.data; // Lấy URL thanh toán từ response
+    window.location.href = paymentUrl; // Chuyển hướng người dùng đến URL thanh toán
+  };
+
   const handleCombinedAction = async () => {
-    try {
-      if (selectedPaymentMethod === "6") {
-        // Nếu chọn VN Pay, thực hiện cả đặt hàng và thanh toán
-        // await handleOrderVNPay();
-        await handlePayment();
-      } else if (selectedPaymentMethod === "1") {
-        // Nếu chọn thanh toán khi nhận hàng, chỉ thực hiện đặt hàng
-        await handleOrder();
-      } else {
-        toast.error("Vui lòng chọn phương thức thanh toán!");
+    if (!selectedShippingInfo) {
+      toast.warning("Bạn chưa chọn địa chỉ nhận hàng!");
+    } else {
+      try {
+        if (selectedPaymentMethod === "6") {
+          await handlePayment();
+        } else if (selectedPaymentMethod === "1") {
+          await handleOrder();
+        } else if (selectedPaymentMethod === "8") {
+          await handleMomo();
+        } else {
+          toast.error("Vui lòng chọn phương thức thanh toán!");
+        }
+      } catch (error) {
+        console.error("Có lỗi xảy ra khi thực hiện các chức năng:", error);
+        toast.error("Có lỗi xảy ra khi thực hiện các chức năng.");
       }
-    } catch (error) {
-      console.error("Có lỗi xảy ra khi thực hiện các chức năng:", error);
-      toast.error("Có lỗi xảy ra khi thực hiện các chức năng.");
     }
+  };
+
+  // Hàm để định dạng giá tiền
+  const formatPrice = (value) => {
+    if (!value) return "0";
+    return Number(value).toLocaleString("vi-VN");
   };
 
   return (
     <div>
       <Header />
-      <div className="col-8 offset-2">
+      <div id="smooth" className="col-12 col-md-10 col-lg-8 offset-lg-2">
         {loading ? (
           <div className="d-flex justify-content-center mt-3">
             <l-tailspin
@@ -264,47 +271,102 @@ const PayBuyer = () => {
                 <div className="card-body">
                   <div className="d-flex align-items-center">
                     <img
-                      src={getAvtUser(store.user.id, store.user.avatar)}
+                      src={getAvtUser(
+                        store.user.id,
+                        store.user.avatar,
+                        store.id
+                      )}
                       id="imgShop"
-                      className="mx-2"
+                      className="mx-2 object-fit-cover"
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        objectFit: "contain",
+                        display: "block",
+                        margin: "0 auto",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: "100%",
+                      }}
                       alt=""
-                      style={{ height: "80%" }}
                     />
-                    <h5 id="nameShop" className="mb-0">
+                    <h5 id="nameShop" className="mt-1">
                       {store.namestore}
                     </h5>
                   </div>
                   <hr id="hr" />
                   {storeProducts.map((cart) => {
-                    const firstIMG =
-                      Array.isArray(cart.product.images) &&
-                      cart.product.images.length > 0
-                        ? cart.product.images[0]
-                        : null;
+                    const firstIMG = cart.productDetail.product.images?.[0];
                     return (
-                      <div className="d-flex mt-3" key={cart.product.id}>
-                          <img
-                            src={geturlIMG(cart.product.id, firstIMG.imagename)}
-                            id="img"
-                            alt=""
-                          />
-                        <div className="col-5 mt-3 mx-2">
-                          <div id="fontSizeTitle">{cart.product.name}</div>
+                      <div className="d-flex mt-3" key={cart.productDetail.id}>
+                        <img
+                          src={
+                            cart &&
+                            cart.productDetail &&
+                            cart.productDetail.imagedetail
+                              ? geturlIMGDetail(
+                                  cart.productDetail.id,
+                                  cart.productDetail.imagedetail
+                                )
+                              : geturlIMG(
+                                  cart.productDetail.product.id,
+                                  firstIMG.imagename
+                                )
+                          }
+                          alt="Product"
+                          style={{
+                            width: "100px",
+                            height: "100px",
+                            objectFit: "contain",
+                            display: "block",
+                            margin: "0 auto",
+                            backgroundColor: "#ffff",
+                          }}
+                          className="rounded-3"
+                        />
+                        {cart.productDetail.quantity === 0 && (
+                          <div
+                            className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center rounded-3"
+                            style={{
+                              backgroundColor: "rgba(0, 0, 0, 0.5)",
+                              color: "white",
+                              fontWeight: "bold",
+                              zIndex: 1,
+                            }}
+                          >
+                            Hết hàng
+                          </div>
+                        )}
+                        <div className="col-4 mt-3 mx-2">
+                          <div id="fontSizeTitle">
+                            {cart.productDetail.product.name}
+                          </div>
                           <div id="fontSize">
-                            {`${cart.product.productcategory.name}, ${cart.product.trademark.name}, ${cart.product.warranties.name}`}
+                            {
+                              [
+                                cart.productDetail.namedetail,
+                                cart.productDetail.product.productcategory.name,
+                                cart.productDetail.product.trademark.name,
+                                cart.productDetail.product.warranties.name,
+                              ]
+                                .filter(Boolean) // Lọc bỏ các giá trị null hoặc rỗng
+                                .join(", ") // Nối các chuỗi lại với nhau bằng dấu phẩy và khoảng trắng
+                            }{" "}
                           </div>
                         </div>
                         <div className="col-8 mx-3 mt-5">
                           <div className="d-flex">
                             <div className="col-3">
-                              Giá: {cart.product.price} VNĐ
+                              Giá:{" "}
+                              {formatPrice(cart.productDetail.price) + " VNĐ"}
                             </div>
                             <div className="col-2">
                               Số lượng: {cart.quantity}
                             </div>
                             <div className="col-4">
-                              Thành tiền: {cart.product.price * cart.quantity}{" "}
-                              VNĐ
+                              Thành tiền:{" "}
+                              {formatPrice(
+                                cart.productDetail.price * cart.quantity
+                              ) + " VNĐ"}
                             </div>
                           </div>
                         </div>
@@ -318,53 +380,43 @@ const PayBuyer = () => {
         )}
         <div className="card mt-3">
           <div className="row card-body">
-            {/* <select
-                className="form-select"
-                value={selectedPaymentMethod || ""}
-                onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-              >
-                <option value="">Chọn phương thức thanh toán</option>
-                {paymentMethods.map((method) => (
-                  <option key={method.id} value={method.id}>
-                    {method.type}
-                  </option>
-                ))}
-              </select> */}
-            <div className="col-6 align-tiems-center">
-              <div className="form-check">
-                <input
-                  className="form-check-input mt-3"
-                  type="radio"
-                  name="paymentMethod"
-                  id="paymentMethod1"
-                  value="1"
-                  checked={selectedPaymentMethod === "1"}
-                  onChange={() => setSelectedPaymentMethod("1")}
-                />
-                <label className="form-check-label me-3" htmlFor="paymentMethod1">
-                  Thanh toán khi nhận hàng
-                </label>
-                <img src="/images/COD.png" alt=""
-                  style={{width : "8%"}}
-                   />
-              </div>
-              <div className="form-check">
-                <input
-                  className="form-check-input mt-3"
-                  type="radio"
-                  name="paymentMethod"
-                  id="paymentMethod2"
-                  value="6"
-                  checked={selectedPaymentMethod === "6"}
-                  onChange={() => setSelectedPaymentMethod("6")}
-                />
-                <label className="form-check-label" htmlFor="paymentMethod2">
-                  Thanh toán bằng VN Pay
-                </label>
-                <img src="/images/VNPAY.png" alt=""
-                  style={{width : "8%"}}
-                   />
-              </div>
+            <div className="col-6 align-items-center">
+              {paymentMethods.map((method) => (
+                <div className="form-check" key={method.id}>
+                  <div className="d-flex align-items-center">
+                    <input
+                      className="form-check-input me-1 mb-1"
+                      type="radio"
+                      name="paymentMethod"
+                      id={`paymentMethod${method.id}`}
+                      value={method.id}
+                      checked={selectedPaymentMethod === String(method.id)}
+                      onChange={() =>
+                        setSelectedPaymentMethod(String(method.id))
+                      }
+                    />
+                    <label
+                      className="form-check-label me-3"
+                      htmlFor={`paymentMethod${method.id}`}
+                    >
+                      {method.type}
+                    </label>
+                    <img
+                      src={`/images/${
+                        method.id === 1
+                          ? "COD.png"
+                          : method.id === 6
+                          ? "VNPay.png"
+                          : method.id === 8
+                          ? "MoMo.png"
+                          : "default.png"
+                      }`}
+                      alt={method.type}
+                      style={{ width: "8%" }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="col-6">
@@ -435,11 +487,7 @@ const PayBuyer = () => {
             </div>
           </div>
           <div className="card-body">
-            <button
-              className="btn btn-primary"
-              onClick={handleCombinedAction}
-              disabled={!selectedShippingInfo} // Vô hiệu hóa nút khi địa chỉ chưa được chọn
-            >
+            <button className="btn btn-primary" onClick={handleCombinedAction}>
               Đặt hàng
             </button>
           </div>

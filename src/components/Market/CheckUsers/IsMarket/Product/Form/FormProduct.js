@@ -1,24 +1,23 @@
-import React, { useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import "./FormProduct.css";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Category from "../../CategoryProduct/Category";
 import Brand from "../../Brand/Brand";
 import Warranties from "../../Warranties/Warranties";
-import useSession from "../../../../../../Session/useSession";
 import axios from "../../../../../../Localhost/Custumize-axios";
 import { Button, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DetailProduct from "../../DetailProduct/DetailProduct";
 
 const FormProduct = () => {
-  const [idStore] = useSession("idStore");
+  const idStore = localStorage.getItem("idStore");
   const [images, setImages] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(null);
   const clickTimeout = 300; // Thời gian tối đa giữa hai lần click (milisecond)
   const [isHiddenDetailPro, setIsHiddenDetailPro] = useState(false); //Điều kiện hiển thị chi tiết sản phẩm
   const [detailProduct, setDetailProduct] = useState([]);
-
+  const [isArrayDetail, setIsArrayDetail] = useState(false); //Đặt trang thái reload array detail
   const [formProduct, setFormProduct] = useState({
     name: "",
     productcategory: "",
@@ -30,11 +29,9 @@ const FormProduct = () => {
     store: idStore,
   });
 
-  const [priceAndQuantity, setPriceAndQuantity] = useState({
-    priceDetail: "",
-    quantityDetail: "",
-  });
-
+  const [charCount, setCharCount] = useState(0); // State để lưu số từ
+  const [charCountDesception, setCharCountDesception] = useState(0); // State để lưu số từ
+  const maxCharLimitName = 100; // Giới hạn ký tự
   const maxFiles = 9;
 
   // Xử lý khi người dùng chọn tệp
@@ -71,18 +68,25 @@ const FormProduct = () => {
       ...prevFormProduct,
       [name]: value,
     }));
-    setPriceAndQuantity((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // Kiểm tra số ký tự trước khi cập nhật
+    if (name === "name" && value.length > maxCharLimitName) {
+      return; // Ngăn người dùng nhập nếu vượt quá 100 ký tự
+    }
+
+    // Đếm số từ trong trường 'name'
+    if (name === "name") {
+      const charCount = value.length;
+      setCharCount(charCount);
+    }
+
+    if (name === "description") {
+      const charCountDescription = value.length;
+      setCharCountDesception(charCountDescription);
+    }
   };
-  const handleInputChangePriceAndQuantity = (e) => {
-    const { name, value } = e.target;
-    setPriceAndQuantity((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+
+  const detailProductRef = useRef();
 
   const validate = () => {
     const {
@@ -94,6 +98,15 @@ const FormProduct = () => {
       description,
       specializedgame,
     } = formProduct;
+
+    if (detailProductRef.current) {
+      const { valid, message } = detailProductRef.current.validateChild();
+
+      if (!valid) {
+        toast.warning(message);
+        return false;
+      }
+    }
 
     if (
       !name &&
@@ -124,7 +137,7 @@ const FormProduct = () => {
       }
 
       if (productcategory === "") {
-        toast.warning("Cần loại sản phẩm.");
+        toast.warning("Cần chọn loại sản phẩm.");
         return false;
       }
 
@@ -147,6 +160,7 @@ const FormProduct = () => {
         toast.warning("Cần nhập kích cỡ.");
         return false;
       }
+
       return true;
     }
   };
@@ -157,8 +171,9 @@ const FormProduct = () => {
       // Tạo FormData để gửi đến server
       const formData = new FormData();
       // Kết hợp dữ liệu từ formProduct
+      const { price, quantity, ...rest } = formProduct; // Sử dụng destructuring để loại bỏ
       const productToSend = {
-        ...formProduct,
+        ...rest,
         productcategory: { id: formProduct.productcategory },
         trademark: { id: formProduct.trademark },
         warranties: { id: formProduct.warranties },
@@ -171,31 +186,21 @@ const FormProduct = () => {
       );
       console.log(productToSend);
 
-      // Kiểm tra nếu detailProduct rỗng
-      if (detailProduct.length === 0) {
-        const nullProductDetails = [
-          {
-            price: priceAndQuantity.priceDetail,
-            quantity: priceAndQuantity.quantityDetail,
-          },
-        ];
-        formData.append(
-          "productDetails",
-          new Blob([JSON.stringify(nullProductDetails)], {
-            type: "application/json",
-          })
-        );
-        console.log(nullProductDetails);
+      formData.append(
+        "productDetails",
+        new Blob([JSON.stringify(detailProduct)], {
+          type: "application/json",
+        })
+      );
+      console.log(detailProduct);
+      //Kiểm tra detailProduct có phải là mảng
+      if (Array.isArray(detailProduct)) {
+        detailProduct.forEach((fileDetail) => {
+          formData.append("fileDetails", fileDetail.imagedetail);
+        });
       } else {
-        formData.append(
-          "productDetails",
-          new Blob([JSON.stringify(detailProduct)], {
-            type: "application/json",
-          })
-        );
         console.log(detailProduct);
       }
-
       // Thêm các tệp tin vào FormData
       images.forEach((file) => {
         formData.append("files", file);
@@ -228,7 +233,7 @@ const FormProduct = () => {
           });
           setImages([]);
           setDetailProduct([]); // Reset dữ liệu chi tiết sản phẩm
-          setPriceAndQuantity({ price: "", quantity: "" }); // Reset giá và số lượng
+          setIsArrayDetail(true); //đặt trang thái reloadArray cho detail
         }, 500);
       } catch (error) {
         console.error("Error:", error.response?.data || error.message);
@@ -253,9 +258,10 @@ const FormProduct = () => {
     width: 1,
   });
 
-  const handleDataChange = (newData) => {
-    setDetailProduct(newData);
-  };
+  const handleDataChange = useCallback((dataDetail) => {
+    setDetailProduct(dataDetail);
+    console.log(dataDetail);
+  }, []);
 
   return (
     <div className="row mt-4">
@@ -277,19 +283,22 @@ const FormProduct = () => {
                         value={formProduct.name}
                         onChange={handleInputChange}
                         fullWidth
+                        inputProps={{ maxLength: maxCharLimitName }} // Giới hạn trực quan cho người dùng
                       />
+                      <label>{charCount}/100</label> {/* Hiển thị số từ */}
                     </div>
                     <div className="mb-3">
                       <TextField
                         id="outlined-multiline-static"
                         label="Mô tả sản phẩm"
                         multiline
-                        rows={15}
+                        rows={23}
                         name="description"
                         value={formProduct.description}
                         onChange={handleInputChange}
                         fullWidth
                       />
+                      <label htmlFor="">{charCountDesception} kí tự</label>
                     </div>
                   </div>
                   <div className="col-lg-6 col-md-6 col-sm-6 ">
@@ -369,31 +378,12 @@ const FormProduct = () => {
               </div>
 
               <div className="card-body">
-                {isHiddenDetailPro ? (
-                  <DetailProduct DataDetail={handleDataChange} />
-                ) : (
-                  <div className="d-flex justify-content-between">
-                    <TextField
-                      label="Nhập giá sản phẩm"
-                      id="outlined-size-small"
-                      size="small"
-                      name="priceDetail"
-                      value={priceAndQuantity.price}
-                      onChange={handleInputChangePriceAndQuantity}
-                      fullWidth
-                      className="me-2"
-                    />
-                    <TextField
-                      label="Nhập số lượng"
-                      id="outlined-size-small"
-                      size="small"
-                      name="quantityDetail"
-                      value={priceAndQuantity.quantity}
-                      onChange={handleInputChangePriceAndQuantity}
-                      fullWidth
-                    />
-                  </div>
-                )}
+                <DetailProduct
+                  DataDetail={handleDataChange}
+                  reloadArrayDetail={isArrayDetail}
+                  isChangeForm={isHiddenDetailPro}
+                  ref={detailProductRef}
+                />
               </div>
             </div>
           </div>
@@ -471,20 +461,19 @@ const FormProduct = () => {
             className="btn mx-2"
             id="btn-resetProduct"
             type="button"
-            onClick={() =>
+            onClick={() => {
               setFormProduct({
                 name: "",
                 productcategory: "",
                 trademark: "",
                 warranties: "",
-                price: "",
-                quantity: "",
                 size: "",
                 specializedgame: "",
                 description: "",
                 store: idStore,
-              })
-            }
+              });
+              setIsArrayDetail(true);
+            }}
           >
             Làm mới
           </button>

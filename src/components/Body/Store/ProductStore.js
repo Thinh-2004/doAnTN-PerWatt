@@ -1,40 +1,180 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
 import useDebounce from "../../../CustumHook/useDebounce";
 import "./StoreStyle.css";
-const ProductStore = ({ item }) => {
-  const { idStore } = useParams();
+import { Pagination } from "@mui/material";
+
+import SkeletonLoad from "../../../Skeleton/SkeletonLoad";
+import ListProductStore from "./ListProductStore";
+import ToolBarHomeStore from "./ToolBarHomeStore";
+const ProductStore = ({ item, idCate, resetSearch }) => {
+  const { slugStore } = useParams();
   const [fill, setFill] = useState([]);
+  const [isFiltering, setIsFiltering] = useState(false); //Skelenton
+  const [loading, setLoading] = useState(true); //Load data
   //Debounce
   const debouncedItem = useDebounce(item);
+  const debouncedIdCate = useDebounce(idCate);
+  const [sortOption, setSortOption] = useState("newOrOldItem"); // Trạng thái cho sắp xếp
+  const [isAscending, setIsAscending] = useState(true); // Trạng thái tăng/giảm giá
+  const [isSortOption, setIsSortOption] = useState(true); //Trạng thái sắp xếp cũ nhất mới nhất
 
-  const loadData = async (idStore) => {
+  const loadData = async () => {
     try {
-      const res = await axios.get(`/productStore/${idStore}`);
-      setFill(res.data);
+      const res = await axios.get(`/productStore/${slugStore}`);
+      //Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm
+      const dataWithDetails = await Promise.all(
+        res.data.map(async (product) => {
+          const resDetail = await axios.get(`/detailProduct/${product.id}`);
+
+          //Duyệt qua từng chi tiết sản phẩm để lấy số lượng đã bán
+          const countOrderBy = await Promise.all(
+            resDetail.data.map(async (detail) => {
+              const res = await axios.get(`countOrderSuccess/${detail.id}`);
+              return res.data;
+            })
+          );
+
+          //Tính tổng số lượng sản phẩm đã bán cho tất cả chi tiết
+          const countQuantityOrderBy = countOrderBy.reduce(
+            (count, quantity) => count + quantity,
+            0
+          );
+          return {
+            ...product,
+            productDetails: resDetail.data,
+            countQuantityOrderBy, //Lưu tổng số lượng đã bán
+          };
+        })
+      );
+      setFill(dataWithDetails);
+      console.log(dataWithDetails);
+      setLoading(false);
     } catch (error) {
       console.log(error);
+      setLoading(true);
     }
   };
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    loadData(idStore);
-  }, [idStore]);
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-  const formatPrice = (value) => {
-    if (!value) return "";
-    return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
-  };
+    loadData();
+  }, [slugStore]);
+
+  //Pagination
+  const [currentPage, setCurrentPage] = useState(1); // trang hiện tại là 1
+  const itemInPage = 20;
+
   //Lọc sản phẩm
-  const filterSearchByText = fill.filter((productStore) =>
-    productStore.name.toLowerCase().includes(debouncedItem.toLowerCase())
-  );
+  const filterSearchByText = useMemo(() => {
+    return fill.filter((product) => {
+      const matchesSearch = debouncedItem
+        ? product.name.toLowerCase().includes(debouncedItem.toLowerCase())
+        : true;
+      const matchesSearchNameCate = debouncedItem
+        ? product.productcategory.name
+            .toLowerCase()
+            .includes(debouncedItem.toLowerCase())
+        : true;
+      const matchesCategory = debouncedIdCate
+        ? product.productcategory.id === debouncedIdCate
+        : true;
+
+      const matchesTrademark = debouncedItem
+        ? product.trademark.name
+            .toLowerCase()
+            .includes(debouncedItem.toLowerCase())
+        : true;
+      return (
+        (matchesSearch || matchesSearchNameCate || matchesTrademark) &&
+        matchesCategory
+      );
+    });
+  }, [debouncedIdCate, debouncedItem, fill]);
+
+  // Hàm sắp xếp sản phẩm
+  const sortedProducts = useMemo(() => {
+    const products = [...filterSearchByText];
+    if (sortOption === "newOrOldItem") {
+      return products.sort((a, b) => {
+        return isSortOption ? b.id - a.id : a.id - b.id; //Giảm giần : Tăng dần
+      });
+    }
+
+    if (sortOption === "price") {
+      return products.sort((a, b) => {
+        const priceA = Math.min(...a.productDetails.map((p) => p.price));
+        const priceB = Math.min(...b.productDetails.map((p) => p.price));
+        return isAscending ? priceA - priceB : priceB - priceA;
+      });
+    }
+    return products;
+  }, [filterSearchByText, sortOption, isAscending, isSortOption]);
+
+  // Hàm xử lý khi nhấn nút sắp xếp theo giá
+  const handleSortByPrice = useCallback(() => {
+    setIsFiltering(true);
+    const timer = setTimeout(() => {
+      setSortOption("price");
+      setIsAscending(!isAscending); // Đảo ngược trạng thái tăng/giảm giá
+      setIsFiltering(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [isAscending]);
+
+  //Hàm xử lí khi nhấn nút sắp xếp cũ hoặc mới nhất
+  const handleSortOption = useCallback(() => {
+    setIsFiltering(true);
+    const timer = setTimeout(() => {
+      setSortOption("newOrOldItem");
+      setIsSortOption(!isSortOption);
+      setIsFiltering(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [isSortOption]);
+
+  //Tính toán
+  const lastIndex = currentPage * itemInPage; // đi đến trang tiếp theo
+  const firstIndex = lastIndex - itemInPage; // Trở về trang (ví dụ 40 -20)
+  const records = sortedProducts.slice(firstIndex, lastIndex); //cắt danh sách cần hiển thị
+  const pageCount = Math.ceil(filterSearchByText.length / itemInPage); //Ceil làm tròn số trang
+
+  // Sự kiện đặt lại giá trị cho số trang
+  const handlePageChange = (e, value) => {
+    setCurrentPage(value);
+    console.log(value);
+  };
+  const handleResetSearch = () => {
+    resetSearch(true);
+  };
+
+  //Skelenton
+  useEffect(() => {
+    setIsFiltering(true);
+    const timer = setTimeout(() => {
+      setIsFiltering(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [debouncedItem, debouncedIdCate, lastIndex, firstIndex]);
+
   return (
     <>
-      {filterSearchByText.length === 0 ? (
+      {debouncedItem || debouncedIdCate ? (
+        <div
+          className="text-primary"
+          style={{ cursor: "pointer" }}
+          onClick={handleResetSearch}
+        >
+          <i className="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm của cửa
+          hàng
+        </div>
+      ) : null}
+      {loading || isFiltering ? (
+        <div className="row">
+          <SkeletonLoad />
+        </div>
+      ) : filterSearchByText.length === 0 ? (
         <>
           <div className="d-flex justify-content-center">
             <i
@@ -53,71 +193,35 @@ const ProductStore = ({ item }) => {
         </>
       ) : (
         <div className="row mb-5">
-          {filterSearchByText.map((fill, index) => {
-            const firstIMG = fill.images[0];
-            return (
-              <div className="col-lg-2 col-md-2 col-sm-2 mt-3" key={fill.id}>
-                <div
-                  className="card shadow rounded-4 mt-4 p-2 d-flex flex-column"
-                  style={{height: "100%" }} // Đảm bảo chiều cao tự điều chỉnh
-                  id="product-item"
-                >
-                  <Link to={`/detailProduct/${fill.id}`}>
-                    <img
-                      src={
-                        firstIMG
-                          ? geturlIMG(fill.id, firstIMG.imagename)
-                          : "/images/no_img.png"
-                      }
-                      className="card-img-top img-fluid rounded-4"
-                      alt="..."
-                      style={{ width: "200px", height: "150px" }}
-                    />
-                  </Link>
-                  <div className="mt-2 flex-grow-1 d-flex flex-column justify-content-between">
-                    {/* Thêm flex-grow-1 */}
-                    <span className="fw-bold fst-italic" id="product-name">
-                      {fill.name}
-                    </span>
-                    <h5 id="price-product">
-                      <del className="text-secondary me-1">3000000 đ</del> -
-                      <span
-                        className="text-danger mx-1"
-                        id="price-product-item"
-                      >
-                        {formatPrice(fill.price)} đ
-                      </span>
-                    </h5>
-                    <hr />
-                    <div className="d-flex justify-content-between">
-                      <div>
-                        <label htmlFor="" className="text-warning">
-                          <i className="bi bi-star-fill"></i>
-                        </label>
-                        <label htmlFor="" className="text-warning">
-                          <i className="bi bi-star-fill"></i>
-                        </label>
-                        <label htmlFor="" className="text-warning">
-                          <i className="bi bi-star-fill"></i>
-                        </label>
-                        <label htmlFor="" className="text-warning">
-                          <i className="bi bi-star-fill"></i>
-                        </label>
-                        <label htmlFor="" className="text-warning">
-                          <i className="bi bi-star-fill"></i>
-                        </label>
-                      </div>
-                      <div>
-                        <span htmlFor="">Đã bán: 0</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          <div className="d-flex justify-content-between">
+            <div>
+              <ToolBarHomeStore
+                isAscending={isAscending}
+                handleSortByPrice={handleSortByPrice}
+                handleSortOption={handleSortOption}
+                isSortOption={isSortOption}
+              />
+            </div>
+            <Pagination
+              count={pageCount}
+              page={currentPage}
+              onChange={handlePageChange}
+              variant="outlined"
+              color="primary"
+            />
+          </div>
+          <ListProductStore data={records} />
         </div>
       )}
+      <div className="mt-3 mb-3 d-flex justify-content-center">
+        <Pagination
+          count={pageCount}
+          page={currentPage}
+          onChange={handlePageChange}
+          variant="outlined"
+          color="primary"
+        />
+      </div>
     </>
   );
 };

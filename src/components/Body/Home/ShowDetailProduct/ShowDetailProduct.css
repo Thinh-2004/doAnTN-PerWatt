@@ -71,30 +71,31 @@
 }
 
 #hover-idDetailProduct {
+  border: none;
   background: white;
   transition: 0.5s;
 }
 
 #hover-idDetailProduct:hover {
   cursor: pointer;
-  background: #d5d5d5;
-  color: white;
+  outline: 1px solid #00c7ff;
+  color: #00c7ff;
   transform: scale(1.05);
+  transition: 0.5s;
 }
 
 #hover-idDetailProduct:hover label {
-  color: white;
+  color: #00c7ff;
   cursor: pointer;
-  transform: scale(1.05);
 }
 
- #active-selected-detailProduct {
-  background: #929292;
-  color: white;
+#active-selected-detailProduct {
+  outline: 1px solid #00c7ff;
+  color: #00c7ff;
+  transition: 0.5s;
 }
 
-#active-selected-detailProduct  label{
-  color: white;
+#active-selected-detailProduct label {
+  color: #00c7ff;
 }
-
 

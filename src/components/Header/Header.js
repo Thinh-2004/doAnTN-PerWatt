@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./HeaderStyle.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useMatch, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import useSession from "../../Session/useSession";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { confirmAlert } from "react-confirm-alert";
@@ -18,10 +17,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Audio from "./VoiceSearhDialog/Audio";
 
 const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
+  const match = useMatch("/findMoreProduct/:name"); //Kiểm tra đường dẫn có chứa tham số động
   const [search, setSearch] = useState("");
-  const [fullName, removeFullName] = useSession("fullname");
-  const [avatar, removeAvatar] = useSession("avatar");
-  const [id, removeId] = useSession("id");
   const [count, setCount] = useState(0);
   const changeLink = useNavigate();
   const [open, setOpen] = useState(false); // mở dialog của tìm bằng hình ảnh
@@ -38,19 +35,27 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
 
   useEffect(() => {
     const count = async () => {
       try {
-        const res = await axios.get(`/countCartIdUser/${id}`);
-        setCount(res.data.length);
-        console.log(res.data.length);
+        if (user) {
+          const res = await axios.get(`/countCartIdUser/${user.id}`);
+          setCount(res.data.length);
+          // console.log(res.data.length);
+        } else {
+          console.log("Chưa có sản phẩm");
+          setCount(0);
+        }
       } catch (error) {
         console.log(error);
       }
     };
     count();
-  }, [id]);
+  }, [user]);
 
   useEffect(() => {
     if (resetSearch) {
@@ -62,16 +67,20 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     if (reloadCartItems) {
       const count = async () => {
         try {
-          const res = await axios.get(`/countCartIdUser/${id}`);
-          setCount(res.data.length);
-          console.log(res.data.length);
+          if (user) {
+            const res = await axios.get(`/countCartIdUser/${user.id}`);
+            setCount(res.data.length);
+            // console.log(res.data.length);
+          } else {
+            console.log("Chưa có sản phẩm");
+          }
         } catch (error) {
           console.log(error);
         }
       };
       count();
     }
-  }, [reloadCartItems, id]);
+  }, [reloadCartItems, user]);
 
   const handleLogOut = () => {
     confirmAlert({
@@ -83,10 +92,6 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
           onClick: async () => {
             const toastId = toast.loading("Vui lòng chờ...");
             try {
-              removeFullName(); // Xóa giá trị fullname từ session
-              removeAvatar(); // Xóa giá trị avatar từ session
-              removeId(); // Xóa giá trị id từ session
-              sessionStorage.removeItem("idStore"); // Xóa giá trị idStore từ session
               setTimeout(() => {
                 toast.update(toastId, {
                   render: "Đăng xuất thành công",
@@ -95,7 +100,9 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                   autoClose: 5000,
                   closeButton: true,
                 });
-
+                //Xóa session khỏi website
+                localStorage.clear();
+                sessionStorage.clear();
                 changeLink("/"); // Chuyển hướng về trang chủ
               }, 500);
             } catch (error) {
@@ -197,7 +204,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     e.preventDefault();
 
     // Kiểm tra nếu id là null hoặc undefined
-    if (id === "" || id === undefined) {
+    if (user === null || user === undefined) {
       confirmAlert({
         title: "Bạn đã đăng nhập chưa?",
         message: "Hãy đăng nhập để có trải nghiệm tuyệt vời hơn",
@@ -226,7 +233,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
       });
     } else {
       // Nếu id tồn tại, kiểm tra với API
-      const check = await CallAPICheckUserId(id);
+      const check = await CallAPICheckUserId(user.id);
       if (check) {
         // Nếu id tồn tại trong cửa hàng
         changeLink("/profileMarket");
@@ -241,7 +248,7 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
     e.preventDefault();
 
     // Kiểm tra nếu id là null hoặc undefined
-    if (id === "" || id === undefined) {
+    if (user === null || user === undefined) {
       confirmAlert({
         title: "Bạn đã đăng nhập chưa?",
         message: "Bạn cần đăng nhập để vào giỏ hàng của mình",
@@ -366,122 +373,136 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
             <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
           </Link>
         </div>
-        <div
-          className="col-auto flex-grow-1"
-          hidden={window.location.pathname !== "/"}
-        >
-          <form className="d-flex" role="search">
-            <input
-              className="form-control rounded-start-4 me-3"
-              type="search"
-              placeholder="Bạn cần tìm gì"
-              aria-label="Search"
-              style={{ width: "auto" }}
-              value={search}
-              onChange={handleTextSearch}
-            />
-            <div>
-              <Button
-                variant="outlined"
-                onClick={handleClickOpenVoice}
-                className="me-2"
-              >
-                <i className="bi bi-mic"></i>
-              </Button>
-              <Dialog
-                open={openVoice}
-                onClose={handleCloseVoice}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-                disableScrollLock={true} //Ngăn chặn mất thanh cuộn
-                fullWidth
-              >
-                <DialogContent>
-                  <div id="alert-dialog-description" className="text-center">
-                    <div className="d-flex justify-content-center align-content-center">
-                      <Audio checkRecording={isRecording} />
-                    </div>
-                    <label htmlFor="" className="fs-4">
-                      {search ? search : ""}
-                    </label>
-                  </div>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleCloseVoice}>Dừng ghi âm</Button>
-                  <Button onClick={handleStartRecording}>Ghi âm</Button>
-                </DialogActions>
-              </Dialog>
-
-              <Button
-                variant="outlined"
-                onClick={handleClickOpen}
-                className="rounded-end-4"
-              >
-                <i className="bi bi-images"></i>
-              </Button>
-              <Dialog
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-                disableScrollLock={true} //Ngăn chặn mất thanh cuộn
-                fullWidth
-              >
-                <DialogTitle id="alert-dialog-title" className="text-center">
-                  Chọn hình ảnh cần tìm
-                </DialogTitle>
-                <DialogContent>
-                  <DialogContentText id="alert-dialog-description">
-                    <div
-                      id="find-product-bg-img"
-                      className="d-flex justify-content-center align-content-center"
-                    >
-                      {image && image !== null ? (
-                        <img
-                          src={image}
-                          alt="Uploaded"
-                          style={{ maxWidth: "100%", maxHeight: "100%" }}
-                        />
-                      ) : (
-                        <label htmlFor="" className="align-content-center fs-2">
-                          Bạn cần tìm sản phẩm gì?
-                        </label>
-                      )}
-                    </div>
-                    {predictions.map((fill) => (
-                      <div>
-                        <label htmlFor="">
-                          {fill.className} : {fill.probability.toFixed(2)}
-                        </label>
+        {window.location.pathname === "/" && (
+          <div className="col-auto flex-grow-1">
+            <form className="d-flex" role="search">
+              <input
+                className="form-control rounded-start-4 me-3"
+                type="search"
+                placeholder="Bạn cần tìm gì"
+                aria-label="Search"
+                style={{ width: "auto" }}
+                value={search}
+                onChange={handleTextSearch}
+              />
+              <div>
+                <Button
+                  variant="outlined"
+                  onClick={handleClickOpenVoice}
+                  className="me-2"
+                >
+                  <i className="bi bi-mic"></i>
+                </Button>
+                <Dialog
+                  open={openVoice}
+                  onClose={handleCloseVoice}
+                  aria-labelledby="alert-dialog-title"
+                  aria-describedby="alert-dialog-description"
+                  disableScrollLock={true} //Ngăn chặn mất thanh cuộn
+                  fullWidth
+                >
+                  <DialogContent>
+                    <div id="alert-dialog-description" className="text-center">
+                      <div className="d-flex justify-content-center align-content-center">
+                        <Audio checkRecording={isRecording} />
                       </div>
-                    ))}
-                    <div className="mt-3">
-                      <Button
-                        component="label"
-                        variant="contained"
-                        tabIndex={-1}
-                        fullWidth
-                      >
-                        <i className="bi bi-images"></i>
-                        <VisuallyHiddenInput
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                        />
-                      </Button>
+                      <label htmlFor="" className="fs-4">
+                        {search ? search : ""}
+                      </label>
                     </div>
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleClose}>Hủy</Button>
-                  <Button onClick={predict} disabled={!image}>
-                    Tìm kiếm
-                  </Button>
-                </DialogActions>
-              </Dialog>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCloseVoice}>Dừng ghi âm</Button>
+                    <Button onClick={handleStartRecording}>Ghi âm</Button>
+                  </DialogActions>
+                </Dialog>
+
+                <Button
+                  variant="outlined"
+                  onClick={handleClickOpen}
+                  className="rounded-end-4"
+                >
+                  <i className="bi bi-images"></i>
+                </Button>
+                <Dialog
+                  open={open}
+                  onClose={handleClose}
+                  aria-labelledby="alert-dialog-title"
+                  aria-describedby="alert-dialog-description"
+                  disableScrollLock={true} //Ngăn chặn mất thanh cuộn
+                  fullWidth
+                >
+                  <DialogTitle id="alert-dialog-title" className="text-center">
+                    Chọn hình ảnh cần tìm
+                  </DialogTitle>
+                  <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                      <div
+                        id="find-product-bg-img"
+                        className="d-flex justify-content-center align-content-center"
+                      >
+                        {image && image !== null ? (
+                          <img
+                            src={image}
+                            alt="Uploaded"
+                            style={{ maxWidth: "100%", maxHeight: "100%" }}
+                          />
+                        ) : (
+                          <label
+                            htmlFor=""
+                            className="align-content-center fs-2"
+                          >
+                            Bạn cần tìm sản phẩm gì?
+                          </label>
+                        )}
+                      </div>
+                      {predictions.map((fill) => (
+                        <div>
+                          <label htmlFor="">
+                            {fill.className} : {fill.probability.toFixed(2)}
+                          </label>
+                        </div>
+                      ))}
+                      <div className="mt-3">
+                        <Button
+                          component="label"
+                          variant="contained"
+                          tabIndex={-1}
+                          fullWidth
+                        >
+                          <i className="bi bi-images"></i>
+                          <VisuallyHiddenInput
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                          />
+                        </Button>
+                      </div>
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleClose}>Hủy</Button>
+                    <Button onClick={predict} disabled={!image}>
+                      Tìm kiếm
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </div>
+            </form>
+          </div>
+        )}
+        {match && (
+          <div className="col-auto flex-grow-1">
+            <div
+              className="fs-5"
+              style={{
+                color: "#001F3F",
+              }}
+            >
+              Trang tìm kiếm sản phẩm có liên quan
             </div>
-          </form>
-        </div>
+          </div>
+        )}
 
         <div className="col-auto">
           <div className="d-flex align-content-center m-3">
@@ -499,18 +520,13 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
               onClick={checkUserId}
               type="button"
               className="btn btn-icon btn-sm mx-3 rounded-4"
-              to={""}
             >
               <i className="bi bi-shop fs-4"></i>
             </Link>
-            <Link
-              type="button"
-              className="btn btn-icon btn-sm rounded-4 me-3"
-              to={""}
-            >
+            <Link type="button" className="btn btn-icon btn-sm rounded-4 me-3">
               <i className="bi bi-bell fs-4"></i>
             </Link>
-            {fullName ? (
+            {user !== null ? (
               <div className="d-flex justify-content-center align-items-center mt-2 ">
                 <div className="dropdown">
                   <button
@@ -522,12 +538,12 @@ const Header = ({ contextSearch, resetSearch, reloadCartItems }) => {
                     style={{ cursor: "pointer" }}
                   >
                     <img
-                      src={geturlIMG(id, avatar)}
+                      src={geturlIMG(user.id, user.avatar)}
                       alt=""
                       className="rounded-circle img-fluid"
                       style={{ width: "30px", height: "30px" }}
                     />
-                    <span className="ms-2">{fullName}</span>
+                    <span className="ms-2">{user.fullname}</span>
                   </button>
                   <ul className="dropdown-menu">
                     <li>

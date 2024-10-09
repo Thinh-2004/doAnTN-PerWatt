@@ -1,0 +1,54 @@
+#otp-container-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  #otp-form-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    text-align: center;
+  }
+  
+  #otp-title {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  #otp-fields-container {
+    display: flex;
+    justify-content: center; /* Căn giữa các ô nhập liệu theo chiều ngang */
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .otp-field {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Đảm bảo kích thước bao gồm padding và border */
+  }
+  
+  #otp-submit-btn {
+    width: 85%;
+    padding: 10px;
+    background-color: #ff0000;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  #otp-submit-btn:hover {
+    background-color: #cc0000;
+  }
+  

@@ -71,3 +71,13 @@
 #table {
   table-layout: fixed; /* Đảm bảo các cột có kích thước cố định */
 }
+#text-truncate{
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Hiển thị tối đa 3 dòng */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* white-space: nowrap; Không cần thiết trong trường hợp này */
+
+
+}

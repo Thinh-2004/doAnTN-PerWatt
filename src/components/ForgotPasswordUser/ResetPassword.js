@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "../../Localhost/Custumize-axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { Button, TextField } from "@mui/material";
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -17,10 +18,11 @@ const ResetPassword = () => {
     const email = sessionStorage.getItem("email");
 
     try {
-      const response = await axios.post(
-        "api/reset-password",
-        { newPassword, confirmPassword, email }
-      );
+      const response = await axios.post("api/reset-password", {
+        newPassword,
+        confirmPassword,
+        email,
+      });
       toast.success(response.data);
       sessionStorage.removeItem("email");
       sessionStorage.removeItem("generatedOTP");
@@ -36,28 +38,38 @@ const ResetPassword = () => {
         <h2 id="title">Đặt lại mật khẩu</h2>
         <form onSubmit={resetPassword}>
           <div className="form-group" id="form-group">
-            <label id="title-email">Mật khẩu mới</label>
-            <input
+            <TextField
+              id="outlined-basic"
+              label="Vui lòng nhập mật khẩu mới"
+              variant="outlined"
               type="password"
-              placeholder="Vui lòng nhập mật khẩu mới"
-              required
-              id="enter-form"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              size="small"
+              fullWidth
             />
           </div>
           <div className="form-group" id="form-group">
-            <label>Xác nhận mật khẩu</label>
-            <input
+            <TextField
+              id="outlined-basic"
+              label="Xác nhận mật khẩu mới"
+              variant="outlined"
               type="password"
-              placeholder="Xác nhận mật khẩu"
-              required
-              id="enter-form"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              size="small"
+              fullWidth
             />
           </div>
-          <button type="submit" id="btn-submit">Đặt lại mật khẩu</button>
+          <Button
+            fullWidth
+            disableElevation
+            color="error"
+            type="submit"
+            variant="contained"
+          >
+            ĐẶT LẠI MẬT KHẨU
+          </Button>
         </form>
       </div>
     </div>

@@ -4,6 +4,7 @@ import "./HomeStyle.css";
 import About from "./About/About";
 import ProductItem from "./Product/ProductItem";
 import Footer from "../../Footer/Footer";
+import BannerMiddle from "./Banner/BannerMiddle";
 
 const Home = () => {
   const [searchProduct, setSearchProduct] = useState("");
@@ -33,8 +34,11 @@ const Home = () => {
     <>
       <Header contextSearch={handleSearch} resetSearch={resetSearch}></Header>
       <About idCategory={handleIdCate}></About>
-      <div className="container" style={{ marginTop: "35%" }}>
-        <h4 className="text-center fw-bold">Sản phẩm dành cho bạn</h4>
+      <div className="container-fluid" style={{ marginTop: "12%" }}>
+        <BannerMiddle />
+      </div>
+      <div className="container">
+        <h4 className="text-center fw-bold mt-4">Sản phẩm dành cho bạn</h4>
         <div className="row d-flex justify-content-center">
           <ProductItem
             item={searchProduct}

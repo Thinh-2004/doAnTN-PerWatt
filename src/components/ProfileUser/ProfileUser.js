@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Header from "../Header/Header";
-import useSession from "../../Session/useSession";
 import axios from "../../Localhost/Custumize-axios";
 import { Link, Route, Routes } from "react-router-dom";
 import Profile from "./Profile/Profile";
@@ -20,13 +19,18 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const ProfileUser = () => {
-  const [id] = useSession("id");
-  const [avatar] = useSession("avatar");
   const [fill, setFill] = useState([]);
   const [password, setPassword] = useState("");
   const [isChangePassClicked, setIsChangePassClicked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const changeLink = useNavigate();
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
+  const id = user.id;
+  const [checkPassword, setCheckPsasword] = useState({
+    password: "",
+  });
 
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
@@ -37,6 +41,10 @@ const ProfileUser = () => {
       try {
         const res = await axios.get(`userProFile/${id}`);
         setFill(res.data);
+
+        const resUser = await axios.get(`userProFile/${id}`);
+        setCheckPsasword(resUser.data.password);
+        console.log(checkPassword);
       } catch (error) {
         console.log(error);
         toast.error(
@@ -45,7 +53,7 @@ const ProfileUser = () => {
       }
     };
     loadData();
-  }, [id]);
+  }, [id, checkPassword]);
 
   const onClickChangePass = async (e) => {
     e.preventDefault();
@@ -118,89 +126,102 @@ const ProfileUser = () => {
                   <li className="mb-2">
                     {isChangePassClicked ? (
                       <span className="text-muted">Đổi mật khẩu</span>
-                    ) : (
-                      <span
+                    ) : checkPassword === null ? (
+                      <Link
                         type="button"
                         className="text-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#exampleModal"
+                        to={"changePass"}
                       >
                         Đổi mật khẩu
-                      </span>
-                    )}
-
-                    <div
-                      className="modal fade"
-                      id="exampleModal"
-                      tabIndex="-1"
-                      aria-labelledby="exampleModalLabel"
-                      aria-hidden="true"
-                    >
-                      <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                          <div className="modal-header">
-                            <h1
-                              className="modal-title fs-5"
-                              id="exampleModalLabel"
-                            >
-                              Xác minh tài khoản trước khi thực hiện
-                            </h1>
-                            <button
-                              type="button"
-                              className="btn-close"
-                              data-bs-dismiss="modal"
-                              aria-label="Close"
-                            ></button>
+                      </Link>
+                    ) : (
+                      <>
+                        <span
+                          type="button"
+                          className="text-primary"
+                          data-bs-toggle="modal"
+                          data-bs-target="#exampleModal"
+                        >
+                          Đổi mật khẩu
+                        </span>
+                        <div
+                          className="modal fade"
+                          id="exampleModal"
+                          tabIndex="-1"
+                          aria-labelledby="exampleModalLabel"
+                          aria-hidden="true"
+                        >
+                          <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                              <div className="modal-header">
+                                <h1
+                                  className="modal-title fs-5"
+                                  id="exampleModalLabel"
+                                >
+                                  Xác minh tài khoản trước khi thực hiện
+                                </h1>
+                                <button
+                                  type="button"
+                                  className="btn-close"
+                                  data-bs-dismiss="modal"
+                                  aria-label="Close"
+                                ></button>
+                              </div>
+                              <form onSubmit={onClickChangePass}>
+                                <div className="modal-body">
+                                  <FormControl
+                                    sx={{ m: 1, width: "100%" }}
+                                    variant="outlined"
+                                  >
+                                    <InputLabel htmlFor="outlined-adornment-password">
+                                      Nhập mật khẩu của bạn
+                                    </InputLabel>
+                                    <OutlinedInput
+                                      value={password}
+                                      onChange={(e) =>
+                                        setPassword(e.target.value)
+                                      }
+                                      id="outlined-adornment-password"
+                                      type={showPassword ? "text" : "password"}
+                                      endAdornment={
+                                        <InputAdornment position="end">
+                                          <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={handleClickShowPassword}
+                                            onMouseDown={
+                                              handleMouseDownPassword
+                                            }
+                                            onMouseUp={handleMouseUpPassword}
+                                            edge="end"
+                                          >
+                                            {showPassword ? (
+                                              <VisibilityOff />
+                                            ) : (
+                                              <Visibility />
+                                            )}
+                                          </IconButton>
+                                        </InputAdornment>
+                                      }
+                                      label="Nhập mật khẩu của bạn"
+                                    />
+                                  </FormControl>
+                                </div>
+                                <div className="modal-footer">
+                                  <Button
+                                    variant="contained"
+                                    id="btn-checkPass"
+                                    type="submit"
+                                    disableElevation
+                                  >
+                                    Xác nhận
+                                  </Button>
+                                </div>
+                              </form>
+                            </div>
                           </div>
-                          <form onSubmit={onClickChangePass}>
-                            <div className="modal-body">
-                              <FormControl
-                                sx={{ m: 1, width: "100%" }}
-                                variant="outlined"
-                              >
-                                <InputLabel htmlFor="outlined-adornment-password">
-                                  Nhập mật khẩu của bạn
-                                </InputLabel>
-                                <OutlinedInput
-                                  value={password}
-                                  onChange={(e) => setPassword(e.target.value)}
-                                  id="outlined-adornment-password"
-                                  type={showPassword ? "text" : "password"}
-                                  endAdornment={
-                                    <InputAdornment position="end">
-                                      <IconButton
-                                        aria-label="toggle password visibility"
-                                        onClick={handleClickShowPassword}
-                                        onMouseDown={handleMouseDownPassword}
-                                        onMouseUp={handleMouseUpPassword}
-                                        edge="end"
-                                      >
-                                        {showPassword ? (
-                                          <VisibilityOff />
-                                        ) : (
-                                          <Visibility />
-                                        )}
-                                      </IconButton>
-                                    </InputAdornment>
-                                  }
-                                  label="Nhập mật khẩu của bạn"
-                                />
-                              </FormControl>
-                            </div>
-                            <div className="modal-footer">
-                              <Button
-                                variant="contained"
-                                id="btn-checkPass"
-                                type="submit"
-                                disableElevation
-                              >
-                                Xác nhận
-                              </Button>
-                            </div>
-                          </form>
                         </div>
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </li>
                   <li className="mb-2">
                     <Link className="text-decoration-none">Quyền riêng tư</Link>
