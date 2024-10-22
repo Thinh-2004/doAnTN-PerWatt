@@ -18,8 +18,7 @@ const ToolbarListPorudct = ({
   handleOptionChange,
   idCateOption,
   handleClickFilterSoldOutByQuantity,
-  isFilterQuantitySoldOut
-
+  isFilterQuantitySoldOut,
 }) => {
   const idStore = localStorage.getItem("idStore");
   const [cateInStore, setCateInStore] = useState([]); //Danh mục trong cửa hàng
@@ -62,61 +61,69 @@ const ToolbarListPorudct = ({
   });
 
   return (
-    <>
-      {/* Tìm kiếm */}
-      <TextField
-        id="outlined-search"
-        label="Nhập từ khóa bạn cần tìm kiếm (Tên, Loại, Hãng)."
-        type="search"
-        size="small"
-        fullWidth
-        name="searchProduct"
-        onChange={(e) => setSearch(e.target.value)} // Update search state on input change
-        value={search}
-      />
-      {/* Tìm kiếm theo danh mục  */}
-      <Autocomplete
-        options={cateInStore.sort(
-          (a, b) => -b.firstLetter.localeCompare(a.firstLetter)
-        )}
-        groupBy={(option) => option.firstLetter}
-        getOptionLabel={(option) => option.name}
-        isOptionEqualToValue={(option, value) => option.id === value.id} // So sánh dựa trên ID
-        onChange={handleOptionChange}
-        value={cateInStore.find((option) => option.id === idCateOption) || null} // Đảm bảo giá trị phù hợp
-        renderInput={(params) => (
-          <TextField {...params} label="Tìm kiếm theo danh mục sản phẩm" />
-        )}
-        renderGroup={(params) => (
-          <li key={params.key}>
-            <GroupHeader>{params.group}</GroupHeader>
-            <GroupItems>{params.children}</GroupItems>
-          </li>
-        )}
-        sx={{ minWidth: 260, marginLeft: "10px" }}
-        size="small"
-      />
-      {/* Lọc số lượng hết hàng */}
-      <Badge badgeContent={countQuantitySoldOut} color="error">
-        <Button
-          sx={{ marginLeft: "10px" }}
-          variant="outlined"
-          onClick={handleClickFilterSoldOutByQuantity}
-        >
-          {isFilterQuantitySoldOut ? (
-            <>
-              <FilterAltOffIcon />
-              Hiển thị tất cả
-            </>
-          ) : (
-            <>
-              <FilterAltIcon />
-              Lọc sản phẩm hết hàng
-            </>
-          )}
-        </Button>
-      </Badge>
-    </>
+    <div className="row m-1">
+      <div className="col-lg-6 col-md-6 col-sm-6 mb-3">
+        {/* Tìm kiếm */}
+        <TextField
+          id="outlined-search"
+          label="Nhập từ khóa bạn cần tìm kiếm (Tên, Loại, Hãng)."
+          type="search"
+          size="small"
+          fullWidth
+          name="searchProduct"
+          onChange={(e) => setSearch(e.target.value)} // Update search state on input change
+          value={search}
+        />
+      </div>
+      <div className="col-lg-6 col-md-6 col-sm-6 mb-3 ">
+        <div className="d-flex justify-content-between">
+          {/* Tìm kiếm theo danh mục  */}
+          <Autocomplete
+            options={cateInStore.sort(
+              (a, b) => -b.firstLetter.localeCompare(a.firstLetter)
+            )}
+            groupBy={(option) => option.firstLetter}
+            getOptionLabel={(option) => option.name}
+            isOptionEqualToValue={(option, value) => option.id === value.id} // So sánh dựa trên ID
+            onChange={handleOptionChange}
+            value={
+              cateInStore.find((option) => option.id === idCateOption) || null
+            } // Đảm bảo giá trị phù hợp
+            renderInput={(params) => (
+              <TextField {...params} label="Tìm kiếm theo danh mục sản phẩm" />
+            )}
+            sx={{ width: 390, marginRight : 1 }}
+            renderGroup={(params) => (
+              <li key={params.key}>
+                <GroupHeader>{params.group}</GroupHeader>
+                <GroupItems>{params.children}</GroupItems>
+              </li>
+            )}
+            size="small"
+          />
+          {/* Lọc số lượng hết hàng */}
+          <Badge badgeContent={countQuantitySoldOut} color="error">
+            <Button
+              variant="outlined"
+              onClick={handleClickFilterSoldOutByQuantity}
+              // sx={{ width: 320 }}
+            >
+              {isFilterQuantitySoldOut ? (
+                <>
+                  <FilterAltOffIcon />
+                  Hiển thị tất cả
+                </>
+              ) : (
+                <>
+                  <FilterAltIcon />
+                  Lọc sản phẩm hết hàng
+                </>
+              )}
+            </Button>
+          </Badge>
+        </div>
+      </div>
+    </div>
   );
 };
 

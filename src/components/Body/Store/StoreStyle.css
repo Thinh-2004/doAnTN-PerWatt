@@ -1,9 +1,17 @@
 #logo-store {
   width: 100px;
-  height: 100px;
+  aspect-ratio: 1 / 1;
+  /* height: 100px; */
   border-radius: 50%;
   border: 1px solid;
 }
+
+#logo-PerMall {
+  width: 5%;
+  aspect-ratio: 1 / 1; /* hàm chỉnh tỷ lệ tròn không thay đổi khi website zoom */
+  border-radius: 50%;
+}
+
 #btn-follow {
   width: 50%;
   background-color: rgb(228, 255, 182);

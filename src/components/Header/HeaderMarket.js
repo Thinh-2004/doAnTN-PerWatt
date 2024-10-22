@@ -2,18 +2,22 @@ import React, { useEffect, useState } from "react";
 import "./HeaderStyle.css";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import useSession from "../../Session/useSession";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import axios from "../../Localhost/Custumize-axios";
+import { Button, Menu, MenuItem } from "@mui/material";
+import { Divider } from "antd";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 const Header = () => {
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
-  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
   const [countOrder, setCountOrder] = useState(0);
   const [count, setCount] = useState(0);
   const changeLink = useNavigate();
@@ -120,29 +124,49 @@ const Header = () => {
     }
   };
 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const openMenuUser = Boolean(anchorEl);
+  const handleClickMenuUser = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleCloseMenuUser = () => {
+    setAnchorEl(null);
+  };
+
   return (
-    <div
-      className="d-flex justify-content-between shadow sticky-top container-fluid"
-      id="nav"
-    >
-      <div className="d-flex">
-        <Link to={"/profileMarket"}>
-          <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
-        </Link>
-      </div>
-      <div className="align-content-center m-3">
-        <div className="d-flex">
-          <div className="mx-4 border-end">
+    <div className="container-fluid sticky-top" >
+      <div className="row align-items-center justify-content-between shadow " id="nav">
+        <div className="col-lg-3 col-md-3 col-sm-3 d-flex justify-content-start mb-3">
+          <div className="d-flex align-items-center">
+            <Link to={"/profileMarket"}>
+              <img
+                src="/images/logoWeb.png"
+                alt=""
+                className=""
+                id="img-logo"
+              />
+            </Link>
+            <h1
+              id="title-web"
+              className="fw-bold fst-italic mt-2"
+              style={{ marginLeft: "30px" }}
+            >
+              P E R W A T T
+            </h1>
+          </div>
+        </div>
+        <div className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-end">
+          <div className="d-flex align-items-center border-end me-3 ">
             <Link
               type="button"
-              className="btn btn-icon position-relative rounded-4 me-3"
+              className="btn btn-icon position-relative rounded-3 me-3"
               to={"/"}
             >
               <i class="bi bi-houses fs-4"></i>
             </Link>
             <Link
               type="button"
-              className="btn btn-icon position-relative rounded-4"
+              className="btn btn-icon position-relative rounded-3 me-3"
               to={"/cart"}
             >
               <i className="bi bi-cart4 fs-4"></i>
@@ -153,14 +177,14 @@ const Header = () => {
             <Link
               onClick={checkUserId}
               type="button"
-              className="btn btn-icon btn-sm mx-3 rounded-4"
+              className="btn btn-icon btn-sm rounded-3 me-3"
               to={""}
             >
               <i class="bi bi-gear fs-4"></i>
             </Link>
             <Link
               type="button"
-              className="btn btn-icon btn-sm  position-relative rounded-4 me-3"
+              className="btn btn-icon btn-sm  position-relative rounded-3 me-3"
               to={"/notifications"}
             >
               <i className="bi bi-bell fs-4"></i>
@@ -170,39 +194,92 @@ const Header = () => {
             </Link>
           </div>
           {user ? (
-            <div className="d-flex justify-content-center align-items-center mt-2 ">
-              <div className="dropdown">
-                <button
-                  className="p-1 btn btn-lg d-flex p-0 align-items-center dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                  id="btn-sessionUser"
-                >
-                  <img
-                    src={geturlIMG(user.id, user.avatar)}
-                    alt=""
-                    className="rounded-circle img-fluid"
-                    style={{ width: "30px", height: "30px" }}
-                  />
-                  <span className="ms-2">{user.fullname}</span>
-                </button>
-                <ul className="dropdown-menu">
-                  <li>
-                    <Link className="dropdown-item" to={"/user"}>
-                      Hồ sơ của tôi
-                    </Link>
-                  </li>
-                  <li>
-                    <hr className="p-0 m-2" />
-                  </li>
-                  <li>
-                    <Link className="dropdown-item text-danger" onClick={handleLogOut}>
-                      Đăng xuất
-                    </Link>
-                  </li>
-                </ul>
-              </div>
+            <div
+              className="d-flex justify-content-center align-items-center mt-2 rounded-2"
+              style={{ border: "1px solid" }}
+            >
+              <Button
+                id="basic-button"
+                aria-controls={openMenuUser ? "basic-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={openMenuUser ? "true" : undefined}
+                onClick={handleClickMenuUser}
+                variant="text"
+                sx={{
+                  color: "black",
+                }}
+              >
+                <img
+                  src={geturlIMG(user.id, user.avatar)}
+                  alt=""
+                  className="rounded-circle img-fluid"
+                  style={{ width: "30px", height: "30px" }}
+                />
+                <span className="ms-2">
+                  {user.fullname}
+                  <ArrowDropDownIcon fontSize="small" />
+                </span>
+              </Button>
+              <Menu
+                anchorEl={anchorEl}
+                id="account-menu"
+                open={openMenuUser}
+                onClose={handleCloseMenuUser}
+                onClick={handleCloseMenuUser}
+                slotProps={{
+                  paper: {
+                    elevation: 0,
+                    sx: {
+                      overflow: "visible",
+                      filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                      mt: 1.5,
+                      width: 200,
+                      "& .MuiAvatar-root": {
+                        width: 32,
+                        height: 32,
+                        ml: -0.5,
+                        mr: 1,
+                      },
+                      "&::before": {
+                        content: '""',
+                        display: "block",
+                        position: "absolute",
+                        top: 0,
+                        right: 14,
+                        width: 10,
+                        height: 10,
+                        bgcolor: "background.paper",
+                        transform: "translateY(-50%) rotate(45deg)",
+                        zIndex: 0,
+                      },
+                    },
+                  },
+                }}
+                disableScrollLock 
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              >
+                <MenuItem onClick={handleCloseMenuUser}>
+                  <Link className="text-dark " to={"/user"}>
+                    <img
+                      src={geturlIMG(user.id, user.avatar)}
+                      alt=""
+                      className="rounded-circle img-fluid"
+                      style={{ width: "20px", height: "20px" }}
+                    />{" "}
+                    <span>Hồ sơ của tôi</span>
+                  </Link>
+                </MenuItem>
+                <Divider className="m-1 p-1" />
+                <MenuItem onClick={handleCloseMenuUser}>
+                  <Link
+                    className="dropdown-item text-danger"
+                    onClick={handleLogOut}
+                  >
+                    Đăng xuất
+                  </Link>
+                </MenuItem>
+              </Menu>
             </div>
           ) : (
             <div className="mt-2">

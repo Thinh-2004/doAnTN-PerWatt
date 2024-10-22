@@ -11,7 +11,7 @@ import ProfileUser from "../components/ProfileUser/ProfileUser";
 import ForgotPassword from "../components/ForgotPasswordUser/ForgotPassword";
 import OTP from "../components/ForgotPasswordUser/OTP";
 import ResetPassword from "../components/ForgotPasswordUser/ResetPassword";
-import Store from "../components/Body/Store/Store";
+import Store from "../components/Body/Store/NavStore";
 import Order from "../components/Order/OrderBuyer/OrderBuyer";
 import OrderDetail from "../components/Order/OrderDetail/OrderDetail";
 import PayBuyer from "../components/Order/PayBuyer/PayBuyer";

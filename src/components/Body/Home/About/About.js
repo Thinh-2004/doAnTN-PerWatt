@@ -13,6 +13,56 @@ const About = ({ idCategory }) => {
   const [fill, setFill] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageIndex, setPageIndex] = useState(0); // Quản lý trang hiện tại
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Số lượng mục hiển thị
+
+  // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
+  const updateItemsPerPage = () => {
+    const width = window.innerWidth;
+    // console.log(width);
+
+    if (width >= 1900) {
+      setItemsPerPage(10);
+    } else if (width >= 1800) {
+      setItemsPerPage(9);
+    } else if (width >= 1700) {
+      setItemsPerPage(9);
+    }else if(width >= 1600){
+      setItemsPerPage(8);
+    } else if (width >= 1500) {
+      setItemsPerPage(7);
+    } else if (width >= 1400) {
+      setItemsPerPage(7);
+    } else if (width >= 1300) {
+      setItemsPerPage(6);
+    } else if (width >= 1200) {
+      setItemsPerPage(6);
+    } else if (width >= 1100) {
+      setItemsPerPage(5);
+    } else if (width >= 1050) {
+      setItemsPerPage(5);
+    }else if (width >= 850){
+      setItemsPerPage(4);
+    }else if (width >= 800){
+      setItemsPerPage(3);
+    }else if (width >= 500){
+      setItemsPerPage(2);
+    } else {
+      setItemsPerPage(2);
+    }
+  };
+
+  useEffect(() => {
+    // Gọi hàm để xác định số lượng mục hiển thị ngay khi component mount
+    updateItemsPerPage();
+
+    // Lắng nghe sự thay đổi kích thước cửa sổ
+    window.addEventListener("resize", updateItemsPerPage);
+
+    // Cleanup listener khi component unmount
+    return () => {
+      window.removeEventListener("resize", updateItemsPerPage);
+    };
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -34,7 +84,7 @@ const About = ({ idCategory }) => {
 
   const handleNext = () => {
     setPageIndex((prevIndex) =>
-      Math.min(prevIndex + 1, Math.ceil(fill.length / 10) - 1)
+      Math.min(prevIndex + 1, Math.ceil(fill.length / itemsPerPage) - 1)
     ); // Giới hạn trang tối đa
   };
 
@@ -59,38 +109,30 @@ const About = ({ idCategory }) => {
             {loading ? (
               <div className="d-flex justify-content-between align-items-center">
                 {/* Nút Prev */}
-                {pageIndex === 0 ? (
-                  <button
-                    className="btn rounded-circle"
-                    onClick={handleNext}
-                    disabled={pageIndex === 0}
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      outline: "1px solid",
-                    }}
-                  >
-                    <DoDisturbAltIcon></DoDisturbAltIcon>
-                  </button>
-                ) : (
-                  <button
-                    className="btn rounded-circle"
-                    onClick={handlePrev}
-                    disabled={pageIndex === 0}
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      outline: "1px solid",
-                    }}
-                  >
-                    <ArrowBackIosNewOutlinedIcon></ArrowBackIosNewOutlinedIcon>
-                  </button>
-                )}
+                <button
+                  className="btn rounded-circle"
+                  onClick={handlePrev}
+                  disabled={pageIndex === 0}
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    outline: "1px solid",
+                  }}
+                >
+                  {pageIndex === 0 ? (
+                    <DoDisturbAltIcon />
+                  ) : (
+                    <ArrowBackIosNewOutlinedIcon />
+                  )}
+                </button>
 
                 {/* Danh mục hiển thị */}
                 <div className="d-flex justify-content-center">
                   {fill
-                    .slice(pageIndex * 10, pageIndex * 10 + 10)
+                    .slice(
+                      pageIndex * itemsPerPage,
+                      pageIndex * itemsPerPage + itemsPerPage
+                    )
                     .map((cate) => (
                       <div
                         className="d-flex flex-column align-items-center mb-3 m-2"
@@ -128,32 +170,24 @@ const About = ({ idCategory }) => {
                 </div>
 
                 {/* Nút Next */}
-                {pageIndex === Math.ceil(fill.length / 10) - 1 ? (
-                  <button
-                    className="btn rounded-circle"
-                    onClick={handleNext}
-                    disabled={pageIndex === Math.ceil(fill.length / 10) - 1}
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      outline: "1px solid",
-                    }}
-                  >
-                    <DoDisturbAltIcon></DoDisturbAltIcon>
-                  </button>
-                ) : (
-                  <button
-                    className="btn rounded-circle"
-                    onClick={handleNext}
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      outline: "1px solid",
-                    }}
-                  >
-                    <ArrowForwardIosOutlinedIcon></ArrowForwardIosOutlinedIcon>
-                  </button>
-                )}
+                <button
+                  className="btn rounded-circle"
+                  onClick={handleNext}
+                  disabled={
+                    pageIndex === Math.ceil(fill.length / itemsPerPage) - 1
+                  }
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    outline: "1px solid",
+                  }}
+                >
+                  {pageIndex === Math.ceil(fill.length / itemsPerPage) - 1 ? (
+                    <DoDisturbAltIcon />
+                  ) : (
+                    <ArrowForwardIosOutlinedIcon />
+                  )}
+                </button>
               </div>
             ) : (
               <l-dot-wave size="47" speed="1" color="black"></l-dot-wave>

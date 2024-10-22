@@ -45,7 +45,6 @@
   padding-top: 10px;
   margin-bottom: 10px;
   object-fit: cover;
-  
 }
 
 #featured-category-item span {
@@ -60,9 +59,6 @@
   border-radius: 10px;
   transition: 0.1s;
 }
-
-
-
 
 /* 
 .d-flex.justify-content-between.align-items-center {

@@ -4,7 +4,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import AdjustIcon from "@mui/icons-material/Adjust";
 
-const ToolBarHomeStore = ({ isAscending, isSortOption, valueSort }) => {
+const ButtonFilter = ({ isAscending, isSortOption, valueSort }) => {
   const [selectedButton, setSelectedButton] = useState(null);
   const handleButtonClick = (buttonName) => {
     if ((buttonName === "oldItems") | (buttonName === "newItems")) {
@@ -77,4 +77,4 @@ const ToolBarHomeStore = ({ isAscending, isSortOption, valueSort }) => {
   );
 };
 
-export default ToolBarHomeStore;
+export default ButtonFilter;

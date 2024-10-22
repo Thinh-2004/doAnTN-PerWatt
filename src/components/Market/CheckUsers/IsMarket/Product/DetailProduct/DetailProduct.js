@@ -16,6 +16,7 @@ const DetailProduct = forwardRef(
       quantity: "",
       imagedetail: "",
       imageName: "",
+      formattedPrice: "",
     });
     const [imagePreview, setImagePreview] = useState("");
     const [editingIndex, setEditingIndex] = useState(null); // Index của mục đang được chỉnh sửa
@@ -257,7 +258,7 @@ const DetailProduct = forwardRef(
           price: "",
           quantity: "",
           imagedetail: "",
-          formattedPrice : ""
+          formattedPrice: "",
         });
         setMoveData([]);
       }
@@ -270,7 +271,7 @@ const DetailProduct = forwardRef(
             <div className="d-flex justify-content-between">
               {isChangeForm ? (
                 <div className="row">
-                  <div className="col-lg-4 col-md-4 col-sm-4">
+                  <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                     <TextField
                       label="Nhập tên phân loại"
                       id="outlined-size-small"
@@ -281,7 +282,7 @@ const DetailProduct = forwardRef(
                       fullWidth
                     />
                   </div>
-                  <div className="col-lg-4 col-md-4 col-sm-4">
+                  <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                     <TextField
                       label="Nhập giá sản phẩm"
                       id="outlined-size-small"
@@ -293,7 +294,7 @@ const DetailProduct = forwardRef(
                       className="me-2"
                     />
                   </div>
-                  <div className="col-lg-4 col-md-4 col-sm-4">
+                  <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                     <TextField
                       label="Nhập số lượng"
                       id="outlined-size-small"
@@ -310,6 +311,7 @@ const DetailProduct = forwardRef(
                       style={{ textTransform: "none", fontSize: "15px" }}
                       onClick={handleAddOrUpdate}
                       className="me-4"
+                      variant="outlined"
                     >
                       {editingIndex !== null ? "Cập nhật" : "Thêm"}
                     </Button>
@@ -340,7 +342,7 @@ const DetailProduct = forwardRef(
                     </div>
                   )}
                   <div className="mt-2">
-                    <table className="table">
+                    <table className="table text-center">
                       <thead>
                         <tr>
                           <th scope="col">Hình</th>
@@ -350,7 +352,11 @@ const DetailProduct = forwardRef(
                           <th scope="col">Thao tác</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody
+                        style={{
+                          verticalAlign: "middle",
+                        }}
+                      >
                         {temporaryData.map((fill, index) => (
                           <tr key={index}>
                             <td>
@@ -361,7 +367,7 @@ const DetailProduct = forwardRef(
                               />
                             </td>
                             <td>{fill.namedetail}</td>
-                            <td>{fill.price}</td>
+                            <td>{formatPrice(fill.price)}</td>
                             <td>{fill.quantity}</td>
                             <td>
                               <Button

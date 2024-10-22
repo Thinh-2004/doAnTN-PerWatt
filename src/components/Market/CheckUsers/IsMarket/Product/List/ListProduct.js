@@ -38,7 +38,7 @@ const ListProduct = () => {
       const resStore = await axios.get(`/store/${idStore}`);
       const res = await axios.get(`/productStore/${resStore.data.slug}`);
 
-      const filteredData = res.data.filter((product) => {
+      const filteredData = res.data.products.filter((product) => {
         const searchTerm = debounceSearch.toLowerCase();
         // Kiểm tra nếu sản phẩm có ID danh mục
         const categoryMatch = idCateOption
@@ -259,18 +259,14 @@ const ListProduct = () => {
           </Link>
         </button>
       </div>
-      <div className="mx-4 d-flex">
-        <ToolbarListProduct
-          search={search}
-          setSearch={setSearch}
-          handleOptionChange={handleOptionChange}
-          idCateOption={idCateOption}
-          handleClickFilterSoldOutByQuantity={
-            handleClickFilterSoldOutByQuantity
-          }
-          isFilterQuantitySoldOut={isFilterQuantitySoldOut}
-        />
-      </div>
+      <ToolbarListProduct
+        search={search}
+        setSearch={setSearch}
+        handleOptionChange={handleOptionChange}
+        idCateOption={idCateOption}
+        handleClickFilterSoldOutByQuantity={handleClickFilterSoldOutByQuantity}
+        isFilterQuantitySoldOut={isFilterQuantitySoldOut}
+      />
       <TableContainer component={Paper} id="table-container">
         {loading ? (
           <div className="mt-4 mb-4 d-flex justify-content-center">

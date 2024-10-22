@@ -49,8 +49,8 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
     );
   };
   return (
-    <div className="col-md-4 col-lg-4 col-sm-4 border-end">
-      <div
+    <>
+       <div
         id="carouselExampleDark"
         className="carousel carousel-dark slide position-relative"
       >
@@ -198,7 +198,8 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
               </button>
             ))}
       </div>
-    </div>
+    </>
+   
   );
 };
 

@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import axios from "../../../../Localhost/Custumize-axios";
+import axios from "../../../../../Localhost/Custumize-axios";
 
-const ListItem = ({ data, countOrderBuyed }) => {
+const ListItemPerMall = ({ data }) => {
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -39,8 +39,8 @@ const ListItem = ({ data, countOrderBuyed }) => {
         );
         return (
           <div
-            className="col-lg-2 col-md-3 col-sm-4 mt-3 card shadow rounded-4 p-2 d-flex flex-column"
-            style={{ minHeight: "100%" }}
+            className="col-lg-3 col-md-3 col-sm-3 mt-3 card shadow rounded-4 p-2 d-flex flex-column"
+            style={{ minHeight: "23%", maxWidth: "23%" }}
             key={fill.id}
             id="home-product-item"
           >
@@ -84,7 +84,7 @@ const ListItem = ({ data, countOrderBuyed }) => {
               </span>
               <h5 id="price-product">
                 {/* <del className="text-secondary me-1">3,000,000 đ</del> - */}
-                <span className="text-danger mx-1 fs-6" id="price-product-item">
+                <span className="text-danger mx-1" id="price-product-item">
                   {minPrice === maxPrice
                     ? formatPrice(minPrice) + " đ"
                     : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` +
@@ -113,4 +113,4 @@ const ListItem = ({ data, countOrderBuyed }) => {
   );
 };
 
-export default ListItem;
+export default ListItemPerMall;
