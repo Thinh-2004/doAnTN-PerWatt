@@ -31,13 +31,13 @@ const FormSelectAdress = ({ apiAddress, resetForm, editFormAddress }) => {
   const result = async () => {
     try {
       const findProvinceName = await APITinhThanh.get(
-        `https://provinces.open-api.vn/api/p/${selectedProvince}`
+        `/api/p/${selectedProvince}`
       );
       const findDistrictsName = await APITinhThanh.get(
-        `https://provinces.open-api.vn/api/d/${selectedDistrict}`
+        `/api/d/${selectedDistrict}`
       );
       const findwardsName = await APITinhThanh.get(
-        `https://provinces.open-api.vn/api/w/${selectedWard}`
+        `/api/w/${selectedWard}`
       );
       //   console.log(
       //     findProvinceName.data.name +

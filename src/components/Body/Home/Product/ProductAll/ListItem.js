@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import axios from "../../../../Localhost/Custumize-axios";
+import React from "react";
 import { Link } from "react-router-dom";
+import axios from "../../../../../Localhost/Custumize-axios";
 
-const ListFindMore = ({ data }) => {
+const ListItem = ({ data }) => {
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -84,7 +84,7 @@ const ListFindMore = ({ data }) => {
               </span>
               <h5 id="price-product">
                 {/* <del className="text-secondary me-1">3,000,000 đ</del> - */}
-                <span className="text-danger mx-1 fs-6" id="price-product-item">
+                <span className="text-danger mx-1" id="price-product-item">
                   {minPrice === maxPrice
                     ? formatPrice(minPrice) + " đ"
                     : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` +
@@ -102,7 +102,7 @@ const ListFindMore = ({ data }) => {
               </div>
               <div>
                 <span style={{ fontSize: "12px" }}>
-                  Đã bán: {formatCount(fill.countQuantityOrderBy)} 
+                  Đã bán: {formatCount(fill.countQuantityOrderBy)}
                 </span>
               </div>
             </div>
@@ -113,4 +113,4 @@ const ListFindMore = ({ data }) => {
   );
 };
 
-export default ListFindMore;
+export default ListItem;

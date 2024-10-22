@@ -5,15 +5,10 @@ import axios from "../../../../Localhost/Custumize-axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../Header/Header";
 import "./ShowDetailProduct.css";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  TextField,
-} from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ListImageDetailProduct from "./ListImageDetailProduct";
+import NavStore from "./NavStore";
 
 const DetailProduct = () => {
   const { slug } = useParams();
@@ -26,9 +21,6 @@ const DetailProduct = () => {
   const [quantity, setQuantity] = useState(1); //trạng thái cho số lượng trước khi thêm giỏ hàng
   const [productDetailIds, setproductDetailIds] = useState(null);
 
-  const geturlIMGStore = (userId, filename) => {
-    return `${axios.defaults.baseURL}files/user/${userId}/${filename}`;
-  };
   const geturlImgDetailProduct = (detailId, filename) => {
     return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
   };
@@ -176,13 +168,6 @@ const DetailProduct = () => {
     setQuantity(value);
   };
 
-  const handleViewStoreInfo = () => {
-    const slugStore = FillDetailPr.store.slug;
-    if (slugStore) {
-      changeLink(`/pageStore/${slugStore}`); // Điều hướng đến trang thông tin của store
-    }
-  };
-
   const handleClickIdDetail = (idDetail) => () => {
     setSelectedIdDetail(idDetail);
     const selectedProduct = fillDetail.find((detail) => detail.id === idDetail);
@@ -207,54 +192,18 @@ const DetailProduct = () => {
     // console.log(totalQuantity);
   }, [fillDetail]);
 
-  //Hàm cắt chuỗi địa chỉ
-  const splitByAddress = (address) => {
-    const parts = address?.split(",");
-    if (parts?.length > 0) {
-      return parts[4];
-    }
-  };
-
-  const calculateAccountDuration = (accountCreatedDate) => {
-    //Khởi tạo ngày từ CSDL và ngày hiện tại
-    const createdDate = new Date(accountCreatedDate);
-    const now = new Date();
-
-    const diffInMilliseconds = now - createdDate; //Tính khoảng cách (Tính bằng mili)
-    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24)); //Chuyển đổi kết quả mili giây thành ngày
-
-    if (diffInDays <= 7) {
-      //Nhỏ hơn 7 ngày
-      return "Mới tham gia";
-    }
-
-    //Tính tổng số tháng
-    const diffInMonths =
-      (now.getFullYear() - createdDate.getFullYear()) * 12 +
-      (now.getMonth() - createdDate.getMonth());
-
-    if (diffInMonths >= 12) {
-      //Kết quả lớn hơn 12 tháng
-      const years = Math.floor(diffInMonths / 12);
-      return years + (years === 1 ? " năm" : " năm");
-    } else if (diffInMonths > 0) {
-      //Kết quả số tháng lớn hơn 0 nhưng nhỏ hơn 12
-      return diffInMonths + (diffInMonths === 1 ? " tháng" : " tháng");
-    } else {
-      //Ngược lại lấy số ngày
-      return diffInDays + " ngày";
-    }
-  };
-
   return (
     <>
       <Header reloadCartItems={isCountCart} />
       <div className="container mt-4">
         <div className="row bg-white rounded-4">
-          <ListImageDetailProduct
-            dataImage={FillDetailPr}
-            totalQuantity={totalQuantity}
-          />
+          <div className="col-md-4 col-lg-4 col-sm-4 border-end">
+            <ListImageDetailProduct
+              dataImage={FillDetailPr}
+              totalQuantity={totalQuantity}
+            />
+          </div>
+
           <div className="col-md-8 col-lg-8 col-sm-8 d-flex flex-column">
             <div className="p-3 border-bottom">
               <h1 className="fst-italic" id="productName">
@@ -357,7 +306,21 @@ const DetailProduct = () => {
                     </li>
                     <li>
                       <label htmlFor="">Kích thước:</label>
-                      <span>{FillDetailPr ? FillDetailPr.size : "N/A"}</span>
+                      <span>
+                        {FillDetailPr
+                          ? FillDetailPr.size.split("\n").map((line, index) => (
+                              <span
+                                key={index}
+                                style={{
+                                  display: index === 0 ? "" : "block", // Mỗi dòng hiển thị trên một dòng mới
+                                  paddingLeft: index === 0 ? "5px" : "90px", // Không thụt lề dòng đầu tiên, thụt lề các dòng sau
+                                }}
+                              >
+                                {line}
+                              </span>
+                            ))
+                          : "N/A"}
+                      </span>
                     </li>
                     <li>
                       <label htmlFor="">Hỗ trợ chơi game:</label>{" "}
@@ -373,7 +336,7 @@ const DetailProduct = () => {
             </div>
             <div className="row mb-3">
               <div className="col-lg-6 col-md-6 col-sm-6 ">
-                <div className="d-flex justify-content-start mt-3">
+                <div className="d-flex justify-content-start mt-3 mb-3">
                   <TextField
                     id="outlined-number"
                     label="Số lượng"
@@ -496,100 +459,10 @@ const DetailProduct = () => {
             </div>
           </div>
         </div>
-        <div className="row bg-white rounded-4 mt-3">
-          <div className="col-lg-4 col-md-4 col-sm-4 border-end">
-            <div className="d-flex justify-content-center">
-              <div className="p-2 d-flex justify-content-center">
-                <img
-                  src={
-                    FillDetailPr && FillDetailPr.store
-                      ? geturlIMGStore(
-                          FillDetailPr.store.user.id,
-                          FillDetailPr.store.user.avatar
-                        )
-                      : "/images/no_img.png"
-                  }
-                  alt=""
-                  id="avt-store"
-                  onClick={handleViewStoreInfo}
-                  style={{ cursor: "pointer" }}
-                />
-              </div>
-              <div className=" mt-3 ">
-                <div className="text-center">
-                  <span
-                    htmlFor=""
-                    className="fs-6"
-                    onClick={handleViewStoreInfo}
-                    style={{ cursor: "pointer" }}
-                  >
-                    {FillDetailPr && FillDetailPr.store
-                      ? FillDetailPr.store.namestore
-                      : "N/A"}
-                  </span>
-                </div>
-                <div className="d-flex">
-                  <button
-                    className="btn btn-sm mx-2"
-                    onClick={handleViewStoreInfo}
-                    id="btn-infor-shop"
-                  >
-                    Xem thông tin
-                  </button>
-                  <button className="btn btn-sm" id="btn-chatMessage">
-                    Nhắn tin shop
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-8 col-md-8 col-sm-8">
-            <div className="row mt-4">
-              <div className="row">
-                <div className="col-lg-4 col-md-4 col-sm-4 mb-3 border-end">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="fst-italic">Sản phẩm đã đăng bán:</label>
-                    <span className="text-primary">{countProductStore}</span>
-                  </div>
-                </div>
-
-                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="fst-italic">Địa chỉ:</label>
-                    <span className="text-primary">
-                      {splitByAddress(FillDetailPr?.store.address)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="fst-italic">Người theo dõi:</label>
-                    <span className="text-primary">999</span>
-                  </div>
-                </div>
-
-                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="fst-italic">Đã tham gia:</label>
-                    <span className="text-primary">
-                      {calculateAccountDuration(
-                        FillDetailPr?.store.createdtime
-                      )}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="fst-italic">Đánh giá cửa hàng:</label>
-                    <span className="text-primary">100</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <NavStore
+          FillDetailPr={FillDetailPr}
+          countProductStore={countProductStore}
+        />
         <div className="row bg-white rounded-4 mt-3">
           <div className="p-3">
             <h4>Thông tin chi tiết sản phẩm</h4>

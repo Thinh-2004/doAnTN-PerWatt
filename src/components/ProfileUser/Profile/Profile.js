@@ -215,7 +215,7 @@ const Profile = () => {
     <div className="bg-white rounded-4">
       <h3 className="text-center p-2">Hồ sơ của tôi</h3>
       <hr />
-      <form onSubmit={handleChangeProfile}>
+      <form onSubmit={handleChangeProfile} className="m-3">
         <div className="row d-flex justify-content-center">
           <div className="col-lg-6 col-md-6 col-sm-6 mx-4 border-end">
             <div className="mb-3">

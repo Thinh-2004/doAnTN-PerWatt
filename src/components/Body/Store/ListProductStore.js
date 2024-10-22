@@ -38,7 +38,7 @@ const ListProductStore = ({ data }) => {
           0
         );
         return (
-          <div className="col-lg-3 col-md-3 col-sm-3 mt-3" key={fill.id}>
+          <div className="col-lg-3 col-md-3 col-sm-3 mb-3" key={fill.id}>
             <div
               className="card shadow rounded-4 mt-4 p-2 d-flex flex-column"
               style={{ height: "100%" }} // Đảm bảo chiều cao tự điều chỉnh

@@ -7,8 +7,8 @@ import { toast } from "react-toastify";
 import axios from "../../../../../../Localhost/Custumize-axios";
 import { Button, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import EditDetailProduct from "../../DetailProduct/EditDetailProduct";
-import { load } from "@teachablemachine/image";
+import EditDetailProduct from "../DetailProduct/EditDetailProduct";
+import InfoDetailProduct from "./ChildrenForm/InfoDetailProduct";
 
 const EditProduct = () => {
   const slug = useParams();
@@ -247,15 +247,15 @@ const EditProduct = () => {
 
   const handleReceiveData = (data) => {
     setReceiveDataDetail(data);
-  }
+  };
 
   useEffect(() => {
-    if(receiveDataDetail === 1){
+    if (receiveDataDetail === 1) {
       fillData();
-    }else {
+    } else {
       fillData();
     }
-  }, [receiveDataDetail])
+  }, [receiveDataDetail]);
 
   return (
     <div className="row mt-4">
@@ -356,28 +356,30 @@ const EditProduct = () => {
       <div className="col-lg-12 col-md-12 col-sm-12">
         <div className="bg-white rounded-4 mt-3">
           <div className="card">
-            <div className="d-flex justify-content-between align-items-center">
-              <h3 className="mx-4 mt-4">Thông tin bán hàng</h3>
-              {isHiddenDetailPro ? (
-                <button
-                  className="btn me-4"
-                  type="button"
-                  onClick={() => setIsHiddenDetailPro(false)}
-                  hidden={editDetailProduct.length > 1}
-                >
-                  X
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="btn me-4"
-                  id="btn-add-productCate"
-                  onClick={handleClickHidden}
-                  hidden={editDetailProduct.length < 1}
-                >
-                  Thêm phân loại bán hàng
-                </button>
-              )}
+            <div className="row align-items-center p-3">
+              <h3 className="col-lg-6 col-md-6 col-sm-6 w-25">
+                Thông tin bán hàng
+              </h3>
+              <div className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-end w-75">
+                {isHiddenDetailPro ? (
+                  <button
+                    className="btn"
+                    type="button"
+                    onClick={() => setIsHiddenDetailPro(false)}
+                  >
+                    X
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn"
+                    id="btn-add-productCate"
+                    onClick={handleClickHidden}
+                  >
+                    Thêm phân loại bán hàng
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="card-body">
@@ -392,67 +394,7 @@ const EditProduct = () => {
       </div>
       {/* Detailed Info */}
       <div className="col-lg-12">
-        <div className="bg-white rounded-4 mt-3">
-          <div className="card">
-            <h3 className="mx-4 mt-4">Thông tin chi tiết</h3>
-            <div className="card-body">
-              <div className="row">
-                <div className="col-lg-6">
-                  <div className="mb-4 d-flex">
-                    {/* Category Component */}
-                    <Category
-                      name="productcategory"
-                      value={formEditProduct.productcategory}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-4 d-flex">
-                    {/* Brand Component */}
-                    <Brand
-                      name="trademark"
-                      value={formEditProduct.trademark}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-4 d-flex">
-                    {/* Warranties Component */}
-                    <Warranties
-                      name="warranties"
-                      value={formEditProduct.warranties}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-                <div className="col-lg-6 border-start">
-                  <div className="mb-4 d-flex">
-                    <select
-                      name="specializedgame"
-                      className="form-select"
-                      value={formEditProduct.specializedgame}
-                      onChange={handleInputChange}
-                    >
-                      <option value="" className="text-secondary" hidden>
-                        Chuyên dụng game
-                      </option>
-                      <option value="Y">Có</option>
-                      <option value="N">Không</option>
-                    </select>
-                  </div>
-                  <div className="mb-4 d-flex">
-                    <input
-                      type="text"
-                      placeholder="Nhập kích cỡ (dài x rộng x cao)"
-                      className="form-control"
-                      name="size"
-                      value={formEditProduct.size}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <InfoDetailProduct formProduct={formEditProduct} handleInputChange={handleInputChange}/>
       </div>
       {/* Form Actions */}
       <div className="mt-4 mb-4">

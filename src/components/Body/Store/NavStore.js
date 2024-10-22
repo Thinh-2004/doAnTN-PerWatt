@@ -24,6 +24,50 @@ const Store = () => {
   const [idCateProduct, setIdCateProduct] = useState(0);
   const [checkResetInputSearch, setCheckResetInputSearch] = useState(false);
   // const idStore = localStorage.getItem("idStore");
+  const [valueMT, setValueMT] = useState(5); // value của magrin top
+
+  // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
+  const updateItemsPerPage = () => {
+    const width = window.innerWidth;
+    // console.log(width);
+
+    if (width >= 1900) {
+      setValueMT(5);
+    } else if (width >= 1800) {
+      setValueMT(6);
+    } else if (width >= 1700) {
+      setValueMT(7);
+    } else if (width >= 1500) {
+      setValueMT(8);
+    } else if (width >= 1400) {
+      setValueMT(9);
+    } else if (width >= 1300) {
+      setValueMT(10);
+    } else if (width >= 1200) {
+      setValueMT(11);
+    } else if (width >= 1100) {
+      setValueMT(12);
+    } else if (width >= 1000) {
+      setValueMT(12);
+    } else if (width >= 900) {
+      setValueMT(12);
+    } else {
+      setValueMT(22);
+    }
+  };
+
+  useEffect(() => {
+    // Gọi hàm để xác định số lượng mục hiển thị ngay khi component mount
+    updateItemsPerPage();
+
+    // Lắng nghe sự thay đổi kích thước cửa sổ
+    window.addEventListener("resize", updateItemsPerPage);
+
+    // Cleanup listener khi component unmount
+    return () => {
+      window.removeEventListener("resize", updateItemsPerPage);
+    };
+  }, []);
 
   const geturlBgStore = (storeId, filename) => {
     return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
@@ -34,10 +78,12 @@ const Store = () => {
   const loadData = async () => {
     try {
       //Lấy data store by slug param
-      const storeRes = await axios.get(`/productStore/${getIdBySlugStore.slugStore}`);
-      setCountProductStore(storeRes.data.length);
+      const storeRes = await axios.get(
+        `/productStore/${getIdBySlugStore.slugStore}`
+      );
+      setCountProductStore(storeRes.data.products.length);
       //Lấy infoStore by storeRes
-      const res = await axios.get(`store/${storeRes.data[0].store.id}`);
+      const res = await axios.get(`store/${storeRes.data.products[0].store.id}`);
       setFill(res.data);
 
       //Kiểm tra infoStore trước khi call API
@@ -78,27 +124,32 @@ const Store = () => {
     //Khởi tạo ngày từ CSDL và ngày hiện tại
     const createdDate = new Date(accountCreatedDate);
     const now = new Date();
-  
+
     const diffInMilliseconds = now - createdDate; //Tính khoảng cách (Tính bằng mili)
     const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24)); //Chuyển đổi kết quả mili giây thành ngày
-  
-    if (diffInDays <= 7) { //Nhỏ hơn 7 ngày
+
+    if (diffInDays <= 7) {
+      //Nhỏ hơn 7 ngày
       return "Mới tham gia";
     }
-  
-    //Tính tổng số tháng 
-    const diffInMonths = (now.getFullYear() - createdDate.getFullYear()) * 12 + (now.getMonth() - createdDate.getMonth());
-  
-    if (diffInMonths >= 12) { //Kết quả lớn hơn 12 tháng
+
+    //Tính tổng số tháng
+    const diffInMonths =
+      (now.getFullYear() - createdDate.getFullYear()) * 12 +
+      (now.getMonth() - createdDate.getMonth());
+
+    if (diffInMonths >= 12) {
+      //Kết quả lớn hơn 12 tháng
       const years = Math.floor(diffInMonths / 12);
       return years + (years === 1 ? " năm" : " năm");
-    } else if (diffInMonths > 0) {//Kết quả số tháng lớn hơn 0 nhưng nhỏ hơn 12
+    } else if (diffInMonths > 0) {
+      //Kết quả số tháng lớn hơn 0 nhưng nhỏ hơn 12
       return diffInMonths + (diffInMonths === 1 ? " tháng" : " tháng");
-    } else {//Ngược lại lấy số ngày
+    } else {
+      //Ngược lại lấy số ngày
       return diffInDays + " ngày";
     }
-  }
-  
+  };
 
   return (
     <>
@@ -139,7 +190,7 @@ const Store = () => {
                       src="/images/IconShopMall.png"
                       alt=""
                       className="rounded-circle"
-                      style={{ width: "4.2%", height: "30%" }}
+                      id="logo-PerMall"
                     />
                   )}
                 </label>
@@ -157,28 +208,47 @@ const Store = () => {
             </div>
           </div>
         </div>
-        <div className="container border rounded-3" style={{ marginTop: "5%" }}>
-          <div className="d-flex justify-content-between p-4">
-            <span>
-              <i class="bi bi-box-seam-fill"></i> Sản phẩm:{" "}
-              <label htmlFor="">{countProductStore}</label>{" "}
-            </span>
-            <span>
-              <i class="bi bi-star-fill text-warning"></i> Đánh giá:{" "}
-              <label htmlFor="">900</label>{" "}
-            </span>
-            <span>
-              <i class="bi bi-node-plus"></i> Tham gia:
-              <label htmlFor="">&nbsp;{calculateAccountDuration(fill.createdtime)}</label>{" "}
-            </span>
-            <span>
-              <i class="bi bi-person-plus-fill"></i> Đang theo dõi:{" "}
-              <label htmlFor="">900</label>{" "}
-            </span>
-            <span>
-              <i class="bi bi-person-lines-fill"></i> Người theo dõi:{" "}
-              <label htmlFor="">900</label>{" "}
-            </span>
+        <div
+          className="container border rounded-3"
+          style={{ marginTop: valueMT + "%" }}
+        >
+          <div className="row d-flex justify-content-between p-3">
+            <div className="col-lg-2 col-md-2 col-sm-2">
+              {" "}
+              <span className="">
+                <i class="bi bi-box-seam-fill"></i> Sản phẩm:{" "}
+                <label htmlFor="">{countProductStore}</label>{" "}
+              </span>
+            </div>
+            <div className="col-lg-2 col-md-2 col-sm-2">
+              {" "}
+              <span>
+                <i class="bi bi-star-fill text-warning"></i> Đánh giá:{" "}
+                <label htmlFor="">900</label>{" "}
+              </span>
+            </div>
+            <div className="col-lg-2 col-md-2 col-sm-2">
+              <span>
+                <i class="bi bi-node-plus"></i> Tham gia:
+                <label htmlFor="">
+                  &nbsp;{calculateAccountDuration(fill.createdtime)}
+                </label>{" "}
+              </span>
+            </div>
+            <div className="col-lg-2 col-md-2 col-sm-2">
+              {" "}
+              <span>
+                <i class="bi bi-person-plus-fill"></i> Đang theo dõi:{" "}
+                <label htmlFor="">900</label>{" "}
+              </span>
+            </div>
+            <div className="col-lg-2 col-md-2 col-sm-2">
+              {" "}
+              <span>
+                <i class="bi bi-person-lines-fill"></i> Người theo dõi:{" "}
+                <label htmlFor="">900</label>{" "}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -189,15 +259,6 @@ const Store = () => {
             style={{ height: "90%" }}
           >
             <form className="d-flex justify-content-center mt-3" role="search">
-              {/* <input
-                className="form-control rounded-3"
-                type="search"
-                placeholder="Bạn cần tìm gì"
-                aria-label="Search"
-                style={{ width: "400px", border: "1px solid" }}
-                value={search}
-                onChange={handleTextSearch}
-              /> */}
               <Box
                 sx={{ display: "flex", alignItems: "flex-end", width: "100%" }}
               >
@@ -214,20 +275,6 @@ const Store = () => {
                 />
               </Box>
             </form>
-            {/* <FormControl variant="standard">
-              <InputLabel htmlFor="input-with-icon-adornment">
-                Bạn cần tìm gì?
-              </InputLabel>
-              <Input
-                id="input-with-icon-adornment"
-                startAdornment={
-                  <InputAdornment position="start">
-                    <AccountCircle />
-                  </InputAdornment>
-                }
-                fullWidth
-              />
-            </FormControl> */}
             <div className="border-bottom ">
               <h4 className="mt-3">Danh mục cửa hàng</h4>
               <div className="overflow-auto" style={{ height: "450px" }}>
@@ -239,6 +286,7 @@ const Store = () => {
                   <Stack spacing={1}>
                     {fillCateInStore.map((fill, index) => (
                       <Button
+                        key={fill.id}
                         value={fill.id}
                         onClick={() => handleClickIdCateProduct(fill.id)}
                         className="inherit-text"

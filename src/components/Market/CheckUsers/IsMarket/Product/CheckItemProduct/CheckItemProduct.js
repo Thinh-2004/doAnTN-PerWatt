@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import { purple } from "@mui/material/colors";
 
 const CheckItemProduct = () => {
   const { slug } = useParams();

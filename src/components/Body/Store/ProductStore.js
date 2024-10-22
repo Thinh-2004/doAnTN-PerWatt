@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
 import useDebounce from "../../../CustumHook/useDebounce";
@@ -8,25 +8,37 @@ import { Pagination } from "@mui/material";
 import SkeletonLoad from "../../../Skeleton/SkeletonLoad";
 import ListProductStore from "./ListProductStore";
 import ToolBarHomeStore from "./ToolBarHomeStore";
+
 const ProductStore = ({ item, idCate, resetSearch }) => {
   const { slugStore } = useParams();
   const [fill, setFill] = useState([]);
-  const [isFiltering, setIsFiltering] = useState(false); //Skelenton
-  const [loading, setLoading] = useState(true); //Load data
+  const [loading, setLoading] = useState(true); //Load data, skelenton
   //Debounce
   const debouncedItem = useDebounce(item);
   const debouncedIdCate = useDebounce(idCate);
-  const [sortOption, setSortOption] = useState("newOrOldItem"); // Trạng thái cho sắp xếp
+  const [sortOption, setSortOption] = useState(""); // Trạng thái cho sắp xếp
   const [isAscending, setIsAscending] = useState(true); // Trạng thái tăng/giảm giá
   const [isSortOption, setIsSortOption] = useState(true); //Trạng thái sắp xếp cũ nhất mới nhất
 
-  const loadData = async () => {
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(0); //Trang hiện tại
+  const [totalPage, setTotalPage] = useState(0); //Tổng số trang
+
+  const loadData = async (pageNo, pageSize, keyWord, sortBy) => {
+    setFill([]);
+    setLoading(true);
     try {
-      const res = await axios.get(`/productStore/${slugStore}`);
+      const res = await axios.get(
+        `/productStore/${slugStore}?pageNo=${pageNo || ""}&pageSize=${
+          pageSize || ""
+        }&keyWord=${keyWord || ""}&sortBy=${sortBy || ""}`
+      );
+      setCurrentPage(res.data.currentPage);
+      setTotalPage(res.data.totalPage);
       //Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm
       const dataWithDetails = await Promise.all(
-        res.data.map(async (product) => {
-          const resDetail = await axios.get(`/detailProduct/${product.id}`);
+        res.data.products.map(async (push) => {
+          const resDetail = await axios.get(`/detailProduct/${push.id}`);
 
           //Duyệt qua từng chi tiết sản phẩm để lấy số lượng đã bán
           const countOrderBy = await Promise.all(
@@ -42,14 +54,14 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
             0
           );
           return {
-            ...product,
+            ...push,
             productDetails: resDetail.data,
             countQuantityOrderBy, //Lưu tổng số lượng đã bán
           };
         })
       );
       setFill(dataWithDetails);
-      console.log(dataWithDetails);
+      // console.log(dataWithDetails);
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -58,123 +70,106 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
   };
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    loadData();
-  }, [slugStore]);
-
-  //Pagination
-  const [currentPage, setCurrentPage] = useState(1); // trang hiện tại là 1
-  const itemInPage = 20;
-
-  //Lọc sản phẩm
-  const filterSearchByText = useMemo(() => {
-    return fill.filter((product) => {
-      const matchesSearch = debouncedItem
-        ? product.name.toLowerCase().includes(debouncedItem.toLowerCase())
-        : true;
-      const matchesSearchNameCate = debouncedItem
-        ? product.productcategory.name
-            .toLowerCase()
-            .includes(debouncedItem.toLowerCase())
-        : true;
-      const matchesCategory = debouncedIdCate
-        ? product.productcategory.id === debouncedIdCate
-        : true;
-
-      const matchesTrademark = debouncedItem
-        ? product.trademark.name
-            .toLowerCase()
-            .includes(debouncedItem.toLowerCase())
-        : true;
-      return (
-        (matchesSearch || matchesSearchNameCate || matchesTrademark) &&
-        matchesCategory
-      );
-    });
-  }, [debouncedIdCate, debouncedItem, fill]);
-
-  // Hàm sắp xếp sản phẩm
-  const sortedProducts = useMemo(() => {
-    const products = [...filterSearchByText];
-    if (sortOption === "newOrOldItem") {
-      return products.sort((a, b) => {
-        return isSortOption ? b.id - a.id : a.id - b.id; //Giảm giần : Tăng dần
-      });
-    }
-
-    if (sortOption === "price") {
-      return products.sort((a, b) => {
-        const priceA = Math.min(...a.productDetails.map((p) => p.price));
-        const priceB = Math.min(...b.productDetails.map((p) => p.price));
-        return isAscending ? priceA - priceB : priceB - priceA;
-      });
-    }
-    return products;
-  }, [filterSearchByText, sortOption, isAscending, isSortOption]);
-
-  // Hàm xử lý khi nhấn nút sắp xếp theo giá
-  const handleSortByPrice = useCallback(() => {
-    setIsFiltering(true);
-    const timer = setTimeout(() => {
-      setSortOption("price");
-      setIsAscending(!isAscending); // Đảo ngược trạng thái tăng/giảm giá
-      setIsFiltering(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [isAscending]);
+    const loadingData = async () => {
+      setLoading(true);
+      try {
+        if (debouncedItem || sortOption) {
+          await loadData(0, 20, debouncedItem, sortOption);
+        } else if (debouncedIdCate || sortOption) {
+          await loadData(0, 20, debouncedIdCate, sortOption);
+        } else {
+          await loadData();
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadingData();
+  }, [slugStore, debouncedIdCate, debouncedItem, sortOption]);
 
   //Hàm xử lí khi nhấn nút sắp xếp cũ hoặc mới nhất
-  const handleSortOption = useCallback(() => {
-    setIsFiltering(true);
-    const timer = setTimeout(() => {
-      setSortOption("newOrOldItem");
+  const handleSortOption = (value) => {
+    // console.log(value);
+    if ((value === "oldItems") | (value === "newItems")) {
+      loadData(0, 20, "", value);
+      setSortOption(value);
       setIsSortOption(!isSortOption);
-      setIsFiltering(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [isSortOption]);
-
-  //Tính toán
-  const lastIndex = currentPage * itemInPage; // đi đến trang tiếp theo
-  const firstIndex = lastIndex - itemInPage; // Trở về trang (ví dụ 40 -20)
-  const records = sortedProducts.slice(firstIndex, lastIndex); //cắt danh sách cần hiển thị
-  const pageCount = Math.ceil(filterSearchByText.length / itemInPage); //Ceil làm tròn số trang
+      setIsAscending(false);
+    } else if ((value === "priceASC") | (value === "priceDESC")) {
+      loadData(0, 20, "", value);
+      setSortOption(value);
+      setIsAscending(!isAscending);
+      setIsSortOption(false);
+    } else if (value === "bestSeller") {
+      setSortOption(value);
+      loadData(0, 20, "", value);
+      setIsSortOption(false); //Đặt lại giá trị cho sắp xếp cũ mới
+      setIsAscending(false); // Đặt lại giá trị cho sắp xếp theo giá
+    }
+  };
 
   // Sự kiện đặt lại giá trị cho số trang
-  const handlePageChange = (e, value) => {
-    setCurrentPage(value);
-    console.log(value);
+  const handlePageChange = async (e, value) => {
+    setLoading(true);
+    try {
+      if (sortOption || item) {
+        await loadData(value - 1, 20, item, sortOption);
+      } else {
+        await loadData(value - 1, 20);
+      }
+      setCurrentPage(value);
+    } finally {
+      setLoading(false);
+    }
+
+    // console.log(value);
   };
   const handleResetSearch = () => {
     resetSearch(true);
-  };
 
-  //Skelenton
-  useEffect(() => {
-    setIsFiltering(true);
     const timer = setTimeout(() => {
-      setIsFiltering(false);
-    }, 500);
+      resetSearch(false);
+    }, 10);
     return () => clearTimeout(timer);
-  }, [debouncedItem, debouncedIdCate, lastIndex, firstIndex]);
+  };
 
   return (
     <>
-      {debouncedItem || debouncedIdCate ? (
-        <div
-          className="text-primary"
-          style={{ cursor: "pointer" }}
-          onClick={handleResetSearch}
-        >
-          <i className="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm của cửa
-          hàng
+      <div className="row">
+        <div className="col-lg-6 col-md-6 col-sm-6">
+          <ToolBarHomeStore
+            isAscending={isAscending}
+            // handleSortByPrice={handleSortByPrice}
+            valueSort={handleSortOption}
+            // handleSortBestSeller={handleSortBestSeller}
+            isSortOption={isSortOption}
+          />
+          {debouncedItem || debouncedIdCate ? (
+            <div
+              className="text-primary mt-3"
+              style={{ cursor: "pointer" }}
+              onClick={handleResetSearch}
+            >
+              <i className="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm của
+              cửa hàng
+            </div>
+          ) : null}
         </div>
-      ) : null}
-      {loading || isFiltering ? (
+        <div className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-end mt-1">
+          <Pagination
+            count={totalPage}
+            page={currentPage}
+            onChange={handlePageChange}
+            variant="outlined"
+            color="primary"
+          />
+        </div>
+      </div>
+      {loading ? (
         <div className="row">
           <SkeletonLoad />
         </div>
-      ) : filterSearchByText.length === 0 ? (
+      ) : fill.length === 0 && debouncedItem !== "" ? (
         <>
           <div className="d-flex justify-content-center">
             <i
@@ -193,29 +188,12 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
         </>
       ) : (
         <div className="row mb-5">
-          <div className="d-flex justify-content-between">
-            <div>
-              <ToolBarHomeStore
-                isAscending={isAscending}
-                handleSortByPrice={handleSortByPrice}
-                handleSortOption={handleSortOption}
-                isSortOption={isSortOption}
-              />
-            </div>
-            <Pagination
-              count={pageCount}
-              page={currentPage}
-              onChange={handlePageChange}
-              variant="outlined"
-              color="primary"
-            />
-          </div>
-          <ListProductStore data={records} />
+          <ListProductStore data={fill} />
         </div>
       )}
       <div className="mt-3 mb-3 d-flex justify-content-center">
         <Pagination
-          count={pageCount}
+          count={totalPage}
           page={currentPage}
           onChange={handlePageChange}
           variant="outlined"

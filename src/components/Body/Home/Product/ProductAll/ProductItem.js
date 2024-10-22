@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo } from "react";
 import "./ProductItemStyle.css";
-import axios from "../../../../Localhost/Custumize-axios";
+import axios from "../../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
-import useDebounce from "../../../../CustumHook/useDebounce";
+import useDebounce from "../../../../../CustumHook/useDebounce";
 import { Pagination } from "@mui/material";
-import SkeletonLoad from "../../../../Skeleton/SkeletonLoad";
+import SkeletonLoad from "../../../../../Skeleton/SkeletonLoad";
 // import SkeletonLoad from "./SkeletonLoad";
 import ListItem from "./ListItem";
 
@@ -13,55 +13,28 @@ trefoil.register();
 const Product = ({ item, idCate, handleReset }) => {
   const [fillAllProduct, setFillAllProduct] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isFiltering, setIsFiltering] = useState(false);
   const debouncedItem = useDebounce(item);
   const debouncedIdCate = useDebounce(idCate);
 
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1); //Trang hiện tại
-  const itemInPage = 20;
+  const [currentPage, setCurrentPage] = useState(0); //Trang hiện tại
+  const [totalPage, setTotalPage] = useState(0); //Tổng số trang
 
-  //Lọc
-  const filterBySearchAndCategory = useMemo(() => {
-    return fillAllProduct.filter((product) => {
-      const matchesSearch = debouncedItem
-        ? product.name.toLowerCase().includes(debouncedItem.toLowerCase())
-        : true;
-      const matchesCategory = debouncedIdCate
-        ? product.productcategory.id === debouncedIdCate
-        : true;
-      const matchesCategoryName = debouncedItem
-        ? product.productcategory.name
-            .toLowerCase()
-            .includes(debouncedItem.toLowerCase())
-        : true;
-
-      const matchesTrademark = debouncedItem
-        ? product.trademark.name
-            .toLowerCase()
-            .includes(debouncedItem.toLowerCase())
-        : true;
-      return (
-        (matchesSearch || matchesCategoryName || matchesTrademark) &&
-        matchesCategory
-      );
-    });
-  }, [debouncedItem, debouncedIdCate, fillAllProduct]);
-
-  //Tính toán
-  const lastIndex = currentPage * itemInPage; // đi đến trang típ theo
-  const firstIndex = lastIndex - itemInPage; //Trở về trang (Ví dụ: 40 - 20)
-  const records = filterBySearchAndCategory.slice(firstIndex, lastIndex); //cắt danh sách fill sp cần show
-  const pageCount = Math.ceil(filterBySearchAndCategory.length / itemInPage); //ceil để làm tròn số số trang
-
-  const loadData = async () => {
+  const loadData = async (pageNo, pageSize, keyWord) => {
+    setFillAllProduct([]);
+    setLoading(true);
     try {
-      const res = await axios.get("pageHome");
-
+      const res = await axios.get(
+        `/home/product/list?pageNo=${pageNo || ""}&pageSize=${
+          pageSize || ""
+        }&keyWord=${keyWord || ""}`
+      );
+      setCurrentPage(res.data.currentPage);
+      setTotalPage(res.data.totalPages);
       // Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm và lưu vào productDetails
       const dataWithDetails = await Promise.all(
-        res.data.map(async (product) => {
-          const resDetail = await axios.get(`/detailProduct/${product.id}`);
+        res.data.products.map(async (push) => {
+          const resDetail = await axios.get(`/detailProduct/${push.id}`);
 
           // Duyệt qua từng chi tiết sản phẩm để lấy số lượng đã bán
           const countOrderBy = await Promise.all(
@@ -78,7 +51,7 @@ const Product = ({ item, idCate, handleReset }) => {
           );
 
           return {
-            ...product,
+            ...push,
             productDetails: resDetail.data,
             countQuantityOrderBy, // lưu tổng số lượng đã bán
           };
@@ -86,6 +59,7 @@ const Product = ({ item, idCate, handleReset }) => {
       );
 
       setFillAllProduct(dataWithDetails);
+      // console.log(dataWithDetails);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -94,21 +68,40 @@ const Product = ({ item, idCate, handleReset }) => {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    setIsFiltering(true);
-    const timer = setTimeout(() => {
-      setIsFiltering(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [debouncedItem, debouncedIdCate, lastIndex, firstIndex]);
+    const loadingData = async () => {
+      setLoading(true);
+      try {
+        if (debouncedItem) {
+          await loadData(0, 20, debouncedItem);
+        } else if (debouncedIdCate) {
+          await loadData(0, 20, debouncedIdCate);
+        } else {
+          await loadData();
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadingData();
+  }, [debouncedItem, debouncedIdCate]);
 
   // Sự kiện đặt lại giá trị cho số trang
-  const handlePageChange = (e, value) => {
-    setCurrentPage(value);
-    console.log(value);
+  const handlePageChange = async (e, value) => {
+    setLoading(true);
+    try {
+      if (debouncedItem) {
+        await loadData(value - 1, 20, debouncedItem);
+      } else if (debouncedIdCate) {
+        await loadData(value - 1, 20, debouncedIdCate);
+      } else {
+        await loadData(value - 1, 20);
+      }
+      setCurrentPage(value);
+    } finally {
+      setLoading(false);
+    }
+
+    // console.log(value);
   };
 
   return (
@@ -122,9 +115,9 @@ const Product = ({ item, idCate, handleReset }) => {
           <i className="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm
         </div>
       ) : null}
-      {loading || isFiltering ? (
+      {loading ? (
         <SkeletonLoad />
-      ) : filterBySearchAndCategory.length === 0 ? (
+      ) : fillAllProduct.length === 0 && item !== "" ? (
         <div className="text-center">
           <h4>
             <i
@@ -135,11 +128,11 @@ const Product = ({ item, idCate, handleReset }) => {
           <label className="fs-4">Thông tin bạn tìm không tồn tại</label>
         </div>
       ) : (
-        <ListItem data={records} />
+        <ListItem data={fillAllProduct} />
       )}
       <div className="mt-3 mb-3 d-flex justify-content-center">
         <Pagination
-          count={pageCount}
+          count={totalPage}
           page={currentPage}
           onChange={handlePageChange}
           variant="outlined"

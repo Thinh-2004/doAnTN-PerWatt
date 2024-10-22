@@ -1,9 +1,9 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../Localhost/Custumize-axios";
-import useSession from "../../Session/useSession";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
+import { Button } from "@mui/material";
 
 const HeaderAdmin = () => {
   const user = localStorage.getItem("user")
@@ -57,16 +57,20 @@ const HeaderAdmin = () => {
       className="d-flex justify-content-between shadow sticky-top container-fluid"
       id="nav"
     >
-      <div className="d-flex">
-        <Link to={"/"}>
+      <div className="d-flex align-items-center">
+        <Link to={"/profileMarket"}>
           <img src="/images/logoWeb.png" alt="" className="" id="img-logo" />
         </Link>
-        <div className="d-flex align-items-center">
-          <h2>Giao diện Admin</h2>
-        </div>
+        <h1
+          id="title-web"
+          className="fw-bold fst-italic mt-2"
+          style={{ marginLeft: "30px" }}
+        >
+          P E R W A T T
+        </h1>
       </div>
       <div className="align-content-center m-3">
-        <div className="d-flex">
+        <div className="d-flex align-items-center">
           <div className="mx-4 border-end">
             <Link
               type="button"
@@ -85,20 +89,14 @@ const HeaderAdmin = () => {
             </Link>
           </div>
           <div className="d-flex justify-content-center align-items-center mt-2 ">
-            <div className="dropdown">
-              <button
-                className="p-1 btn btn-lg d-flex p-0 align-items-center "
-                type="button"
-                id="btn-sessionUser"
-              >
-                <img
-                  src={geturlIMG(user.id, user.avatar)}
-                  alt=""
-                  className="rounded-circle img-fluid"
-                  style={{ width: "30px", height: "30px" }}
-                />
-                <span className="ms-2">{user.fullname}</span>
-              </button>
+            <div className="p-1 rounded-3" style={{border : "1px solid"}}>
+              <img
+                src={geturlIMG(user.id, user.avatar)}
+                alt=""
+                className="rounded-circle img-fluid"
+                style={{ width: "30px", height: "30px" }}
+              />
+              <span className="ms-2">{user.fullname}</span>
             </div>
           </div>
         </div>
