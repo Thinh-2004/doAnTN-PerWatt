@@ -72,19 +72,12 @@ const Login = () => {
               navigate("/admin");
             } else {
               navigate("/");
-<<<<<<< HEAD
-            }, 2000); // Thời gian chờ là 2000ms (2 giây)
-          }
-          sessionStorage.setItem("fullname", res.data.fullname);
-          sessionStorage.setItem("email", res.data.email);
-          console.log("Session stored: ", res.data.fullname);
-          console.log("Session stored: ", res.data.email); // Kiểm tra giá trị username
-=======
+
             }
           }, 500);
         } else {
           toast.error(res.data.message || "Đăng nhập thất bại");
->>>>>>> 58b6b921afbae8680c6ac95e820dfb3b6a74604f
+
         }
       } catch (error) {
         toast.update(idToast, {

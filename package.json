@@ -22,19 +22,15 @@
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
-<<<<<<< HEAD
-    "fe-doan-tn": "file:",
-    "jquery": "^3.7.1",
-    "popper.js": "^1.16.1",
-=======
     "chart.js": "^4.4.3",
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",
     "fe-doan-tn": "file:",
     "framer-motion": "^11.3.21",
+    "jquery": "^3.7.1",
     "ldrs": "^1.0.2",
     "moment": "^2.30.1",
->>>>>>> 58b6b921afbae8680c6ac95e820dfb3b6a74604f
+    "popper.js": "^1.16.1",
     "react": "^18.3.1",
     "react-apexcharts": "^1.4.1",
     "react-circular-progressbar": "^2.1.0",

@@ -1,11 +1,4 @@
-<<<<<<< HEAD
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-const VerifyOTP = () => {
-  const [otp, setOtp] = useState("");
-=======
+
 import React, { useState, useRef } from "react";
 import axios from "../../Localhost/Custumize-axios";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +10,6 @@ const VerifyOTP = () => {
   const [otp, setOtp] = useState(Array(6).fill(''));
   const inputRefs = useRef([]);
 
->>>>>>> 58b6b921afbae8680c6ac95e820dfb3b6a74604f
   const navigate = useNavigate();
 
   const verifyOtp = async (e) => {
@@ -26,48 +18,21 @@ const VerifyOTP = () => {
     const email = sessionStorage.getItem("email");
 
     try {
-<<<<<<< HEAD
-      const response = await axios.post(
-        "http://localhost:8080/api/verify-otp",
-        {
-          otp,
-          generatedOTP,
-          email,
-        }
-      );
-      toast.error(response.data || "OTP đã được xác nhận!");
-=======
+
       const response = await axios.post("api/verify-otp", {
         otp: otp.join(''),
         generatedOTP,
         email,
       });
       toast.success(response.data || "OTP đã được xác nhận!");
->>>>>>> 58b6b921afbae8680c6ac95e820dfb3b6a74604f
+
       navigate("/resetPassword");
     } catch (error) {
       toast.error(error.response?.data || "Đã xảy ra lỗi!");
     }
   };
 
-<<<<<<< HEAD
-  return (
-    <div className="container">
-      <div className="form-container">
-        <h2>Xác nhận OTP</h2>
-        <form onSubmit={verifyOtp}>
-          <div className="form-group">
-            <label>OTP</label>
-            <input
-              type="text"
-              placeholder="Vui lòng nhập OTP"
-              required
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-            />
-          </div>
-          <button type="submit">Xác nhận</button>
-=======
+
   const handleOtpChange = (event, index) => {
     const { value } = event.target;
     const newOtp = [...otp];
@@ -117,14 +82,10 @@ const VerifyOTP = () => {
             ))}
           </div>
           <Button style={{ width: "85%"}} disableElevation color="error" type="submit" variant="contained">TIẾP THEO</Button>
->>>>>>> 58b6b921afbae8680c6ac95e820dfb3b6a74604f
         </form>
       </div>
     </div>
   );
 };
-<<<<<<< HEAD
 
-=======
->>>>>>> 58b6b921afbae8680c6ac95e820dfb3b6a74604f
 export default VerifyOTP;
