@@ -1,0 +1,12 @@
+
+#list-group-item:hover {
+  background-color: #f8f9fa; /* Màu nền khi hover */
+}
+
+#list-group-item:hover #mb-1 {
+  color: #007bff; /* Màu chữ khi hover */
+}
+#small-text {
+  font-size: 0.775rem; /* Bạn có thể điều chỉnh giá trị này để phù hợp với thiết kế của bạn */
+  color: #6c757d; /* Màu sắc cho ngày giờ (tuỳ chọn) */
+}

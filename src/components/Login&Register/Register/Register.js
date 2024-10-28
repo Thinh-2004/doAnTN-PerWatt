@@ -1,9 +1,22 @@
-import axios from "../../../localhost/Custumize-axios";
+import {
+  FormControl,
+  IconButton,
+  Input,
+  InputAdornment,
+  InputLabel,
+  TextField,
+} from "@mui/material";
+import axios from "../../../Localhost/Custumize-axios";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Link } from "react-router-dom";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import FormSelectAdress from "../../APIAddressVN/FormSelectAdress";
 
-const Register = () => {
+const Register = ({ onRegisterSuccess }) => {
   const [formUser, setFormUser] = useState({
     fullname: "",
     password: "",
@@ -13,21 +26,30 @@ const Register = () => {
     role: 3, // Vai trò buyer
     address: "",
     phone: "",
-    avatar:
-      "https://as2.ftcdn.net/v2/jpg/03/49/49/79/1000_F_349497933_Ly4im8BDmHLaLzgyKg2f2yZOvJjBtlw5.jpg",
+    configPassWord: "",
+    check: false,
   });
 
+  //Hidden or show pass
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfig, setShowPasswordConfig] = React.useState(false);
+  const [isFocusedPass, setIsFocusedPass] = useState(false);
+  const [isFocusedPassCofig, setIsFocusedPassCofig] = useState(false);
+
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (type === "radio") {
+    // Kiểm tra nếu `e` là một sự kiện (từ các input khác), xử lý bình thường
+    if (e?.target) {
+      const { name, value, type, checked } = e.target;
       setFormUser((prev) => ({
         ...prev,
-        [name]: checked ? value : prev[name],
+        [name]: type === "checkbox" ? checked : value,
       }));
-    } else {
+    }
+    // Nếu `e` là giá trị ngày từ DatePicker
+    else {
       setFormUser((prev) => ({
         ...prev,
-        [name]: value,
+        birthdate: e, // Cập nhật giá trị ngày từ DatePicker
       }));
     }
   };
@@ -39,28 +61,27 @@ const Register = () => {
       email,
       birthdate,
       gender,
-      address,
       phone,
       configPassWord,
+      check,
     } = formUser;
-    //Biểu thức chính quy
+
     const pattentEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const pattentPhone = /0[0-9]{9}/;
     const patternPassword = /^(?=.*[a-zA-Z]).{8,}$/;
-    // Kiểm tra nếu tất cả các trường đều trống
+
     if (
       !fullname &&
       !password &&
       !email &&
       !birthdate &&
       !gender &&
-      !address &&
-      !phone
+      !phone &&
+      !check
     ) {
       toast.warning("Cần nhập toàn bộ thông tin");
       return false;
     } else {
-      // Kiểm tra từng trường riêng biệt
       if (!fullname) {
         toast.warning("Hãy nhập họ và tên");
         return false;
@@ -85,11 +106,28 @@ const Register = () => {
       } else {
         const today = new Date();
         const birthDate = new Date(birthdate);
-        const age = today.getFullYear() - birthDate.getFullYear();
-        if (birthDate > today) {
-          toast.warning("Ngày sinh không thể lớn hơn ngày hiện tại");
+
+        // Tính tuổi dựa trên năm, tháng, và ngày
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDifference = today.getMonth() - birthDate.getMonth();
+        const dayDifference = today.getDate() - birthDate.getDate();
+
+        // Điều chỉnh tuổi nếu tháng hiện tại hoặc ngày hiện tại chưa tới sinh nhật trong năm nay
+        if (
+          monthDifference < 0 ||
+          (monthDifference === 0 && dayDifference < 0)
+        ) {
+          age--;
+        }
+
+        if (
+          birthDate.getDate() >= today.getDate() &&
+          birthDate.getMonth() >= today.getMonth() &&
+          birthDate.getFullYear() >= today.getFullYear()
+        ) {
+          toast.warning("Ngày sinh không thể lớn hơn hoặc bằng ngày hiện tại");
           return false;
-        } else if (age > 100 || age === 100) {
+        } else if (age > 100) {
           toast.warning("Tuổi không hợp lệ");
           return false;
         }
@@ -106,7 +144,7 @@ const Register = () => {
       if (!password) {
         toast.warning("Hãy nhập mật khẩu");
         return false;
-      } else if ((password.length < 8) | !patternPassword.test(password)) {
+      } else if (password.length < 8 || !patternPassword.test(password)) {
         toast.warning(
           "Mật khẩu phải chứa ít nhất 8 ký tự bao gồm chữ hoa hoặc thường"
         );
@@ -118,8 +156,8 @@ const Register = () => {
         return false;
       }
 
-      if (!address) {
-        toast.warning("Hãy nhập địa chỉ");
+      if (!check) {
+        toast.warning("Bạn chưa chấp nhận điều khoản và dịch vụ của chúng tôi");
         return false;
       }
     }
@@ -134,26 +172,44 @@ const Register = () => {
       try {
         const genderBoolean = formUser.gender === "true";
         const userToSend = {
-          ...formUser,
+          fullname: formUser.fullname,
+          password: formUser.password,
+          email: formUser.email,
+          birthdate: formUser.birthdate,
           gender: genderBoolean,
           role: {
             id: formUser.role,
           },
+          address: null,
+          phone: formUser.phone,
         };
         const res = await axios.post("/user", userToSend);
 
         setTimeout(() => {
           toast.update(id, {
-            render:
-              "Tạo tài khoản thành công, vui lòng quay lại trang đăng nhập",
+            render: "Đăng ký thành công, hệ thống sẽ chuyển sang đăng nhập.",
             type: "success",
             isLoading: false,
             autoClose: 5000,
             closeButton: true,
           });
+          setFormUser({
+            fullname: "",
+            password: "",
+            email: "",
+            birthdate: "",
+            gender: "",
+            role: 3, // Vai trò buyer
+            phone: "",
+            configPassWord: "",
+            check: false,
+          });
+          if (onRegisterSuccess) {
+            onRegisterSuccess();
+          }
         }, 2000);
       } catch (error) {
-        console.error("Error response:", error.response); // Log full error response
+        console.error("Error response:", error.response);
         const errorMessage =
           error.response && error.response.data
             ? error.response.data
@@ -171,32 +227,47 @@ const Register = () => {
     }
   };
 
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleClickShowPasswordConfig = () =>
+    setShowPasswordConfig((show) => !show);
+
+  const handleMouseDownPasswordConfig = (event) => {
+    event.preventDefault();
+  };
+
   return (
     <form onSubmit={handleRegister} className="form-sign">
       <h2 className="title">Đăng Ký</h2>
       <p className="subject">
-        Hãy điền đầy đủ các thông tin trên để trải nghiệm dịch vụ của chúng tôi
+        Đăng ký tài khoản để được trải nghiệm hết các tính năng của chúng tôi!!!
       </p>
       <div className="row">
         <div className="col-lg-12">
           <div className="mb-3">
-            <input
-              type="text"
+            <TextField
+              fullWidth
               name="fullname"
               value={formUser.fullname}
               onChange={handleChange}
-              placeholder="Nhập họ và tên"
-              className="form-control"
+              id="fullname-basic"
+              label="Nhập họ tên"
+              variant="standard"
             />
           </div>
           <div className="mb-3">
-            <input
-              type="text"
+            <TextField
+              fullWidth
               name="email"
               value={formUser.email}
               onChange={handleChange}
-              placeholder="Email"
-              className="form-control"
+              id="email-basic"
+              label="Nhập email"
+              variant="standard"
             />
           </div>
           <div className="d-flex justify-content-start">
@@ -231,64 +302,124 @@ const Register = () => {
           </div>
 
           <div className="mb-3">
-            <input
-              type="date"
-              name="birthdate"
-              value={formUser.birthdate}
-              onChange={handleChange}
-              className="form-control"
-            />
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                format="DD/MM/YYYY"
+                name="birthdate"
+                value={formUser.birthdate ? dayjs(formUser.birthdate) : null} // Chuyển đổi múi giờ về Việt Nam
+                onChange={handleChange}
+                sx={{
+                  "& .MuiInputBase-root": {
+                    width: "400px",
+                    height: "40px",
+                  },
+                }}
+              />
+            </LocalizationProvider>
           </div>
           <div className="mb-3">
-            <input
-              type="text"
+            <TextField
+              fullWidth
               name="phone"
               value={formUser.phone}
               onChange={handleChange}
-              placeholder="Nhập số điện thoại"
-              className="form-control"
+              label="Nhập số điện thoại"
+              id="phone-basic"
+              variant="standard"
             />
           </div>
         </div>
         <div className="col-lg-12">
-          <div className="row">
+          <div className="row mb-3">
             <div className="col-lg-6">
               <div className="mb-3">
-                <input
-                  type="password"
-                  name="password"
-                  value={formUser.password}
-                  onChange={handleChange}
-                  placeholder="Nhập mật khẩu ***"
-                  className="form-control"
-                />
+                <FormControl variant="standard" fullWidth>
+                  <InputLabel htmlFor="enterPass-adornment-password">
+                    Nhập mật khẩu
+                  </InputLabel>
+                  <Input
+                    name="password"
+                    value={formUser.password}
+                    onChange={handleChange}
+                    id="enterPass-adornment-password"
+                    type={showPassword ? "text" : "password"}
+                    onFocus={() => setIsFocusedPass(true)}
+                    onBlur={() => setIsFocusedPass(false)}
+                    endAdornment={
+                      isFocusedPass && (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  />
+                </FormControl>
               </div>
             </div>
             <div className="col-lg-6">
               <div className="mb-3">
-                <input
-                  type="password"
-                  onChange={handleChange}
-                  value={formUser.configPassWord}
-                  name="configPassWord"
-                  placeholder="Xác thực mật khẩu ***"
-                  className="form-control mb-3"
-                />
+                <FormControl variant="standard" fullWidth>
+                  <InputLabel htmlFor="enterConfig-adornment-password">
+                    Xác thực mật khẩu
+                  </InputLabel>
+                  <Input
+                    onChange={handleChange}
+                    value={formUser.configPassWord}
+                    name="configPassWord"
+                    id="enterConfig-adornment-password"
+                    type={showPasswordConfig ? "text" : "password"}
+                    onFocus={() => setIsFocusedPassCofig(true)}
+                    onBlur={() => setIsFocusedPassCofig(false)}
+                    endAdornment={
+                      isFocusedPassCofig && (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPasswordConfig}
+                            onMouseDown={handleMouseDownPasswordConfig}
+                          >
+                            {showPasswordConfig ? (
+                              <VisibilityOff />
+                            ) : (
+                              <Visibility />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  />
+                </FormControl>
               </div>
             </div>
           </div>
-          <div className="mb-3">
-            <textarea
-              name="address"
-              value={formUser.address}
+          {/* <div className="mb-3">
+            <FormSelectAdress
+              apiAddress={handleDataApiAddress}
+              resetForm={isReset}
+            />
+          </div> */}
+          <div className="p-0 m-0 d-flex justify-content-start">
+            <input
+              type="checkbox"
+              className="form-check me-2"
+              name="check"
+              checked={formUser.check}
               onChange={handleChange}
-              className="form-control"
-              placeholder="Nhập địa chỉ của bạn"
-            ></textarea>
+            />
+            <label>
+              Tôi đồng ý với các <Link>điều khoản</Link> và <Link>dịch vụ</Link>
+              .
+            </label>
           </div>
         </div>
       </div>
-      <button type="submit" className="button">
+      <button type="submit" className="button w-100">
         Đăng ký
       </button>
     </form>
