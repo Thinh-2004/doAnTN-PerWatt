@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import axios from "../../../../../Localhost/Custumize-axios";
+import { Box, Card } from "@mui/material";
 
 const ListItem = ({ data }) => {
   const geturlIMG = (productId, filename) => {
@@ -38,9 +39,11 @@ const ListItem = ({ data }) => {
           0
         );
         return (
-          <div
-            className="col-lg-2 col-md-3 col-sm-4 mt-3 card shadow rounded-4 p-2 d-flex flex-column"
-            style={{ minHeight: "100%" }}
+          <Card
+            className="col-lg-2 col-md-3 col-sm-4 mb-3 mt-2 shadow rounded-4 p-2 d-flex flex-column"
+            sx={{ minHeight: "100%",
+              bgcolor : "backgroundElement.children"
+             }}
             key={fill.id}
             id="home-product-item"
           >
@@ -96,9 +99,9 @@ const ListItem = ({ data }) => {
 
             <div className="d-flex justify-content-between align-items-end">
               <div>
-                {[...Array(5)].map((_, index) => (
-                  <i key={index} className="bi bi-star-fill text-warning"></i>
-                ))}
+                <span style={{fontSize: "12px"}}>
+                  <i className="bi bi-star-fill text-warning"></i> 3.3
+                  </span>
               </div>
               <div>
                 <span style={{ fontSize: "12px" }}>
@@ -106,7 +109,7 @@ const ListItem = ({ data }) => {
                 </span>
               </div>
             </div>
-          </div>
+          </Card>
         );
       })}
     </>

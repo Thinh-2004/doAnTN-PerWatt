@@ -9,12 +9,14 @@ import { useNavigate } from "react-router-dom";
 import ShippingList from "../Shipping/ShippingList";
 import "./ProfileUserStyle.css";
 import {
+  Box,
   Button,
   FormControl,
   IconButton,
   InputAdornment,
   InputLabel,
   OutlinedInput,
+  useTheme,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
@@ -32,6 +34,8 @@ const ProfileUser = () => {
     password: "",
   });
 
+  const theme = useTheme();
+
   const geturlIMG = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
@@ -44,7 +48,7 @@ const ProfileUser = () => {
 
         const resUser = await axios.get(`userProFile/${id}`);
         setCheckPsasword(resUser.data.password);
-        console.log(checkPassword);
+        // console.log(checkPassword);
       } catch (error) {
         console.log(error);
         toast.error(
@@ -95,7 +99,10 @@ const ProfileUser = () => {
       <div className="container">
         <div className="row">
           <div className="col-lg-3 mt-4">
-            <div className="bg-white rounded-4 p-2">
+            <Box
+              className="rounded-4 p-2"
+              sx={{ backgroundColor: "backgroundElement.children" }}
+            >
               <div className="d-flex justify-content-center align-items-center mt-2">
                 <img
                   src={geturlIMG(fill.id, fill.avatar)}
@@ -152,7 +159,13 @@ const ProfileUser = () => {
                           aria-hidden="true"
                         >
                           <div className="modal-dialog modal-dialog-centered">
-                            <div className="modal-content">
+                            <div
+                              className={`modal-content ${
+                                theme.palette.mode === "light"
+                                  ? "bg-white"
+                                  : "bg-dark"
+                              }`}
+                            >
                               <div className="modal-header">
                                 <h1
                                   className="modal-title fs-5"
@@ -224,26 +237,56 @@ const ProfileUser = () => {
                     )}
                   </li>
                   <li className="mb-2">
-                    <Link className="text-decoration-none">Quyền riêng tư</Link>
+                    <Link
+                      className="text-decoration-none"
+                      onClick={() => setIsChangePassClicked(false)}
+                    >
+                      Quyền riêng tư
+                    </Link>
                   </li>
                   <li>
-                    <Link className="text-decoration-none" to={"shippingInfo"}>
+                    <Link
+                      className="text-decoration-none"
+                      to={"shippingInfo"}
+                      onClick={() => setIsChangePassClicked(false)}
+                    >
                       Địa chỉ nhận hàng
                     </Link>
                   </li>
                 </ul>
               </div>
-              <Link className="mx-2 text-decoration-none" to={"/order"}>
-                <i className="bi bi-receipt fs-3 text-primary me-2"></i>
-                <span className="text-dark">Đơn mua</span>
+              <Link
+                className="mx-2 text-decoration-none"
+                to={"/order"}
+                onClick={() => setIsChangePassClicked(false)}
+              >
+                <i className="bi bi-receipt fs-3 text-warning me-2"></i>
+                <span
+                  className={`${
+                    theme.palette.mode === "light" ? "text-dark" : "text-white"
+                  }`}
+                >
+                  Đơn mua
+                </span>
               </Link>
               <div className="">
-                <Link className="mx-2 text-decoration-none">
+                <Link
+                  className="mx-2 text-decoration-none"
+                  onClick={() => setIsChangePassClicked(false)}
+                >
                   <i className="bi bi-ticket-perforated fs-3 text-danger me-2"></i>
-                  <span className="text-dark">Kho Voucher</span>
+                  <span
+                    className={`${
+                      theme.palette.mode === "light"
+                        ? "text-dark"
+                        : "text-white"
+                    }`}
+                  >
+                    Kho Voucher
+                  </span>
                 </Link>
               </div>
-            </div>
+            </Box>
           </div>
           <div className="col-lg-9 mt-4">
             <Routes>

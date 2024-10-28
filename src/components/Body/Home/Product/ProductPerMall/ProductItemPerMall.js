@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import "./ProductItemPerMallStyle.css";
 import ListItemPerMall from "./ListItemPerMall";
 import { useState } from "react";
@@ -65,7 +65,7 @@ const ProductItemPerMall = () => {
     loadData();
   }, []);
 
-  const handleNextPage = async () => {
+  const handleNextPage = useCallback(() => {
     setIsNextPage(true);
 
     const timer = setTimeout(() => {
@@ -74,9 +74,9 @@ const ProductItemPerMall = () => {
       setIsNextPage(false);
     }, 500);
     return () => clearTimeout(timer);
-  };
+  }, [currentPage]);
 
-  const handlePrePage = async () => {
+  const handlePrePage = useCallback(() => {
     setIsPrePage(true);
 
     const timer = setTimeout(() => {
@@ -85,75 +85,82 @@ const ProductItemPerMall = () => {
       setIsPrePage(false);
     }, 500);
     return () => clearTimeout(timer);
-  };
+  }, [currentPage]);
 
   return (
     <>
-      <div className="col-lg-4 col-md-4 col-sm-4 mt-2 border-end align-content-center">
-        <div id="carouselExampleIndicators" class="carousel slide">
+      <div className="col-lg-4 col-md-4 col-sm-4 mt-2 border-end ">
+        <div
+          id="carouselExampleAutoplaying"
+          className="carousel slide"
+          data-bs-ride="carousel"
+          data-bs-interval="3000"
+        >
           <div class="carousel-indicators">
             <button
               type="button"
-              data-bs-target="#carouselExampleIndicators"
+              data-bs-target="#carouselExampleAutoplaying"
               data-bs-slide-to="0"
-              class="active"
+              className="active"
               aria-current="true"
               aria-label="Slide 1"
             ></button>
             <button
               type="button"
-              data-bs-target="#carouselExampleIndicators"
+              data-bs-target="#carouselExampleAutoplaying"
               data-bs-slide-to="1"
               aria-label="Slide 2"
             ></button>
             <button
               type="button"
-              data-bs-target="#carouselExampleIndicators"
+              data-bs-target="#carouselExampleAutoplaying"
               data-bs-slide-to="2"
               aria-label="Slide 3"
             ></button>
           </div>
-          <div class="carousel-inner">
-            <div class="carousel-item active">
+          <div className="carousel-inner rounded-3">
+            <div className="carousel-item active">
               <img
                 src="https://cf.shopee.vn/file/sg-11134258-7rdxs-m1m9bdywn82vaf"
-                class="d-block w-100 "
-                style={{ height: "610px" }}
+                className="d-block w-100"
+                style={{height: "610px"}}
                 alt="..."
               />
             </div>
             <div class="carousel-item">
               <img
                 src="https://cf.shopee.vn/file/sg-11134258-7rdxs-m1m9bdywn82vaf"
-                class="d-block w-100"
+                className="d-block w-100"
+                style={{height: "610px"}}
                 alt="..."
               />
             </div>
             <div class="carousel-item">
               <img
                 src="https://cf.shopee.vn/file/sg-11134258-7rdxs-m1m9bdywn82vaf"
-                class="d-block w-100"
+                className="d-block w-100"
+                style={{height: "610px"}}
                 alt="..."
               />
             </div>
           </div>
           <button
-            class="carousel-control-prev"
+            className="carousel-control-prev"
             type="button"
-            data-bs-target="#carouselExampleIndicators"
+            data-bs-target="#carouselExampleAutoplaying"
             data-bs-slide="prev"
           >
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
+            <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span className="visually-hidden">Previous</span>
           </button>
           <button
-            class="carousel-control-next"
+            className="carousel-control-next"
             type="button"
-            data-bs-target="#carouselExampleIndicators"
+            data-bs-target="#carouselExampleAutoplaying"
             data-bs-slide="next"
           >
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
+            <span className="carousel-control-next-icon" aria-hidden="true"></span>
+            <span className="visually-hidden">Next</span>
           </button>
         </div>
       </div>
@@ -176,12 +183,16 @@ const ProductItemPerMall = () => {
           )}
         </div>
         {loading ? (
-            <SkeletonLoad />
-          ) : (
-            <div className="row d-flex justify-content-center">
-              <ListItemPerMall data={fill} />
-            </div>
-          )}
+          <SkeletonLoad />
+        ) : (
+          <div className="row d-flex justify-content-center">
+            <ListItemPerMall
+              data={fill}
+              isNextPage={isNextPage}
+              isPrePage={isPrePage}
+            />
+          </div>
+        )}
         <div className="align-content-center p-2">
           {currentPage === totalPage - 1 ? (
             <div id="sold-page" className="align-items-center">

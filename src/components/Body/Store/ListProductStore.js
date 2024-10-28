@@ -1,6 +1,7 @@
 import React from "react";
 import axios from "../../../Localhost/Custumize-axios";
 import { Link } from "react-router-dom";
+import { Box } from "@mui/material";
 
 const ListProductStore = ({ data }) => {
   const geturlIMG = (productId, filename) => {
@@ -38,10 +39,12 @@ const ListProductStore = ({ data }) => {
           0
         );
         return (
-          <div className="col-lg-3 col-md-3 col-sm-3 mb-3" key={fill.id}>
-            <div
-              className="card shadow rounded-4 mt-4 p-2 d-flex flex-column"
-              style={{ height: "100%" }} // Đảm bảo chiều cao tự điều chỉnh
+          <div className="col-lg-3 col-md-3 col-sm-3 mb-3 mt-2" key={fill.id}>
+            <Box
+              className="shadow rounded-4 p-2 d-flex flex-column"
+              sx={{ height: "100%",
+                bgcolor : "backgroundElement.children"
+               }} // Đảm bảo chiều cao tự điều chỉnh
               id="product-item"
             >
               <Link
@@ -93,21 +96,9 @@ const ListProductStore = ({ data }) => {
                 <hr />
                 <div className="d-flex justify-content-between">
                   <div>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
+                    <span style={{ fontSize: "12px" }}>
+                      <i className="bi bi-star-fill text-warning"></i> 3.3
+                    </span>
                   </div>
                   <div>
                     <span style={{ fontSize: "12px" }}>
@@ -116,7 +107,7 @@ const ListProductStore = ({ data }) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </Box>
           </div>
         );
       })}

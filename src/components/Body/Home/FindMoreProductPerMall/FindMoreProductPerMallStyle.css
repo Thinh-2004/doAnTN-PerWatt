@@ -1,0 +1,61 @@
+#default {
+    /* background: rgba(rgb(84, 84, 255), 0); */
+    border-bottom: 1px solid;
+    /* color: rgba(rgb(84, 84, 255), 0); */
+    line-height: 1.4;
+    padding: .25em;
+    text-decoration: none;
+    border: none;
+    
+    &:hover {
+      /* background: rgba(rgb(84, 84, 255), 0); */
+      /* color: #0084ff; */
+    }
+  }
+
+
+.fill-all {
+  /* color: rgba(rgb(84, 84, 255), 0); */
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 45px;
+  margin: 0 0 2em;
+  max-width: 160px;
+  position: relative;
+  text-decoration: none;
+  width: 100%;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.btn-fill {
+  svg {
+    height: 30px;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+
+  rect {
+    fill: none;
+    stroke: #0084ff;
+    stroke-width: 2;
+    stroke-dasharray: 422, 0;
+    transition: all 0.35s linear;
+  }
+}
+
+.btn-fill:hover {
+  letter-spacing: 0.5px;
+
+  rect {
+    stroke-width: 5;
+    stroke-dasharray: 15, 310;
+    stroke-dashoffset: 48;
+    transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+}

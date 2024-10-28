@@ -1,28 +1,73 @@
-import { Table, TableBody, TableCell, TableHead, TableRow, TableSortLabel } from "@mui/material";
-import React from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+} from "@mui/material";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "../../../../../../Localhost/Custumize-axios";
 
-const ProductTable = ({data, orderBy, order, handleSort, handleSubmitDelete}) => {
-    const geturlIMG = (productId, filename) => {
-        return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-      };
-    
-      const formatPrice = (value) => {
-        if (!value) return "";
-        return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
-      };
+const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
+  const [isSortName, setIsSortName] = useState(false);
+  const [isSortPrice, setIsSortPrice] = useState(false);
+  const [isSortQuantity, setIsSortQuantity] = useState(false);
+  const geturlIMG = (productId, filename) => {
+    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
+  };
+
+  const formatPrice = (value) => {
+    if (!value) return "";
+    return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
+  };
+
+  const handleSort = (value) => {
+    let data;
+    if (value === "newItems") {
+      data = value;
+      setIsSortName(!isSortName); // Cập nhật trạng thái isSortOption
+    } else if (value === "oldItems") {
+      data = value;
+      setIsSortName(!isSortName); // Cập nhật trạng thái isSortOption
+    }
+
+    if (value === "priceDESC") {
+      data = value;
+      setIsSortPrice(!isSortPrice); // Cập nhật trạng thái isSortOption
+    } else if (value === "priceASC") {
+      data = value;
+      setIsSortPrice(!isSortPrice); // Cập nhật trạng thái isSortOption
+    }
+
+    if (value === "quantityDESC") {
+      data = value;
+      setIsSortQuantity(!isSortQuantity);
+    } else if (value === "quantityASC") {
+      data = value;
+      setIsSortQuantity(!isSortQuantity);
+    }
+
+    // Gọi hàm sắp xếp với giá trị
+    handleSortOption(data);
+  };
+
   return (
     <>
-      <Table id="table" sx={{ minWidth: 650 }} aria-label="simple table">
+      <Table
+        id="table"
+        sx={{ minWidth: 650, backgroundColor: "backgroundElement.children" }}
+        aria-label="simple table"
+      >
         <TableHead>
           <TableRow>
             <TableCell align="center">Hình</TableCell>
             <TableCell align="center">
               <TableSortLabel
-                active={orderBy === "name"}
-                direction={orderBy === "name" ? order : "asc"}
-                onClick={() => handleSort("name")}
+                active={true} // Luôn giữ trạng thái active
+                direction={isSortName ? "desc" : "asc"} // Sắp xếp theo trạng thái của isSortOption
+                onClick={() => handleSort(isSortName ? "newItems" : "oldItems")} // Đổi giữa "asc" và "desc"
               >
                 Sản phẩm
               </TableSortLabel>
@@ -31,18 +76,22 @@ const ProductTable = ({data, orderBy, order, handleSort, handleSubmitDelete}) =>
             <TableCell align="center">Hãng</TableCell>
             <TableCell align="center">
               <TableSortLabel
-                active={orderBy === "maxPrice"}
-                direction={orderBy === "maxPrice" ? order : "asc"}
-                onClick={() => handleSort("maxPrice")}
+                active={true} // Luôn giữ trạng thái active
+                direction={isSortPrice ? "desc" : "asc"} // Sắp xếp theo trạng thái của isSortOption
+                onClick={() =>
+                  handleSort(isSortPrice ? "priceDESC" : "priceASC")
+                } // Đổi giữa "asc" và "desc"
               >
                 Giá
               </TableSortLabel>
             </TableCell>
             <TableCell align="center">
               <TableSortLabel
-                active={orderBy === "quantity"}
-                direction={orderBy === "quantity" ? order : "asc"}
-                onClick={() => handleSort("quantity")}
+                active={true} // Luôn giữ trạng thái active
+                direction={isSortQuantity ? "desc" : "asc"} // Sắp xếp theo trạng thái của isSortOption
+                onClick={() =>
+                  handleSort(isSortQuantity ? "quantityDESC" : "quantityASC")
+                } // Đổi giữa "asc" và "desc"
               >
                 Số lượng
               </TableSortLabel>

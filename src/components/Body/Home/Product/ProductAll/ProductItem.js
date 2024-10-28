@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import "./ProductItemStyle.css";
 import axios from "../../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
 import useDebounce from "../../../../../CustumHook/useDebounce";
-import { Pagination } from "@mui/material";
+import { Box, Pagination } from "@mui/material";
 import SkeletonLoad from "../../../../../Skeleton/SkeletonLoad";
 // import SkeletonLoad from "./SkeletonLoad";
 import ListItem from "./ListItem";
@@ -13,7 +13,8 @@ trefoil.register();
 const Product = ({ item, idCate, handleReset }) => {
   const [fillAllProduct, setFillAllProduct] = useState([]);
   const [loading, setLoading] = useState(true);
-  const debouncedItem = useDebounce(item);
+  const debouncedItem = useDebounce(item, 500);
+  // console.log(debouncedItem);
   const debouncedIdCate = useDebounce(idCate);
 
   // Pagination
@@ -69,7 +70,7 @@ const Product = ({ item, idCate, handleReset }) => {
 
   useEffect(() => {
     const loadingData = async () => {
-      setLoading(true);
+      // setLoading(true);
       try {
         if (debouncedItem) {
           await loadData(0, 20, debouncedItem);
@@ -78,16 +79,14 @@ const Product = ({ item, idCate, handleReset }) => {
         } else {
           await loadData();
         }
-      } finally {
-        setLoading(false);
-      }
+      } catch {}
     };
     loadingData();
   }, [debouncedItem, debouncedIdCate]);
 
   // Sự kiện đặt lại giá trị cho số trang
   const handlePageChange = async (e, value) => {
-    setLoading(true);
+    // setLoading(true);
     try {
       if (debouncedItem) {
         await loadData(value - 1, 20, debouncedItem);
@@ -97,8 +96,8 @@ const Product = ({ item, idCate, handleReset }) => {
         await loadData(value - 1, 20);
       }
       setCurrentPage(value);
-    } finally {
-      setLoading(false);
+    } catch {
+      // setLoading(false);
     }
 
     // console.log(value);
@@ -107,12 +106,13 @@ const Product = ({ item, idCate, handleReset }) => {
   return (
     <>
       {debouncedItem || debouncedIdCate ? (
-        <div
-          onClick={handleReset}
-          className="text-primary"
-          style={{ cursor: "pointer" }}
-        >
-          <i className="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm
+        <div className="">
+          <Box id="default" sx={{background : "background.default"}} class="fill-all btn-fill text-center" onClick={handleReset}>
+            <svg>
+              <rect x="0" y="0" fill="none" width="100%" height="100%" />
+            </svg>
+            <i className="bi bi-box-seam"></i> Hiển thị tất cả
+          </Box>
         </div>
       ) : null}
       {loading ? (

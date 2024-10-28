@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import axios from "../../../../../Localhost/Custumize-axios";
+import { Box } from "@mui/material";
 
 const ListItemPerMall = ({ data }) => {
   const geturlIMG = (productId, filename) => {
@@ -38,11 +39,13 @@ const ListItemPerMall = ({ data }) => {
           0
         );
         return (
-          <div
-            className="col-lg-3 col-md-3 col-sm-3 mt-3 card shadow rounded-4 p-2 d-flex flex-column"
-            style={{ minHeight: "23%", maxWidth: "23%" }}
+          <Box
+            className="col-lg-3 col-md-3 col-sm-3 mb-2 shadow rounded-4 p-2 d-flex flex-column"
+            sx={{ maxWidth: "23%",
+              bgcolor : "backgroundElement.children"
+             }}
             key={fill.id}
-            id="home-product-item"
+            id="home-product-itemPerMall"
           >
             <Link
               to={`/detailProduct/${fill.slug}`}
@@ -55,6 +58,7 @@ const ListItemPerMall = ({ data }) => {
                     ? geturlIMG(fill.id, firstIMG.imagename)
                     : "/images/no_img.png"
                 }
+                style={{ width: "100%", height: "100%" }}
                 className="img-fluid rounded-4"
                 alt="Product"
               />
@@ -63,7 +67,7 @@ const ListItemPerMall = ({ data }) => {
                   className="position-absolute top-0 start-50 translate-middle text-danger"
                   id="bg-sold-out"
                 >
-                  <span className="text-white text-center">Hết hàng</span>
+                  <span className="text-white text-center" style={{fontSize : "15px"}}>Hết hàng</span>
                 </div>
               )}
               {fill?.store?.taxcode && (
@@ -96,9 +100,9 @@ const ListItemPerMall = ({ data }) => {
 
             <div className="d-flex justify-content-between align-items-end">
               <div>
-                {[...Array(5)].map((_, index) => (
-                  <i key={index} className="bi bi-star-fill text-warning"></i>
-                ))}
+                <span style={{ fontSize: "12px" }}>
+                  <i className="bi bi-star-fill text-warning"></i> 3.3
+                </span>
               </div>
               <div>
                 <span style={{ fontSize: "12px" }}>
@@ -106,7 +110,7 @@ const ListItemPerMall = ({ data }) => {
                 </span>
               </div>
             </div>
-          </div>
+          </Box>
         );
       })}
     </>

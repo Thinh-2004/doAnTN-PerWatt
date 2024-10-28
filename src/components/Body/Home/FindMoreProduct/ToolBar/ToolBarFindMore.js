@@ -136,7 +136,7 @@ const ToolBarFindMore = ({
   );
 
   return (
-    <div className="bg-white rounded-2">
+    <div className="rounded-2">
       <div className="m-3">
         <div>
           <Search search={search} handleTextSearch={handleTextSearch} />

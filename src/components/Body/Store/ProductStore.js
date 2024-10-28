@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
 import useDebounce from "../../../CustumHook/useDebounce";
 import "./StoreStyle.css";
-import { Pagination } from "@mui/material";
+import { Box, Pagination } from "@mui/material";
 
 import SkeletonLoad from "../../../Skeleton/SkeletonLoad";
 import ListProductStore from "./ListProductStore";
@@ -145,13 +145,18 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
             isSortOption={isSortOption}
           />
           {debouncedItem || debouncedIdCate ? (
-            <div
-              className="text-primary mt-3"
-              style={{ cursor: "pointer" }}
-              onClick={handleResetSearch}
-            >
-              <i className="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm của
-              cửa hàng
+            <div className="mt-2">
+              <Box
+                id="default"
+                className="fill-all btn-fill mt-3 text-center"
+                onClick={handleResetSearch}
+                sx={{background : "background.default"}}
+              >
+                <svg>
+                  <rect x="0" y="0" fill="none" width="100%" height="100%" />
+                </svg>
+                <i className="bi bi-box-seam"></i> Hiển thị tất cả
+              </Box>
             </div>
           ) : null}
         </div>

@@ -1,10 +1,10 @@
 #btn-children-img {
   border: none;
-  background-color: white;
+  /* background-color: white; */
 }
 #btn-children-img:hover {
   border: none;
-  background-color: white;
+  /* background-color: white; */
 }
 #avt-store {
   width: 70px; /* hoặc bất kỳ kích thước nào bạn muốn */
@@ -72,7 +72,7 @@
 
 #hover-idDetailProduct {
   border: none;
-  background: white;
+  /* background: white; */
   transition: 0.5s;
 }
 

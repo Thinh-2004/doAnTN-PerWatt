@@ -6,11 +6,12 @@ import axios from "../../../../../../Localhost/Custumize-axios";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import { bouncy } from "ldrs";
-import { Paper, TableContainer, TablePagination } from "@mui/material";
+import { Box, Paper, TableContainer, TablePagination } from "@mui/material";
 import useDebounce from "../../../../../../CustumHook/useDebounce";
 
 import ProductTable from "./ProductTable";
 import ToolbarListProduct from "./ToolbarListProduct";
+import { load } from "@teachablemachine/image";
 
 bouncy.register();
 
@@ -19,10 +20,12 @@ const ListProduct = () => {
   const [fetchData, setFetchData] = useState([]); //giá trị check === 0
   const idStore = localStorage.getItem("idStore");
   const [loading, setLoading] = useState(true);
-  const [order, setOrder] = useState("desc"); // 'asc' or 'desc'
-  const [orderBy, setOrderBy] = useState("name"); // Sorting by price
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [sortOption, setSortOption] = useState(""); // Sorting by price
+
+  //Pagination
+  const [currentPage, setCurrentPage] = useState(0); //Trang hiện tại
+  const [totalPage, setTotalPage] = useState(5);
+  const [totalItems, setTotalItems] = useState(0);
 
   //Tìm kiếm
   const [search, setSearch] = useState("");
@@ -33,10 +36,26 @@ const ListProduct = () => {
 
   const [isFilterQuantitySoldOut, setIsFilterQuantitySoldOut] = useState(false); //Trạng thái lọc quantity sold out
 
-  const loadData = async () => {
+  const loadData = async (
+    pageNo,
+    pageSize,
+    keyWord,
+    sortBy,
+    soldOutProduct
+  ) => {
+    setFill([]);
+    setLoading(true);
     try {
       const resStore = await axios.get(`/store/${idStore}`);
-      const res = await axios.get(`/productStore/${resStore.data.slug}`);
+      const res = await axios.get(
+        `/productStore/${resStore.data.slug}?pageNo=${pageNo || ""}&pageSize=${
+          pageSize || "5"
+        }&keyWord=${keyWord || ""}&sortBy=${sortBy || ""}&soldOutProduct=${
+          soldOutProduct || "false"
+        }`
+      );
+      setCurrentPage(res.data.currentPage - 1);
+      setTotalItems(res.data.totalItems);
 
       const filteredData = res.data.products.filter((product) => {
         const searchTerm = debounceSearch.toLowerCase();
@@ -75,26 +94,35 @@ const ListProduct = () => {
       console.log(error);
       setLoading(true);
       if (fetchData.length === 0) setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => {
-      loadData();
-      setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [debounceSearch, idCateOption, isFilterQuantitySoldOut]);
+    loadData(
+      currentPage,
+      totalPage,
+      debounceSearch || idCateOption,
+      sortOption,
+      isFilterQuantitySoldOut
+    );
+  }, [
+    currentPage,
+    totalPage,
+    debounceSearch,
+    sortOption,
+    idCateOption,
+    isFilterQuantitySoldOut,
+  ]);
 
   useEffect(() => {
-    // setLoading(true);
-    if (search) {
+    if (debounceSearch) {
+      // Khi debounceSearch có dữ liệu, reset các giá trị liên quan
       setIdCateOption(null);
       setIsFilterQuantitySoldOut(false);
     }
-    // setLoading(false);
-  }, [search]);
+  }, [debounceSearch]);
 
   useEffect(() => {
     if (idCateOption) {
@@ -110,22 +138,27 @@ const ListProduct = () => {
     }
   }, [isFilterQuantitySoldOut]);
 
-  const handleSort = useCallback(
-    (property) => {
-      const isAsc = orderBy === property && order === "asc";
-      setOrder(isAsc ? "desc" : "asc");
-      setOrderBy(property);
-    },
-    [order, orderBy]
-  );
+  const handleSortOption = useCallback((property) => {
+    if (property === "oldItems") setSortOption(property);
+    else if (property === "newItems") setSortOption(property);
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+    if (property === "priceDESC") setSortOption(property);
+    else if (property === "priceASC") setSortOption(property);
+
+    if (property === "quantityDESC") setSortOption(property);
+    else if (property === "quantityASC") setSortOption(property);
+    console.log(property);
+    // setSortOption(property);
+  }, []);
+
+  const handleChangePage = async (event, newPage) => {
+    // console.log(newPage);
+    setCurrentPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    setTotalPage(parseInt(event.target.value, 10));
+    setCurrentPage(0);
   };
 
   const handleSubmitDelete = (idPr) => {
@@ -159,86 +192,11 @@ const ListProduct = () => {
     });
   };
 
-  // Xử lý dữ liệu
-  const mergedData = fill.map((product) => {
-    //Sắp xếp Tăng Giảm theo giá
-    const productDetailsSorted = product.productDetails
-      ? product.productDetails.slice().sort((a, b) => {
-          if (order === "asc") {
-            return a.price > b.price ? 1 : -1;
-          } else {
-            return a.price < b.price ? 1 : -1;
-          }
-        })
-      : [];
-
-    //sắp xếp giá lớn nhất
-    const maxPrice = productDetailsSorted.length
-      ? Math.max(...productDetailsSorted.map((detail) => detail.price))
-      : 0;
-
-    //Tổng số lượng
-    const totalQuantity = productDetailsSorted.reduce(
-      (total, detailQuantity) => total + detailQuantity.quantity,
-      0
-    );
-
-    return {
-      ...product,
-      productDetails: productDetailsSorted,
-      maxPrice,
-      totalQuantity,
-    };
-  });
-
-  const filteredData = mergedData.filter(
-    (product) => product.totalQuantity === 0
-  );
-
-  //Sử dụng useMeMo tránh việc tính toán lại các array dependencies
-  const sortedData = useMemo(() => {
-    if (isFilterQuantitySoldOut) {
-      return filteredData.slice().sort((a, b) => {
-        if (orderBy === "name") {
-          return order === "asc" ? a.id - b.id : b.id - a.id;
-        } else if (orderBy === "maxPrice") {
-          return order === "asc"
-            ? a.maxPrice - b.maxPrice
-            : b.maxPrice - a.maxPrice;
-        } else if (orderBy === "quantity") {
-          return order === "asc"
-            ? a.totalQuantity - b.totalQuantity
-            : b.totalQuantity - a.totalQuantity;
-        }
-        return 0; //Trường hợp không cần sắp xếp
-      });
-    }
-    return mergedData.slice().sort((a, b) => {
-      if (orderBy === "name") {
-        return order === "asc" ? a.id - b.id : b.id - a.id;
-      } else if (orderBy === "maxPrice") {
-        return order === "asc"
-          ? a.maxPrice - b.maxPrice
-          : b.maxPrice - a.maxPrice;
-      } else if (orderBy === "quantity") {
-        return order === "asc"
-          ? a.totalQuantity - b.totalQuantity
-          : b.totalQuantity - a.totalQuantity;
-      }
-      return 0; //Trường hợp không cần sắp xếp
-    });
-  }, [filteredData, isFilterQuantitySoldOut, mergedData, order, orderBy]);
-  // Phân trang sau khi sắp xếp
-  const paginatedData = sortedData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
   const handleClickFilterSoldOutByQuantity = useCallback(() => {
     setIsFilterQuantitySoldOut((pre) => !pre);
   }, []);
 
-  const handleOptionChange = (event, newValue) => {
+  const handleOneChangeIdCate = (event, newValue) => {
     if (!newValue) {
       setIdCateOption(null);
       return;
@@ -247,7 +205,10 @@ const ListProduct = () => {
   };
 
   return (
-    <div className="card mt-4 mb-4">
+    <Box
+      className=" mt-4 mb-4"
+      sx={{ backgroundColor: "backgroundElement.children" }}
+    >
       <div className="d-flex justify-content-between p-4">
         <h3>Sản phẩm cửa hàng</h3>
         <button className="btn" id="btn-add">
@@ -262,7 +223,7 @@ const ListProduct = () => {
       <ToolbarListProduct
         search={search}
         setSearch={setSearch}
-        handleOptionChange={handleOptionChange}
+        handleOneChangeIdCate={handleOneChangeIdCate}
         idCateOption={idCateOption}
         handleClickFilterSoldOutByQuantity={handleClickFilterSoldOutByQuantity}
         isFilterQuantitySoldOut={isFilterQuantitySoldOut}
@@ -277,17 +238,15 @@ const ListProduct = () => {
             <hr />
             <h1 className="text-center">Bạn chưa đăng bán sản phẩm.</h1>
           </>
-        ) : paginatedData.length === 0 && search !== "" ? (
+        ) : fill.length === 0 && search !== "" ? (
           <>
             <hr />
             <h1 className="text-center">Sản phẩm bạn tìm không tồn tại.</h1>
           </>
         ) : (
           <ProductTable
-            data={paginatedData}
-            orderBy={orderBy}
-            order={order}
-            handleSort={handleSort}
+            data={fill}
+            handleSortOption={handleSortOption}
             handleSubmitDelete={handleSubmitDelete}
           />
         )}
@@ -295,9 +254,9 @@ const ListProduct = () => {
       <TablePagination
         rowsPerPageOptions={[5, 10]}
         component="div"
-        count={fill.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
+        count={totalItems}
+        rowsPerPage={totalPage}
+        page={currentPage}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
         labelRowsPerPage="Giới hạn hiển thị"
@@ -310,7 +269,7 @@ const ListProduct = () => {
           },
         }}
       />
-    </div>
+    </Box>
   );
 };
 

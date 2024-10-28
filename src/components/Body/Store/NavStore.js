@@ -12,6 +12,7 @@ import {
   Stack,
   TextField,
   Typography,
+  useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
@@ -19,12 +20,13 @@ const Store = () => {
   const getIdBySlugStore = useParams();
   const [fill, setFill] = useState([]);
   const [search, setSearch] = useState("");
-  const [countProductStore, setCountProductStore] = useState(0);
   const [fillCateInStore, setFillCateInStore] = useState([]);
   const [idCateProduct, setIdCateProduct] = useState(0);
   const [checkResetInputSearch, setCheckResetInputSearch] = useState(false);
   // const idStore = localStorage.getItem("idStore");
   const [valueMT, setValueMT] = useState(5); // value của magrin top
+  const theme = useTheme();
+  const [totalItems, setTotalItems] = useState(0); //Tổng số lượng sản phẩm
 
   // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
   const updateItemsPerPage = () => {
@@ -75,15 +77,19 @@ const Store = () => {
   const geturlAvtUser = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
+
   const loadData = async () => {
     try {
       //Lấy data store by slug param
       const storeRes = await axios.get(
         `/productStore/${getIdBySlugStore.slugStore}`
       );
-      setCountProductStore(storeRes.data.products.length);
+
+      setTotalItems(storeRes.data.totalItems);
       //Lấy infoStore by storeRes
-      const res = await axios.get(`store/${storeRes.data.products[0].store.id}`);
+      const res = await axios.get(
+        `store/${storeRes.data.products[0].store.id}`
+      );
       setFill(res.data);
 
       //Kiểm tra infoStore trước khi call API
@@ -154,7 +160,11 @@ const Store = () => {
   return (
     <>
       <Header></Header>
-      <div className="bg-white mt-2 container-fluid">
+      <div
+        className={`mt-2 container-fluid ${
+          theme.palette.mode === "light" ? "bg-white" : ""
+        }`}
+      >
         <div className="position-relative">
           <img
             src={geturlBgStore(fill.id, fill.imgbackgound)}
@@ -217,7 +227,7 @@ const Store = () => {
               {" "}
               <span className="">
                 <i class="bi bi-box-seam-fill"></i> Sản phẩm:{" "}
-                <label htmlFor="">{countProductStore}</label>{" "}
+                <label htmlFor="">{totalItems}</label>{" "}
               </span>
             </div>
             <div className="col-lg-2 col-md-2 col-sm-2">
@@ -254,9 +264,9 @@ const Store = () => {
       </div>
       <div className="container mt-5">
         <div className="row">
-          <div
-            className="col-lg-3 col-md-3 col-sm-3 border-end bg-white rounded-3"
-            style={{ height: "90%" }}
+          <Box
+            className="col-lg-3 col-md-3 col-sm-3 border-end  rounded-3"
+            sx={{ height: "90%", bgcolor: "backgroundElement.children" }}
           >
             <form className="d-flex justify-content-center mt-3" role="search">
               <Box
@@ -306,7 +316,11 @@ const Store = () => {
             <div className="border-bottom mb-5 ">
               <h4 className="mt-3">Mã khuyến mãi</h4>
               <div className="overflow-auto" style={{ height: "400px" }}>
-                <CardContent className="bg-white mt-2">
+                <CardContent
+                  className={`mt-2 ${
+                    theme.palette.mode === "light" ? "border" : "border"
+                  }`}
+                >
                   <Typography
                     sx={{ fontSize: 14 }}
                     color="text.secondary"
@@ -324,7 +338,11 @@ const Store = () => {
                     <button className="btn btn-danger">Nhận mã</button>
                   </div>
                 </CardContent>
-                <CardContent className="bg-white mt-2">
+                <CardContent
+                  className={`mt-2 ${
+                    theme.palette.mode === "light" ? "border" : "border"
+                  }`}
+                >
                   <Typography
                     sx={{ fontSize: 14 }}
                     color="text.secondary"
@@ -342,7 +360,11 @@ const Store = () => {
                     <button className="btn btn-danger">Nhận mã</button>
                   </div>
                 </CardContent>
-                <CardContent className="bg-white mt-2">
+                <CardContent
+                  className={`mt-2 ${
+                    theme.palette.mode === "light" ? "border" : "border"
+                  }`}
+                >
                   <Typography
                     sx={{ fontSize: 14 }}
                     color="text.secondary"
@@ -362,7 +384,7 @@ const Store = () => {
                 </CardContent>
               </div>
             </div>
-          </div>
+          </Box>
           <div className="col-lg-9 col-md-9 col-sm-9 ">
             <ProductStore
               item={search}

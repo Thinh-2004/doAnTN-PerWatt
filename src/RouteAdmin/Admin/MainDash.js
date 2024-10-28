@@ -4,12 +4,12 @@ import "./MainDash.css";
 import CardsAmin from "./CardsAdmin";
 import TableAd from "./TableAd";
 import { Footer } from "antd/es/layout/layout";
-import HeaderAdmin from "../../components/Header/HeaderAdmin";
+import Header from "../../components/Header/Header";
 
 const MainDash = () => {
   return (
     <div className="MainDash">
-      <HeaderAdmin></HeaderAdmin>
+      <Header></Header>
       <div className="container">
         <h1>Overview chart</h1>
         <CardsAmin></CardsAmin>

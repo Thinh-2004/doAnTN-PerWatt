@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import Category from "../../CategoryProduct/Category";
-import Brand from "../../Brand/Brand";
-import Warranties from "../../Warranties/Warranties";
 import { toast } from "react-toastify";
 import axios from "../../../../../../Localhost/Custumize-axios";
-import { Button, styled, TextField } from "@mui/material";
+import { Button, Card, CardContent, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditDetailProduct from "../DetailProduct/EditDetailProduct";
 import InfoDetailProduct from "./ChildrenForm/InfoDetailProduct";
@@ -261,10 +258,10 @@ const EditProduct = () => {
     <div className="row mt-4">
       {/* Product Info */}
       <div className="col-lg-12">
-        <div className="bg-white rounded-4">
-          <div className="card">
+        <div className=" rounded-4">
+          <Card className="">
             <h3 className="text-center mt-4">Thông tin sản phẩm</h3>
-            <div className="card-body">
+            <CardContent className="">
               <div className="row">
                 <div className="col-lg-6 border-end">
                   <div className="mb-3">
@@ -348,14 +345,14 @@ const EditProduct = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
       {/* Detail product */}
       <div className="col-lg-12 col-md-12 col-sm-12">
-        <div className="bg-white rounded-4 mt-3">
-          <div className="card">
+        <div className=" rounded-4 mt-3">
+          <Card className="">
             <div className="row align-items-center p-3">
               <h3 className="col-lg-6 col-md-6 col-sm-6 w-25">
                 Thông tin bán hàng
@@ -382,14 +379,14 @@ const EditProduct = () => {
               </div>
             </div>
 
-            <div className="card-body">
+            <CardContent className="">
               <EditDetailProduct
                 idProduct={formEditProduct}
                 isChangeFormEdit={isHiddenDetailPro}
                 CountData={handleReceiveData}
               />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
       {/* Detailed Info */}

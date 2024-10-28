@@ -3,7 +3,16 @@ import "./FormProduct.css";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "../../../../../../Localhost/Custumize-axios";
-import { Button, styled, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  styled,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DetailProduct from "../DetailProduct/DetailProduct";
 import InfoDetailProduct from "./ChildrenForm/InfoDetailProduct";
@@ -279,17 +288,20 @@ const FormProduct = () => {
     console.log(dataDetail);
   }, []);
 
-  console.log(formProduct);
-
   return (
     <div className="row mt-4">
       <form onSubmit={handleSubmit}>
         {/* Product Info */}
         <div className="col-lg-12 col-md-12 col-sm-12">
-          <div className="bg-white rounded-4">
-            <div className="card">
-              <h3 className="text-center mt-4">Thông tin sản phẩm</h3>
-              <div className="card-body">
+          <div className="rounded-4">
+            <Card
+              sx={{ backgroundColor: "backgroundElement.children" }}
+              className=""
+            >
+              <Typography variant="h4" className="text-center mt-4">
+                Thông tin sản phẩm
+              </Typography>
+              <CardContent className="">
                 <div className="row">
                   <div className="col-lg-6 col-md-6 col-sm-6 border-end">
                     <div className="mb-3">
@@ -368,27 +380,27 @@ const FormProduct = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
         {/* Detail product */}
         <div className="col-lg-12 col-md-12 col-sm-12">
-          <div className="bg-white rounded-4 mt-3">
-            <div className="card">
+          <div className="rounded-4 mt-3">
+            <Card className="">
               <div className="row align-items-center p-3">
                 <h3 className="col-lg-6 col-md-6 col-sm-6 w-25">
                   Thông tin bán hàng
                 </h3>
                 <div className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-end w-75">
                   {isHiddenDetailPro ? (
-                    <button
-                      className="btn"
+                    <Button
+                      sx={{color : "text.primary"}}
                       type="button"
                       onClick={() => setIsHiddenDetailPro(false)}
                     >
                       X
-                    </button>
+                    </Button>
                   ) : (
                     <button
                       type="button"
@@ -410,7 +422,7 @@ const FormProduct = () => {
                   ref={detailProductRef}
                 />
               </div>
-            </div>
+            </Card>
           </div>
         </div>
         {/* Detailed Info */}

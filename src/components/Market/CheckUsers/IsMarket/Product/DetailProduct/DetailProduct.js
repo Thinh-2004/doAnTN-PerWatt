@@ -1,4 +1,16 @@
-import { Button, styled, TextField } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  styled,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+} from "@mui/material";
 import React, { useState, useEffect, useImperativeHandle } from "react";
 
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -265,9 +277,9 @@ const DetailProduct = forwardRef(
     }, [reloadArrayDetail]);
 
     return (
-      <div className="bg-white shadow">
-        <div className="card">
-          <div className="card-body">
+      <div className="shadow">
+        <Card className="">
+          <CardContent className="">
             <div className="d-flex justify-content-between">
               {isChangeForm ? (
                 <div className="row">
@@ -342,56 +354,62 @@ const DetailProduct = forwardRef(
                     </div>
                   )}
                   <div className="mt-2">
-                    <table className="table text-center">
-                      <thead>
-                        <tr>
-                          <th scope="col">Hình</th>
-                          <th scope="col">Tên phân loại</th>
-                          <th scope="col">Giá phân loại</th>
-                          <th scope="col">Số lượng phân loại</th>
-                          <th scope="col">Thao tác</th>
-                        </tr>
-                      </thead>
-                      <tbody
-                        style={{
-                          verticalAlign: "middle",
-                        }}
-                      >
-                        {temporaryData.map((fill, index) => (
-                          <tr key={index}>
-                            <td>
-                              <img
-                                src={fill.imagedetail}
-                                alt="Hình ảnh"
-                                style={{ width: "100px", height: "100px" }}
-                              />
-                            </td>
-                            <td>{fill.namedetail}</td>
-                            <td>{formatPrice(fill.price)}</td>
-                            <td>{fill.quantity}</td>
-                            <td>
-                              <Button
-                                onClick={() => handleEdit(index)}
-                                color="primary"
-                                startIcon={<EditIcon />}
-                                size="small"
-                                className="me-2"
-                              >
-                                Sửa
-                              </Button>
-                              <Button
-                                onClick={() => handleDelete(index)}
-                                color="error"
-                                startIcon={<DeleteIcon />}
-                                size="small"
-                              >
-                                Xóa
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <TableContainer>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell align="center">Hình</TableCell>
+                            <TableCell align="center">Tên phân loại</TableCell>
+                            <TableCell align="center">Giá phân loại</TableCell>
+                            <TableCell align="center">
+                              Số lượng phân loại
+                            </TableCell>
+                            <TableCell align="center">Thao tác</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {temporaryData.map((fill, index) => (
+                            <TableRow key={index}>
+                              <TableCell align="center">
+                                <img
+                                  src={fill.imagedetail}
+                                  alt="Hình ảnh"
+                                  style={{ width: "100px", height: "100px" }}
+                                />
+                              </TableCell>
+                              <TableCell align="center">
+                                {fill.namedetail}
+                              </TableCell>
+                              <TableCell align="center">
+                                {formatPrice(fill.price)}
+                              </TableCell>
+                              <TableCell align="center">
+                                {fill.quantity}
+                              </TableCell>
+                              <TableCell align="center">
+                                <Button
+                                  onClick={() => handleEdit(index)}
+                                  color="primary"
+                                  startIcon={<EditIcon />}
+                                  size="small"
+                                  className="me-2"
+                                >
+                                  Sửa
+                                </Button>
+                                <Button
+                                  onClick={() => handleDelete(index)}
+                                  color="error"
+                                  startIcon={<DeleteIcon />}
+                                  size="small"
+                                >
+                                  Xóa
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
                   </div>
                 </div>
               ) : (
@@ -420,8 +438,8 @@ const DetailProduct = forwardRef(
                 </>
               )}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

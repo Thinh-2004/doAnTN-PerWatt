@@ -2,9 +2,10 @@ import React from "react";
 import axios from "../../../../../Localhost/Custumize-axios";
 import DoNotDisturbIcon from "@mui/icons-material/DoNotDisturb";
 import { Link } from "react-router-dom";
+import { Box } from "@mui/material";
 
 const ListFindMore = ({ data }) => {
-  const geturlIMG = (productId, filename) => {
+  const getUrlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
 
@@ -49,9 +50,10 @@ const ListFindMore = ({ data }) => {
             0
           );
           return (
-            <div
-              className="col-lg-2 col-md-3 col-sm-4 mt-3 card shadow rounded-4 p-2 d-flex flex-column"
-              style={{ minHeight: "100%" }}
+            <Box
+              className="col-lg-2 col-md-3 col-sm-4 mt-3 shadow rounded-4 p-2 d-flex flex-column"
+              sx={{ minHeight: "100%", 
+              bgcolor : "backgroundElement.children" }}
               key={fill.id}
               id="home-product-item"
             >
@@ -63,7 +65,7 @@ const ListFindMore = ({ data }) => {
                 <img
                   src={
                     firstIMG
-                      ? geturlIMG(fill.id, firstIMG.imagename)
+                      ? getUrlIMG(fill.id, firstIMG.imagename)
                       : "/images/no_img.png"
                   }
                   className="img-fluid rounded-4"
@@ -83,7 +85,7 @@ const ListFindMore = ({ data }) => {
                       src="/images/IconShopMall.png"
                       alt=""
                       className="rounded-circle"
-                      style={{ width: "15%",  aspectRatio: "1 / 1" }}
+                      style={{ width: "15%", aspectRatio: "1 / 1" }}
                     />
                   </div>
                 )}
@@ -110,9 +112,10 @@ const ListFindMore = ({ data }) => {
 
               <div className="d-flex justify-content-between align-items-end">
                 <div>
-                  {[...Array(5)].map((_, index) => (
-                    <i key={index} className="bi bi-star-fill text-warning"></i>
-                  ))}
+                  <span style={{ fontSize: "12px" }}>
+                    {" "}
+                    <i className="bi bi-star-fill text-warning"></i> 3.3
+                  </span>
                 </div>
                 <div>
                   <span style={{ fontSize: "12px" }}>
@@ -120,7 +123,7 @@ const ListFindMore = ({ data }) => {
                   </span>
                 </div>
               </div>
-            </div>
+            </Box>
           );
         })
       )}

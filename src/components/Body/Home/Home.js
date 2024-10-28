@@ -10,6 +10,7 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import { Link } from "react-router-dom";
+import { Box, Typography } from "@mui/material";
 
 const Home = () => {
   const [searchProduct, setSearchProduct] = useState("");
@@ -92,36 +93,47 @@ const Home = () => {
       </div>
       <div className="container">
         <div className="border mt-4 rounded-3">
-          <div className="bg-white rounded-3">
+          <Box
+            className="rounded-3"
+            sx={{
+              bgcolor: "backgroundElement.children"
+            }}
+          >
             <div className="d-flex justify-content-center p-2 border-bottom">
-              <img
-                src="/images/IconShopMall.png"
-                alt=""
-                id="logo-iconPerMall"
-              />
-              <h4 className="text-center fst-italic align-content-center mx-3">
-                PERWATT MALL
-              </h4>
+              <Link to={"/product/PerMall"} className="d-flex">
+                <img
+                  src="/images/IconShopMall.png"
+                  alt=""
+                  id="logo-iconPerMall"
+                />
+                 <Typography
+                  variant="h4"
+                  className="text-center fst-italic mx-3"
+                  sx={{color : "text.default"}}
+                >
+                  PERWATT MALL
+                </Typography>
+              </Link>
             </div>
             <div className="row p-2">
               <div className="col-lg-6 col-md-6 col-sm-6">
-                <label htmlFor="">
+                <Typography variant="label" htmlFor="">
                   <VerifiedUserIcon color="success" /> Uy tín
-                </label>
-                <label htmlFor="" className="mx-3 me-3">
+                </Typography>
+                <Typography variant="label" htmlFor="" className="mx-3 me-3">
                   <LocalMallIcon color="success" /> Chính hãng
-                </label>
-                <label htmlFor="" className="">
+                </Typography>
+                <Typography variant="label" htmlFor="" className="">
                   <DoneAllIcon color="success" /> Chất lượng luôn được đề cao
-                </label>
+                </Typography>
               </div>
               <div className="col-lg-6 col-md-6 col-sm-6">
                 <div className="d-flex justify-content-end">
-                  <Link to={""}>Xem tất cả sản phẩm</Link>
+                  <Link to={"/product/PerMall"}>Xem tất cả sản phẩm</Link>
                 </div>
               </div>
             </div>
-          </div>
+          </Box>
           <div className="row mb-3">
             <ProductItemPerMall />
           </div>

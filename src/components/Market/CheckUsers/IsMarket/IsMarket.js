@@ -1,10 +1,8 @@
 import React, { useEffect } from "react";
-import HeaderMarket from "../../../Header/HeaderMarket";
 import { Link, Route, Routes } from "react-router-dom";
 import "./isMarketStyle.css";
 import ListProduct from "./Product/List/ListProduct";
 import FormProduct from "./Product/Form/FormProduct";
-import useSession from "../../../../Session/useSession";
 import axios from "../../../../Localhost/Custumize-axios";
 import EditProduct from "./Product/Form/EditProduct";
 import MainUserSeller from "./StatisticalOrders/MainUserSeller";
@@ -16,6 +14,7 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Header from "../../../Header/Header";
 
 const IsMarket = () => {
   const user = localStorage.getItem("user")
@@ -39,7 +38,7 @@ const IsMarket = () => {
   }, [user.id]);
   return (
     <>
-      <HeaderMarket />
+      <Header />
       <div className="row container-fluid ">
         <div className="col-lg-3 p-0 m-0 ">
           <Accordion defaultExpanded>

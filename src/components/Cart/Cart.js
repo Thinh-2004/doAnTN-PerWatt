@@ -366,7 +366,11 @@ const Cart = () => {
               </div>
             ) : (
               <>
-                <div className="card mb-3">
+                <Box className="card mb-3"
+                sx={{
+                  bgcolor : "backgroundElement.children",
+                  color : "text.default"
+                }}>
                   <div className="card-body d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">
                       <Checkbox
@@ -386,17 +390,19 @@ const Cart = () => {
                       <i className="bi bi-trash3-fill"></i>
                     </Button>
                   </div>
-                </div>
+                </Box>
                 {Object.keys(groupedProducts).map((storeId) => {
                   const storeProducts = groupedProducts[storeId];
                   const store = storeProducts[0].productDetail.product.store;
                   const isGroupSelected = groupSelection[storeId] || false;
                   return (
-                    <div
+                    <Box
                       className="card mb-3"
-                      id="cartItem"
+                      // id="cartItem"
                       key={storeId}
-                      style={{ position: "relative", minHeight: "200px" }}
+                      sx={{ position: "relative", minHeight: "200px",
+                      backgroundColor : "backgroundElement.children", 
+                      color: "text.default" }}
                     >
                       {!isCardLoaded && (
                         <l-tailspin
@@ -773,7 +779,7 @@ const Cart = () => {
                           );
                         })}
                       </div>
-                    </div>
+                    </Box>
                   );
                 })}
               </>

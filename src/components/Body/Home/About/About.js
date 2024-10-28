@@ -6,6 +6,7 @@ import { dotWave } from "ldrs";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
 import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
 import DoDisturbAltIcon from "@mui/icons-material/DoDisturbAlt";
+import { Box, Typography, useTheme } from "@mui/material";
 
 dotWave.register();
 
@@ -14,6 +15,7 @@ const About = ({ idCategory }) => {
   const [loading, setLoading] = useState(false);
   const [pageIndex, setPageIndex] = useState(0); // Quản lý trang hiện tại
   const [itemsPerPage, setItemsPerPage] = useState(10); // Số lượng mục hiển thị
+  const theme = useTheme();
 
   // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
   const updateItemsPerPage = () => {
@@ -26,7 +28,7 @@ const About = ({ idCategory }) => {
       setItemsPerPage(9);
     } else if (width >= 1700) {
       setItemsPerPage(9);
-    }else if(width >= 1600){
+    } else if (width >= 1600) {
       setItemsPerPage(8);
     } else if (width >= 1500) {
       setItemsPerPage(7);
@@ -40,11 +42,11 @@ const About = ({ idCategory }) => {
       setItemsPerPage(5);
     } else if (width >= 1050) {
       setItemsPerPage(5);
-    }else if (width >= 850){
+    } else if (width >= 850) {
       setItemsPerPage(4);
-    }else if (width >= 800){
+    } else if (width >= 800) {
       setItemsPerPage(3);
-    }else if (width >= 500){
+    } else if (width >= 500) {
       setItemsPerPage(2);
     } else {
       setItemsPerPage(2);
@@ -104,7 +106,13 @@ const About = ({ idCategory }) => {
           className="position-absolute start-50 translate-middle"
           style={{ width: "90%", top: "115%" }}
         >
-          <div className="bg-white rounded-4 p-2 shadow" id="item-product">
+          <Box
+            className="rounded-4 p-2 shadow"
+            sx={{
+              backgroundColor: "backgroundElement.children",
+            }}
+            id={``}
+          >
             <h2 className="text-center mb-3">Danh mục</h2>
             {loading ? (
               <div className="d-flex justify-content-between align-items-center">
@@ -117,6 +125,11 @@ const About = ({ idCategory }) => {
                     width: "50px",
                     height: "50px",
                     outline: "1px solid",
+                    border:
+                      theme.palette.mode === "dark"
+                        ? "1px solid white"
+                        : "1px solid black",
+                    color: theme.palette.mode === "dark" ? " white" : " black",
                   }}
                 >
                   {pageIndex === 0 ? (
@@ -140,14 +153,14 @@ const About = ({ idCategory }) => {
                         style={{ maxWidth: "100%" }}
                       >
                         <Link
-                          className="text-decoration-none text-dark"
+                          className="text-decoration-none text-center"
                           id="featured-category-item"
                           onClick={() => handleClick(cate.id)}
                           role="button"
                           style={{
                             cursor: "pointer",
                             width: "138px",
-                            maxWidth: "200px",
+                            // maxWidth: "200px",
                           }}
                         >
                           <img
@@ -161,9 +174,13 @@ const About = ({ idCategory }) => {
                             }}
                           />
                           <br />
-                          <span className="card-text text-center m-2">
+                          <Typography
+                            variant="span"
+                            className="card-text m-2"
+                            sx={{ color: "text.default" }}
+                          >
                             {cate.name}
-                          </span>
+                          </Typography>
                         </Link>
                       </div>
                     ))}
@@ -180,6 +197,11 @@ const About = ({ idCategory }) => {
                     width: "50px",
                     height: "50px",
                     outline: "1px solid",
+                    border:
+                      theme.palette.mode === "dark"
+                        ? "1px solid white"
+                        : "1px solid black",
+                    color: theme.palette.mode === "dark" ? " white" : " black",
                   }}
                 >
                   {pageIndex === Math.ceil(fill.length / itemsPerPage) - 1 ? (
@@ -190,9 +212,11 @@ const About = ({ idCategory }) => {
                 </button>
               </div>
             ) : (
-              <l-dot-wave size="47" speed="1" color="black"></l-dot-wave>
+              <div className="d-flex justify-content-center">
+                <l-dot-wave size="50" speed="1" color="black"></l-dot-wave>
+              </div>
             )}
-          </div>
+          </Box>
         </div>
       </div>
     </div>
