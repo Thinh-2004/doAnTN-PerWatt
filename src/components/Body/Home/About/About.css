@@ -25,14 +25,10 @@
 }
 
 #featured-category-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
   color: inherit;
-  width: 150px;
   transition: transform 0.3s ease;
   flex-shrink: 0;
+  width: 138px;
   text-decoration: none;
   color: #65676b;
   display: inline-block; /* Ensure the link behaves as a block for transform */
@@ -42,9 +38,6 @@
 #featured-category-item img {
   width: 90%;
   height: 100px;
-  padding-top: 10px;
-  margin-bottom: 10px;
-  object-fit: cover;
 }
 
 #featured-category-item span {

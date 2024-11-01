@@ -7,6 +7,8 @@ import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutl
 import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
 import DoDisturbAltIcon from "@mui/icons-material/DoDisturbAlt";
 import { Box, Typography, useTheme } from "@mui/material";
+import { useContext } from "react";
+import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 
 dotWave.register();
 
@@ -15,7 +17,8 @@ const About = ({ idCategory }) => {
   const [loading, setLoading] = useState(false);
   const [pageIndex, setPageIndex] = useState(0); // Quản lý trang hiện tại
   const [itemsPerPage, setItemsPerPage] = useState(10); // Số lượng mục hiển thị
-  const theme = useTheme();
+  const [checkIdCategory, setCheckIdCategory] = useState("");
+  const { mode } = useContext(ThemeModeContext);
 
   // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
   const updateItemsPerPage = () => {
@@ -53,6 +56,7 @@ const About = ({ idCategory }) => {
     }
   };
 
+  //Reponsive UI
   useEffect(() => {
     // Gọi hàm để xác định số lượng mục hiển thị ngay khi component mount
     updateItemsPerPage();
@@ -80,8 +84,16 @@ const About = ({ idCategory }) => {
     load();
   }, []);
 
+  //Cuộn thanh cuộn xuống nơi chỉ định
+  useEffect(() => {
+    if (checkIdCategory !== "") {
+      window.scrollTo({ top: 2300 , behavior: "smooth" });
+    }
+  }, [checkIdCategory]);
+
   const handleClick = (clickIdCategory) => {
     idCategory(clickIdCategory);
+    setCheckIdCategory(clickIdCategory);
   };
 
   const handleNext = () => {
@@ -126,10 +138,10 @@ const About = ({ idCategory }) => {
                     height: "50px",
                     outline: "1px solid",
                     border:
-                      theme.palette.mode === "dark"
+                      mode === "dark"
                         ? "1px solid white"
                         : "1px solid black",
-                    color: theme.palette.mode === "dark" ? " white" : " black",
+                    color: mode === "dark" ? " white" : " black",
                   }}
                 >
                   {pageIndex === 0 ? (
@@ -148,9 +160,8 @@ const About = ({ idCategory }) => {
                     )
                     .map((cate) => (
                       <div
-                        className="d-flex flex-column align-items-center mb-3 m-2"
+                        className="flex-column align-items-center mb-3 m-2"
                         key={cate.id}
-                        style={{ maxWidth: "100%" }}
                       >
                         <Link
                           className="text-decoration-none text-center"
@@ -159,19 +170,17 @@ const About = ({ idCategory }) => {
                           role="button"
                           style={{
                             cursor: "pointer",
-                            width: "138px",
-                            // maxWidth: "200px",
                           }}
                         >
                           <img
                             src={cate.imagecateproduct}
                             alt={cate.name}
                             className="rounded-3"
-                            style={{
-                              width: "100%",
-                              height: "100px",
-                              objectFit: "cover",
-                            }}
+                            // style={{
+                            //   width: "100%",
+                            //   height: "100px",
+                            //   objectFit: "cover",
+                            // }}
                           />
                           <br />
                           <Typography
@@ -198,10 +207,10 @@ const About = ({ idCategory }) => {
                     height: "50px",
                     outline: "1px solid",
                     border:
-                      theme.palette.mode === "dark"
+                      mode === "dark"
                         ? "1px solid white"
                         : "1px solid black",
-                    color: theme.palette.mode === "dark" ? " white" : " black",
+                    color: mode === "dark" ? " white" : " black",
                   }}
                 >
                   {pageIndex === Math.ceil(fill.length / itemsPerPage) - 1 ? (

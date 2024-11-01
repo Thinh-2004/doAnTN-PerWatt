@@ -25,35 +25,8 @@ const ProductItemPerMall = () => {
       );
       setCurrentPage(res.data.currentPage);
       setTotalPage(res.data.totalPage);
-      // Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm và lưu vào productDetails
-      const dataWithDetails = await Promise.all(
-        res.data.products.map(async (push) => {
-          const resDetail = await axios.get(`/detailProduct/${push.id}`);
-
-          // Duyệt qua từng chi tiết sản phẩm để lấy số lượng đã bán
-          const countOrderBy = await Promise.all(
-            resDetail.data.map(async (detail) => {
-              const res = await axios.get(`countOrderSuccess/${detail.id}`);
-              return res.data; // Trả về số lượng đã bán cho chi tiết sản phẩm
-            })
-          );
-
-          // Tính tổng số lượng sản phẩm đã bán cho tất cả chi tiết sản phẩm
-          const countQuantityOrderBy = countOrderBy.reduce(
-            (acc, quantity) => acc + quantity,
-            0
-          );
-
-          return {
-            ...push,
-            productDetails: resDetail.data,
-            countQuantityOrderBy, // lưu tổng số lượng đã bán
-          };
-        })
-      );
-
-      setFill(dataWithDetails);
-      // console.log(dataWithDetails);
+      setFill(res.data.products);
+      // console.log(res.data.products);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -96,7 +69,7 @@ const ProductItemPerMall = () => {
           data-bs-ride="carousel"
           data-bs-interval="3000"
         >
-          <div class="carousel-indicators">
+          <div className="carousel-indicators">
             <button
               type="button"
               data-bs-target="#carouselExampleAutoplaying"
@@ -127,7 +100,7 @@ const ProductItemPerMall = () => {
                 alt="..."
               />
             </div>
-            <div class="carousel-item">
+            <div className="carousel-item">
               <img
                 src="https://cf.shopee.vn/file/sg-11134258-7rdxs-m1m9bdywn82vaf"
                 className="d-block w-100"
@@ -135,7 +108,7 @@ const ProductItemPerMall = () => {
                 alt="..."
               />
             </div>
-            <div class="carousel-item">
+            <div className="carousel-item">
               <img
                 src="https://cf.shopee.vn/file/sg-11134258-7rdxs-m1m9bdywn82vaf"
                 className="d-block w-100"

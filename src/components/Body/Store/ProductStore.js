@@ -35,32 +35,8 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
       );
       setCurrentPage(res.data.currentPage);
       setTotalPage(res.data.totalPage);
-      //Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm
-      const dataWithDetails = await Promise.all(
-        res.data.products.map(async (push) => {
-          const resDetail = await axios.get(`/detailProduct/${push.id}`);
-
-          //Duyệt qua từng chi tiết sản phẩm để lấy số lượng đã bán
-          const countOrderBy = await Promise.all(
-            resDetail.data.map(async (detail) => {
-              const res = await axios.get(`countOrderSuccess/${detail.id}`);
-              return res.data;
-            })
-          );
-
-          //Tính tổng số lượng sản phẩm đã bán cho tất cả chi tiết
-          const countQuantityOrderBy = countOrderBy.reduce(
-            (count, quantity) => count + quantity,
-            0
-          );
-          return {
-            ...push,
-            productDetails: resDetail.data,
-            countQuantityOrderBy, //Lưu tổng số lượng đã bán
-          };
-        })
-      );
-      setFill(dataWithDetails);
+    
+      setFill(res.data.products);
       // console.log(dataWithDetails);
       setLoading(false);
     } catch (error) {
@@ -139,9 +115,7 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
         <div className="col-lg-6 col-md-6 col-sm-6">
           <ToolBarHomeStore
             isAscending={isAscending}
-            // handleSortByPrice={handleSortByPrice}
             valueSort={handleSortOption}
-            // handleSortBestSeller={handleSortBestSeller}
             isSortOption={isSortOption}
           />
           {debouncedItem || debouncedIdCate ? (

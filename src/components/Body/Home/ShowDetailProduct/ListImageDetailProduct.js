@@ -214,7 +214,7 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
                       ? geturlIMG(dataImage.id, image.imagename)
                       : "/images/no_img.png"
                   }
-                  className=" rounded-3"
+                  className=" rounded-3 border"
                   alt=""
                   style={{ width: "100px", height: "100px" }}
                 />

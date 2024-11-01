@@ -380,7 +380,7 @@ const EditDetailProduct = ({ CountData, idProduct, isChangeFormEdit }) => {
   return (
     <>
       <div className=" shadow">
-        <Card className="">
+        <Card sx={{backgroundColor: "backgroundElement.children"}}>
           <CardContent className="">
             {isHiddenDetailPro ? ( //Show bảng và form phân loại
               <div className="row">

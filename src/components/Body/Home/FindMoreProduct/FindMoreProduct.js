@@ -9,6 +9,7 @@ import SkeletonLoad from "../../../../Skeleton/SkeletonLoad";
 import { Pagination } from "@mui/material";
 import useDebounce from "../../../../CustumHook/useDebounce";
 import ButtonFilter from "./ToolBar/FilterButton/ButtonFilter";
+import './FindMoreProductStyle.css'
 
 const FindMoreProduct = () => {
   const name = useParams();
@@ -103,34 +104,9 @@ const FindMoreProduct = () => {
       // console.log(res.data);
       setCurrentPage(res.data.currentPage);
       setTotalPage(res.data.totalPage);
-      //Duyệt từng phần tử detail product vào product
-      const dataWithDetails = await Promise.all(
-        res.data.products.map(async (product) => {
-          const resDetail = await axios.get(`/detailProduct/${product.id}`);
+     
 
-          //Đếm số sản phẩm đã bán
-          const countOrderBy = await Promise.all(
-            resDetail.data.map(async (detail) => {
-              const res = await axios.get(`countOrderSuccess/${detail.id}`);
-              return res.data;
-            })
-          );
-
-          //Đếm
-          const countQuantityOrderBy = countOrderBy.reduce(
-            (acc, quantity) => acc + quantity,
-            0
-          );
-
-          return {
-            ...product,
-            productDetails: resDetail.data,
-            countQuantityOrderBy,
-          };
-        })
-      );
-
-      setFill(dataWithDetails);
+      setFill(res.data.products);
     } catch (error) {
       toast.error(error);
       console.log(error);

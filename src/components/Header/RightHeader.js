@@ -33,7 +33,7 @@ const RightHeader = ({ reloadCartItems }) => {
     ? JSON.parse(localStorage.getItem("user"))
     : null;
 
-  const idSotre = sessionStorage.getItem("idStore");
+  const idSotre = localStorage.getItem("idStore");
 
   const [count, setCount] = useState(0);
   const [countOrder, setCountOrder] = useState(0);
@@ -215,11 +215,12 @@ const RightHeader = ({ reloadCartItems }) => {
         console.log(error);
       }
     };
+    //Đếm thông báo
     const countOrders = async () => {
       try {
         const res = await axios.get(`checkOrder/${idSotre}`);
         setCountOrder(res.data.length);
-        console.log(res.data.length);
+        // console.log(res.data.length);
       } catch (error) {
         console.log("Error fetching new orders:", error);
       }

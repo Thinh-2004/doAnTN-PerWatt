@@ -6,7 +6,7 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import Search from "./Search/Search";
 import FilterCheckBox from "./FilterCheckBox/FilterCheckBoxAddress";
 import FilterCheckBoxTradeMark from "./FilterCheckBox/FilterCheckBoxTradeMark";
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { useParams } from "react-router-dom";
 import FilterPriceRange from "./FilterPrice/FilterPriceRange";
 import FilterCheckBoxShop from "./FilterCheckBox/FilterCheckBoxShop";
@@ -136,7 +136,7 @@ const ToolBarFindMore = ({
   );
 
   return (
-    <div className="rounded-2">
+    <Box sx={{backgroundColor : "backgroundElement.children"}} className="rounded-2">
       <div className="m-3">
         <div>
           <Search search={search} handleTextSearch={handleTextSearch} />
@@ -210,7 +210,7 @@ const ToolBarFindMore = ({
           isRemoveStorage={isRemoveStorage}
         />
       </div>
-    </div>
+    </Box>
   );
 };
 

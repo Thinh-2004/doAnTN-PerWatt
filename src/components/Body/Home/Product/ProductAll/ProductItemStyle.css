@@ -45,3 +45,67 @@
   border-radius: 7%;
 }
 
+#price-product{
+  display: -webkit-box;
+   -webkit-line-clamp: 1; /*số dòng tối đa hiển thị */
+   -webkit-box-orient: vertical;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   
+}
+
+#default-btn-scroll {
+
+  border-bottom: 1px solid;
+  line-height: 1.4;
+  padding: .25em;
+  text-decoration: none;
+  border: none;
+}
+
+
+.scroll-web {
+cursor: pointer;
+font-size: 16px;
+font-weight: 400;
+line-height: 45px;
+margin: 0 0 2em;
+max-width: 200px;
+position: relative;
+text-decoration: none;
+width: 100%;
+
+&:hover {
+  text-decoration: none;
+}
+}
+
+.btn-scroll {
+svg {
+  height: 30px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+rect {
+  fill: none;
+  stroke: #0084ff;
+  stroke-width: 2;
+  stroke-dasharray: 422, 0;
+  transition: all 0.35s linear;
+}
+}
+
+.btn-scroll:hover {
+letter-spacing: 0.5px;
+
+rect {
+  stroke-width: 5;
+  stroke-dasharray: 15, 310;
+  stroke-dashoffset: 48;
+  transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
+}
+}
+

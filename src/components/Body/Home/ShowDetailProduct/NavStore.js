@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import axios from "../../../../Localhost/Custumize-axios";
-import { Box, useTheme } from "@mui/material";
+import { Box } from "@mui/material";
+import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 
 const NavStore = ({ FillDetailPr, countProductStore }) => {
-  const theme = useTheme();
+  const {mode} = useContext(ThemeModeContext);
   const geturlIMGStore = (userId, filename) => {
     return `${axios.defaults.baseURL}files/user/${userId}/${filename}`;
   };
+  
   //Hàm cắt chuỗi địa chỉ
   const splitByAddress = (address) => {
     const parts = address?.split(",");
@@ -47,6 +49,7 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
       return diffInDays + " ngày";
     }
   };
+
   return (
     <Box
       sx={{ backgroundColor: "backgroundElement.children" }}
@@ -78,7 +81,7 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
                 to={`/pageStore/${FillDetailPr?.store?.slug}`}
                 htmlFor=""
                 className={`fs-6 ${
-                  theme.palette.mode === "light" ? "text-dark" : "text-white"
+                  mode === "light" ? "text-dark" : "text-white"
                 }`}
                 // onClick={handleViewStoreInfo}
                 style={{ cursor: "pointer" }}

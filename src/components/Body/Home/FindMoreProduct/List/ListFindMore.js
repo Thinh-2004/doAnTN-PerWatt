@@ -33,7 +33,7 @@ const ListFindMore = ({ data }) => {
         </>
       ) : (
         data.map((fill) => {
-          const firstIMG = fill.images[0];
+          const firstIMG = fill.product.images[0];
           const productDetails = fill.productDetails;
 
           //Tìm giá nhỏ nhất lớn nhất trong mảng
@@ -51,25 +51,26 @@ const ListFindMore = ({ data }) => {
           );
           return (
             <Box
-              className="col-lg-2 col-md-3 col-sm-4 mt-3 shadow rounded-4 p-2 d-flex flex-column"
+              className="col-lg-2 col-md-3 col-sm-4 mt-3 shadow rounded-3 p-2 d-flex flex-column"
               sx={{ minHeight: "100%", 
               bgcolor : "backgroundElement.children" }}
-              key={fill.id}
+              key={fill.product.id}
               id="home-product-item"
             >
               <Link
-                to={`/detailProduct/${fill.slug}`}
+                to={`/detailProduct/${fill.product.slug}`}
                 className="position-relative d-flex justify-content-center"
-                style={{ height: "50%" }}
+                // style={{ height: "50%" }}
               >
                 <img
                   src={
                     firstIMG
-                      ? getUrlIMG(fill.id, firstIMG.imagename)
+                      ? getUrlIMG(fill.product.id, firstIMG.imagename)
                       : "/images/no_img.png"
                   }
-                  className="img-fluid rounded-4"
+                  className="img-fluid rounded-3"
                   alt="Product"
+                  style={{ width: "100%", height: "150px" }}
                 />
                 {totalQuantity === 0 && (
                   <div
@@ -79,8 +80,8 @@ const ListFindMore = ({ data }) => {
                     <span className="text-white text-center">Hết hàng</span>
                   </div>
                 )}
-                {fill?.store?.taxcode && (
-                  <div class="position-absolute bottom-0 end-0">
+                {fill?.product?.store?.taxcode && (
+                  <div className="position-absolute bottom-0 end-0">
                     <img
                       src="/images/IconShopMall.png"
                       alt=""
@@ -93,10 +94,10 @@ const ListFindMore = ({ data }) => {
 
               <div className="mt-2 flex-grow-1 d-flex flex-column justify-content-between">
                 <span className="fw-bold fst-italic" id="product-name">
-                  {fill.name}
+                  {fill.product.name}
                 </span>
                 <h5 id="price-product">
-                  {/* <del className="text-secondary me-1">3,000,000 đ</del> - */}
+                  <del className="text-secondary me-1">3,000,000 đ</del> -
                   <span
                     className="text-danger mx-1 fs-6"
                     id="price-product-item"
@@ -107,7 +108,7 @@ const ListFindMore = ({ data }) => {
                         " đ"}
                   </span>
                 </h5>
-                <hr />
+                <hr className="m-0 p-0" />
               </div>
 
               <div className="d-flex justify-content-between align-items-end">
@@ -119,7 +120,7 @@ const ListFindMore = ({ data }) => {
                 </div>
                 <div>
                   <span style={{ fontSize: "12px" }}>
-                    Đã bán: {formatCount(fill.countQuantityOrderBy)}
+                    Đã bán: {formatCount(fill.countOrderSuccess)}
                   </span>
                 </div>
               </div>

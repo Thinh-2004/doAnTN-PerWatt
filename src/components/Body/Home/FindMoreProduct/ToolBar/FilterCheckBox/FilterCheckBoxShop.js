@@ -39,21 +39,24 @@ const FilterCheckBoxShop = ({ idShopType, isRemoveStorage }) => {
   };
 
   return (
-    <FormGroup>
+    <>
       {shopType.map((fill) => (
-        <FormControlLabel
-          key={fill.id}
-          control={
-            <Checkbox
-              size="small"
-              checked={checkShopType.includes(fill.id)}
-              onChange={() => handleCheckBoxChange(fill.id)}
-            />
-          }
-          label={fill.name}
-        />
+        <FormGroup key={fill.id}>
+          <FormControlLabel
+            key={fill.id}
+            control={
+              <Checkbox
+                key={fill.id}
+                size="small"
+                checked={checkShopType.includes(fill.id)}
+                onChange={() => handleCheckBoxChange(fill.id)}
+              />
+            }
+            label={fill.name}
+          />
+        </FormGroup>
       ))}
-    </FormGroup>
+    </>
   );
 };
 

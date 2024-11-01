@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Card,
   CardContent,
@@ -278,11 +279,11 @@ const DetailProduct = forwardRef(
 
     return (
       <div className="shadow">
-        <Card className="">
-          <CardContent className="">
+        <Card sx={{backgroundColor: "backgroundElement.children"}}>
+          <CardContent >
             <div className="d-flex justify-content-between">
               {isChangeForm ? (
-                <div className="row">
+                <Box  className="row">
                   <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                     <TextField
                       label="Nhập tên phân loại"
@@ -411,7 +412,7 @@ const DetailProduct = forwardRef(
                       </Table>
                     </TableContainer>
                   </div>
-                </div>
+                </Box>
               ) : (
                 <>
                   <TextField

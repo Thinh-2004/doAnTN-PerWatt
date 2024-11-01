@@ -386,8 +386,8 @@ const FormProduct = () => {
         </div>
         {/* Detail product */}
         <div className="col-lg-12 col-md-12 col-sm-12">
-          <div className="rounded-4 mt-3">
-            <Card className="">
+          <Box className="rounded-4 mt-3">
+            <Card sx={{backgroundColor : "backgroundElement.children"}}>
               <div className="row align-items-center p-3">
                 <h3 className="col-lg-6 col-md-6 col-sm-6 w-25">
                   Thông tin bán hàng
@@ -423,7 +423,7 @@ const FormProduct = () => {
                 />
               </div>
             </Card>
-          </div>
+          </Box>
         </div>
         {/* Detailed Info */}
         <div className="col-lg-12 col-md-12 col-sm-12">

@@ -5,7 +5,6 @@ import { trefoil } from "ldrs";
 import useDebounce from "../../../../../CustumHook/useDebounce";
 import { Box, Pagination } from "@mui/material";
 import SkeletonLoad from "../../../../../Skeleton/SkeletonLoad";
-// import SkeletonLoad from "./SkeletonLoad";
 import ListItem from "./ListItem";
 
 trefoil.register();
@@ -32,35 +31,8 @@ const Product = ({ item, idCate, handleReset }) => {
       );
       setCurrentPage(res.data.currentPage);
       setTotalPage(res.data.totalPages);
-      // Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm và lưu vào productDetails
-      const dataWithDetails = await Promise.all(
-        res.data.products.map(async (push) => {
-          const resDetail = await axios.get(`/detailProduct/${push.id}`);
-
-          // Duyệt qua từng chi tiết sản phẩm để lấy số lượng đã bán
-          const countOrderBy = await Promise.all(
-            resDetail.data.map(async (detail) => {
-              const res = await axios.get(`countOrderSuccess/${detail.id}`);
-              return res.data; // Trả về số lượng đã bán cho chi tiết sản phẩm
-            })
-          );
-
-          // Tính tổng số lượng sản phẩm đã bán cho tất cả chi tiết sản phẩm
-          const countQuantityOrderBy = countOrderBy.reduce(
-            (acc, quantity) => acc + quantity,
-            0
-          );
-
-          return {
-            ...push,
-            productDetails: resDetail.data,
-            countQuantityOrderBy, // lưu tổng số lượng đã bán
-          };
-        })
-      );
-
-      setFillAllProduct(dataWithDetails);
-      // console.log(dataWithDetails);
+      setFillAllProduct(res.data.products);
+      // console.log(res.data.products);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -103,21 +75,50 @@ const Product = ({ item, idCate, handleReset }) => {
     // console.log(value);
   };
 
+  //Cuộn thanh cuộn xuống nơi chỉ định
+  useEffect(() => {
+    if (debouncedItem !== "") {
+      window.scrollTo({ top: 2300, behavior: "smooth" });
+    }
+  }, [debouncedItem]);
+
+  const handleScrollToCategory = () => {
+    window.scrollTo({ top: 300, behavior: "smooth" });
+  }
+
   return (
     <>
       {debouncedItem || debouncedIdCate ? (
-        <div className="">
-          <Box id="default" sx={{background : "background.default"}} class="fill-all btn-fill text-center" onClick={handleReset}>
+        <div className="d-flex">
+          <Box
+            id="default"
+            sx={{ background: "background.default" }}
+            className="fill-all btn-fill text-center me-2"
+            onClick={handleReset}
+          >
             <svg>
               <rect x="0" y="0" fill="none" width="100%" height="100%" />
             </svg>
             <i className="bi bi-box-seam"></i> Hiển thị tất cả
           </Box>
+          <Box
+            id="default-btn-scroll"
+            sx={{ background: "background.default" }}
+            className="scroll-web btn-scroll text-center"
+            onClick={handleScrollToCategory}
+          >
+            <svg>
+              <rect x="0" y="0" fill="none" width="100%" height="100%" />
+            </svg>
+            <i className="bi bi-bookmarks-fill"></i> Tìm theo danh mục
+          </Box>
         </div>
       ) : null}
       {loading ? (
         <SkeletonLoad />
-      ) : fillAllProduct.length === 0 && item !== "" ? (
+      ) : 
+      fillAllProduct.length === 0 &&
+       item !== "" ? (
         <div className="text-center">
           <h4>
             <i

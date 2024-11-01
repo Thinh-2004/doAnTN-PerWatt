@@ -2,12 +2,12 @@ import React from 'react';
 import Category from '../../../CategoryProduct/Category';
 import Brand from '../../../Brand/Brand';
 import Warranties from '../../../Warranties/Warranties';
-import { Card, CardContent, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Box, Card, CardContent, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 
 const InfoDetailProduct = ({formProduct, handleInputChange}) => {
     return (
-        <div className="rounded-4 mt-3">
-            <Card className="">
+        <Box  className="rounded-4 mt-3">
+            <Card className="" sx={{backgroundColor: "backgroundElement.children"}}>
               <h3 className="mx-4 mt-4">Thông tin chi tiết</h3>
               <CardContent className="">
                 <div className="row">
@@ -73,7 +73,7 @@ const InfoDetailProduct = ({formProduct, handleInputChange}) => {
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </Box>
     );
 };
 

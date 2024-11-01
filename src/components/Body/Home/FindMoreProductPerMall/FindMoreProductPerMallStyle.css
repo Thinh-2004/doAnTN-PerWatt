@@ -59,3 +59,12 @@
     transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
   }
 }
+
+#price-product{
+  display: -webkit-box;
+   -webkit-line-clamp: 1; /*số dòng tối đa hiển thị */
+   -webkit-box-orient: vertical;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   
+}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
@@ -9,6 +9,7 @@ import { Box, Button, TextField, useTheme } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ListImageDetailProduct from "./ListImageDetailProduct";
 import NavStore from "./NavStore";
+import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 
 const DetailProduct = () => {
   const { slug } = useParams();
@@ -29,7 +30,8 @@ const DetailProduct = () => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [selectedIdDetail, setSelectedIdDetail] = useState(null);
   const [fillDetail, setFilDetail] = useState([]); //fill phân loại sản phẩm
-  const theme = useTheme();
+  const {mode} = useContext(ThemeModeContext);
+
   const loadProductDetail = async () => {
     try {
       //api gọi sản phẩm
@@ -197,7 +199,10 @@ const DetailProduct = () => {
     <>
       <Header reloadCartItems={isCountCart} />
       <div className="container mt-4">
-        <Box className="row rounded-4 shadow" sx={{backgroundColor : "backgroundElement.children"}}>
+        <Box
+          className="row rounded-4 shadow"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
           <div className="col-md-4 col-lg-4 col-sm-4 border-end">
             <ListImageDetailProduct
               dataImage={FillDetailPr}
@@ -256,7 +261,11 @@ const DetailProduct = () => {
                 </span>
               </div>
             </div>
-            <div className={`w-100 h-25 mt-4 rounded-4 ${theme.palette.mode === "light" ? "bg-light" : "border"} `}>
+            <div
+              className={`w-100 h-25 mt-4 rounded-4 ${
+                mode === "light" ? "bg-light" : "border"
+              } `}
+            >
               <p className="fs-5 p-1 mx-2">Giá:</p>
               <div className="d-flex align-items-center">
                 <del className="text-secondary fs-5 mx-3">
@@ -394,7 +403,9 @@ const DetailProduct = () => {
               >
                 <p className="p-3 fst-italic fs-5 m-0">Phân loại sản phẩm</p>
                 <div
-                  className={`rounded-3 p-2 m-2 d-flex flex-wrap overflow-auto ${theme.palette.mode === "light" ? "bg-light" : "border"}`}
+                  className={`${
+                    mode === "light" ? "bg-light" : "border"
+                  } rounded-3 p-2 m-2 d-flex flex-wrap overflow-auto`}
                   style={{ height: "70%" }}
                 >
                   {fillDetail &&
@@ -417,7 +428,7 @@ const DetailProduct = () => {
                           opacity: fillDetail.quantity === 0 ? 0.5 : 1,
                           pointerEvents:
                             fillDetail.quantity === 0 ? "none" : "auto",
-                            backgroundColor : "backgroundElement.default"
+                          backgroundColor: "backgroundElement.default",
                         }}
                       >
                         <img
@@ -430,7 +441,9 @@ const DetailProduct = () => {
                           style={{ maxWidth: "50px", maxHeight: "50px" }}
                         />
 
-                        <label className={`ms-2`}>{fillDetail.namedetail}</label>
+                        <label className={`ms-2`}>
+                          {fillDetail.namedetail}
+                        </label>
 
                         {fillDetail.quantity === 0 && (
                           <div
@@ -465,7 +478,10 @@ const DetailProduct = () => {
           FillDetailPr={FillDetailPr}
           countProductStore={countProductStore}
         />
-        <Box className="row rounded-4 mt-3" sx={{backgroundColor : "backgroundElement.children"}}>
+        <Box
+          className="row rounded-4 mt-3"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
           <div className="p-3">
             <h4>Thông tin chi tiết sản phẩm</h4>
             <span className="p-0 m-0">
@@ -476,7 +492,10 @@ const DetailProduct = () => {
             </span>
           </div>
         </Box>
-        <Box className="row rounded-4 mt-3" sx={{backgroundColor : "backgroundElement.children"}}>
+        <Box
+          className="row rounded-4 mt-3"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
           <div className="p-3">
             <h4>Đánh giá sản phẩm</h4>
             <span className="p-0 m-0">

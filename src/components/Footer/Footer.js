@@ -24,7 +24,7 @@ const Footer = () => {
           </p>
           <div className="d-flex">
             <a href="https://www.facebook.com/thinh.t.quoc">
-              <i class="bi bi-facebook fs-1"></i>
+              <i className="bi bi-facebook fs-1"></i>
             </a>
             <a href="https://zalo.me/0845710208" className="mx-3 mt-1">
               <img src="/images/icons8-zalo-48.png" alt="" />

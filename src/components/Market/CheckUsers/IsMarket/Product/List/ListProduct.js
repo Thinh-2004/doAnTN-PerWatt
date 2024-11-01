@@ -11,7 +11,7 @@ import useDebounce from "../../../../../../CustumHook/useDebounce";
 
 import ProductTable from "./ProductTable";
 import ToolbarListProduct from "./ToolbarListProduct";
-import { load } from "@teachablemachine/image";
+
 
 bouncy.register();
 
@@ -36,6 +36,10 @@ const ListProduct = () => {
 
   const [isFilterQuantitySoldOut, setIsFilterQuantitySoldOut] = useState(false); //Trạng thái lọc quantity sold out
 
+  const [isSortName, setIsSortName] = useState(false); // boolean sắp xếp theo tên
+  const [isSortPrice, setIsSortPrice] = useState(false); // boolean sắp xếp theo giá
+  const [isSortQuantity, setIsSortQuantity] = useState(false); // boolean sắp xếp theo số lượng
+
   const loadData = async (
     pageNo,
     pageSize,
@@ -57,39 +61,40 @@ const ListProduct = () => {
       setCurrentPage(res.data.currentPage - 1);
       setTotalItems(res.data.totalItems);
 
-      const filteredData = res.data.products.filter((product) => {
-        const searchTerm = debounceSearch.toLowerCase();
-        // Kiểm tra nếu sản phẩm có ID danh mục
-        const categoryMatch = idCateOption
-          ? product.productcategory &&
-            product.productcategory.id === idCateOption
-          : true; // Nếu không có ID danh mục, không lọc theo danh mục
-        return (
-          (product.name.toLowerCase().includes(searchTerm) ||
-            (product.productcategory &&
-              product.productcategory.name
-                .toLowerCase()
-                .includes(searchTerm)) ||
-            (product.trademark &&
-              product.trademark.name.toLowerCase().includes(searchTerm))) &&
-          categoryMatch // Thêm điều kiện lọc theo ID danh mục
-        );
-      });
+      // const filteredData = res.data.products.filter((product) => {
+      //   const searchTerm = debounceSearch.toLowerCase();
+      //   // Kiểm tra nếu sản phẩm có ID danh mục
+      //   const categoryMatch = idCateOption
+      //     ? product.productcategory &&
+      //       product.productcategory.id === idCateOption
+      //     : true; // Nếu không có ID danh mục, không lọc theo danh mục
+      //   return (
+      //     (product.name.toLowerCase().includes(searchTerm) ||
+      //       (product.productcategory &&
+      //         product.productcategory.name
+      //           .toLowerCase()
+      //           .includes(searchTerm)) ||
+      //       (product.trademark &&
+      //         product.trademark.name.toLowerCase().includes(searchTerm))) &&
+      //     categoryMatch // Thêm điều kiện lọc theo ID danh mục
+      //   );
+      // });
 
       // Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm và lưu vào productDetails
-      const dataWithDetails = await Promise.all(
-        filteredData.map(async (product) => {
-          const resDetail = await axios.get(`/detailProduct/${product.id}`);
-          return {
-            ...product,
-            productDetails: resDetail.data, // Lưu chi tiết sản phẩm vào mỗi sản phẩm
-          };
-        })
-      );
+      // const dataWithDetails = await Promise.all(
+      //   filteredData.map(async (product) => {
+      //     const resDetail = await axios.get(`/detailProduct/${product.id}`);
+      //     return {
+      //       ...product,
+      //       productDetails: resDetail.data, // Lưu chi tiết sản phẩm vào mỗi sản phẩm
+      //     };
+      //   })
+      // );
 
       setFetchData(res.data);
-      // setFillDetail(dataWithDetails);
-      setFill(dataWithDetails);
+      // setFillDetail(res.data.products);
+      setFill(res.data.products);
+      // console.log(res.data);
     } catch (error) {
       console.log(error);
       setLoading(true);
@@ -139,16 +144,31 @@ const ListProduct = () => {
   }, [isFilterQuantitySoldOut]);
 
   const handleSortOption = useCallback((property) => {
-    if (property === "oldItems") setSortOption(property);
-    else if (property === "newItems") setSortOption(property);
+    if (property === "oldItems") {
+      setSortOption(property);
+      setIsSortName(true);
+    } else if (property === "newItems") {
+      setSortOption(property);
+      setIsSortName(false);
+    }
 
-    if (property === "priceDESC") setSortOption(property);
-    else if (property === "priceASC") setSortOption(property);
+    if (property === "priceASC") {
+      setSortOption(property);
+      setIsSortPrice(true);
+    } else if (property === "priceDESC") {
+      setSortOption(property);
+      setIsSortPrice(false);
+    }
 
-    if (property === "quantityDESC") setSortOption(property);
-    else if (property === "quantityASC") setSortOption(property);
-    console.log(property);
-    // setSortOption(property);
+    if (property === "quantityASC") {
+      setSortOption(property);
+      setIsSortQuantity(true);
+    } else if (property === "quantityDESC") {
+      setSortOption(property);
+      setIsSortQuantity(false);
+    }
+
+    // console.log(property);
   }, []);
 
   const handleChangePage = async (event, newPage) => {
@@ -246,8 +266,11 @@ const ListProduct = () => {
         ) : (
           <ProductTable
             data={fill}
-            handleSortOption={handleSortOption}
+            valueSort={handleSortOption}
             handleSubmitDelete={handleSubmitDelete}
+            isSortName={isSortName}
+            isSortPrice={isSortPrice}
+            isSortQuantity={isSortQuantity}
           />
         )}
       </TableContainer>

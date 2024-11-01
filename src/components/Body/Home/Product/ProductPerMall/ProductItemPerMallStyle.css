@@ -105,3 +105,12 @@
   margin-right: 5px;
   outline: white;
 }
+
+#price-product{
+  display: -webkit-box;
+   -webkit-line-clamp: 1; /*số dòng tối đa hiển thị */
+   -webkit-box-orient: vertical;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   
+}

@@ -10,10 +10,14 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "../../../../../../Localhost/Custumize-axios";
 
-const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
-  const [isSortName, setIsSortName] = useState(false);
-  const [isSortPrice, setIsSortPrice] = useState(false);
-  const [isSortQuantity, setIsSortQuantity] = useState(false);
+const ProductTable = ({
+  data,
+  valueSort,
+  handleSubmitDelete,
+  isSortName,
+  isSortPrice,
+  isSortQuantity,
+}) => {
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -24,33 +28,16 @@ const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
   };
 
   const handleSort = (value) => {
-    let data;
-    if (value === "newItems") {
-      data = value;
-      setIsSortName(!isSortName); // Cập nhật trạng thái isSortOption
-    } else if (value === "oldItems") {
-      data = value;
-      setIsSortName(!isSortName); // Cập nhật trạng thái isSortOption
-    }
-
-    if (value === "priceDESC") {
-      data = value;
-      setIsSortPrice(!isSortPrice); // Cập nhật trạng thái isSortOption
-    } else if (value === "priceASC") {
-      data = value;
-      setIsSortPrice(!isSortPrice); // Cập nhật trạng thái isSortOption
-    }
-
-    if (value === "quantityDESC") {
-      data = value;
-      setIsSortQuantity(!isSortQuantity);
-    } else if (value === "quantityASC") {
-      data = value;
-      setIsSortQuantity(!isSortQuantity);
-    }
-
     // Gọi hàm sắp xếp với giá trị
-    handleSortOption(data);
+    if ((value === "newItems") | (value === "oldItems"))
+      valueSort(value);
+
+    if ((value === "priceDESC") | (value === "priceASC"))
+      valueSort(value);
+
+    if ((value === "quantityDESC") | (value === "quantityASC"))
+      valueSort(value);
+    // console.log(value);
   };
 
   return (
@@ -67,7 +54,9 @@ const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
               <TableSortLabel
                 active={true} // Luôn giữ trạng thái active
                 direction={isSortName ? "desc" : "asc"} // Sắp xếp theo trạng thái của isSortOption
-                onClick={() => handleSort(isSortName ? "newItems" : "oldItems")} // Đổi giữa "asc" và "desc"
+                onClick={() =>
+                  isSortName ? handleSort("newItems") : handleSort("oldItems")
+                } // Đổi giữa "asc" và "desc"
               >
                 Sản phẩm
               </TableSortLabel>
@@ -79,7 +68,7 @@ const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
                 active={true} // Luôn giữ trạng thái active
                 direction={isSortPrice ? "desc" : "asc"} // Sắp xếp theo trạng thái của isSortOption
                 onClick={() =>
-                  handleSort(isSortPrice ? "priceDESC" : "priceASC")
+                  isSortPrice ? handleSort("priceDESC") : handleSort("priceASC")
                 } // Đổi giữa "asc" và "desc"
               >
                 Giá
@@ -90,7 +79,9 @@ const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
                 active={true} // Luôn giữ trạng thái active
                 direction={isSortQuantity ? "desc" : "asc"} // Sắp xếp theo trạng thái của isSortOption
                 onClick={() =>
-                  handleSort(isSortQuantity ? "quantityDESC" : "quantityASC")
+                  isSortQuantity
+                    ? handleSort("quantityDESC")
+                    : handleSort("quantityASC")
                 } // Đổi giữa "asc" và "desc"
               >
                 Số lượng
@@ -101,7 +92,7 @@ const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
         </TableHead>
         <TableBody>
           {data.map((fill) => {
-            const firstIMG = fill.images[0];
+            const firstIMG = fill.product.images[0];
             const productDetails = fill.productDetails; //Nhận mảng productDetails
 
             //Tìm giá nhỏ nhất lớn nhất trong mảng
@@ -119,7 +110,7 @@ const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
             );
             return (
               <TableRow
-                key={fill.id}
+                key={fill.product.id}
                 sx={{
                   "&:last-child td, &:last-child th": { border: 0 },
                 }}
@@ -131,7 +122,7 @@ const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
                 >
                   {firstIMG ? (
                     <img
-                      src={geturlIMG(fill.id, firstIMG.imagename)}
+                      src={geturlIMG(fill.product.id, firstIMG.imagename)}
                       alt=""
                       className="img-fluid"
                       id="img-product-item"
@@ -146,12 +137,12 @@ const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
                   )}
                 </TableCell>
                 <TableCell align="center">
-                  <div id="text-truncate">{fill.name}</div>
+                  <div id="text-truncate">{fill.product.name}</div>
                 </TableCell>
                 <TableCell align="center">
-                  {fill.productcategory.name}
+                  {fill.product.productcategory.name}
                 </TableCell>
-                <TableCell align="center">{fill.trademark.name}</TableCell>
+                <TableCell align="center">{fill.product.trademark.name}</TableCell>
                 <TableCell align="center">
                   {minPrice === maxPrice
                     ? formatPrice(minPrice) + " đ"
@@ -164,21 +155,21 @@ const ProductTable = ({ data, handleSortOption, handleSubmitDelete }) => {
                     <Link
                       className="btn"
                       id="btn-edit"
-                      to={`/profileMarket/updateProduct/${fill.slug}`}
+                      to={`/profileMarket/updateProduct/${fill.product.slug}`}
                     >
                       <i className="bi bi-pencil-square"></i>
                     </Link>
                     <button
                       className="btn mx-2"
                       id="btn-delete"
-                      onClick={(e) => handleSubmitDelete(fill.id)}
+                      onClick={(e) => handleSubmitDelete(fill.product.id)}
                     >
                       <i className="bi bi-trash"></i>
                     </button>
                     <Link
                       className="btn"
                       id="btn-showDetail"
-                      to={`/profileMarket/checkItemProduct/${fill.slug}`}
+                      to={`/profileMarket/checkItemProduct/${fill.product.slug}`}
                     >
                       <i className="bi bi-eye"></i>
                     </Link>

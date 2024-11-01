@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Header from "../../Header/Header";
 import "./HomeStyle.css";
 import About from "./About/About";
@@ -66,11 +66,11 @@ const Home = () => {
     setResetSearch(true); // Giữ lại nội dung tìm kiếm
   };
   //Truyền dữ liệu xuống Header
-  const handleSearch = (context) => {
+  const handleSearch = useCallback((context) => {
     setSearchProduct(context);
     setJoinCate("");
     setResetSearch(false); // Giữ lại nội dung tìm kiếm
-  };
+  }, []);
 
   //Khi chọn hiển thị tất cả sản phẩm
   const handleReloadProduct = () => {
@@ -96,7 +96,7 @@ const Home = () => {
           <Box
             className="rounded-3"
             sx={{
-              bgcolor: "backgroundElement.children"
+              bgcolor: "backgroundElement.children",
             }}
           >
             <div className="d-flex justify-content-center p-2 border-bottom">
@@ -106,10 +106,10 @@ const Home = () => {
                   alt=""
                   id="logo-iconPerMall"
                 />
-                 <Typography
+                <Typography
                   variant="h4"
                   className="text-center fst-italic mx-3"
-                  sx={{color : "text.default"}}
+                  sx={{ color: "text.default" }}
                 >
                   PERWATT MALL
                 </Typography>
