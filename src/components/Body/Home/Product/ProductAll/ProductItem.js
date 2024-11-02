@@ -14,7 +14,7 @@ const Product = ({ item, idCate, handleReset }) => {
   const [loading, setLoading] = useState(true);
   const debouncedItem = useDebounce(item, 500);
   // console.log(debouncedItem);
-  const debouncedIdCate = useDebounce(idCate);
+  const debouncedIdCate = useDebounce(idCate, 500);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(0); //Trang hiện tại
@@ -84,7 +84,7 @@ const Product = ({ item, idCate, handleReset }) => {
 
   const handleScrollToCategory = () => {
     window.scrollTo({ top: 300, behavior: "smooth" });
-  }
+  };
 
   return (
     <>
@@ -116,9 +116,7 @@ const Product = ({ item, idCate, handleReset }) => {
       ) : null}
       {loading ? (
         <SkeletonLoad />
-      ) : 
-      fillAllProduct.length === 0 &&
-       item !== "" ? (
+      ) : fillAllProduct.length === 0 && (item !== "" || idCate !== "") ? (
         <div className="text-center">
           <h4>
             <i

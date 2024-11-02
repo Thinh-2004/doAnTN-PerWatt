@@ -30,7 +30,10 @@ const CenterHeader = ({ textSearch, resetSearch }) => {
   //
   const [openVoice, setOpenVoice] = useState(false);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => {
+    const savedSearch = localStorage.getItem("textSearchHome");
+    return savedSearch ? savedSearch : "";
+  });
 
   //AI train hình ảnh
   useEffect(() => {

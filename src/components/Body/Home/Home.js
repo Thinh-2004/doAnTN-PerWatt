@@ -13,9 +13,15 @@ import { Link } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 
 const Home = () => {
-  const [searchProduct, setSearchProduct] = useState("");
+  const [searchProduct, setSearchProduct] = useState(() => {
+    const savedSearch = localStorage.getItem("textSearchHome");
+    return savedSearch ? savedSearch : "";
+  });
   const [resetSearch, setResetSearch] = useState(false);
-  const [joinCate, setJoinCate] = useState("");
+  const [joinCate, setJoinCate] = useState(() => {
+    const savedIdCate = localStorage.getItem("idCateSearchHome");
+    return savedIdCate ? savedIdCate : "";
+  });
   const [valueMT, setValueMT] = useState(15); // value của magrin top
 
   // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
@@ -63,11 +69,20 @@ const Home = () => {
   const handleIdCate = (idCate) => {
     setJoinCate(idCate);
     setSearchProduct("");
-    setResetSearch(true); // Giữ lại nội dung tìm kiếm
+    setResetSearch(true); // Đặt lại thanh tìm kiếm
+    //Lưu vào localStorage
+    localStorage.setItem("idCateSearchHome", idCate);
+    //Xóa localSession textSearchHome
+    localStorage.removeItem("textSearchHome");
   };
+
   //Truyền dữ liệu xuống Header
   const handleSearch = useCallback((context) => {
     setSearchProduct(context);
+    //Lưu vào localStorage
+    localStorage.setItem("textSearchHome", context);
+    //Xóa localSession idCateSearchHome
+    localStorage.removeItem("idCateSearchHome");
     setJoinCate("");
     setResetSearch(false); // Giữ lại nội dung tìm kiếm
   }, []);
@@ -77,6 +92,10 @@ const Home = () => {
     setSearchProduct("");
     setJoinCate("");
     setResetSearch(true); // Đặt lại thanh tìm kiếm
+    //Xóa localSession textSearchHome
+    localStorage.removeItem("textSearchHome");
+    //Xóa localSession idCateSearchHome
+    localStorage.removeItem("idCateSearchHome");
   };
   return (
     <>
