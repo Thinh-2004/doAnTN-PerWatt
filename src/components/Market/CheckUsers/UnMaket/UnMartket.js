@@ -38,7 +38,7 @@ const UnMatket = () => {
 
   const handleDataApiAddress = (data) => {
     setApiAddress(data);
-    console.log(data);
+    // console.log(data);
   };
 
   const handleChange = (e) => {
@@ -215,7 +215,7 @@ const UnMatket = () => {
 
   return (
     <div className="container mt-4">
-      <Card className="rounded-4" style={{ border: "none" }}>
+      <Card className="rounded-4" style={{ border: "none" }} sx={{backgroundColor : "backgroundElement.children"}}>
         <div className="row">
           <div className="col-lg-6">
             <img

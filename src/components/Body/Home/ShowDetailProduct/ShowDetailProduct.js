@@ -30,7 +30,7 @@ const DetailProduct = () => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [selectedIdDetail, setSelectedIdDetail] = useState(null);
   const [fillDetail, setFilDetail] = useState([]); //fill phân loại sản phẩm
-  const {mode} = useContext(ThemeModeContext);
+  const { mode } = useContext(ThemeModeContext);
 
   const loadProductDetail = async () => {
     try {
@@ -355,10 +355,8 @@ const DetailProduct = () => {
                     value={quantity}
                     onChange={handleChangeQuantity}
                     inputProps={{ min: 1 }} //đặt giá trị nhỏ nhất là
-                    slotProps={{
-                      inputLabel: {
-                        shrink: true, // cho phép Label lên xuống TextField
-                      },
+                    InputLabelProps={{
+                      shrink: true, // cho phép Label lên xuống TextField
                     }}
                     size="small"
                   />
