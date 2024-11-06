@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from "react";
-import Header from "../../Header/Header";
-import Footer from "../../Footer/Footer";
-import axios from "../../../Localhost/Custumize-axios";
+import axios from "../../../../../Localhost/Custumize-axios";
 import { useParams } from "react-router-dom";
 import { tailspin } from "ldrs";
 import { Button } from "@mui/material";
-import { format } from "date-fns";
+import useSession from "../../../../../Session/useSession";
 
-const OrderDetail = () => {
+const OrderDetailSeller = () => {
   const [groupedByStore, setGroupedByStore] = useState({});
   const [loading, setLoading] = useState(true);
   const { id } = useParams();
+  const [idStore] = useSession(`idStore`);
   tailspin.register();
 
   const geturlIMG = (productId, filename) => {
@@ -26,7 +25,10 @@ const OrderDetail = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get(`/orderDetail/${id}`);
+        console.log(id);
+
+        const res = await axios.get(`/orderDetailSeller/${id}`);
+
         const grouped = groupByStore(res.data);
         setGroupedByStore(grouped);
       } catch (error) {
@@ -54,19 +56,10 @@ const OrderDetail = () => {
     return Number(value).toLocaleString("vi-VN");
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return format(date, "HH:mm:ss dd/MM/yyyy");
-  };
-
   return (
     <div>
-      <Header />
-      <h1 className="text-center mt-4 mb-4">Đơn hàng chi tiết của bạn</h1>
-      <div
-        className="col-12 col-md-12 col-lg-10 offset-lg-1"
-        style={{ transition: "0.5s" }}
-      >
+      <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
+      <div className="col-12 col-12" style={{ transition: "0.5s" }}>
         {loading ? (
           <div className="d-flex justify-content-center mt-3">
             <l-tailspin
@@ -91,20 +84,24 @@ const OrderDetail = () => {
                   transition: "0.5s",
                 }}
               >
-                <div className="card-body">
+                <div className="card mt-3">
                   <Button
-                  className="mb-3"
                     variant="contained"
                     style={{
-                      width: "auto",
+                      width: "40px",
+                      marginLeft: "10px",
+                      height: "40px",
                       backgroundColor: "rgb(204,244,255)",
                       color: "rgb(0,70,89)",
+                      minWidth: 0,
                     }}
                     disableElevation
-                    href="/order"
+                    href={`/profileMarket/orderSeller/${idStore}`}
                   >
                     <i class="bi bi-caret-left-fill"></i>
                   </Button>
+                </div>
+                <div className="card-body">
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">
                       <img
@@ -183,9 +180,7 @@ const OrderDetail = () => {
                                 orderDetail.productDetail.product
                                   .productcategory.name,
                                 orderDetail.productDetail.product.trademark
-                                  .name === "No brand"
-                                  ? "Không có thương hiệu"
-                                  : "",
+                                  .name,
                                 orderDetail.productDetail.product.warranties
                                   .name,
                               ]
@@ -221,12 +216,6 @@ const OrderDetail = () => {
                       <div>
                         Địa chỉ nhận hàng: {order.shippinginfor.address}
                       </div>
-                      <div>
-                        Thời gian đặt hàng: {formatDate(order.paymentdate)}
-                      </div>
-                      <div>
-                        Thời gian nhận hàng: {formatDate(order.receivedate)}
-                      </div>
                     </div>
                     <div className="col-6 text-end">
                       <div className="card mt-3">
@@ -249,9 +238,8 @@ const OrderDetail = () => {
           })
         )}
       </div>
-      <Footer />
     </div>
   );
 };
 
-export default OrderDetail;
+export default OrderDetailSeller;

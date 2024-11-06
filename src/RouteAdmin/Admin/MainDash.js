@@ -13,6 +13,7 @@ const MainDash = () => {
       <div className="container">
         <h1>Overview chart</h1>
         <CardsAmin></CardsAmin>
+        <a className="bnt btn-primary mt-3" href="/wallet">Ví</a>
         <div className="" style={{ marginTop: "70px" }}>
           <TableAd></TableAd>
         </div>

@@ -100,13 +100,9 @@
   font-size: 11px;
   background-color: rgb(245, 245, 245);
   padding: 5px;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 
-#spinner {
-  margin-top: 30px;
-  margin-left: 150px;
-}
 #price {
   margin-left: 150px;
   font-size: 18px;

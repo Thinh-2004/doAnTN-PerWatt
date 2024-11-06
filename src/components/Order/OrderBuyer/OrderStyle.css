@@ -1,32 +1,3 @@
-#pills-tab {
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  padding: 10px 10px;
-  margin: -16px;
-  border-radius: 6px;
-  position: -webkit-sticky;
-  position: sticky;
-  top: 83px;
-  transition: border-radius 0.3s ease;
-}
-
-a {
-  text-decoration: none;
-}
-
 #cartItem {
-  background-color: rgb(255, 255, 255);
-}
-
-#cartTitle {
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  /* padding: 10px 10px; */
-  margin: -16px;
-  margin-bottom: -40px;
-  border-radius: 6px;
-  position: -webkit-sticky;
-  position: sticky;
-  top: 143px;
-  transition: border-radius 0.3s ease;
+  box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.1);
 }

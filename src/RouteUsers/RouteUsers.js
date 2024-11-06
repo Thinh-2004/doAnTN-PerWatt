@@ -20,6 +20,11 @@ import NotificationCard from "../components/Notification&Message&Comment/Notific
 import Successful from "../components/Order/Successful/Successful";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import FindMoreProduct from "../components/Body/Home/FindMoreProduct/FindMoreProduct";
+import OrderDetailSeller from "../components/Market/CheckUsers/IsMarket/OrderDetail/OrderDetailSeller";
+import OrderSeller from "../components/Market/CheckUsers/IsMarket/Order/OrderSeller";
+import Wallet from "../components/Wallet/Wallet";
+import Transaction from "../components/Wallet/Transaction";
+import PassCode from "../components/Wallet/PassCode";
 
 const RouteUsers = (props) => {
   return (
@@ -37,13 +42,17 @@ const RouteUsers = (props) => {
         <Route path="/cart" element={<Cart></Cart>}></Route>
         <Route path="/market" element={<Market></Market>}></Route>
         <Route path="/profileMarket/*" element={<IsMarket></IsMarket>}></Route>
+        <Route path="/wallet/:role" element={<Wallet></Wallet>}></Route>
+        <Route path="/transaction/:status" element={<Transaction />} />
+        <Route path="/passcode/:status" element={<PassCode />} />
+
         <Route
           path="detailProduct/:slug"
           element={<DetailProduct></DetailProduct>}
         ></Route>
         <Route
           path="profileMarket/checkItemProduct/:slug"
-          element={<CheckItemProduct></CheckItemProduct>}
+          element={<CheckItemProduct />}
         ></Route>
         <Route path="/user/*" element={<ProfileUser></ProfileUser>}></Route>
         <Route
@@ -54,10 +63,13 @@ const RouteUsers = (props) => {
         <Route path="/resetPassword" element={<ResetPassword />}></Route>
         <Route path="/pageStore/:slugStore" element={<Store />}></Route>
 
-        <Route path="/order" element={<Order></Order>}></Route>
+        <Route path="/order" element={<Order />}></Route>
+        <Route path="/orderSeller" element={<OrderSeller />}></Route>
+
+        <Route path="/OrderDetail" element={<OrderDetail />}></Route>
         <Route
-          path="/OrderDetail"
-          element={<OrderDetail></OrderDetail>}
+          path="/orderDetailSeller"
+          element={<OrderDetailSeller></OrderDetailSeller>}
         ></Route>
         <Route path="/paybuyer" element={<PayBuyer />} />
         <Route path="/orderDetail/:id" element={<OrderDetail />} />
@@ -68,7 +80,10 @@ const RouteUsers = (props) => {
           path="/notifications"
           element={<NotificationCard></NotificationCard>}
         ></Route>
-        <Route path="/findMoreProduct/:name" element={<FindMoreProduct/>}></Route>
+        <Route
+          path="/findMoreProduct/:name"
+          element={<FindMoreProduct />}
+        ></Route>
         <Route path="*">404 Not Found</Route>
       </Routes>
     </>

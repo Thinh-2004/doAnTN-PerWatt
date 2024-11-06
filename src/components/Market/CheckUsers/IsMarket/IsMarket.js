@@ -4,21 +4,23 @@ import { Link, Route, Routes } from "react-router-dom";
 import "./isMarketStyle.css";
 import ListProduct from "./Product/List/ListProduct";
 import FormProduct from "./Product/Form/FormProduct";
-import useSession from "../../../../Session/useSession";
 import axios from "../../../../Localhost/Custumize-axios";
 import EditProduct from "./Product/Form/EditProduct";
 import MainUserSeller from "./StatisticalOrders/MainUserSeller";
 import ProfileShop from "./ProfileShop/ProfileShop";
 import OrderSeller from "./Order/OrderSeller";
-import OrderDetailBuyer from "./OrderDetail/OrderDetailBuyer";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
+import Wallet from "../../../Wallet/Wallet";
 
 const IsMarket = () => {
-  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
   useEffect(() => {
     const searchIdStoreByIdUser = async () => {
       try {
@@ -39,7 +41,10 @@ const IsMarket = () => {
     <>
       <HeaderMarket />
       <div className="row container-fluid ">
-        <div className="col-lg-3 p-0 m-0 overflow-y-scroll" style={{height : "800px"}}>
+        <div
+          className="col-lg-3 p-0 m-0 overflow-y-scroll"
+          style={{ height: "800px" }}
+        >
           <div className="">
             <Accordion defaultExpanded>
               <AccordionSummary
@@ -109,15 +114,16 @@ const IsMarket = () => {
                         style={{ textDecoration: "none" }}
                         to="/cancelledOrders"
                       >
-                        Đơn hủy
+                        Đang chờ duyệt
                       </Link>
                     </li>
+
                     <li>
                       <Link
                         style={{ textDecoration: "none" }}
                         to="/deliveredOrders"
                       >
-                        Đã giao
+                        Chờ giao hàng
                       </Link>
                     </li>
                     <li>
@@ -125,7 +131,7 @@ const IsMarket = () => {
                         style={{ textDecoration: "none" }}
                         to="/pendingOrders"
                       >
-                        Chờ xác nhận
+                        Hoàn thành
                       </Link>
                     </li>
                     <li>
@@ -133,7 +139,7 @@ const IsMarket = () => {
                         style={{ textDecoration: "none" }}
                         to="/readyForPickup"
                       >
-                        Chờ lấy hàng
+                        Huỷ
                       </Link>
                     </li>
                   </ul>
@@ -164,7 +170,7 @@ const IsMarket = () => {
                       </Link>
                     </li>
                     <li>
-                      <Link style={{ textDecoration: "none" }} to="/myAccount">
+                      <Link style={{ textDecoration: "none" }} to="/profileMarket/wallet/seller">
                         Số dư TK của tôi
                       </Link>
                     </li>
@@ -263,13 +269,17 @@ const IsMarket = () => {
             <Route path="updateProduct/:slug" element={<EditProduct />} />
             <Route path="/profileShop" element={<ProfileShop />} />
             <Route
-              path="orderDetailSeller/:id"
-              element={<OrderDetailBuyer />}
+              path="/orderDetailSeller/:id"
+              element={<OrderDetailSeller />}
             />
             <Route
               path="/orderSeller/:id"
               element={<OrderSeller></OrderSeller>}
-            ></Route>
+            />
+            <Route
+              path="/wallet/:status"
+              element={<Wallet/>}
+            />
           </Routes>
         </div>
       </div>

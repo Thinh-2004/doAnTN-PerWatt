@@ -16,6 +16,10 @@ const Successful = () => {
   const addressIds = vnp_OrderInfo.split(",").pop().trim();
   const cartIds = vnp_OrderInfo.split(",").slice(0, -1).join(",").trim();
 
+  const productList = localStorage.getItem("productList")
+    ? JSON.parse(localStorage.getItem("productList"))
+    : null;
+
   const groupByStore = (products) => {
     return products.reduce((groups, product) => {
       const storeId = product.productDetail.product.store.id;
@@ -36,12 +40,11 @@ const Successful = () => {
         const response = await axios.get(`/cart?id=${cartIds}`);
         setProducts(response.data);
       } catch (error) {
-        console.error(
-          "Error fetching data:",
-          error.response ? error.response.data : error.message
-        );
+        console.log(error);
       }
     })();
+    console.log(productList);
+    
   }, [user.id]);
 
   useEffect(() => {

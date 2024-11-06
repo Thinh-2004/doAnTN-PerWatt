@@ -20,7 +20,10 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 const Cart = () => {
   const [fill, setFill] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
+
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [groupSelection, setGroupSelection] = useState({});
   const [selectAll, setSelectAll] = useState(false);
@@ -31,13 +34,13 @@ const Cart = () => {
   const [isCheckAll, setIscheckAll] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [loading, setLoading] = useState(true); // Trạng thái loading
+  const [cartId, setCartId] = useState(null);
 
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
   const open = Boolean(anchorEl);
-  // const ids = open ? "simple-popper" : undefined;
 
   tailspin.register();
 
@@ -82,13 +85,10 @@ const Cart = () => {
   const fetchCart = async () => {
     let loadingTimeout;
 
-    // Chỉ hiển thị loading nếu API mất hơn 0.5 giây
     loadingTimeout = setTimeout(() => setLoading(true), 500);
 
     try {
       const res = await axios.get(`/cart/${user.id}`);
-
-      // API trả về thành công trước 0.5 giây, hủy hiển thị loading
       clearTimeout(loadingTimeout);
       setLoading(false);
 
@@ -104,7 +104,7 @@ const Cart = () => {
     } catch (error) {
       console.error("Error loading cart items:", error);
       clearTimeout(loadingTimeout);
-      setLoading(false); // Đảm bảo loading bị tắt khi có lỗi
+      setLoading(false);
     }
   };
 
@@ -219,51 +219,48 @@ const Cart = () => {
   };
 
   const handleIncrease = async (productId) => {
-    // Tìm sản phẩm cần tăng số lượng dựa vào productId
     const updatedFill = fill.map((item) =>
       item.id === productId && item.quantity < item.productDetail.quantity
         ? { ...item, quantity: item.quantity + 1 }
         : item
     );
-    setFill(updatedFill); // Cập nhật lại mảng fill
+    setFill(updatedFill);
     await updateQuantity(
       productId,
       updatedFill.find((item) => item.id === productId).quantity
-    ); // Gọi API để cập nhật số lượng
-    updateTotalPrice(); // Cập nhật lại tổng giá
+    );
+    updateTotalPrice();
   };
 
   const handleDecrease = async (productId) => {
-    // Tìm sản phẩm cần giảm số lượng dựa vào productId
     const updatedFill = fill.map((item) =>
       item.id === productId && item.quantity > 1
         ? { ...item, quantity: item.quantity - 1 }
         : item
     );
-    setFill(updatedFill); // Cập nhật lại mảng fill
+    setFill(updatedFill);
     await updateQuantity(
       productId,
       updatedFill.find((item) => item.id === productId).quantity
-    ); // Gọi API để cập nhật số lượng
-    updateTotalPrice(); // Cập nhật lại tổng giá
+    );
+    updateTotalPrice();
   };
 
   const handleQuantityChange = async (productId, newQuantity) => {
-    // Tìm sản phẩm cần thay đổi số lượng dựa vào productId
     const updatedFill = fill.map((item) =>
       item.id === productId
         ? {
             ...item,
             quantity: Math.min(newQuantity, item.productDetail.quantity),
-          } // Đảm bảo số lượng không vượt quá tồn kho
+          }
         : item
     );
-    setFill(updatedFill); // Cập nhật lại mảng fill
+    setFill(updatedFill);
     await updateQuantity(
       productId,
       updatedFill.find((item) => item.id === productId).quantity
-    ); // Gọi API để cập nhật số lượng
-    updateTotalPrice(); // Cập nhật lại tổng giá
+    );
+    updateTotalPrice();
   };
 
   const formatPrice = (value) => {
@@ -306,9 +303,14 @@ const Cart = () => {
     fetchProductDetails(productId);
   };
 
-  const handleDetailUpdate = (cartId, selectedDetailId) => {
+  const handleDetailUpdate = (
+    cartId,
+    selectedDetailId,
+
+    quantityDetail
+  ) => {
     if (selectedDetailId) {
-      updateCartProductDetail(cartId, selectedDetailId)
+      updateCartProductDetail(cartId, selectedDetailId, quantityDetail)
         .then(() => {
           fetchProductDetails();
         })
@@ -320,8 +322,26 @@ const Cart = () => {
     }
   };
 
-  const updateCartProductDetail = async (cartItemId, productDetailId) => {
+  const updateCartProductDetail = async (
+    cartItemId,
+    productDetailId,
+    quantityDetail
+  ) => {
     try {
+      const userId = user.id;
+      const countResponse = await axios.get(
+        `/cartCount/${userId}/${productDetailId}`
+      );
+      const count = countResponse.data;
+
+      if (!quantityDetail) {
+        toast.warning("Loại sản phẩm hiện tại đã hết hàng");
+        return;
+      } else if (count > 0) {
+        toast.warning("Sản phẩm này đã có trong giỏ hàng");
+        return;
+      }
+
       const response = await axios.put(
         `/cartProductDetailUpdate/${cartItemId}`,
         { productDetailId },
@@ -345,9 +365,9 @@ const Cart = () => {
   return (
     <div>
       <Header reloadCartItems={isCountCart} />
-      <div id="smooth" className="col-12 col-md-12 col-lg-8 offset-lg-2">
+      <div id="smooth" className="col-12 col-md-12 col-lg-10 offset-lg-1">
         <div className="row mt-3">
-          <div className="col-9">
+          <div className="col-lg-9 col-md-12">
             {loading ? (
               <div className="d-flex justify-content-center mt-3">
                 <l-tailspin
@@ -360,9 +380,17 @@ const Cart = () => {
             ) : fill.length === 0 ? (
               <div className="text-center mt-5">
                 <h4>Giỏ hàng trống</h4>
-                <Link to="/" className="btn btn-danger">
+                <Button
+                  id="button"
+                  variant="contained"
+                  color="error"
+                  component={Link}
+                  to="/"
+                  style={{ width: "auto" }}
+                  disableElevation
+                >
                   Mua ngay
-                </Link>
+                </Button>
               </div>
             ) : (
               <>
@@ -557,217 +585,286 @@ const Cart = () => {
                                   )}
                                 </Link>
                               </div>
-                              <div className="col-5 mt-3 mx-1">
-                                <div id="fontSizeTitle">
-                                  {cart.productDetail.product.name}
-                                </div>
-                                <div id="fontSize">
-                                  <div className="d-flex">
-                                    <div>
-                                      <div
-                                        className="Strong"
-                                        style={{ cursor: "pointer" }}
-                                        onClick={(event) => {
-                                          handleProductDetailClick(
-                                            cart.productDetail.product.id
-                                          );
-                                          handleClick(event);
-                                        }}
-                                      >
-                                        {cart.productDetail.namedetail ? (
-                                          <strong className="d-flex">
-                                            {cart.productDetail.namedetail}
-                                            {anchorEl ? (
-                                              <ArrowDropUpIcon className="pb-1" />
-                                            ) : (
-                                              <ArrowDropDownIcon className="pb-1" />
-                                            )}
-                                          </strong>
-                                        ) : (
-                                          ""
-                                        )}
-                                      </div>
-                                      <Popper
-                                        id={user.id}
-                                        open={open}
-                                        anchorEl={anchorEl}
-                                      >
-                                        <Box
-                                          className="rounded-3"
-                                          sx={{
-                                            boxShadow:
-                                              "0 0 5px rgba(108, 117, 125, 0.5)",
-                                            margin: "0px",
-                                            padding: "0px",
-                                            bgcolor: "background.paper",
-                                          }}
-                                        >
-                                          {productDetails.length > 0 ? (
-                                            <ul style={{ padding: "10px" }}>
-                                              <strong>Loại sản phẩm:</strong>
-                                              {productDetails.map((detail) => {
-                                                const isProductInCart =
-                                                  Array.isArray(
-                                                    cart.productDetails
-                                                  ) &&
-                                                  cart.productDetails.some(
-                                                    (cartItem) =>
-                                                      cartItem.productDetailId ===
-                                                      detail.id
-                                                  );
-
-                                                const isSelected =
-                                                  selectedDetail &&
-                                                  selectedDetail.id ===
-                                                    detail.id;
-
-                                                return (
-                                                  <div key={detail.id}>
-                                                    <button
-                                                      className="btn mb-2"
-                                                      onClick={() => {
-                                                        setSelectedDetail(
-                                                          detail
-                                                        );
-                                                      }}
-                                                      style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        outline: isSelected
-                                                          ? "1px solid #6c757d"
-                                                          : "1px solid #ffffff",
-                                                        border: "none",
-                                                        transition:
-                                                          "outline-color 0.5s",
-                                                      }}
-                                                      disabled={isProductInCart}
-                                                    >
-                                                      <img
-                                                        className="rounded-3"
-                                                        src={geturlIMGDetail(
-                                                          detail.id,
-                                                          detail.imagedetail
-                                                        )}
-                                                        alt={detail.namedetail}
-                                                        style={{
-                                                          width: "30px",
-                                                          height: "30px",
-                                                          marginRight: "10px",
-                                                        }}
-                                                      />
-                                                      {detail.namedetail}
-                                                    </button>
-                                                  </div>
-                                                );
-                                              })}
-                                            </ul>
-                                          ) : (
-                                            <p>Không có thông tin sản phẩm.</p>
-                                          )}
-
-                                          <div className="p-2 d-flex justify-content-end">
-                                            <Button
-                                              style={{
-                                                backgroundColor:
-                                                  "rgb(204,244,255)",
-                                                color: "rgb(0,70,89)",
-                                                height: "30px",
-                                                width: "90px",
-                                                fontSize: "10px",
-                                              }}
-                                              variant="contained"
-                                              onClick={() => {
-                                                handleDetailUpdate(
-                                                  cart.id,
-                                                  selectedDetail.id
-                                                );
-                                              }}
-                                              disableElevation
-                                            >
-                                              Xác nhận
-                                            </Button>
-                                          </div>
-                                        </Box>
-                                      </Popper>
+                              <div className="row">
+                                <div className="col-lg-5 col-md-12 mt-3 mx-3 pe-4">
+                                  <div className="row">
+                                    <div id="fontSizeTitle">
+                                      {cart.productDetail.product.name}
                                     </div>
-                                    {[
-                                      cart.productDetail.product.productcategory
-                                        .name,
-                                      cart.productDetail.product.trademark
-                                        .name === "No brand"
-                                        ? null
-                                        : cart.productDetail.product.trademark
+                                    <div id="fontSize">
+                                      <div className="d-flex">
+                                        <div key={cart.id}>
+                                          <div
+                                            className="Strong"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={(event) => {
+                                              handleProductDetailClick(
+                                                cart.productDetail.product.id
+                                              );
+                                              setSelectedDetail(
+                                                cart.productDetail
+                                              );
+                                              setCartId(cart.id);
+                                              handleClick(event);
+                                            }}
+                                          >
+                                            {cart.productDetail.namedetail ? (
+                                              <strong className="d-flex">
+                                                {cart.productDetail.namedetail}
+                                                {anchorEl ? (
+                                                  <ArrowDropUpIcon className="pb-1" />
+                                                ) : (
+                                                  <ArrowDropDownIcon className="pb-1" />
+                                                )}
+                                              </strong>
+                                            ) : (
+                                              ""
+                                            )}
+                                          </div>
+                                          <Popper
+                                            id={user.id}
+                                            open={open}
+                                            anchorEl={anchorEl}
+                                          >
+                                            <Box
+                                              className="rounded-3"
+                                              sx={{
+                                                boxShadow:
+                                                  "0 0 5px rgba(108, 117, 125, 0.5)",
+                                                margin: "0px",
+                                                padding: "0px",
+                                                bgcolor: "background.paper",
+                                              }}
+                                            >
+                                              {productDetails.length > 0 ? (
+                                                <ul style={{ padding: "10px" }}>
+                                                  <strong>
+                                                    Loại sản phẩm:
+                                                  </strong>
+                                                  {productDetails.map(
+                                                    (detail) => {
+                                                      const isProductInCart =
+                                                        Array.isArray(
+                                                          cart.productDetails
+                                                        ) &&
+                                                        cart.productDetails.some(
+                                                          (cartItem) =>
+                                                            cartItem.productDetailId ===
+                                                            detail.id
+                                                        );
+
+                                                      const isSelected =
+                                                        selectedDetail &&
+                                                        selectedDetail.id ===
+                                                          detail.id;
+
+                                                      return (
+                                                        <div key={detail.id}>
+                                                          <button
+                                                            className="btn mb-2"
+                                                            onClick={() => {
+                                                              setSelectedDetail(
+                                                                detail
+                                                              );
+                                                            }}
+                                                            style={{
+                                                              display: "flex",
+                                                              alignItems:
+                                                                "center",
+                                                              outline:
+                                                                isSelected
+                                                                  ? "1px solid #6c757d"
+                                                                  : "1px solid #ffffff",
+                                                              border: "none",
+                                                              transition:
+                                                                "outline-color 0.5s",
+                                                            }}
+                                                            disabled={
+                                                              isProductInCart
+                                                            }
+                                                          >
+                                                            <img
+                                                              className="rounded-3"
+                                                              src={geturlIMGDetail(
+                                                                detail.id,
+                                                                detail.imagedetail
+                                                              )}
+                                                              alt={
+                                                                detail.namedetail
+                                                              }
+                                                              style={{
+                                                                width: "30px",
+                                                                height: "30px",
+                                                                marginRight:
+                                                                  "10px",
+                                                              }}
+                                                            />
+                                                            {detail.namedetail}
+                                                          </button>
+                                                        </div>
+                                                      );
+                                                    }
+                                                  )}
+                                                </ul>
+                                              ) : (
+                                                <p>
+                                                  Không có thông tin sản phẩm.
+                                                </p>
+                                              )}
+
+                                              <div className="p-2 d-flex justify-content-end">
+                                                <Button
+                                                  style={{
+                                                    backgroundColor:
+                                                      "rgb(204,244,255)",
+                                                    color: "rgb(0,70,89)",
+                                                    height: "30px",
+                                                    width: "90px",
+                                                    fontSize: "10px",
+                                                  }}
+                                                  variant="contained"
+                                                  onClick={() => {
+                                                    handleDetailUpdate(
+                                                      cartId,
+                                                      selectedDetail.id,
+                                                      cart.productDetail
+                                                        .quantity
+                                                    );
+                                                  }}
+                                                  disableElevation
+                                                >
+                                                  Xác nhận
+                                                </Button>
+                                              </div>
+                                            </Box>
+                                          </Popper>
+                                        </div>
+                                        {[
+                                          cart.productDetail.product
+                                            .productcategory.name,
+                                          cart.productDetail.product.trademark
                                             .name,
-                                      cart.productDetail.product.warranties
-                                        .name,
-                                    ]
-                                      .filter(Boolean)
-                                      .join(", ")}
+                                          cart.productDetail.product.warranties
+                                            .name,
+                                        ]
+                                          .filter(Boolean)
+                                          .join(", ")}
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              <div className="col-6">
-                                <div
-                                  className="d-flex mt-3"
-                                  id="spinner"
-                                  disabled={cart.productDetail.quantity === 0}
-                                >
-                                  <button
-                                    className="btn border rounded-0 rounded-start"
-                                    id="buttonDown"
-                                    onClick={() => handleDecrease(cart.id)}
+                                <div className="col-lg-6 col-md-12">
+                                  <div
+                                    className="d-flex mt-3"
+                                    id="spinner"
                                     disabled={cart.productDetail.quantity === 0}
                                   >
-                                    <i className="bi bi-dash-lg"></i>
-                                  </button>
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    className="form-control rounded-0 w-50"
-                                    value={
-                                      cart.quantity !== 0 ? cart.quantity : 0
-                                    }
-                                    onChange={(e) =>
-                                      handleQuantityChange(
-                                        cart.id,
-                                        Number(e.target.value)
-                                      )
-                                    }
-                                    disabled={cart.productDetail.quantity === 0}
-                                  />
+                                    {/* <button
+                                      className="btn border rounded-0 rounded-start"
+                                      id="buttonDown"
+                                      onClick={() => handleDecrease(cart.id)}
+                                      disabled={
+                                        cart.productDetail.quantity === 0
+                                      }
+                                    >
+                                      <i className="bi bi-dash-lg"></i>
+                                    </button> */}
 
-                                  <button
-                                    className={`btn border rounded-0 rounded-end ${
-                                      cart.quantity >=
-                                      cart.productDetail.quantity ? (
-                                        <FaBan />
-                                      ) : (
-                                        "btn-active"
-                                      )
-                                    }`}
-                                    id="buttonUp"
-                                    onClick={() => handleIncrease(cart.id)}
-                                    disabled={
-                                      cart.quantity >=
-                                        cart.productDetail.quantity ||
-                                      cart.productDetail.quantity === 0
-                                    }
-                                  >
-                                    <i className="bi bi-plus-lg"></i>
-                                  </button>
+                                    <Button
+                                      className="btn border rounded-0 rounded-start"
+                                      id="buttonDown"
+                                      onClick={() => handleDecrease(cart.id)}
+                                      disabled={
+                                        cart.productDetail.quantity === 0
+                                      }
+                                      variant="contained"
+                                      style={{
+                                        width: "auto",
+                                        backgroundColor: "rgb(250, 250, 250)",
+                                        color: "rgb(0, 0, 0)",
+                                      }}
+                                      disableElevation
+                                    >
+                                      <i className="bi bi-dash-lg"></i>
+                                    </Button>
+
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      className="form-control rounded-0 w-50"
+                                      value={
+                                        cart.quantity !== 0 ? cart.quantity : 0
+                                      }
+                                      onChange={(e) =>
+                                        handleQuantityChange(
+                                          cart.id,
+                                          Number(e.target.value)
+                                        )
+                                      }
+                                      disabled={
+                                        cart.productDetail.quantity === 0
+                                      }
+                                    />
+                                    <Button
+                                      className={`btn border rounded-0 rounded-end ${
+                                        cart.quantity >=
+                                        cart.productDetail.quantity ? (
+                                          <FaBan />
+                                        ) : (
+                                          "btn-active"
+                                        )
+                                      }`}
+                                      id="buttonUp"
+                                      onClick={() => handleIncrease(cart.id)}
+                                      disabled={
+                                        cart.quantity >=
+                                          cart.productDetail.quantity ||
+                                        cart.productDetail.quantity === 0
+                                      }
+                                      variant="contained"
+                                      style={{
+                                        width: "auto",
+                                        backgroundColor: "rgb(250, 250, 250)",
+                                        color: "rgb(0, 0, 0)",
+                                      }}
+                                      disableElevation
+                                    >
+                                      <i className="bi bi-plus-lg"></i>
+                                    </Button>
+
+                                    {/* <button
+                                      className={`btn border rounded-0 rounded-end ${
+                                        cart.quantity >=
+                                        cart.productDetail.quantity ? (
+                                          <FaBan />
+                                        ) : (
+                                          "btn-active"
+                                        )
+                                      }`}
+                                      id="buttonUp"
+                                      onClick={() => handleIncrease(cart.id)}
+                                      disabled={
+                                        cart.quantity >=
+                                          cart.productDetail.quantity ||
+                                        cart.productDetail.quantity === 0
+                                      }
+                                    >
+                                      <i className="bi bi-plus-lg"></i>
+                                    </button> */}
+                                  </div>
+                                  <h5 className="mt-2">
+                                    Tổng cộng:{" "}
+                                    {formatPrice(
+                                      cart.productDetail.price * cart.quantity
+                                    ) + " VNĐ"}
+                                    {cart.productDetail.quantity <= 10 && (
+                                      <div className="text-danger">
+                                        Còn lại: {cart.productDetail.quantity}{" "}
+                                        sản phẩm
+                                      </div>
+                                    )}
+                                  </h5>
                                 </div>
-                                <h5 className="mt-2" id="price">
-                                  Tổng cộng:{" "}
-                                  {formatPrice(
-                                    cart.productDetail.price * cart.quantity
-                                  ) + " VNĐ"}
-                                  {cart.productDetail.quantity <= 10 && (
-                                    <div className="text-danger">
-                                      Còn lại: {cart.productDetail.quantity} sản
-                                      phẩm
-                                    </div>
-                                  )}
-                                </h5>
                               </div>
                             </div>
                           );
@@ -779,7 +876,7 @@ const Cart = () => {
               </>
             )}
           </div>
-          <div className="col-12 col-md-3 mt-3">
+          <div className="col-lg-3 col-md-12">
             <div className="card" id="sticky-top">
               <div className="card-body" id="smooth">
                 <div className="d-flex justify-content-between">
