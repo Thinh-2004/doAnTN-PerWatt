@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import useSession from "../../../Session/useSession";
 import axios from "../../../Localhost/Custumize-axios";
 import { Button } from "@mui/material";
 
@@ -15,10 +14,9 @@ const Successful = () => {
   const vnp_OrderInfo = query.get("vnp_OrderInfo");
   const addressIds = vnp_OrderInfo.split(",").pop().trim();
   const cartIds = vnp_OrderInfo.split(",").slice(0, -1).join(",").trim();
+  const [hasDeposited, setHasDeposited] = useState(false);
 
-  const productList = localStorage.getItem("productList")
-    ? JSON.parse(localStorage.getItem("productList"))
-    : null;
+  const vnp_Amount = query.get("vnp_Amount");
 
   const groupByStore = (products) => {
     return products.reduce((groups, product) => {
@@ -34,56 +32,98 @@ const Successful = () => {
     }, {});
   };
 
+  const storedDepositAmount = sessionStorage.getItem("depositAmount");
+
   useEffect(() => {
-    (async () => {
-      try {
-        const response = await axios.get(`/cart?id=${cartIds}`);
-        setProducts(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    })();
-    console.log(productList);
-    
+    if (storedDepositAmount !== "Nạp tiền") {
+      (async () => {
+        try {
+          const response = await axios.get(`/cart?id=${cartIds}`);
+          setProducts(response.data);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    }
   }, [user.id]);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const groupedProducts = groupByStore(products);
+    if (storedDepositAmount === "Nạp tiền" && !hasDeposited) {
+      const handlePerPay = async () => {
+        try {
+          const resWallet = await axios.get(`wallet/${user.id}`);
+          const newBalance =
+            parseFloat(resWallet.data.balance) + parseFloat(vnp_Amount);
 
-        for (const storeId in groupedProducts) {
-          const { products: storeProducts } = groupedProducts[storeId];
+          await axios.put(`wallet/update/${user.id}`, {
+            balance: newBalance,
+          });
 
-          const order = {
+          await axios.post(`wallettransaction/create/${resWallet.data.id}`, {
+            amount: vnp_Amount,
+            transactiontype: "Nạp tiền thông qua VN Pay",
+            transactiondate: new Date(),
             user: { id: user.id },
-            paymentmethod: { tyle: "Thanh toán bằng VN Pay" },
-            shippinginfor: { id: addressIds },
-            store: { id: storeId },
-            paymentdate: new Date().toISOString(),
-            orderstatus: "Đang chờ duyệt",
-          };
+          });
 
-          const orderDetails = storeProducts.map((product) => ({
-            productDetail: { id: product.productDetail.id },
-            quantity: product.quantity,
-            price: product.productDetail.price,
-          }));
-          //00 = thành công
-          if (statusVNPay === "00") {
-            await axios.post("/api/payment/createVnPayOrder", {
-              order,
-              orderDetails,
-            });
-          } else {
-            return;
-          }
+          setHasDeposited(true);
+        } catch (error) {
+          console.error(
+            "Error depositing money:",
+            error.response ? error.response.data : error.message
+          );
         }
-      } catch (error) {
-        console.log(error);
-      }
-    })();
-  }, [products]);
+      };
+
+      handlePerPay();
+
+      sessionStorage.removeItem("depositAmount");
+    } else {
+      (async () => {
+        try {
+          const groupedProducts = groupByStore(products);
+
+          for (const storeId in groupedProducts) {
+            const { products: storeProducts } = groupedProducts[storeId];
+
+            const order = {
+              user: { id: user.id },
+              paymentmethod: { tyle: "Thanh toán bằng VN Pay" },
+              shippinginfor: { id: addressIds },
+              store: { id: storeId },
+              paymentdate: new Date().toISOString(),
+              orderstatus: "Đang chờ duyệt",
+            };
+
+            const orderDetails = storeProducts.map((product) => ({
+              productDetail: { id: product.productDetail.id },
+              quantity: product.quantity,
+              price: product.productDetail.price,
+            }));
+            //00 = thành công
+            if (statusVNPay === "00") {
+              await axios.post("/api/payment/createVnPayOrder", {
+                order,
+                orderDetails,
+              });
+            } else {
+              return;
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    }
+  }, [
+    storedDepositAmount,
+    hasDeposited,
+    user.id,
+    products,
+    vnp_Amount,
+    statusVNPay,
+    addressIds,
+  ]);
 
   return (
     <div>
@@ -111,6 +151,7 @@ const Successful = () => {
                   </Button>
                   <Button
                     variant="contained"
+                    className="me-3"
                     href="/order"
                     style={{
                       backgroundColor: "rgb(204,244,255)",
@@ -119,6 +160,17 @@ const Successful = () => {
                     disableElevation
                   >
                     Xem đơn hàng
+                  </Button>
+                  <Button
+                    variant="contained"
+                    href="/wallet/buyer"
+                    style={{
+                      backgroundColor: "rgb(218,255,180)",
+                      color: "rgb(45,91,0)",
+                    }}
+                    disableElevation
+                  >
+                    Ví
                   </Button>
                 </div>
               </div>

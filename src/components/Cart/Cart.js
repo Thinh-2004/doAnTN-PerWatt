@@ -588,6 +588,19 @@ const Cart = () => {
                               <div className="row">
                                 <div className="col-lg-5 col-md-12 mt-3 mx-3 pe-4">
                                   <div className="row">
+                                    <Button
+                                      variant="contained"
+                                      component={Link}
+                                      to="/wallet/buyer"
+                                      style={{
+                                        width: "auto",
+                                        backgroundColor: "rgb(218, 255, 180)",
+                                        color: "rgb(45, 91, 0)",
+                                      }}
+                                      disableElevation
+                                    >
+                                      <i class="bi bi-wallet2"></i>
+                                    </Button>
                                     <div id="fontSizeTitle">
                                       {cart.productDetail.product.name}
                                     </div>

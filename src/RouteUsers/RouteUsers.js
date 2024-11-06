@@ -24,7 +24,6 @@ import OrderDetailSeller from "../components/Market/CheckUsers/IsMarket/OrderDet
 import OrderSeller from "../components/Market/CheckUsers/IsMarket/Order/OrderSeller";
 import Wallet from "../components/Wallet/Wallet";
 import Transaction from "../components/Wallet/Transaction";
-import PassCode from "../components/Wallet/PassCode";
 
 const RouteUsers = (props) => {
   return (
@@ -43,8 +42,7 @@ const RouteUsers = (props) => {
         <Route path="/market" element={<Market></Market>}></Route>
         <Route path="/profileMarket/*" element={<IsMarket></IsMarket>}></Route>
         <Route path="/wallet/:role" element={<Wallet></Wallet>}></Route>
-        <Route path="/transaction/:status" element={<Transaction />} />
-        <Route path="/passcode/:status" element={<PassCode />} />
+        <Route path="/transaction" element={<Transaction />} />
 
         <Route
           path="detailProduct/:slug"

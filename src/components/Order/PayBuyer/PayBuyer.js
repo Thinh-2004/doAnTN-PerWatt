@@ -69,14 +69,12 @@ const PayBuyer = () => {
       if (wallet.balance > amount) {
         const newBalance = parseFloat(wallet.balance) - parseFloat(amount);
 
-        // Cập nhật số dư người dùng
         const res = await axios.put(`wallet/update/${user.id}`, {
           balance: newBalance,
         });
 
         addTransaction(amount, "Thanh toán PerWatt");
 
-        // Tạo biến tạm cho số dư ví quản trị viên
         let adminBalance = parseFloat(walletAdmin.balance);
 
         for (const storeId in groupedProducts) {
@@ -86,14 +84,12 @@ const PayBuyer = () => {
             return sum + product.productDetail.price * product.quantity;
           }, 0);
 
-          // Cập nhật ví quản trị viên sau khi cộng tiền
           adminBalance += storeTotal;
           const adminRes = await axios.put(`wallet/update/${1}`, {
             balance: adminBalance,
           });
           setWalletAdmin(adminRes.data);
 
-          // Giao dịch chuyển vào ví quản trị viên
           const transactionType =
             `Thanh toán từ người dùng: ${store.user.fullname}`.substring(0, 50);
           await axios.post(`wallettransaction/create/${2}`, {
@@ -104,7 +100,6 @@ const PayBuyer = () => {
             store: { id: store.id },
           });
 
-          // Trừ 90% số tiền đã chuyển vào
           const withdrawAmount = storeTotal * 0.9;
           adminBalance -= withdrawAmount;
           const adminResWithdraw = await axios.put(`wallet/update/${1}`, {
@@ -112,7 +107,6 @@ const PayBuyer = () => {
           });
           setWalletAdmin(adminResWithdraw.data);
 
-          // Giao dịch chuyển tiền về cửa hàng
           const transactionTypeWithdraw =
             `Chuyển tiền về của hàng: ${store.namestore}`.substring(0, 50);
           await axios.post(`wallettransaction/create/${2}`, {
@@ -125,42 +119,18 @@ const PayBuyer = () => {
 
           const fillWalletStore = await axios.get(`wallet/${store.user.id}`);
 
-          // Thêm giao dịch chuyển tiền về cửa hàng
           const transactionStore = await axios.get(
             `wallettransaction/idWalletByIdUSer/${store.user.id}`
           );
 
-          // const StoreResWithdraw = await axios.put(
-          //   `wallet/update/${store.user.id}`,
-          //   {
-          //     balance: wallet.balance + withdrawAmount,
-          //   }
-          // );
-          // setWallet(StoreResWithdraw.data);
-          // console.log(transactionStore.data.id);
-          // await axios.post(
-          //   `wallettransaction/create/${transactionStore.data.id}`,
-          //   {
-          //     amount: fillWalletStore.balance + withdrawAmount,
-          //     transactiontype: "Tiền từ PerWatt",
-          //     transactiondate: new Date(),
-          //     user: { id: store.user.id },
-          //   }
-          // );
+          await axios.put(`wallet/update/${store.user.id}`, {
+            balance: fillWalletStore.data.balance + withdrawAmount,
+          });
 
-          // Sửa dòng cập nhật số dư ví cửa hàng
-          const StoreResWithdraw = await axios.put(
-            `wallet/update/${store.user.id}`,
-            {
-              balance: fillWalletStore.data.balance + withdrawAmount, // Số dư mặc định của cửa hàng + số tiền đã nhận
-            }
-          );
-
-          // Sửa dòng tạo giao dịch chuyển tiền về ví cửa hàng
           await axios.post(
             `wallettransaction/create/${transactionStore.data.id}`,
             {
-              amount: withdrawAmount, // Số tiền đã nhận trong giao dịch
+              amount: withdrawAmount,
               transactiontype: "Tiền từ PerWatt",
               transactiondate: new Date(),
               user: { id: store.user.id },
@@ -174,7 +144,7 @@ const PayBuyer = () => {
           await axios.post(
             `wallettransaction/create/${transactionUser.data.id}`,
             {
-              amount: -storeTotal, 
+              amount: -storeTotal,
               transactiontype: "Thanh toán bằng PerPay",
               transactiondate: new Date(),
               user: { id: user.id },
@@ -182,7 +152,6 @@ const PayBuyer = () => {
           );
         }
 
-        // Cập nhật lại số dư người dùng sau khi xử lý xong
         setWallet(res.data);
         handleOrder();
       } else {
@@ -215,33 +184,6 @@ const PayBuyer = () => {
       );
     }
   };
-
-  // const addTransactionAdmin = async (groupedProducts, transactionType) => {
-  //   const now = new Date();
-
-  //   try {
-  //     for (const storeId in groupedProducts) {
-  //       const { store, products } = groupedProducts[storeId];
-
-  //       const storeTotal = products.reduce((sum, product) => {
-  //         return sum + product.productDetail.price * product.quantity;
-  //       }, 0);
-
-  //       const response = await axios.post(`wallettransaction/create/${2}`, {
-  //         amount: storeTotal,
-  //         transactiontype: `${transactionType} - ${store.namestore}`, // Thêm tên cửa hàng vào loại giao dịch
-  //         transactiondate: now,
-  //         user: user.id,
-  //         store: store.id, // Thêm ID của cửa hàng
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error(
-  //       "Đã có lỗi xảy ra:",
-  //       error.response ? error.response.data : error.message
-  //     );
-  //   }
-  // };
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -678,24 +620,6 @@ const PayBuyer = () => {
                                   >
                                     Xác nhận
                                   </Button>
-
-                                  {/* <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    onClick={() =>
-                                      handleWithdraw(
-                                        storeProducts.reduce(
-                                          (sum, detail) =>
-                                            sum +
-                                            detail.productDetail.price *
-                                              detail.quantity,
-                                          0
-                                        )
-                                      )
-                                    }
-                                  >
-                                    Xác nhận
-                                  </button> */}
                                 </div>
                               </div>
                             </div>

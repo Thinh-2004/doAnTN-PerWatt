@@ -114,22 +114,6 @@ const Wallet = () => {
     return format(date, "HH:mm:ss dd/MM/yyyy");
   };
 
-  const passCode = (type) => {
-    if (wallet.passcode) {
-      if (type === "deposit") {
-        window.location.href = "/transaction/deposit";
-      } else if (type === "withdraw") {
-        window.location.href = "/transaction/withdraw";
-      }
-    } else {
-      if (type === "deposit") {
-        window.location.href = "/passcode/deposit";
-      } else if (type === "withdraw") {
-        window.location.href = "/passcode/withdraw";
-      }
-    }
-  };
-
   return (
     <div>
       {status === "seller" ? null : <Header />}
@@ -152,20 +136,10 @@ const Wallet = () => {
                     </div>
                     <div className="row">
                       <div className="col-6">
-                        {/* <button
-                          className="btn w-100 mt-3"
-                          onClick={() => passCode("deposit")}
-                          style={{
-                            backgroundColor: "rgb(218, 255, 180)",
-                            color: "rgb(45, 91, 0)",
-                          }}
-                        >
-                          Nạp tiền
-                        </button> */}
                         <Button
                           variant="contained"
                           className="w-100 mt-3"
-                          onClick={() => passCode("deposit")}
+                          href="/transaction"
                           style={{
                             backgroundColor: "rgb(218, 255, 180)",
                             color: "rgb(45, 91, 0)",
@@ -175,29 +149,20 @@ const Wallet = () => {
                           Nạp tiền
                         </Button>
                       </div>
-                      <div className="col-6">
+                      <div className="col-6" style={{ cursor: "not-allowed" }}>
                         <Button
                           variant="contained"
                           className="w-100 mt-3"
-                          onClick={() => passCode("withdraw")}
                           style={{
                             backgroundColor: "rgb(255, 184, 184)",
                             color: "rgb(198, 0, 0)",
+                            cursor: "not-allowed",
                           }}
                           disableElevation
+                          disabled
                         >
                           Rút tiền
                         </Button>
-                        {/* <button
-                          className="btn w-100 mt-3"
-                          onClick={() => passCode("withdraw")}
-                          style={{
-                            backgroundColor: "rgb(255, 184, 184)",
-                            color: "rgb(198, 0, 0)",
-                          }}
-                        >
-                          Rút tiền
-                        </button> */}
                       </div>
                     </div>
                   </div>
@@ -392,7 +357,8 @@ const Wallet = () => {
                                   </div>
                                 ) : (
                                   <div className="col-5">
-                                   Lấy 10% doanh thu và gữi đến: {walletTransaction.store?.namestore}
+                                    Lấy 10% doanh thu và gữi đến:{" "}
+                                    {walletTransaction.store?.namestore}
                                   </div>
                                 )}
                               </>
