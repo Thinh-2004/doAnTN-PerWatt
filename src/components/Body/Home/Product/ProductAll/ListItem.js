@@ -61,6 +61,7 @@ const ListItem = ({ data }) => {
                 className="img-fluid rounded-3"
                 alt="Product"
                 style={{ width: "100%", height : "200px"}}
+                loading="lazy"
               />
               {totalQuantity === 0 && (
                 <div

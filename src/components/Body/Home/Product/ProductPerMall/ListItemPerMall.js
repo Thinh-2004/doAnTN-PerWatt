@@ -57,6 +57,7 @@ const ListItemPerMall = ({ data }) => {
                     : "/images/no_img.png"
                 }
                 style={{ width: "100%", height: "150px" }}
+                loading="lazy"
                 className="img-fluid rounded-3"
                 alt="Product"
               />
