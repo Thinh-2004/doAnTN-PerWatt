@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
 import useDebounce from "../../../CustumHook/useDebounce";
 import "./StoreStyle.css";
-import { Box, Pagination } from "@mui/material";
+import { Box, Pagination, Typography } from "@mui/material";
 
 import SkeletonLoad from "../../../Skeleton/SkeletonLoad";
 import ListProductStore from "./ListProductStore";
@@ -160,8 +160,8 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
             Shop không có nội dung bạn cần tìm
           </label>
           <div className="d-flex justify-content-center  mb-5">
-            <Link className="btn" id="btn-comback-home" to={"/"}>
-              Quay về trang chủ để tìm kiếm trên sàn PerWatt
+            <Link className="btn border" id="btn-comeback-home" to={"/"}>
+             <Typography variant="span" sx={{color : "text.default"}}> Quay về trang chủ để tìm kiếm trên sàn PerWatt</Typography>
             </Link>
           </div>
         </>

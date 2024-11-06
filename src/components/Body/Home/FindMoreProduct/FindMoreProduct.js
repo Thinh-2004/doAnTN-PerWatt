@@ -18,7 +18,7 @@ const FindMoreProduct = () => {
   const [loading, setLoading] = useState(true); // trạng thái tải dữ liệu
 
   //Dữ liệu từ componets con
-  const [searchMoreProduct, setSearchMoreProduct] = useState();
+  const [searchMoreProduct, setSearchMoreProduct] = useState("");
   const debounceSearch = useDebounce(searchMoreProduct, 500);
   const [nameAddress, setNameAddress] = useState([]); //Mảng tên địa chỉ
   const [nameTradeMark, setNameTradeMark] = useState("");
@@ -291,7 +291,6 @@ const FindMoreProduct = () => {
   //Hàm xử lí dữ liệu từ components con
   const dataTextSearch = useCallback((text) => {
     setSearchMoreProduct(text);
-    // console.log(text);
   }, []);
 
   //Hàm xử lí dữ liệu từ components con

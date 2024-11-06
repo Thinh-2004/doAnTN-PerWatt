@@ -52,8 +52,9 @@ const ListFindMore = ({ data }) => {
           return (
             <Box
               className="col-lg-2 col-md-3 col-sm-4 mt-3 shadow rounded-3 p-2 d-flex flex-column"
-              sx={{ minHeight: "100%", 
-              bgcolor : "backgroundElement.children" }}
+              sx={{
+                bgcolor: "backgroundElement.children",
+              }}
               key={fill.product.id}
               id="home-product-item"
             >
@@ -70,7 +71,7 @@ const ListFindMore = ({ data }) => {
                   }
                   className="img-fluid rounded-3"
                   alt="Product"
-                  style={{ width: "100%", height: "150px" }}
+                  style={{ width: "100%", height: "200px" }}
                 />
                 {totalQuantity === 0 && (
                   <div

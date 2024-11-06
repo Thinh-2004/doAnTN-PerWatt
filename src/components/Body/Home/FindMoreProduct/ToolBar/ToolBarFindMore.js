@@ -21,7 +21,6 @@ const ToolBarFindMore = ({
   idShopType,
 }) => {
   const nameBrandUrl = useParams();
-  const [search, setSearch] = useState("");
   const [provinces, setProvinces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tradeMark, setTradeMark] = useState([]);
@@ -59,7 +58,6 @@ const ToolBarFindMore = ({
     // Khôi phục giá trị tìm kiếm từ localStorage
     const savedSearch = localStorage.getItem("searchText");
     if (savedSearch) {
-      setSearch(savedSearch);
       text(savedSearch); // Gửi giá trị tìm kiếm lên component cha
     }
 
@@ -79,10 +77,8 @@ const ToolBarFindMore = ({
   }, [address, text, trademark]);
 
   const handleTextSearch = useCallback(
-    (e) => {
-      const value = e.target.value;
+    (value) => {
       text(value);
-      setSearch(value);
 
       // Lưu giá trị tìm kiếm vào localStorage
       localStorage.setItem("searchText", value);
@@ -139,7 +135,7 @@ const ToolBarFindMore = ({
     <Box sx={{backgroundColor : "backgroundElement.children"}} className="rounded-2">
       <div className="m-3">
         <div>
-          <Search search={search} handleTextSearch={handleTextSearch} />
+          <Search valueText={handleTextSearch} />
         </div>
         <div className="mt-3 mb-3 d-flex justify-content-between">
           <div className="align-content-center">

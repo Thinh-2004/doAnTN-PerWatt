@@ -42,7 +42,7 @@ const ListProductStore = ({ data }) => {
           <div className="col-lg-3 col-md-3 col-sm-3 mb-3 mt-2" key={fill.product.id}>
             <Box
               className="shadow rounded-3 p-2 d-flex flex-column"
-              sx={{ height: "100%",
+              sx={{
                 bgcolor : "backgroundElement.children"
                }} // Đảm bảo chiều cao tự điều chỉnh
               id="product-item"
@@ -59,7 +59,7 @@ const ListProductStore = ({ data }) => {
                   }
                   className="img-fluid rounded-3"
                   alt="..."
-                  style={{ width: "200px", height: "150px" }}
+                  style={{ width: "200px", height: "200px" }}
                 />
                 {totalQuantity === 0 && (
                   <div

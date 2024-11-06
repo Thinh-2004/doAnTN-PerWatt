@@ -22,27 +22,25 @@ function App() {
   //       window.outerHeight - window.innerHeight > threshold
   //     ) {
   //       isDevToolsOpen = true;
-  //       window.location.href = "/form-thong-bao";
+  //       window.location.href = "/404/NotFound";
   //     }
   //   };
 
-  //   const checkExecutionDelay = () => {
-  //     const start = performance.now();
-  //     setTimeout(() => {
-  //       const end = performance.now();
-  //       if (end - start > 100) {
-  //         // độ trễ cao, giả định DevTools mở
-  //         isDevToolsOpen = true;
-  //         window.location.href = "/form-thong-bao";
-  //       }
-  //     }, 100);
-  //   };
+  //   // const checkExecutionDelay = () => {
+  //   //   const start = performance.now();
+  //   //   setTimeout(() => {
+  //   //     const end = performance.now();
+  //   //     if (end - start > 100) {
+  //   //       // độ trễ cao, giả định DevTools mở
+  //   //       isDevToolsOpen = true;
+  //   //       window.location.href = "/404/NotFound";
+  //   //     }
+  //   //   }, 100);
+  //   // };
 
   //   window.addEventListener("resize", checkSizeDifference);
-  //   setInterval(checkExecutionDelay, 1000);
+  //   // setInterval(checkExecutionDelay, 1000);
   // };
-
-  // detectDevTools();
 
   // useEffect(() => {
   //   detectDevTools(); // Kiểm tra ngay khi trang load
