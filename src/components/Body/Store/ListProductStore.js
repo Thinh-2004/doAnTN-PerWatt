@@ -1,6 +1,7 @@
 import React from "react";
 import axios from "../../../Localhost/Custumize-axios";
 import { Link } from "react-router-dom";
+import { Box } from "@mui/material";
 
 const ListProductStore = ({ data }) => {
   const geturlIMG = (productId, filename) => {
@@ -21,7 +22,7 @@ const ListProductStore = ({ data }) => {
   return (
     <>
       {data.map((fill, index) => {
-        const firstIMG = fill.images[0];
+        const firstIMG = fill.product.images[0];
         const productDetail = fill.productDetails;
 
         //Tìm giá nhỏ nhất lớn nhất trong mảng
@@ -38,25 +39,28 @@ const ListProductStore = ({ data }) => {
           0
         );
         return (
-          <div className="col-lg-3 col-md-3 col-sm-3 mb-3" key={fill.id}>
-            <div
-              className="card shadow rounded-4 mt-4 p-2 d-flex flex-column"
-              style={{ height: "100%" }} // Đảm bảo chiều cao tự điều chỉnh
+          <div className="col-lg-3 col-md-3 col-sm-3 mb-3 mt-2" key={fill.product.id}>
+            <Box
+              className="shadow rounded-3 p-2 d-flex flex-column"
+              sx={{
+                bgcolor : "backgroundElement.children"
+               }} // Đảm bảo chiều cao tự điều chỉnh
               id="product-item"
             >
               <Link
-                to={`/detailProduct/${fill.slug}`}
+                to={`/detailProduct/${fill.product.slug}`}
                 className="position-relative d-flex justify-content-center"
               >
                 <img
                   src={
                     firstIMG
-                      ? geturlIMG(fill.id, firstIMG.imagename)
+                      ? geturlIMG(fill.product.id, firstIMG.imagename)
                       : "/images/no_img.png"
                   }
-                  className="card-img-top img-fluid rounded-4 object-fit-contain"
+                  className="img-fluid rounded-3"
                   alt="..."
-                  style={{ width: "200px", height: "150px" }}
+                  style={{ width: "200px", height: "200px" }}
+                  loading="lazy"
                 />
                 {totalQuantity === 0 && (
                   <div
@@ -66,8 +70,8 @@ const ListProductStore = ({ data }) => {
                     <span className="text-white text-center">Hết hàng</span>
                   </div>
                 )}
-                {fill?.store?.taxcode && (
-                  <div class="position-absolute bottom-0 end-0">
+                {fill?.product?.store?.taxcode && (
+                  <div className="position-absolute bottom-0 end-0">
                     <img
                       src="/images/IconShopMall.png"
                       alt=""
@@ -80,7 +84,7 @@ const ListProductStore = ({ data }) => {
               <div className="mt-2 flex-grow-1 d-flex flex-column justify-content-between">
                 {/* Thêm flex-grow-1 */}
                 <span className="fw-bold fst-italic" id="product-name">
-                  {fill.name}
+                  {fill.product.name}
                 </span>
                 <h5 id="price-product">
                   <del className="text-secondary me-1">3000000 đ</del> -
@@ -90,33 +94,21 @@ const ListProductStore = ({ data }) => {
                       : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)} đ`}
                   </span>
                 </h5>
-                <hr />
+                <hr className="m-0 p-0"/>
                 <div className="d-flex justify-content-between">
                   <div>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
+                    <span style={{ fontSize: "12px" }}>
+                      <i className="bi bi-star-fill text-warning"></i> 3.3
+                    </span>
                   </div>
                   <div>
                     <span style={{ fontSize: "12px" }}>
-                      Đã bán: {formatCount(fill.countQuantityOrderBy)}
+                      Đã bán: {formatCount(fill.countOrderSuccess)}
                     </span>
                   </div>
                 </div>
               </div>
-            </div>
+            </Box>
           </div>
         );
       })}

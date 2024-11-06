@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import "./ProductItemStyle.css";
 import axios from "../../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
 import useDebounce from "../../../../../CustumHook/useDebounce";
-import { Pagination } from "@mui/material";
+import { Box, Pagination } from "@mui/material";
 import SkeletonLoad from "../../../../../Skeleton/SkeletonLoad";
-// import SkeletonLoad from "./SkeletonLoad";
 import ListItem from "./ListItem";
 
 trefoil.register();
@@ -13,8 +12,9 @@ trefoil.register();
 const Product = ({ item, idCate, handleReset }) => {
   const [fillAllProduct, setFillAllProduct] = useState([]);
   const [loading, setLoading] = useState(true);
-  const debouncedItem = useDebounce(item);
-  const debouncedIdCate = useDebounce(idCate);
+  const debouncedItem = useDebounce(item, 500);
+  // console.log(debouncedItem);
+  const debouncedIdCate = useDebounce(idCate, 500);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(0); //Trang hiện tại
@@ -31,35 +31,8 @@ const Product = ({ item, idCate, handleReset }) => {
       );
       setCurrentPage(res.data.currentPage);
       setTotalPage(res.data.totalPages);
-      // Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm và lưu vào productDetails
-      const dataWithDetails = await Promise.all(
-        res.data.products.map(async (push) => {
-          const resDetail = await axios.get(`/detailProduct/${push.id}`);
-
-          // Duyệt qua từng chi tiết sản phẩm để lấy số lượng đã bán
-          const countOrderBy = await Promise.all(
-            resDetail.data.map(async (detail) => {
-              const res = await axios.get(`countOrderSuccess/${detail.id}`);
-              return res.data; // Trả về số lượng đã bán cho chi tiết sản phẩm
-            })
-          );
-
-          // Tính tổng số lượng sản phẩm đã bán cho tất cả chi tiết sản phẩm
-          const countQuantityOrderBy = countOrderBy.reduce(
-            (acc, quantity) => acc + quantity,
-            0
-          );
-
-          return {
-            ...push,
-            productDetails: resDetail.data,
-            countQuantityOrderBy, // lưu tổng số lượng đã bán
-          };
-        })
-      );
-
-      setFillAllProduct(dataWithDetails);
-      // console.log(dataWithDetails);
+      setFillAllProduct(res.data.products);
+      // console.log(res.data.products);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -69,7 +42,7 @@ const Product = ({ item, idCate, handleReset }) => {
 
   useEffect(() => {
     const loadingData = async () => {
-      setLoading(true);
+      // setLoading(true);
       try {
         if (debouncedItem) {
           await loadData(0, 20, debouncedItem);
@@ -78,16 +51,14 @@ const Product = ({ item, idCate, handleReset }) => {
         } else {
           await loadData();
         }
-      } finally {
-        setLoading(false);
-      }
+      } catch {}
     };
     loadingData();
   }, [debouncedItem, debouncedIdCate]);
 
   // Sự kiện đặt lại giá trị cho số trang
   const handlePageChange = async (e, value) => {
-    setLoading(true);
+    // setLoading(true);
     try {
       if (debouncedItem) {
         await loadData(value - 1, 20, debouncedItem);
@@ -97,27 +68,55 @@ const Product = ({ item, idCate, handleReset }) => {
         await loadData(value - 1, 20);
       }
       setCurrentPage(value);
-    } finally {
-      setLoading(false);
+    } catch {
+      // setLoading(false);
     }
 
     // console.log(value);
   };
 
+  //Cuộn thanh cuộn xuống nơi chỉ định
+  useEffect(() => {
+    if (debouncedItem !== "") {
+      window.scrollTo({ top: 2300, behavior: "smooth" });
+    }
+  }, [debouncedItem]);
+
+  const handleScrollToCategory = () => {
+    window.scrollTo({ top: 300, behavior: "smooth" });
+  };
+
   return (
     <>
       {debouncedItem || debouncedIdCate ? (
-        <div
-          onClick={handleReset}
-          className="text-primary"
-          style={{ cursor: "pointer" }}
-        >
-          <i className="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm
+        <div className="d-flex">
+          <Box
+            id="default"
+            sx={{ background: "background.default" }}
+            className="fill-all btn-fill text-center me-2"
+            onClick={handleReset}
+          >
+            <svg>
+              <rect x="0" y="0" fill="none" width="100%" height="100%" />
+            </svg>
+            <i className="bi bi-box-seam"></i> Hiển thị tất cả
+          </Box>
+          <Box
+            id="default-btn-scroll"
+            sx={{ background: "background.default" }}
+            className="scroll-web btn-scroll text-center"
+            onClick={handleScrollToCategory}
+          >
+            <svg>
+              <rect x="0" y="0" fill="none" width="100%" height="100%" />
+            </svg>
+            <i className="bi bi-bookmarks-fill"></i> Tìm theo danh mục
+          </Box>
         </div>
       ) : null}
       {loading ? (
         <SkeletonLoad />
-      ) : fillAllProduct.length === 0 && item !== "" ? (
+      ) : fillAllProduct.length === 0 && (item !== "" || idCate !== "") ? (
         <div className="text-center">
           <h4>
             <i

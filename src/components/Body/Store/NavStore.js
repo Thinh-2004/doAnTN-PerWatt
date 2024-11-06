@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import Header from "../../Header/Header";
 import "./StoreStyle.css";
 import { useParams } from "react-router-dom";
@@ -12,19 +12,22 @@ import {
   Stack,
   TextField,
   Typography,
+  useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { ThemeModeContext } from "../../ThemeMode/ThemeModeProvider";
 
 const Store = () => {
   const getIdBySlugStore = useParams();
   const [fill, setFill] = useState([]);
   const [search, setSearch] = useState("");
-  const [countProductStore, setCountProductStore] = useState(0);
   const [fillCateInStore, setFillCateInStore] = useState([]);
   const [idCateProduct, setIdCateProduct] = useState(0);
   const [checkResetInputSearch, setCheckResetInputSearch] = useState(false);
   // const idStore = localStorage.getItem("idStore");
   const [valueMT, setValueMT] = useState(5); // value của magrin top
+  const { mode } = useContext(ThemeModeContext);
+  const [totalItems, setTotalItems] = useState(0); //Tổng số lượng sản phẩm
 
   // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
   const updateItemsPerPage = () => {
@@ -75,15 +78,19 @@ const Store = () => {
   const geturlAvtUser = (idUser, filename) => {
     return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
   };
+
   const loadData = async () => {
     try {
       //Lấy data store by slug param
       const storeRes = await axios.get(
         `/productStore/${getIdBySlugStore.slugStore}`
       );
-      setCountProductStore(storeRes.data.products.length);
+
+      setTotalItems(storeRes.data.totalItems);
       //Lấy infoStore by storeRes
-      const res = await axios.get(`store/${storeRes.data.products[0].store.id}`);
+      const res = await axios.get(
+        `store/${storeRes.data.products[0].product.store.id}`
+      );
       setFill(res.data);
 
       //Kiểm tra infoStore trước khi call API
@@ -108,10 +115,10 @@ const Store = () => {
     }
   }, [checkResetInputSearch]);
 
-  const handleTextSearch = (e) => {
+  const handleTextSearch = useCallback((e) => {
     setSearch(e.target.value);
     setIdCateProduct(0);
-  };
+  }, []);
 
   const handleClickIdCateProduct = (idCateProduct) => {
     setCheckResetInputSearch(false);
@@ -154,7 +161,11 @@ const Store = () => {
   return (
     <>
       <Header></Header>
-      <div className="bg-white mt-2 container-fluid">
+      <div
+        className={`mt-2 container-fluid ${
+          mode === "light" ? "bg-white" : ""
+        }`}
+      >
         <div className="position-relative">
           <img
             src={geturlBgStore(fill.id, fill.imgbackgound)}
@@ -183,7 +194,7 @@ const Store = () => {
                   alt=""
                   id="logo-store"
                 />
-                <label className=" d-flex align-items-end mx-4 fs-6 fw-bold text-dark">
+                <label className=" d-flex align-items-end mx-4 fs-6 fw-bold">
                   {fill.namestore} &nbsp;&nbsp;
                   {fill?.taxcode && (
                     <img
@@ -199,10 +210,10 @@ const Store = () => {
             <div className="col-lg-4 col-md-4 col-sm-4 align-content-end">
               <div className="d-flex p-2">
                 <button className="btn" id="btn-follow">
-                  <i class="bi bi-plus-lg"></i> <span htmlFor="">Theo dõi</span>
+                  <i className="bi bi-plus-lg"></i> <span htmlFor="">Theo dõi</span>
                 </button>
                 <button className="btn mx-2" id="btn-chatMess">
-                  <i class="bi bi-chat"></i> Nhắn tin
+                  <i className="bi bi-chat"></i> Nhắn tin
                 </button>
               </div>
             </div>
@@ -216,20 +227,20 @@ const Store = () => {
             <div className="col-lg-2 col-md-2 col-sm-2">
               {" "}
               <span className="">
-                <i class="bi bi-box-seam-fill"></i> Sản phẩm:{" "}
-                <label htmlFor="">{countProductStore}</label>{" "}
+                <i className="bi bi-box-seam-fill"></i> Sản phẩm:{" "}
+                <label htmlFor="">{totalItems}</label>{" "}
               </span>
             </div>
             <div className="col-lg-2 col-md-2 col-sm-2">
               {" "}
               <span>
-                <i class="bi bi-star-fill text-warning"></i> Đánh giá:{" "}
+                <i className="bi bi-star-fill text-warning"></i> Đánh giá:{" "}
                 <label htmlFor="">900</label>{" "}
               </span>
             </div>
             <div className="col-lg-2 col-md-2 col-sm-2">
               <span>
-                <i class="bi bi-node-plus"></i> Tham gia:
+                <i className="bi bi-node-plus"></i> Tham gia:
                 <label htmlFor="">
                   &nbsp;{calculateAccountDuration(fill.createdtime)}
                 </label>{" "}
@@ -238,14 +249,14 @@ const Store = () => {
             <div className="col-lg-2 col-md-2 col-sm-2">
               {" "}
               <span>
-                <i class="bi bi-person-plus-fill"></i> Đang theo dõi:{" "}
+                <i className="bi bi-person-plus-fill"></i> Đang theo dõi:{" "}
                 <label htmlFor="">900</label>{" "}
               </span>
             </div>
             <div className="col-lg-2 col-md-2 col-sm-2">
               {" "}
               <span>
-                <i class="bi bi-person-lines-fill"></i> Người theo dõi:{" "}
+                <i className="bi bi-person-lines-fill"></i> Người theo dõi:{" "}
                 <label htmlFor="">900</label>{" "}
               </span>
             </div>
@@ -254,9 +265,9 @@ const Store = () => {
       </div>
       <div className="container mt-5">
         <div className="row">
-          <div
-            className="col-lg-3 col-md-3 col-sm-3 border-end bg-white rounded-3"
-            style={{ height: "90%" }}
+          <Box
+            className="col-lg-3 col-md-3 col-sm-3 border-end  rounded-3"
+            sx={{ height: "90%", bgcolor: "backgroundElement.children" }}
           >
             <form className="d-flex justify-content-center mt-3" role="search">
               <Box
@@ -306,7 +317,9 @@ const Store = () => {
             <div className="border-bottom mb-5 ">
               <h4 className="mt-3">Mã khuyến mãi</h4>
               <div className="overflow-auto" style={{ height: "400px" }}>
-                <CardContent className="bg-white mt-2">
+                <CardContent
+                  className={`mt-2 ${mode === "light" ? "border" : "border"}`}
+                >
                   <Typography
                     sx={{ fontSize: 14 }}
                     color="text.secondary"
@@ -324,7 +337,9 @@ const Store = () => {
                     <button className="btn btn-danger">Nhận mã</button>
                   </div>
                 </CardContent>
-                <CardContent className="bg-white mt-2">
+                <CardContent
+                  className={`mt-2 ${mode === "light" ? "border" : "border"}`}
+                >
                   <Typography
                     sx={{ fontSize: 14 }}
                     color="text.secondary"
@@ -342,7 +357,9 @@ const Store = () => {
                     <button className="btn btn-danger">Nhận mã</button>
                   </div>
                 </CardContent>
-                <CardContent className="bg-white mt-2">
+                <CardContent
+                  className={`mt-2 ${mode === "light" ? "border" : "border"}`}
+                >
                   <Typography
                     sx={{ fontSize: 14 }}
                     color="text.secondary"
@@ -362,7 +379,7 @@ const Store = () => {
                 </CardContent>
               </div>
             </div>
-          </div>
+          </Box>
           <div className="col-lg-9 col-md-9 col-sm-9 ">
             <ProductStore
               item={search}

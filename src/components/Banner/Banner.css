@@ -1,0 +1,53 @@
+.banner-container {
+    display: flex;
+    justify-content: space-between; /* Chia đều giữa hai bên */
+    padding: 20px;
+  }
+  
+  .banner {
+    width: 500px; /* Đặt độ rộng cố định */
+    height: 200px; /* Đặt chiều cao cố định */
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Canh giữa nội dung bên trong */
+  }
+
+  /* Tạo hiệu ứng bo góc và kích thước ảnh full */
+.bannerr {
+  display: block;  /* Làm cho <a> là block element để dễ dàng căn chỉnh */
+  width: 114%;     /* Đảm bảo <a> chiếm toàn bộ chiều rộng */
+  height: 100%;    /* Đảm bảo <a> chiếm toàn bộ chiều cao */
+  border-radius: 4px; /* Bo góc như bạn mong muốn (tương tự class rounded-4) */
+  overflow: hidden; /* Đảm bảo không có phần thừa ra ngoài bo góc */
+}
+
+.bannerr-image {
+  width: 100%;  /* Ảnh chiếm toàn bộ chiều rộng của thẻ <a> */
+  height: 100%; /* Ảnh chiếm toàn bộ chiều cao của thẻ <a> */
+  object-fit: cover; /* Đảm bảo ảnh vừa vặn và không bị méo */
+  border-radius: 4px; /* Bo góc ảnh giống như thẻ <a> */
+}
+  
+  .banner img {
+    width: 100%; /* Để hình ảnh chiếm toàn bộ chiều rộng */
+    height: auto; /* Giữ tỷ lệ cho hình ảnh */
+    max-height: 70%; /* Giới hạn chiều cao của hình ảnh */
+    transition: transform 0.3s ease;
+  }
+  
+  .banner img:hover {
+    transform: scale(1.05); /* Tăng kích thước khi hover */
+  }
+  
+  .banner p {
+    margin: 10px 0;
+    font-weight: bold;
+    color: #333; /* Màu chữ */
+    text-align: center; /* Canh giữa văn bản */
+  }

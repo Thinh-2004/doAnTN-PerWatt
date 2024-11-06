@@ -3,7 +3,7 @@ import "./UnMarketStyle.css";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
-import { Box, TextField } from "@mui/material";
+import { Box, Card, CardContent, TextField } from "@mui/material";
 import StoreIcon from "@mui/icons-material/Store";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
 import AttachEmailIcon from "@mui/icons-material/AttachEmail";
@@ -38,7 +38,7 @@ const UnMatket = () => {
 
   const handleDataApiAddress = (data) => {
     setApiAddress(data);
-    console.log(data);
+    // console.log(data);
   };
 
   const handleChange = (e) => {
@@ -215,7 +215,7 @@ const UnMatket = () => {
 
   return (
     <div className="container mt-4">
-      <div className="card rounded-4 bg-white" style={{ border: "none" }}>
+      <Card className="rounded-4" style={{ border: "none" }} sx={{backgroundColor : "backgroundElement.children"}}>
         <div className="row">
           <div className="col-lg-6">
             <img
@@ -230,7 +230,7 @@ const UnMatket = () => {
             <p className="text-center">Hãy tạo kênh bán hàng của riêng bạn</p>
             <div className="row">
               <div className="col-lg-12">
-                <div className="card-body">
+                <CardContent className="">
                   <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                       <Box sx={{ display: "flex", alignItems: "flex-end" }}>
@@ -385,12 +385,12 @@ const UnMatket = () => {
                       Làm mới
                     </button>
                   </form>
-                </div>
+                </CardContent>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

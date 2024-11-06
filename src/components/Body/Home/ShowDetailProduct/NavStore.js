@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import axios from "../../../../Localhost/Custumize-axios";
+import { Box } from "@mui/material";
+import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 
 const NavStore = ({ FillDetailPr, countProductStore }) => {
+  const {mode} = useContext(ThemeModeContext);
   const geturlIMGStore = (userId, filename) => {
     return `${axios.defaults.baseURL}files/user/${userId}/${filename}`;
   };
+  
   //Hàm cắt chuỗi địa chỉ
   const splitByAddress = (address) => {
     const parts = address?.split(",");
@@ -45,8 +49,12 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
       return diffInDays + " ngày";
     }
   };
+
   return (
-    <div className="row bg-white rounded-4 mt-3">
+    <Box
+      sx={{ backgroundColor: "backgroundElement.children" }}
+      className="row rounded-4 mt-3"
+    >
       <div className="col-lg-4 col-md-4 col-sm-4 border-end">
         <div className="d-flex justify-content-center">
           <div className="p-2 d-flex justify-content-center">
@@ -60,11 +68,10 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
                       )
                     : "/images/no_img.png"
                 }
-                
                 alt=""
                 id="avt-store"
                 //   onClick={handleViewStoreInfo}
-                style={{ cursor: "pointer", border : "none" }}
+                style={{ cursor: "pointer", border: "none" }}
               />
             </Link>
           </div>
@@ -73,7 +80,9 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
               <Link
                 to={`/pageStore/${FillDetailPr?.store?.slug}`}
                 htmlFor=""
-                className="fs-6 text-dark"
+                className={`fs-6 ${
+                  mode === "light" ? "text-dark" : "text-white"
+                }`}
                 // onClick={handleViewStoreInfo}
                 style={{ cursor: "pointer" }}
               >
@@ -83,7 +92,10 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
               </Link>
             </div>
             <div className="d-flex">
-              <Link to={`/pageStore/${FillDetailPr?.store?.slug}`} className="text-decoration-none">
+              <Link
+                to={`/pageStore/${FillDetailPr?.store?.slug}`}
+                className="text-decoration-none"
+              >
                 <button
                   className="btn btn-sm mx-2"
                   // onClick={handleViewStoreInfo}
@@ -106,14 +118,14 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
             <div className="col-lg-4 col-md-4 col-sm-4 mb-3 border-end">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="fst-italic">Sản phẩm đã đăng bán:</label>
-                <span className="text-primary">{countProductStore}</span>
+                <span className="fw-semibold">{countProductStore}</span>
               </div>
             </div>
 
             <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="fst-italic">Địa chỉ:</label>
-                <span className="text-primary">
+                <span className="fw-semibold">
                   {splitByAddress(FillDetailPr?.store.address)}
                 </span>
               </div>
@@ -122,14 +134,14 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
             <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="fst-italic">Người theo dõi:</label>
-                <span className="text-primary">999</span>
+                <span className="fw-semibold">999</span>
               </div>
             </div>
 
             <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="fst-italic">Đã tham gia:</label>
-                <span className="text-primary">
+                <span className="fw-semibold">
                   {calculateAccountDuration(FillDetailPr?.store.createdtime)}
                 </span>
               </div>
@@ -138,13 +150,13 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
             <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="fst-italic">Đánh giá cửa hàng:</label>
-                <span className="text-primary">100</span>
+                <span className="fw-semibold">100</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Box>
   );
 };
 

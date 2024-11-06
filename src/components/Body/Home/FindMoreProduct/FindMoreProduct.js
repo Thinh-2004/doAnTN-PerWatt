@@ -9,6 +9,7 @@ import SkeletonLoad from "../../../../Skeleton/SkeletonLoad";
 import { Pagination } from "@mui/material";
 import useDebounce from "../../../../CustumHook/useDebounce";
 import ButtonFilter from "./ToolBar/FilterButton/ButtonFilter";
+import './FindMoreProductStyle.css'
 
 const FindMoreProduct = () => {
   const name = useParams();
@@ -17,7 +18,7 @@ const FindMoreProduct = () => {
   const [loading, setLoading] = useState(true); // trạng thái tải dữ liệu
 
   //Dữ liệu từ componets con
-  const [searchMoreProduct, setSearchMoreProduct] = useState();
+  const [searchMoreProduct, setSearchMoreProduct] = useState("");
   const debounceSearch = useDebounce(searchMoreProduct, 500);
   const [nameAddress, setNameAddress] = useState([]); //Mảng tên địa chỉ
   const [nameTradeMark, setNameTradeMark] = useState("");
@@ -103,34 +104,9 @@ const FindMoreProduct = () => {
       // console.log(res.data);
       setCurrentPage(res.data.currentPage);
       setTotalPage(res.data.totalPage);
-      //Duyệt từng phần tử detail product vào product
-      const dataWithDetails = await Promise.all(
-        res.data.products.map(async (product) => {
-          const resDetail = await axios.get(`/detailProduct/${product.id}`);
+     
 
-          //Đếm số sản phẩm đã bán
-          const countOrderBy = await Promise.all(
-            resDetail.data.map(async (detail) => {
-              const res = await axios.get(`countOrderSuccess/${detail.id}`);
-              return res.data;
-            })
-          );
-
-          //Đếm
-          const countQuantityOrderBy = countOrderBy.reduce(
-            (acc, quantity) => acc + quantity,
-            0
-          );
-
-          return {
-            ...product,
-            productDetails: resDetail.data,
-            countQuantityOrderBy,
-          };
-        })
-      );
-
-      setFill(dataWithDetails);
+      setFill(res.data.products);
     } catch (error) {
       toast.error(error);
       console.log(error);
@@ -315,7 +291,6 @@ const FindMoreProduct = () => {
   //Hàm xử lí dữ liệu từ components con
   const dataTextSearch = useCallback((text) => {
     setSearchMoreProduct(text);
-    // console.log(text);
   }, []);
 
   //Hàm xử lí dữ liệu từ components con

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
-import Header from "../../Header/HeaderMarket";
+import Header from "../../Header/Header";
 
 import moment from 'moment';
 import './SellerNotification.css'; 

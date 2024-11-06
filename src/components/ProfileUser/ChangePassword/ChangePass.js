@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import "./ChangePassStyle.css";
 import {
+  Box,
   FormControl,
   IconButton,
   InputAdornment,
@@ -160,7 +161,10 @@ const ChangePass = ({ checkStatus }) => {
   };
 
   return (
-    <div className="bg-white rounded-4">
+    <Box
+      className="rounded-4"
+      sx={{ backgroundColor: "backgroundElement.children" }}
+    >
       <h3 className="text-center p-2">Đổi mật khẩu</h3>
       <hr />
       <form onSubmit={handleChangePass}>
@@ -238,7 +242,7 @@ const ChangePass = ({ checkStatus }) => {
           </button>
         </div>
       </form>
-    </div>
+    </Box>
   );
 };
 

@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../Header/Header";
 import "./ShowDetailProduct.css";
-import { Button, TextField } from "@mui/material";
+import { Box, Button, TextField, useTheme } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ListImageDetailProduct from "./ListImageDetailProduct";
 import NavStore from "./NavStore";
+import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 
 const DetailProduct = () => {
   const { slug } = useParams();
@@ -29,6 +30,8 @@ const DetailProduct = () => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [selectedIdDetail, setSelectedIdDetail] = useState(null);
   const [fillDetail, setFilDetail] = useState([]); //fill phân loại sản phẩm
+  const { mode } = useContext(ThemeModeContext);
+
   const loadProductDetail = async () => {
     try {
       //api gọi sản phẩm
@@ -196,7 +199,10 @@ const DetailProduct = () => {
     <>
       <Header reloadCartItems={isCountCart} />
       <div className="container mt-4">
-        <div className="row bg-white rounded-4">
+        <Box
+          className="row rounded-4 shadow"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
           <div className="col-md-4 col-lg-4 col-sm-4 border-end">
             <ListImageDetailProduct
               dataImage={FillDetailPr}
@@ -255,7 +261,11 @@ const DetailProduct = () => {
                 </span>
               </div>
             </div>
-            <div className="bg-light w-100 h-25 mt-4 rounded-4">
+            <div
+              className={`w-100 h-25 mt-4 rounded-4 ${
+                mode === "light" ? "bg-light" : "border"
+              } `}
+            >
               <p className="fs-5 p-1 mx-2">Giá:</p>
               <div className="d-flex align-items-center">
                 <del className="text-secondary fs-5 mx-3">
@@ -345,10 +355,8 @@ const DetailProduct = () => {
                     value={quantity}
                     onChange={handleChangeQuantity}
                     inputProps={{ min: 1 }} //đặt giá trị nhỏ nhất là
-                    slotProps={{
-                      inputLabel: {
-                        shrink: true, // cho phép Label lên xuống TextField
-                      },
+                    InputLabelProps={{
+                      shrink: true, // cho phép Label lên xuống TextField
                     }}
                     size="small"
                   />
@@ -393,13 +401,15 @@ const DetailProduct = () => {
               >
                 <p className="p-3 fst-italic fs-5 m-0">Phân loại sản phẩm</p>
                 <div
-                  className="bg-light rounded-3 p-2 m-2 d-flex flex-wrap overflow-auto"
+                  className={`${
+                    mode === "light" ? "bg-light" : "border"
+                  } rounded-3 p-2 m-2 d-flex flex-wrap overflow-auto`}
                   style={{ height: "70%" }}
                 >
                   {fillDetail &&
                     fillDetail.length > 0 &&
                     fillDetail.map((fillDetail, index) => (
-                      <div
+                      <Box
                         className={`d-flex align-items-center text-nowrap rounded-2 p-2 m-2 position-relative ${
                           selectedIdDetail === fillDetail.id
                             ? "active-selected-detailProduct"
@@ -412,10 +422,11 @@ const DetailProduct = () => {
                             : "hover-idDetailProduct"
                         }`}
                         onClick={handleClickIdDetail(fillDetail.id)}
-                        style={{
+                        sx={{
                           opacity: fillDetail.quantity === 0 ? 0.5 : 1,
                           pointerEvents:
                             fillDetail.quantity === 0 ? "none" : "auto",
+                          backgroundColor: "backgroundElement.default",
                         }}
                       >
                         <img
@@ -428,7 +439,9 @@ const DetailProduct = () => {
                           style={{ maxWidth: "50px", maxHeight: "50px" }}
                         />
 
-                        <label className="ms-2">{fillDetail.namedetail}</label>
+                        <label className={`ms-2`}>
+                          {fillDetail.namedetail}
+                        </label>
 
                         {fillDetail.quantity === 0 && (
                           <div
@@ -452,18 +465,21 @@ const DetailProduct = () => {
                             style={{ color: "#00C7FF" }}
                           />
                         </div>
-                      </div>
+                      </Box>
                     ))}
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </Box>
         <NavStore
           FillDetailPr={FillDetailPr}
           countProductStore={countProductStore}
         />
-        <div className="row bg-white rounded-4 mt-3">
+        <Box
+          className="row rounded-4 mt-3"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
           <div className="p-3">
             <h4>Thông tin chi tiết sản phẩm</h4>
             <span className="p-0 m-0">
@@ -473,15 +489,18 @@ const DetailProduct = () => {
               {FillDetailPr ? FillDetailPr.description : "N/A"}
             </span>
           </div>
-        </div>
-        <div className="row bg-white rounded-4 mt-3">
+        </Box>
+        <Box
+          className="row rounded-4 mt-3"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
           <div className="p-3">
             <h4>Đánh giá sản phẩm</h4>
             <span className="p-0 m-0">
               <hr />
             </span>
           </div>
-        </div>
+        </Box>
       </div>
     </>
   );

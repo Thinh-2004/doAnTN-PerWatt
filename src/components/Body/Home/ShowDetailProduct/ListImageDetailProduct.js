@@ -8,18 +8,12 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const itemsPerPage = 4;
   const [open, setOpen] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
+  const delay = 400; // Độ trễ 3 giây
 
   const handleSelectImage = (index) => {
-    if (isTransitioning) return; // Nếu đang trong quá trình chuyển đổi, không làm gì cả
-    setIsTransitioning(true); // Bắt đầu quá trình chuyển đổi
     setSelectedImage(index);
     setCurrentPage(Math.floor(index / itemsPerPage));
-
-    // Sau một khoảng thời gian (ví dụ: 500ms), cho phép chuyển đổi lại
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 500);
   };
 
   const [popUpImage, setPopUpImage] = useState(null);
@@ -37,22 +31,32 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
   };
 
   const handleNextImage = () => {
-    if (isTransitioning) return;
+    if (isDisabled) return; // Nếu đang trong thời gian chờ, không làm gì cả
+    setIsDisabled(true); // Vô hiệu hóa nút
     handleSelectImage((selectedImage + 1) % (dataImage?.images?.length || 1));
+
+    setTimeout(() => {
+      setIsDisabled(false); // Bật lại nút sau 3 giây
+    }, delay);
   };
 
   const handlePrevImage = () => {
-    if (isTransitioning) return;
+    if (isDisabled) return; // Nếu đang trong thời gian chờ, không làm gì cả
+    setIsDisabled(true); // Vô hiệu hóa nút
     handleSelectImage(
       (selectedImage - 1 + (dataImage?.images?.length || 1)) %
         (dataImage?.images?.length || 1)
     );
+
+    setTimeout(() => {
+      setIsDisabled(false); // Bật lại nút sau 3 giây
+    }, delay);
   };
   return (
     <>
-       <div
+      <div
         id="carouselExampleDark"
-        className="carousel carousel-dark slide position-relative"
+        className="carousel slide position-relative "
       >
         <div
           className="position-absolute top-50 start-50 translate-middle rounded-3"
@@ -68,6 +72,29 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
           className="carousel-inner align-content-center"
           style={{ height: "575px" }}
         >
+          <button
+            className="carousel-control-prev"
+            type="button"
+            data-bs-target="#carouselExampleDark"
+            data-bs-slide="prev"
+            onClick={handlePrevImage}
+            disabled={isDisabled} // Vô hiệu hóa nút nếu isDisabled là true
+          >
+            <div
+              style={{
+                background: "rgba(0,0,0,0.5)",
+                width: "80%",
+                aspectRatio: "1/1",
+              }}
+              className="rounded-circle"
+            >
+              <span
+                className="carousel-control-prev-icon mt-2"
+                aria-hidden="true"
+              ></span>
+              <span className="visually-hidden">Previous</span>
+            </div>
+          </button>
           {dataImage && dataImage.images && dataImage.images.length > 0 ? (
             dataImage.images.map((image, index) => (
               <div
@@ -132,34 +159,30 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
               />
             </div>
           )}
-        </div>
-
-        <button
-          className="carousel-control-prev"
-          type="button"
-          data-bs-target="#carouselExampleDark"
-          data-bs-slide="prev"
-          onClick={handlePrevImage}
-        >
-          <span
-            className="carousel-control-prev-icon"
-            aria-hidden="true"
-          ></span>
-          <span className="visually-hidden">Previous</span>
-        </button>
-        <button
-          className="carousel-control-next"
+          <button
+            className="carousel-control-next"
           type="button"
           data-bs-target="#carouselExampleDark"
           data-bs-slide="next"
           onClick={handleNextImage}
-        >
-          <span
-            className="carousel-control-next-icon"
-            aria-hidden="true"
-          ></span>
-          <span className="visually-hidden">Next</span>
-        </button>
+          disabled={isDisabled} // Vô hiệu hóa nút nếu isDisabled là true
+          >
+            <div
+              style={{
+                background: "rgba(0,0,0,0.5)",
+                width: "80%",
+                aspectRatio: "1/1",
+              }}
+              className="rounded-circle"
+            >
+              <span
+                className="carousel-control-next-icon mt-2"
+                aria-hidden="true"
+              ></span>
+              <span className="visually-hidden">Next</span>
+            </div>
+          </button>
+        </div>
       </div>
       <div className="d-flex mt-2">
         {dataImage &&
@@ -168,7 +191,7 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
           dataImage.images
             .slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
             .map((image, index) => (
-              <button
+              <Button
                 id="btn-children-img"
                 key={index}
                 type="button"
@@ -191,15 +214,14 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
                       ? geturlIMG(dataImage.id, image.imagename)
                       : "/images/no_img.png"
                   }
-                  className="img-thumbnail rounded-3"
+                  className=" rounded-3 border"
                   alt=""
                   style={{ width: "100px", height: "100px" }}
                 />
-              </button>
+              </Button>
             ))}
       </div>
     </>
-   
   );
 };
 

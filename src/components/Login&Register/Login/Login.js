@@ -10,6 +10,7 @@ import {
   InputAdornment,
   InputLabel,
   TextField,
+  useTheme,
 } from "@mui/material";
 import { GoogleLogin } from "@react-oauth/google";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -20,7 +21,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const navigate = useNavigate();
-
+  const theme = useTheme();
   const searchStoreByidUser = async (isUser) => {
     const searchStoreById = await axios.get(`searchStore/${isUser}`);
     if (searchStoreById === null) {
@@ -167,7 +168,13 @@ const Login = () => {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="form-sign">
+      <form
+        onSubmit={handleSubmit}
+        className="form-sign"
+        style={{
+          backgroundColor: theme.palette.mode === "light" ? " #fff" : "#363535",
+        }}
+      >
         <h2 className="title">Đăng nhập</h2>
         <p className="subject">
           Hãy đăng nhập để có trải nghiệm dịch vụ tốt nhất!!!
@@ -228,7 +235,16 @@ const Login = () => {
         <Link to={"/forgotPass"} className="text-end">
           <span htmlFor="">Quên mật khẩu?</span>
         </Link>
-        <button type="submit" className="button w-100">
+        <button
+          type="submit"
+          className="button w-100"
+          style={{
+            background:
+              theme.palette.mode === "light"
+                ? "linear-gradient(to right, #28ffdb, #228dff)"
+                : "linear-gradient(to right, #1c4a43, #072748)",
+          }}
+        >
           Đăng nhập
         </button>
         <div>
@@ -237,6 +253,9 @@ const Login = () => {
           </label>
           <div className="mt-2">
             <GoogleLogin
+              theme={
+                theme.palette.mode === "light" ? "outline" : "filled_black"
+              }
               onSuccess={handleLoginByGoogle}
               onError={() => {
                 console.log("Login Failed");
