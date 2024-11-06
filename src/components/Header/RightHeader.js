@@ -365,6 +365,13 @@ const RightHeader = ({ reloadCartItems }) => {
             </Link>
             <Link
               type="button"
+              className="btn btn-icon position-relative rounded-4 me-3"
+              to={"/admin/banner"}
+            >
+              Quản Lý Banner
+            </Link>
+            <Link
+              type="button"
               className="btn btn-icon btn-sm rounded-4 me-3"
               id="btn-logOut"
               onClick={handleLogOut}
