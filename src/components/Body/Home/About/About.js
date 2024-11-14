@@ -6,9 +6,10 @@ import { dotWave } from "ldrs";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
 import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
 import DoDisturbAltIcon from "@mui/icons-material/DoDisturbAlt";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useContext } from "react";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
+import BannerTop from "../../../Banner/BannerTop";
 
 dotWave.register();
 
@@ -109,14 +110,10 @@ const About = ({ idCategory }) => {
   return (
     <div className="w-100 container-fluid">
       <div className="position-relative">
-        <img
-          src="https://maytinhdalat.vn/Images/Product/maytinhdalat_linh-kien-may-tinh-2.jpg"
-          alt=""
-          className="rounded-4 w-100 h-100"
-        />
+        <BannerTop/>
         <div
           className="position-absolute start-50 translate-middle"
-          style={{ width: "90%", top: "115%" }}
+          style={{ width: "90%", top: "105%" }}
         >
           <Box
             className="rounded-4 p-2 shadow"

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,10 +10,10 @@ import {
   InputAdornment,
   InputLabel,
   TextField,
-  useTheme,
 } from "@mui/material";
 import { GoogleLogin } from "@react-oauth/google";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { ThemeModeContext } from "../../../components/ThemeMode/ThemeModeProvider";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -21,7 +21,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const navigate = useNavigate();
-  const theme = useTheme();
+  const {mode} = useContext(ThemeModeContext);
   const searchStoreByidUser = async (isUser) => {
     const searchStoreById = await axios.get(`searchStore/${isUser}`);
     if (searchStoreById === null) {
@@ -172,7 +172,7 @@ const Login = () => {
         onSubmit={handleSubmit}
         className="form-sign"
         style={{
-          backgroundColor: theme.palette.mode === "light" ? " #fff" : "#363535",
+          backgroundColor: mode === "light" ? " #fff" : "#363535",
         }}
       >
         <h2 className="title">Đăng nhập</h2>
@@ -240,7 +240,7 @@ const Login = () => {
           className="button w-100"
           style={{
             background:
-              theme.palette.mode === "light"
+              mode === "light"
                 ? "linear-gradient(to right, #28ffdb, #228dff)"
                 : "linear-gradient(to right, #1c4a43, #072748)",
           }}
@@ -254,7 +254,7 @@ const Login = () => {
           <div className="mt-2">
             <GoogleLogin
               theme={
-                theme.palette.mode === "light" ? "outline" : "filled_black"
+                mode === "light" ? "outline" : "filled_black"
               }
               onSuccess={handleLoginByGoogle}
               onError={() => {

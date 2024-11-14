@@ -1,64 +1,97 @@
 import React, { useEffect, useState } from "react";
-import "./Banner.css";
-import axios from "axios";
+import "./BannerMid.css";
+import axios from "../../Localhost/Custumize-axios";
+import { Link } from "react-router-dom";
 
 const Banner = () => {
-    const [banners, setBanners] = useState([]);
-    const [midIndex, setMidIndex] = useState(0);
+  const [banners, setBanners] = useState([]);
+  const [midIndex, setMidIndex] = useState(0);
+  const getUrlImgBanner = (bannerId, filename) => {
+    return `${axios.defaults.baseURL}files/banner/${bannerId}/${filename}`;
+  };
 
-    useEffect(() => {
-        const fetchBanners = async () => {
-            try {
-                const response = await axios.get("http://localhost:8080/banners");
-                setBanners(response.data);
-            } catch (error) {
-                console.error("Error fetching banners:", error);
-            }
-        };
-
-        fetchBanners();
-    }, []);
-
-    const getActiveBanners = () => {
-        const today = new Date();
-        return banners.filter(banner => {
-            const startDate = new Date(banner.startdate);
-            const endDate = new Date(banner.enddate);
-            return today >= startDate && today <= endDate;
-        });
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const response = await axios.get("/banners");
+        setBanners(response.data);
+      } catch (error) {
+        console.error("Error fetching banners:", error);
+      }
     };
 
-    const activeBanners = getActiveBanners();
-    const midBanners = activeBanners.filter(banner => banner.position === "MID");
+    fetchBanners();
+  }, []);
 
-    useEffect(() => {
-        const midInterval = setInterval(() => {
-            setMidIndex(prevIndex => (prevIndex + 1) % midBanners.length);
-        }, 3000);
+  const getActiveBanners = () => {
+    const today = new Date();
+    return banners.filter((banner) => {
+      const startDate = new Date(banner.startdate);
+      const endDate = new Date(banner.enddate);
+      return today >= startDate && today <= endDate;
+    });
+  };
 
-        return () => {
-            clearInterval(midInterval);
-        };
-    }, [midBanners.length]);
+  const activeBanners = getActiveBanners();
+  const midBanners = activeBanners.filter(
+    (banner) => banner.position === "MID"
+  );
 
-    return (
-        <div className="banner-container">
-            <div className="mid-banners">
-                {midBanners.length > 0 && (
-                    <a 
-                        href={`http://localhost:3000/findMoreProduct/${encodeURIComponent(midBanners[midIndex].bannername)}`} // Sử dụng thẻ <a>
-                        className="banner" // Thêm class nếu cần
-                    >
-                        <img 
-                            src={`http://localhost:8080/files/banner/${midBanners[midIndex].user.id}/${midBanners[midIndex].img}`} 
-                            alt={midBanners[midIndex].bannername} 
-                        />
-                        <p>{midBanners[midIndex].bannername}</p>
-                    </a>
-                )}
-            </div>
-        </div>
+  useEffect(() => {
+    const midInterval = setInterval(() => {
+      setMidIndex((prevIndex) => (prevIndex + 1) % midBanners.length);
+    }, 2500);
+
+    return () => {
+      clearInterval(midInterval);
+    };
+  }, [midBanners.length]);
+
+  // Chuyển đến banner tiếp theo
+  const nextBanner = () => {
+    setMidIndex((prevIndex) => (prevIndex + 1) % midBanners.length);
+  };
+
+  // Quay lại banner trước
+  const prevBanner = () => {
+    setMidIndex(
+      (prevIndex) => (prevIndex - 1 + midBanners.length) % midBanners.length
     );
+  };
+
+  return (
+    <div className="banner-container rounded-4">
+      <div className="mid-banners ">
+        {midBanners.length > 0 && (
+          <>
+            <Link
+              to={`/findMoreProduct/${encodeURIComponent(
+                midBanners[midIndex].bannername
+              )}`} // Sử dụng thẻ <Link>
+              className="banner"
+            >
+              <img
+                src={getUrlImgBanner(midBanners[midIndex].user.id,midBanners[midIndex].img)}
+                alt={midBanners[midIndex].bannername}
+                className="rounded-4"
+                
+              />
+            </Link>
+
+            {/* Nút "Previous" */}
+            <button onClick={prevBanner} className="carousel-btn prev-btn">
+              &lt; {/* Dấu mũi tên trái */}
+            </button>
+
+            {/* Nút "Next" */}
+            <button onClick={nextBanner} className="carousel-btn next-btn">
+              &gt; {/* Dấu mũi tên phải */}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default Banner;

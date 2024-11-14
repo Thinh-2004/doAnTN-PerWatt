@@ -3,7 +3,10 @@ import React, { useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 
 const Search = ({ valueText }) => {
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState(() => {
+    const savedSearch = localStorage.getItem("searchText");
+    return savedSearch ? savedSearch : "";
+  });
 
   const handleTextSearch = (e) => {
     const value = e.target.value;

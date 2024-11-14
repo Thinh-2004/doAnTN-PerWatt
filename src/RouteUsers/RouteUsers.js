@@ -21,6 +21,8 @@ import Successful from "../components/Order/Successful/Successful";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import FindMoreProduct from "../components/Body/Home/FindMoreProduct/FindMoreProduct";
 import FindMoreProductPerMall from "../components/Body/Home/FindMoreProductPerMall/FindMoreProductPerMall";
+import Wallet from "../components/Wallet/Wallet";
+import Transaction from "../components/Wallet/Transaction";
 import NotFound from "../NotFound";
 
 const RouteUsers = (props) => {
@@ -77,6 +79,8 @@ const RouteUsers = (props) => {
       path="/product/PerMall"
       element={<FindMoreProductPerMall />}
     ></Route>
+    <Route path="/wallet/:role" element={<Wallet></Wallet>}></Route>
+    <Route path="/transaction" element={<Transaction/>} />
     <Route path="/404/NotFound" element={<NotFound/>}></Route>
   </Routes>
   );
