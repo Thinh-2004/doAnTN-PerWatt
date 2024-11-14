@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Header from "../../../Header/Header";
 import ToolBar from "./ToolBar/ToolBar";
-import ListMoreItem from "./List/ListIMoreItem";
 import axios from "../../../../Localhost/Custumize-axios";
 import SkeletonLoad from "../../../../Skeleton/SkeletonLoad";
 import { Box, Pagination } from "@mui/material";
 import useDebounce from "../../../../CustumHook/useDebounce";
 import Footer from "../../../../components/Footer/Footer"
 import "./FindMoreProductPerMallStyle.css";
+import ListItemProduct from "../../../ListItemProduct/ListItemProduct";
 
 const FindMoreProductPerMall = () => {
   const [fill, setFill] = useState([]);
@@ -171,7 +171,7 @@ const FindMoreProductPerMall = () => {
           </div>
         ) : (
           <div className="row d-flex justify-content-center">
-            <ListMoreItem data={fill} />
+            <ListItemProduct data={fill} classNameCol={"col-lg-2 col-md-3 col-sm-3"}/>
           </div>
         )}
         <div className="mt-3 mb-3 d-flex justify-content-center">

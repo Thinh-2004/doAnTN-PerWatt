@@ -12,10 +12,11 @@ import {
   Stack,
   TextField,
   Typography,
-  useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { ThemeModeContext } from "../../ThemeMode/ThemeModeProvider";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
 
 const Store = () => {
   const getIdBySlugStore = useParams();
@@ -28,7 +29,10 @@ const Store = () => {
   const [valueMT, setValueMT] = useState(5); // value của magrin top
   const { mode } = useContext(ThemeModeContext);
   const [totalItems, setTotalItems] = useState(0); //Tổng số lượng sản phẩm
-
+  const [vouchers, setVouchers] = useState([]); //danh sách voucher
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
   // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
   const updateItemsPerPage = () => {
     const width = window.innerWidth;
@@ -158,13 +162,86 @@ const Store = () => {
     }
   };
 
+  const [voucherDetail, setVoucherDetail] = useState([]);
+  const [isAddVoucherDetail, setIsAddVoucherDetail] = useState(false);
+  const addVoucherDetails = async (id, vouchername) => {
+    try {
+      const voucherDetailRequest = {
+        user: { id: user.id },
+        voucher: { id: id ,
+          vouchername : vouchername
+        },
+      };
+console.log(voucherDetailRequest);
+      await axios.post(`addVoucherDetails`, voucherDetailRequest);
+      toast.success("Nhận voucher thành công");
+      setIsAddVoucherDetail(true);
+    } catch (error) {
+      console.log(error);
+      toast.error("Nhận voucher thất bại");
+    }
+  };
+
+  const check = async () => {
+    try {
+      const res = await axios.get(`findVoucherByIdUser/${user.id}`);
+      setVoucherDetail(res.data); // Lưu danh sách các voucher đã nhận vào state
+      console.log(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    check();
+  }, [user.id]);
+
+  useEffect(() => {
+    // Hàm để lấy danh sách vouchers từ cửa hàng
+    const fetchVouchers = async () => {
+      try {
+        const response = await axios.get(
+          `fillVoucherShop/${getIdBySlugStore.slugStore}`
+        );
+        setVouchers(response.data); // Lưu danh sách vouchers của cửa hàng
+      } catch (error) {
+        console.error("Error fetching vouchers:", error);
+      }
+    };
+    fetchVouchers();
+  }, [getIdBySlugStore.slugStore]);
+
+  useEffect(() => {
+    if (isAddVoucherDetail) {
+      check();
+      setIsAddVoucherDetail(false);
+    }
+  }, [isAddVoucherDetail]);
+
+  // Gộp voucher trùng `vouchername`
+  const uniqueVouchers = vouchers.reduce((acc, voucher) => {
+    const existingVoucher = acc.find(
+      (v) => v.vouchername === voucher.vouchername
+    );
+    if (existingVoucher) {
+      // Nếu đã tồn tại voucher cùng tên, có thể cập nhật hoặc bỏ qua tùy theo nhu cầu
+      // Ví dụ: Giữ voucher có `discountprice` cao nhất
+      if (voucher.discountprice > existingVoucher.discountprice) {
+        existingVoucher.discountprice = voucher.discountprice;
+        existingVoucher.endday = voucher.endday;
+      }
+    } else {
+      // Nếu chưa tồn tại, thêm vào danh sách
+      acc.push(voucher);
+    }
+    return acc;
+  }, []);
+
   return (
     <>
       <Header></Header>
       <div
-        className={`mt-2 container-fluid ${
-          mode === "light" ? "bg-white" : ""
-        }`}
+        className={`mt-2 container-fluid ${mode === "light" ? "bg-white" : ""}`}
       >
         <div className="position-relative">
           <img
@@ -210,7 +287,8 @@ const Store = () => {
             <div className="col-lg-4 col-md-4 col-sm-4 align-content-end">
               <div className="d-flex p-2">
                 <button className="btn" id="btn-follow">
-                  <i className="bi bi-plus-lg"></i> <span htmlFor="">Theo dõi</span>
+                  <i className="bi bi-plus-lg"></i>{" "}
+                  <span htmlFor="">Theo dõi</span>
                 </button>
                 <button className="btn mx-2" id="btn-chatMess">
                   <i className="bi bi-chat"></i> Nhắn tin
@@ -317,66 +395,50 @@ const Store = () => {
             <div className="border-bottom mb-5 ">
               <h4 className="mt-3">Mã khuyến mãi</h4>
               <div className="overflow-auto" style={{ height: "400px" }}>
-                <CardContent
-                  className={`mt-2 ${mode === "light" ? "border" : "border"}`}
-                >
-                  <Typography
-                    sx={{ fontSize: 14 }}
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Giảm 20%
-                  </Typography>
-                  <Typography variant="h5" component="div">
-                    Đơn tối thiểu 200k
-                  </Typography>
-                  <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    Hạn sử dụng : 27/08/2024
-                  </Typography>
-                  <div className="d-flex justify-content-end">
-                    <button className="btn btn-danger">Nhận mã</button>
-                  </div>
-                </CardContent>
-                <CardContent
-                  className={`mt-2 ${mode === "light" ? "border" : "border"}`}
-                >
-                  <Typography
-                    sx={{ fontSize: 14 }}
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Giảm 20%
-                  </Typography>
-                  <Typography variant="h5" component="div">
-                    Đơn tối thiểu 200k
-                  </Typography>
-                  <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    Hạn sử dụng : 27/08/2024
-                  </Typography>
-                  <div className="d-flex justify-content-end">
-                    <button className="btn btn-danger">Nhận mã</button>
-                  </div>
-                </CardContent>
-                <CardContent
-                  className={`mt-2 ${mode === "light" ? "border" : "border"}`}
-                >
-                  <Typography
-                    sx={{ fontSize: 14 }}
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Giảm 20%
-                  </Typography>
-                  <Typography variant="h5" component="div">
-                    Đơn tối thiểu 200k
-                  </Typography>
-                  <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    Hạn sử dụng : 27/08/2024
-                  </Typography>
-                  <div className="d-flex justify-content-end">
-                    <button className="btn btn-danger">Nhận mã</button>
-                  </div>
-                </CardContent>
+                {uniqueVouchers.map((voucher) => {
+                  const isVoucherReceived = voucherDetail.some(
+                    (voucherItem) => voucherItem?.voucher?.id === voucher.id
+                  );
+                  return (
+                    voucher.status === "Hoạt động" && (
+                      <CardContent
+                        key={voucher.id}
+                        className={`mt-2 ${
+                          mode === "light" ? "border" : "border"
+                        }`}
+                      >
+                        <Typography
+                          sx={{ fontSize: 14 }}
+                          color="text.secondary"
+                          gutterBottom
+                        >
+                          Giảm {voucher.discountprice}%
+                        </Typography>
+                        <Typography variant="h5" component="div">
+                          {voucher.vouchername}
+                        </Typography>
+                        <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                          Ngày kết thúc:{" "}
+                          {dayjs(voucher.endday).format("DD-MM-YYYY")}
+                        </Typography>
+                        <div className="d-flex justify-content-end">
+                          {isVoucherReceived ? (
+                            <button className="btn btn-danger" disabled>
+                              Mã đã được nhận
+                            </button>
+                          ) : (
+                            <button
+                              className="btn btn-danger"
+                              onClick={() => addVoucherDetails(voucher.id, voucher.vouchername)}
+                            >
+                              Nhận mã
+                            </button>
+                          )}
+                        </div>
+                      </CardContent>
+                    )
+                  );
+                })}
               </div>
             </div>
           </Box>

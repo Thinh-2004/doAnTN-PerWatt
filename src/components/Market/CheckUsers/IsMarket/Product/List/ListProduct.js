@@ -12,7 +12,6 @@ import useDebounce from "../../../../../../CustumHook/useDebounce";
 import ProductTable from "./ProductTable";
 import ToolbarListProduct from "./ToolbarListProduct";
 
-
 bouncy.register();
 
 const ListProduct = () => {
@@ -20,7 +19,7 @@ const ListProduct = () => {
   const [fetchData, setFetchData] = useState([]); //giá trị check === 0
   const idStore = localStorage.getItem("idStore");
   const [loading, setLoading] = useState(true);
-  const [sortOption, setSortOption] = useState(""); // Sorting by price
+  const [sortOption, setSortOption] = useState("");
 
   //Pagination
   const [currentPage, setCurrentPage] = useState(0); //Trang hiện tại
@@ -61,36 +60,6 @@ const ListProduct = () => {
       setCurrentPage(res.data.currentPage - 1);
       setTotalItems(res.data.totalItems);
 
-      // const filteredData = res.data.products.filter((product) => {
-      //   const searchTerm = debounceSearch.toLowerCase();
-      //   // Kiểm tra nếu sản phẩm có ID danh mục
-      //   const categoryMatch = idCateOption
-      //     ? product.productcategory &&
-      //       product.productcategory.id === idCateOption
-      //     : true; // Nếu không có ID danh mục, không lọc theo danh mục
-      //   return (
-      //     (product.name.toLowerCase().includes(searchTerm) ||
-      //       (product.productcategory &&
-      //         product.productcategory.name
-      //           .toLowerCase()
-      //           .includes(searchTerm)) ||
-      //       (product.trademark &&
-      //         product.trademark.name.toLowerCase().includes(searchTerm))) &&
-      //     categoryMatch // Thêm điều kiện lọc theo ID danh mục
-      //   );
-      // });
-
-      // Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm và lưu vào productDetails
-      // const dataWithDetails = await Promise.all(
-      //   filteredData.map(async (product) => {
-      //     const resDetail = await axios.get(`/detailProduct/${product.id}`);
-      //     return {
-      //       ...product,
-      //       productDetails: resDetail.data, // Lưu chi tiết sản phẩm vào mỗi sản phẩm
-      //     };
-      //   })
-      // );
-
       setFetchData(res.data);
       // setFillDetail(res.data.products);
       setFill(res.data.products);
@@ -106,7 +75,7 @@ const ListProduct = () => {
 
   useEffect(() => {
     loadData(
-      currentPage,
+      debounceSearch || idCateOption ? 0 : currentPage,
       totalPage,
       debounceSearch || idCateOption,
       sortOption,

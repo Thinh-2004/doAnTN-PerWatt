@@ -22,6 +22,10 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { ThemeModeContext } from "../ThemeMode/ThemeModeProvider";
 import MotionPhotosAutoIcon from "@mui/icons-material/MotionPhotosAuto";
+import AccountBoxIcon from "@mui/icons-material/AccountBox";
+import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
+import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
+import WalletIcon from '@mui/icons-material/Wallet';
 
 const RightHeader = ({ reloadCartItems }) => {
   const changeLink = useNavigate();
@@ -33,7 +37,7 @@ const RightHeader = ({ reloadCartItems }) => {
     ? JSON.parse(localStorage.getItem("user"))
     : null;
 
-  const idSotre = localStorage.getItem("idStore");
+  const idStore = localStorage.getItem("idStore");
 
   const [count, setCount] = useState(0);
   const [countOrder, setCountOrder] = useState(0);
@@ -218,16 +222,16 @@ const RightHeader = ({ reloadCartItems }) => {
     //Đếm thông báo
     const countOrders = async () => {
       try {
-        const res = await axios.get(`checkOrder/${idSotre}`);
+        const res = await axios.get(`checkOrder/${idStore}`);
         setCountOrder(res.data.length);
         // console.log(res.data.length);
       } catch (error) {
         console.log("Error fetching new orders:", error);
       }
     };
-    countOrders(idSotre);
+    countOrders(idStore);
     count();
-  }, [user, idSotre]);
+  }, [user, idStore]);
 
   useEffect(() => {
     if (reloadCartItems) {
@@ -355,29 +359,141 @@ const RightHeader = ({ reloadCartItems }) => {
           </>
         ) : matchAdmin ? (
           <>
-            {" "}
-            <Link
-              type="button"
-              className="btn btn-icon position-relative rounded-4 me-3"
-              to={"/admin/info"}
+          <Tooltip title="Ví của tôi">
+              <Link
+                type="button"
+                className="btn btn-icon position-relative rounded-4 "
+                to={"/admin/wallet"}
+
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <WalletIcon />
+                </Typography>
+              </Link>
+            </Tooltip>
+            <Tooltip title="Hồ sơ của tôi">
+              <Link
+                type="button"
+                className="btn btn-icon position-relative rounded-4 "
+                to={"/admin/info"}
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <AccountBoxIcon />
+                </Typography>
+              </Link>
+            </Tooltip>
+            <Tooltip title="Quản lí banner">
+              <Link
+                type="button"
+                className="btn btn-icon position-relative rounded-4 mx-2 me-2 "
+                to={"/admin/banner"}
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <ViewCarouselIcon />
+                </Typography>
+              </Link>
+            </Tooltip>
+            <Tooltip title="Đăng xuất">
+              <Link
+                type="button"
+                className="btn btn-icon btn-sm rounded-4 me-3"
+                id="btn-logOut"
+                onClick={handleLogOut}
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <LogoutIcon />
+                </Typography>
+              </Link>
+            </Tooltip>
+            <Tooltip title="Chế độ màn hình">
+              <Button
+                className=""
+                id="basic-button"
+                aria-controls={openMenuUser ? "basic-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={openMenuUser ? "true" : undefined}
+                onClick={handleClickMenuUser}
+                size="small"
+                sx={{
+                  color: "text.primary",
+                  textTransform: "capitalize",
+                }}
+              >
+                <Typography variant="span" className="">
+                  <SettingsApplicationsIcon />
+                  <ArrowDropDownIcon fontSize="small" />
+                </Typography>
+              </Button>
+            </Tooltip>
+            <Menu
+              anchorEl={anchorEl}
+              id="account-menu"
+              open={openMenuUser}
+              onClose={handleCloseMenuUser}
+              slotProps={{
+                paper: {
+                  elevation: 0,
+                  sx: {
+                    overflow: "visible",
+                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                    mt: 1.5,
+                    width: 200,
+                    "& .MuiAvatar-root": {
+                      width: 32,
+                      height: 32,
+                      ml: -0.5,
+                      mr: 1,
+                    },
+                    "&::before": {
+                      content: '""',
+                      display: "block",
+                      position: "absolute",
+                      top: 0,
+                      right: 14,
+                      width: 10,
+                      height: 10,
+                      bgcolor: "background.paper",
+                      transform: "translateY(-50%) rotate(45deg)",
+                      zIndex: 0,
+                    },
+                  },
+                },
+              }}
+              disableScrollLock
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-              Hồ sơ của tôi
-            </Link>
-            <Link
-              type="button"
-              className="btn btn-icon position-relative rounded-4 me-3"
-              to={"/admin/banner"}
-            >
-              Quản Lý Banner
-            </Link>
-            <Link
-              type="button"
-              className="btn btn-icon btn-sm rounded-4 me-3"
-              id="btn-logOut"
-              onClick={handleLogOut}
-            >
-              Đăng xuất
-            </Link>
+              <MenuItem>
+                <FormControlLabel
+                  control={
+                    <MaterialUISwitch
+                      // sx={{ m: 1 }}
+                      defaultChecked={false}
+                      onChange={handleChangeMode}
+                      checked={mode === "dark"}
+                    />
+                  }
+                  label={mode === "dark" ? "Nền tối" : "Nền sáng"}
+                />
+              </MenuItem>
+
+              <Tooltip
+                title="Website sẽ tự động điều chỉnh màn hình theo cài đặt hệ thống trên thiết bị của bạn."
+                className="d-flex align-items-center"
+                TransitionComponent={Zoom}
+              >
+                <MenuItem>
+                  <Checkbox
+                    // {...label}
+                    icon={<MotionPhotosAutoIcon />}
+                    checkedIcon={<MotionPhotosAutoIcon />}
+                    onChange={handleChangeAutoMode}
+                    checked={checkAutoMode}
+                  />
+                  <Typography>Tự động</Typography>
+                </MenuItem>
+              </Tooltip>
+            </Menu>
           </>
         ) : (
           <>
@@ -409,19 +525,23 @@ const RightHeader = ({ reloadCartItems }) => {
                 <i className="bi bi-bell fs-4"></i>
               </Typography>
             </Link>
+            
           </>
         )}
       </div>
       {user ? (
         matchAdmin ? (
-          <div className="p-1 rounded-3" style={{ border: "1px solid" }}>
+          <div className="align-content-center">
             <img
               src={getUrlIMG(user.id, user.avatar)}
               alt=""
               className="rounded-circle img-fluid"
-              style={{ width: "30px", height: "30px" }}
-            />
-            <span className="ms-2">{user.fullname}</span>
+              style={{ width: "30px", aspectRatio: "1/1" }}
+            />{" "}
+            &nbsp;
+            <span className="" style={{ fontSize: "12px" }}>
+              {user.fullname}
+            </span>
           </div>
         ) : (
           <div
@@ -511,6 +631,15 @@ const RightHeader = ({ reloadCartItems }) => {
                   &nbsp;
                   <Typography variant="span" sx={{ color: "text.primary" }}>
                     Đơn hàng
+                  </Typography>
+                </Link>
+              </MenuItem>
+              <MenuItem onClick={handleCloseMenuUser}>
+                <Link className="text-dark " to={idStore !== "undefined" ? "/profileMarket/wallet/seller" : "/wallet/buyer"}>
+                  <WalletIcon sx={{ color: "text.primary" }} />
+                  &nbsp;
+                  <Typography variant="span" sx={{ color: "text.primary" }}>
+                    Ví của tủa tôi
                   </Typography>
                 </Link>
               </MenuItem>

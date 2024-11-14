@@ -11,6 +11,7 @@ import LocalMallIcon from "@mui/icons-material/LocalMall";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import { Link } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
+import axios from "../../../Localhost/Custumize-axios";
 
 const Home = () => {
   const [searchProduct, setSearchProduct] = useState(() => {
@@ -23,6 +24,9 @@ const Home = () => {
     return savedIdCate ? savedIdCate : "";
   });
   const [valueMT, setValueMT] = useState(15); // value của magrin top
+
+  //State kiểm tra hiển thị bannerMid
+  const [checkShowBannerMid, setCheckShowBannerMid] = useState([]);
 
   // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
   const updateItemsPerPage = () => {
@@ -97,6 +101,20 @@ const Home = () => {
     //Xóa localSession idCateSearchHome
     localStorage.removeItem("idCateSearchHome");
   };
+
+  //Hàm load api check bannerMid
+  useEffect(() => {
+    const loadBannerMid = async () => {
+      try {
+        const res = await axios.get(`/banners/checkShowBannerMid`);
+        setCheckShowBannerMid(res.data);
+        console.log(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    loadBannerMid();
+  }, []);
   return (
     <>
       <Header contextSearch={handleSearch} resetSearch={resetSearch}></Header>
@@ -106,10 +124,14 @@ const Home = () => {
       <div className="container">
         <label htmlFor="">&nbsp; </label>
       </div>
-      <div className="container-fluid" style={{ marginTop: valueMT + "%" }}>
-        <h2 id="banner-title">Sự kiện shop</h2>
-        <BannerMiddle />
-      </div>
+      {checkShowBannerMid.length !== 0 ? (
+        <div className="container-fluid" style={{ marginTop: valueMT + "%" }}>
+          <h2 id="banner-title">Sự kiện shop</h2>
+          <BannerMiddle />
+        </div>
+      ) : (
+        <div style={{marginTop : "10%"}}></div>
+      )}
       <div className="container">
         <div className="border mt-4 rounded-3">
           <Box

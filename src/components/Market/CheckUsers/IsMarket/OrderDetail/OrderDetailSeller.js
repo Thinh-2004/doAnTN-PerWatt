@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from "react";
-import Header from "../../Header/Header";
-import Footer from "../../Footer/Footer";
-import axios from "../../../Localhost/Custumize-axios";
+import axios from "../../../../../Localhost/Custumize-axios";
+import { useParams } from "react-router-dom";
 import { tailspin } from "ldrs";
 import { Button, Card, CardContent, Typography } from "@mui/material";
-import { format } from "date-fns";
-import { useParams } from "react-router-dom";
-import { toast } from "react-toastify";
+import useSession from "../../../../../Session/useSession";
 
-const OrderDetail = () => {
+const OrderDetailSeller = () => {
   const [groupedByStore, setGroupedByStore] = useState({});
   const [loading, setLoading] = useState(true);
-  const user = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
-    : null;
   const { id } = useParams();
-
+  const [idStore] = useSession(`idStore`);
   tailspin.register();
 
   const geturlIMG = (productId, filename) => {
@@ -31,7 +25,10 @@ const OrderDetail = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get(`/orderDetail/${id}`);
+        console.log(id);
+
+        const res = await axios.get(`/orderDetailSeller/${id}`);
+
         const grouped = groupByStore(res.data);
         setGroupedByStore(grouped);
       } catch (error) {
@@ -41,7 +38,7 @@ const OrderDetail = () => {
       }
     };
     load();
-  }, [user.id]);
+  }, [id]);
 
   const groupByStore = (details) => {
     return details.reduce((groups, detail) => {
@@ -59,49 +56,10 @@ const OrderDetail = () => {
     return Number(value).toLocaleString("vi-VN");
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return format(date, "HH:mm:ss dd/MM/yyyy");
-  };
-
-  const refundReturn = async (store, totalAmount, productDetailId) => {
-    const resWalletShop = await axios.get(`wallet/${store.user.id}`);
-    if (resWalletShop.data.balance >= totalAmount) {
-      const newBalanceShop = resWalletShop.data.balance - totalAmount * 0.9;
-
-      await axios.put(`wallet/update/${store.user.id}`, {
-        balance: newBalanceShop,
-      });
-
-      const resWalletAdmin = await axios.get(`wallet/${1}`);
-      const newBalanceAdmin = resWalletAdmin.data.balance - totalAmount * 0.1;
-
-      await axios.put(`wallet/update/${1}`, {
-        balance: newBalanceAdmin,
-      });
-
-      const resWalletUser = await axios.get(`wallet/${user.id}`);
-      const newBalanceUser = resWalletUser.data.balance + totalAmount;
-
-      await axios.put(`wallet/update/${user.id}`, {
-        balance: newBalanceUser,
-      });
-
-      toast.success("Hoàn tiền thành công");
-    } else {
-      toast.warning("Tài khoản cửa hàng không đủ để hoàn tiền");
-      return;
-    }
-  };
-
   return (
     <div>
-      <Header />
-      <h1 className="text-center mt-4 mb-4">Đơn hàng chi tiết của bạn</h1>
-      <div
-        className="col-12 col-md-12 col-lg-10 offset-lg-1"
-        style={{ transition: "0.5s" }}
-      >
+      <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
+      <div className="col-12 col-12" style={{ transition: "0.5s" }}>
         {loading ? (
           <div className="d-flex justify-content-center mt-3">
             <l-tailspin
@@ -118,7 +76,7 @@ const OrderDetail = () => {
             const order = storeProducts[0].order;
             return (
               <Card
-                className="rounded-3 mt-3"
+                className=" mt-3"
                 key={storeId}
                 sx={{
                   position: "relative",
@@ -127,20 +85,30 @@ const OrderDetail = () => {
                   backgroundColor: "backgroundElement.children",
                 }}
               >
-                <CardContent className="">
+                <Card
+                  className="card mt-3"
+                  sx={{
+                    backgroundColor: "backgroundElement.children",
+                    boxShadow: "none",
+                  }}
+                >
                   <Button
-                    className="mb-3"
                     variant="contained"
                     style={{
-                      width: "auto",
+                      width: "40px",
+                      marginLeft: "10px",
+                      height: "40px",
                       backgroundColor: "rgb(204,244,255)",
                       color: "rgb(0,70,89)",
+                      minWidth: 0,
                     }}
                     disableElevation
-                    href="/order"
+                    href={`/profileMarket/orderSeller/${idStore}`}
                   >
                     <i class="bi bi-caret-left-fill"></i>
                   </Button>
+                </Card>
+                <CardContent className="">
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">
                       <img
@@ -219,9 +187,7 @@ const OrderDetail = () => {
                                 orderDetail.productDetail.product
                                   .productcategory.name,
                                 orderDetail.productDetail.product.trademark
-                                  .name === "No brand"
-                                  ? "Không có thương hiệu"
-                                  : "",
+                                  .name,
                                 orderDetail.productDetail.product.warranties
                                   .name,
                               ]
@@ -232,42 +198,17 @@ const OrderDetail = () => {
                         </div>
                         <div className="col-8 mx-3 mt-5">
                           <div className="d-flex">
-                            <div className="col-2">
+                            <div className="col-3">
                               Giá: {formatPrice(orderDetail.price) + " VNĐ"}
                             </div>
-                            <div className="col-4 d-flex justify-content-between">
-                              <Typography>
-                                {" "}
-                                Số lượng: {orderDetail.quantity}
-                              </Typography>
-                              <Typography>
-                                {" "}
-                                Thành tiền:{" "}
-                                {formatPrice(
-                                  orderDetail.price * orderDetail.quantity
-                                ) + " VNĐ"}
-                              </Typography>
+                            <div className="col-2">
+                              Số lượng: {orderDetail.quantity}
                             </div>
-                            <div className="ms-5 ">
-                              <Button
-                                variant="contained"
-                                style={{
-                                  width: "auto",
-                                  backgroundColor: "rgb(255, 184, 184)",
-                                  color: "rgb(198, 0, 0)",
-                                }}
-                                onClick={() =>
-                                  refundReturn(
-                                    store,
-                                    orderDetail.productDetail.price *
-                                      orderDetail.quantity,
-                                    orderDetail.productDetail.id
-                                  )
-                                }
-                                disableElevation
-                              >
-                                Trả hàng/Hoàn tiền
-                              </Button>
+                            <div className="col-4">
+                              Thành tiền:{" "}
+                              {formatPrice(
+                                orderDetail.price * orderDetail.quantity
+                              ) + " VNĐ"}
                             </div>
                           </div>
                         </div>
@@ -282,22 +223,10 @@ const OrderDetail = () => {
                       <div>
                         Địa chỉ nhận hàng: {order.shippinginfor.address}
                       </div>
-                      <div>
-                        Thời gian đặt hàng: {formatDate(order.paymentdate)}
-                      </div>
-                      <div>
-                        {order.receivedate ? (
-                          <>
-                            Thời gian nhận hàng: {formatDate(order.receivedate)}
-                          </>
-                        ) : (
-                          <>Thời gian nhận hàng: chưa nhận</>
-                        )}
-                      </div>
                     </div>
                     <div className="col-6 text-end">
                       <Typography variant="span">
-
+                        {" "}
                         Tổng cộng:{" "}
                         {formatPrice(
                           storeProducts.reduce(
@@ -315,9 +244,8 @@ const OrderDetail = () => {
           })
         )}
       </div>
-      <Footer />
     </div>
   );
 };
 
-export default OrderDetail;
+export default OrderDetailSeller;

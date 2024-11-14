@@ -31,6 +31,9 @@ const DetailProduct = () => {
   const [selectedIdDetail, setSelectedIdDetail] = useState(null);
   const [fillDetail, setFilDetail] = useState([]); //fill phân loại sản phẩm
   const { mode } = useContext(ThemeModeContext);
+  //Tạo state nhận api voucher theo id product
+  const [voucher, setVoucher] = useState([]);
+  const [result, setResult] = useState(""); // Giá sau khi giảm
 
   const loadProductDetail = async () => {
     try {
@@ -81,7 +84,6 @@ const DetailProduct = () => {
           0
         );
         setCountOrderBuyed(countQuantityOrderBy);
-        console.log(countQuantityOrderBy);
       }
     } catch (error) {
       console.log(error);
@@ -180,6 +182,14 @@ const DetailProduct = () => {
       setMinPrice(selectedProduct.price);
       setMaxPrice(selectedProduct.price);
       setQuantity(1);
+
+      // Tính giá giảm
+      const priceDown =
+        selectedProduct.price * (voucher[0].discountprice / 100);
+      const result = selectedProduct.price - priceDown;
+      if (result) {
+        setResult(formatPrice(result));
+      }
     }
 
     setproductDetailIds(idDetail);
@@ -194,6 +204,75 @@ const DetailProduct = () => {
     }
     // console.log(totalQuantity);
   }, [fillDetail]);
+
+  const loadData = async (key) => {
+    try {
+      const res = await axios.get(`fillVoucherPrice/${key}`);
+      setVoucher(res.data);
+      console.log(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (FillDetailPr) {
+      loadData(FillDetailPr.id);
+    }
+  }, [FillDetailPr]);
+
+  //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
+  const isVoucherPrice = voucher.some(
+    (check) => check.productDetail.product.id === FillDetailPr.id
+  );
+  //Lấy phần trăm giảm từng sản phẩm
+  const disCountPrice = voucher.reduce((take, item) => {
+    if (item.status === "Hoạt động") {
+      if (item.productDetail.product.id === FillDetailPr.id) {
+        return item.discountprice;
+      } else {
+        return null;
+      }
+    }
+    return take;
+  }, 0);
+
+  //Render giá gốc và giá sau khi giảm sản phẩm
+  useEffect(() => {
+    // Lọc giá sản phẩm theo voucher
+    const priceProductDetails = voucher.map(
+      (filter) => filter.productDetail.price
+    );
+    const minPriceProductDetail = Math.min(...priceProductDetails);
+    const maxPriceProductDetail = Math.max(...priceProductDetails);
+
+    // Nếu có ít nhất 1 sản phẩm được chọn
+    if (voucher.length > 0) {
+      // Nếu chỉ có 1 sản phẩm được chọn
+      if (voucher.length === 1) {
+        // Tính giá giảm
+        const priceDown =
+          voucher[0].productDetail.price * (voucher[0].discountprice / 100);
+        const result = voucher[0].productDetail?.price - priceDown;
+        if (result) {
+          setResult(formatPrice(result));
+        }
+      } else {
+        // Tính giá giảm First
+        const priceDownFirst =
+          minPriceProductDetail * (voucher[0].discountprice / 100);
+        const resultFirst = minPriceProductDetail - priceDownFirst;
+        // Tính giá giảm First
+        const priceDownLast =
+          maxPriceProductDetail *
+          (voucher[voucher.length - 1].discountprice / 100);
+        const resultLast = maxPriceProductDetail - priceDownLast;
+
+        // Nếu tìm thấy cả 2 sản phẩm đầu tiên và cuối cùng, hiển thị giá của chúng
+        setResult(`${formatPrice(resultFirst)} - ${formatPrice(resultLast)}`);
+      }
+    }
+  }, [voucher]);
 
   return (
     <>
@@ -268,15 +347,32 @@ const DetailProduct = () => {
             >
               <p className="fs-5 p-1 mx-2">Giá:</p>
               <div className="d-flex align-items-center">
-                <del className="text-secondary fs-5 mx-3">
-                  {formatPrice(3000000)}đ
-                </del>
-                <span className="text-danger fw-bold fs-3 mx-3">
-                  {minPrice === maxPrice
-                    ? formatPrice(minPrice) + " đ"
-                    : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` +
-                      " đ"}
-                </span>
+                {isVoucherPrice && disCountPrice ? (
+                  <>
+                    <del className="text-secondary fs-5 mx-3">
+                      {" "}
+                      {minPrice === maxPrice
+                        ? formatPrice(minPrice) + " đ"
+                        : `${formatPrice(minPrice)} - ${formatPrice(
+                            maxPrice
+                          )}` + " đ"}
+                    </del>{" "}
+                    -
+                    <span className="text-danger fw-bold fs-3 mx-3">
+                      {result} đ
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-danger fw-bold fs-3 mx-3">
+                      {minPrice === maxPrice
+                        ? formatPrice(minPrice) + " đ"
+                        : `${formatPrice(minPrice)} - ${formatPrice(
+                            maxPrice
+                          )}` + " đ"}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
             <div className="row">

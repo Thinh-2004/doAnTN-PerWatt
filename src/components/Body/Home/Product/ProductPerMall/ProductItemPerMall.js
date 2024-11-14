@@ -7,6 +7,7 @@ import SkeletonLoad from "../../../../../Skeleton/SkeletonLoad";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import DoNotDisturbIcon from "@mui/icons-material/DoNotDisturb";
+import BannerBot from "../../../../Banner/BannerBot";
 
 const ProductItemPerMall = () => {
   const [fill, setFill] = useState([]);
@@ -63,79 +64,7 @@ const ProductItemPerMall = () => {
   return (
     <>
       <div className="col-lg-4 col-md-4 col-sm-4 mt-2 border-end ">
-        <div
-          id="carouselExampleAutoplaying"
-          className="carousel slide"
-          data-bs-ride="carousel"
-          data-bs-interval="3000"
-        >
-          <div className="carousel-indicators">
-            <button
-              type="button"
-              data-bs-target="#carouselExampleAutoplaying"
-              data-bs-slide-to="0"
-              className="active"
-              aria-current="true"
-              aria-label="Slide 1"
-            ></button>
-            <button
-              type="button"
-              data-bs-target="#carouselExampleAutoplaying"
-              data-bs-slide-to="1"
-              aria-label="Slide 2"
-            ></button>
-            <button
-              type="button"
-              data-bs-target="#carouselExampleAutoplaying"
-              data-bs-slide-to="2"
-              aria-label="Slide 3"
-            ></button>
-          </div>
-          <div className="carousel-inner rounded-3">
-            <div className="carousel-item active">
-              <img
-                src="https://cf.shopee.vn/file/sg-11134258-7rdxs-m1m9bdywn82vaf"
-                className="d-block w-100"
-                style={{height: "610px"}}
-                alt="..."
-              />
-            </div>
-            <div className="carousel-item">
-              <img
-                src="https://cf.shopee.vn/file/sg-11134258-7rdxs-m1m9bdywn82vaf"
-                className="d-block w-100"
-                style={{height: "610px"}}
-                alt="..."
-              />
-            </div>
-            <div className="carousel-item">
-              <img
-                src="https://cf.shopee.vn/file/sg-11134258-7rdxs-m1m9bdywn82vaf"
-                className="d-block w-100"
-                style={{height: "610px"}}
-                alt="..."
-              />
-            </div>
-          </div>
-          <button
-            className="carousel-control-prev"
-            type="button"
-            data-bs-target="#carouselExampleAutoplaying"
-            data-bs-slide="prev"
-          >
-            <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Previous</span>
-          </button>
-          <button
-            className="carousel-control-next"
-            type="button"
-            data-bs-target="#carouselExampleAutoplaying"
-            data-bs-slide="next"
-          >
-            <span className="carousel-control-next-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Next</span>
-          </button>
-        </div>
+        <BannerBot></BannerBot>
       </div>
       <div className="col-lg-8 col-md-8 col-sm-8 mt-2 d-flex">
         <div className="align-content-center border-start p-2">

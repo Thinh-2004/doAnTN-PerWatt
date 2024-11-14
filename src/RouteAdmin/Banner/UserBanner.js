@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../Localhost/Custumize-axios";
 import { format, parseISO } from "date-fns";
 import {
   Table,
@@ -21,11 +21,13 @@ import {
   Select,
 } from "@mui/material";
 import Header from "../../components/Header/Header";
+import { confirmAlert } from "react-confirm-alert";
+import { toast } from "react-toastify";
 
 const BannerTable = () => {
   const user = localStorage.getItem("user")
-  ? JSON.parse(localStorage.getItem("user"))
-  : null;
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
   const [banners, setBanners] = useState([]);
   const [formData, setFormData] = useState({
     id: "",
@@ -71,7 +73,7 @@ const BannerTable = () => {
 
   const fetchBanners = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/banners");
+      const response = await axios.get("/banners");
       setBanners(response.data);
     } catch (error) {
       console.error("Error fetching banners:", error);
@@ -143,12 +145,12 @@ const BannerTable = () => {
 
     try {
       if (editingBanner) {
-        await axios.put(`http://localhost:8080/banners/${formData.id}`, form, {
+        await axios.put(`/banners/${formData.id}`, form, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         setSuccessMessage("Cập nhật banner thành công!");
       } else {
-        await axios.post("http://localhost:8080/banners", form, {
+        await axios.post("/banners", form, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         setSuccessMessage("Thêm banner thành công!");
@@ -184,16 +186,36 @@ const BannerTable = () => {
     setTabValue(1);
   };
 
-  const handleDeleteClick = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa banner này?")) {
-      try {
-        await axios.delete(`http://localhost:8080/banners/${id}`);
-        fetchBanners();
-      } catch (error) {
-        console.error("Error deleting banner:", error);
-        setError("Failed to delete banner. Please try again.");
-      }
-    }
+  const handleDeleteClick = async (idBanner) => {
+    confirmAlert({
+      title: "Bạn có chắc muốn xóa chứ",
+      message: "Thực hiện chức năng xóa sản phẩm",
+      buttons: [
+        {
+          label: "Xóa",
+          onClick: async () => {
+            const id = toast.loading("Vui lòng chờ...");
+            try {
+              await axios.delete(`/banners/${idBanner}`);
+              toast.update(id, {
+                render: "Xóa thành công",
+                type: "success",
+                isLoading: false,
+                autoClose: 5000,
+                closeButton: true,
+              });
+              fetchBanners();
+            } catch (error) {
+              console.error("Error deleting banner:", error);
+              setError("Failed to delete banner. Please try again.");
+            }
+          },
+        },
+        {
+          label: "Hủy",
+        },
+      ],
+    });
   };
 
   const resetForm = () => {
@@ -255,8 +277,12 @@ const BannerTable = () => {
 
   // Kiểm tra tên banner chỉ chứa chữ cái và số, không chứa ký tự đặc biệt
   const validateBannerName = (bannername) => {
+    // Chuyển chuỗi về dạng không dấu
+    const normalized = bannername
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
     const regex = /^[a-zA-Z0-9 ]+$/; // Chỉ cho phép chữ cái và số, không cho phép ký tự đặc biệt
-    return regex.test(bannername);
+    return regex.test(normalized);
   };
 
   // Kiểm tra ngày bắt đầu phải là hôm nay hoặc sau hôm nay
@@ -320,6 +346,7 @@ const BannerTable = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{ marginRight: "16px" }}
+                  size="small"
                 />
 
                 <Box display="flex" alignItems="center">
@@ -329,6 +356,7 @@ const BannerTable = () => {
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
                     style={{ marginRight: "16px" }}
+                    size="small"
                   >
                     <MenuItem value="all">- Tháng -</MenuItem>
                     {Array.from({ length: 12 }, (_, index) => (
@@ -343,6 +371,7 @@ const BannerTable = () => {
                     label="Chọn Năm"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
+                    size="small"
                   >
                     <MenuItem value="all">- Năm -</MenuItem>
                     {Array.from({ length: 10 }, (_, index) => {
@@ -357,7 +386,10 @@ const BannerTable = () => {
                 </Box>
               </Box>
 
-              <TableContainer component={Paper}>
+              <TableContainer
+                component={Paper}
+                sx={{ backgroundColor: "backgroundElement.children" }}
+              >
                 <Table sx={{ minWidth: 650 }} aria-label="banner table">
                   <TableHead>
                     <TableRow>
@@ -375,7 +407,9 @@ const BannerTable = () => {
                     {currentItems.map((banner) => (
                       <TableRow key={banner.id}>
                         <TableCell align="center">{banner.id}</TableCell>
-                        <TableCell align="center">{banner.bannername}</TableCell>
+                        <TableCell align="center">
+                          {banner.bannername}
+                        </TableCell>
                         <TableCell align="center">
                           <img
                             src={geturlIMG(banner.user.id, banner.img)}
@@ -559,6 +593,8 @@ const BannerTable = () => {
                     >
                       <MenuItem value="TOP">TOP</MenuItem>
                       <MenuItem value="MID">MID</MenuItem>
+                      <MenuItem value="MIDTOP">MIDTOP</MenuItem>
+                      <MenuItem value="MIDBOT">MIDBOT</MenuItem>
                       <MenuItem value="BOT">BOT</MenuItem>
                     </TextField>
                     <TextField

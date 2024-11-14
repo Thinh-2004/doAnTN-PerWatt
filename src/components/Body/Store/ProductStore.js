@@ -8,6 +8,7 @@ import { Box, Pagination, Typography } from "@mui/material";
 import SkeletonLoad from "../../../Skeleton/SkeletonLoad";
 import ListProductStore from "./ListProductStore";
 import ToolBarHomeStore from "./ToolBarHomeStore";
+import ListItemProduct from "../../ListItemProduct/ListItemProduct";
 
 const ProductStore = ({ item, idCate, resetSearch }) => {
   const { slugStore } = useParams();
@@ -167,7 +168,7 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
         </>
       ) : (
         <div className="row mb-5">
-          <ListProductStore data={fill} />
+        <ListProductStore data={fill} />
         </div>
       )}
       <div className="mt-3 mb-3 d-flex justify-content-center">

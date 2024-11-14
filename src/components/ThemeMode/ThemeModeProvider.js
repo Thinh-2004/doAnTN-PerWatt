@@ -36,36 +36,36 @@ export const ThemeModeProvider = ({ children }) => {
       mode: mode,
       ...(mode === "light"
         ? {
-          //Light mode
+            //Light mode
             backgroundElement: {
               default: "white",
               children: "white",
             },
             background: {
-              default: "#f4f6f8", 
-              // paper: "#fff", 
+              default: "#f4f6f8",
+              // paper: "#fff",
             },
             text: {
               default: "#000", // Black text in light mode
               secondary: "#555", // Gray text for secondary text
-              titleHeader:"#001F3F",
+              titleHeader: "#001F3F",
             },
           }
         : {
-          //Dark mode
+            //Dark mode
             // Custom colors for dark mode
             backgroundElement: {
               default: "#212121",
               children: "#363535",
             },
             background: {
-              default: "#212121", 
+              default: "#212121",
               // paper: "#1e1e1e",
             },
             text: {
-              default: "#fff", 
-              secondary: "#aaa", 
-              titleHeader:"white"
+              default: "#fff",
+              secondary: "#aaa",
+              titleHeader: "white",
             },
           }),
     },

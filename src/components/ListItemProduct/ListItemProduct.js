@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "../../../../../Localhost/Custumize-axios";
-import { Box, Chip } from "@mui/material";
+import axios from "../../Localhost/Custumize-axios";
+import { Card, Chip } from "@mui/material";
 import LoyaltyIcon from "@mui/icons-material/Loyalty";
 
-const ListItemPerMall = ({ data }) => {
+const ListItemProduct = ({ data, classNameCol }) => {
   //Tạo state nhận api voucher theo id product
   //Sử dụng đối tượng để lưu voucher theo từng idProduct
   const [voucher, setVoucher] = useState({});
+
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -70,8 +71,8 @@ const ListItemPerMall = ({ data }) => {
           (check) => check.productDetail.product.id === fill.product.id
         );
 
-        //Kiểm tra status voucher
-        const isStatusVoucher = productVoucher.some(
+         //Kiểm tra status voucher
+         const isStatusVoucher = productVoucher.some(
           (check) => check.status === "Hoạt động"
         );
 
@@ -98,22 +99,24 @@ const ListItemPerMall = ({ data }) => {
             );
             // Tính giá giảm First và Last
             const priceDownFirst =
-              minPriceProductDetail * (productVoucher[0].discountprice / 100);
+            minPriceProductDetail * (productVoucher[0].discountprice / 100);
             const priceDownLast =
-              maxPriceProductDetail *
+            maxPriceProductDetail *
               (productVoucher[productVoucher.length - 1].discountprice / 100);
-            //Kết quả
-            const resultFirst = minPriceProductDetail - priceDownFirst;
+              //Kết quả
+              const resultFirst = minPriceProductDetail - priceDownFirst;
             const resultLast = maxPriceProductDetail - priceDownLast;
             result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
           }
         }
         return (
-          <Box
-            className="col-lg-3 col-md-3 col-sm-3 mb-2 shadow rounded-3 p-2 d-flex flex-column"
-            sx={{ maxWidth: "23%", bgcolor: "backgroundElement.children" }}
+          <Card
+            className={`${classNameCol} mb-3 mt-2 shadow rounded-3 p-2 d-flex flex-column`}
+            sx={{
+              bgcolor: "backgroundElement.children",
+            }}
             key={fill.product.id}
-            id="home-product-itemPerMall"
+            id="home-product-item"
           >
             <Link
               to={`/detailProduct/${fill.product.slug}`}
@@ -126,25 +129,20 @@ const ListItemPerMall = ({ data }) => {
                     ? geturlIMG(fill.product.id, firstIMG.imagename)
                     : "/images/no_img.png"
                 }
-                style={{ width: "100%", height: "150px" }}
-                loading="lazy"
                 className="img-fluid rounded-3"
                 alt="Product"
+                style={{ width: "100%", height: "200px" }}
+                loading="lazy"
               />
               {totalQuantity === 0 && (
                 <div
                   className="position-absolute top-0 start-50 translate-middle text-danger"
                   id="bg-sold-out"
                 >
-                  <span
-                    className="text-white text-center"
-                    style={{ fontSize: "15px" }}
-                  >
-                    Hết hàng
-                  </span>
+                  <span className="text-white text-center">Hết hàng</span>
                 </div>
               )}
-              {isVoucherPrice && isStatusVoucher ? (
+              {isVoucherPrice && isStatusVoucher ?  (
                 <div className="position-absolute bottom-0 end-0">
                   <Chip
                     icon={<LoyaltyIcon />}
@@ -154,7 +152,7 @@ const ListItemPerMall = ({ data }) => {
                     className="rounded-3"
                   />
                 </div>
-              ): null}
+              ) : null}
               {fill?.product?.store?.taxcode && (
                 <div className="position-absolute bottom-0 end-0">
                   <img
@@ -172,7 +170,7 @@ const ListItemPerMall = ({ data }) => {
                 {fill.product.name}
               </span>
               <h5 id="price-product">
-                {isVoucherPrice && isStatusVoucher ? (
+                {isVoucherPrice  && isStatusVoucher ? (
                   <>
                     <del className="text-secondary me-1">
                       {minPrice === maxPrice
@@ -198,7 +196,7 @@ const ListItemPerMall = ({ data }) => {
                   </>
                 )}
               </h5>
-              <hr className="m-o p-0" />
+              <hr className="m-0 p-0" />
             </div>
 
             <div className="d-flex justify-content-between align-items-end">
@@ -213,11 +211,11 @@ const ListItemPerMall = ({ data }) => {
                 </span>
               </div>
             </div>
-          </Box>
+          </Card>
         );
       })}
     </>
   );
 };
 
-export default ListItemPerMall;
+export default ListItemProduct;

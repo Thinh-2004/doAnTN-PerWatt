@@ -5,7 +5,7 @@ import { trefoil } from "ldrs";
 import useDebounce from "../../../../../CustumHook/useDebounce";
 import { Box, Pagination } from "@mui/material";
 import SkeletonLoad from "../../../../../Skeleton/SkeletonLoad";
-import ListItem from "./ListItem";
+import ListItemProduct from "../../../../ListItemProduct/ListItemProduct";
 
 trefoil.register();
 
@@ -127,7 +127,12 @@ const Product = ({ item, idCate, handleReset }) => {
           <label className="fs-4">Thông tin bạn tìm không tồn tại</label>
         </div>
       ) : (
-        <ListItem data={fillAllProduct} />
+        <ListItemProduct
+          data={fillAllProduct}
+          classNameCol={
+            "col-lg-2 col-md-3 col-sm-4"
+          }
+        />
       )}
       <div className="mt-3 mb-3 d-flex justify-content-center">
         <Pagination

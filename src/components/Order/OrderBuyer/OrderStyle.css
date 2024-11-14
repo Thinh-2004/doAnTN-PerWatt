@@ -1,5 +1,5 @@
 #pills-tab {
-  background-color: rgba(255, 255, 255, 0.8);
+  /* background-color: rgba(255, 255, 255, 0.8); */
   backdrop-filter: blur(10px);
   padding: 10px 10px;
   margin: -16px;
@@ -14,12 +14,10 @@ a {
   text-decoration: none;
 }
 
-#cartItem {
-  background-color: rgb(255, 255, 255);
-}
+
 
 #cartTitle {
-  background-color: rgba(255, 255, 255, 0.8);
+  /* background-color: rgba(255, 255, 255, 0.8); */
   backdrop-filter: blur(10px);
   /* padding: 10px 10px; */
   margin: -16px;

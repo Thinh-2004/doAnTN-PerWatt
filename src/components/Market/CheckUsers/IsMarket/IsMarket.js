@@ -8,13 +8,17 @@ import EditProduct from "./Product/Form/EditProduct";
 import MainUserSeller from "./StatisticalOrders/MainUserSeller";
 import ProfileShop from "./ProfileShop/ProfileShop";
 import OrderSeller from "./Order/OrderSeller";
-import OrderDetailBuyer from "./OrderDetail/OrderDetailBuyer";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Header from "../../../Header/Header";
+import FormAddVoucher from "./Voucher/FromAddVoucher";
+import FillVoucher from "./Voucher/FillVoucher";
+import EditVoucher from "./Voucher/UpdateVoucher";
+import Wallet from "../../../Wallet/Wallet";
+import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
 
 const IsMarket = () => {
   const user = localStorage.getItem("user")
@@ -164,7 +168,10 @@ const IsMarket = () => {
                     </Link>
                   </li>
                   <li>
-                    <Link style={{ textDecoration: "none" }} to="/myAccount">
+                    <Link
+                      style={{ textDecoration: "none" }}
+                      to="/profileMarket/wallet/seller"
+                    >
                       Số dư TK của tôi
                     </Link>
                   </li>
@@ -236,7 +243,18 @@ const IsMarket = () => {
                   className="p-0 m-0"
                 >
                   <li>
-                    <Link style={{ textDecoration: "none" }} to="/shopProfile">
+                    <Link
+                      style={{ textDecoration: "none" }}
+                      to="/profileMarket/addVoucher"
+                    >
+                      Thêm khuyến mãi
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      style={{ textDecoration: "none" }}
+                      to="/profileMarket/fillVoucher"
+                    >
                       Quản lý khuyến mãi
                     </Link>
                   </li>
@@ -252,14 +270,18 @@ const IsMarket = () => {
             <Route path="/FormStoreProduct" element={<FormProduct />} />
             <Route path="updateProduct/:slug" element={<EditProduct />} />
             <Route path="/profileShop" element={<ProfileShop />} />
+            <Route path="/addVoucher" element={<FormAddVoucher />} />
+            <Route path="/fillVoucher" element={<FillVoucher />} />
+            <Route path="editVoucher/:slug" element={<EditVoucher />} />​
             <Route
-              path="orderDetailSeller/:id"
-              element={<OrderDetailBuyer />}
+              path="/orderDetailSeller/:id"
+              element={<OrderDetailSeller />}
             />
             <Route
               path="/orderSeller/:id"
               element={<OrderSeller></OrderSeller>}
-            ></Route>
+            />
+            <Route path="/wallet/:status" element={<Wallet />} />
           </Routes>
         </div>
       </div>
