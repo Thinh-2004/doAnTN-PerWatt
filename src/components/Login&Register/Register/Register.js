@@ -5,6 +5,7 @@ import {
   InputAdornment,
   InputLabel,
   TextField,
+  useTheme,
 } from "@mui/material";
 import axios from "../../../Localhost/Custumize-axios";
 import React, { useState } from "react";
@@ -14,6 +15,7 @@ import { Link } from "react-router-dom";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import FormSelectAdress from "../../APIAddressVN/FormSelectAdress";
 
 const Register = ({ onRegisterSuccess }) => {
   const [formUser, setFormUser] = useState({
@@ -239,8 +241,16 @@ const Register = ({ onRegisterSuccess }) => {
     event.preventDefault();
   };
 
+  const theme = useTheme();
+
   return (
-    <form onSubmit={handleRegister} className="form-sign">
+    <form
+      onSubmit={handleRegister}
+      className="form-sign"
+      style={{
+        backgroundColor: theme.palette.mode === "light" ? " #fff" : "#363535",
+      }}
+    >
       <h2 className="title">Đăng Ký</h2>
       <p className="subject">
         Đăng ký tài khoản để được trải nghiệm hết các tính năng của chúng tôi!!!
@@ -418,7 +428,16 @@ const Register = ({ onRegisterSuccess }) => {
           </div>
         </div>
       </div>
-      <button type="submit" className="button w-100">
+      <button
+        type="submit"
+        className="button w-100"
+        style={{
+          background:
+            theme.palette.mode === "light"
+              ? "linear-gradient(to right, #28ffdb, #228dff)"
+              : "linear-gradient(to right, #1c4a43, #072748)",
+        }}
+      >
         Đăng ký
       </button>
     </form>

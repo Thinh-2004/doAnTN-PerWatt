@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import axios from "../../../../../Localhost/Custumize-axios";
 import { useParams } from "react-router-dom";
 import { tailspin } from "ldrs";
+<<<<<<< HEAD
 import { Button } from "@mui/material";
+=======
+import { Button, Card, CardContent, Typography } from "@mui/material";
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 import useSession from "../../../../../Session/useSession";
 
 const OrderDetailSeller = () => {
@@ -75,6 +79,7 @@ const OrderDetailSeller = () => {
             const store = storeProducts[0].productDetail.product.store;
             const order = storeProducts[0].order;
             return (
+<<<<<<< HEAD
               <div
                 className="card mt-3"
                 key={storeId}
@@ -85,6 +90,25 @@ const OrderDetailSeller = () => {
                 }}
               >
                 <div className="card mt-3">
+=======
+              <Card
+                className=" mt-3"
+                key={storeId}
+                sx={{
+                  position: "relative",
+                  minHeight: "200px",
+                  transition: "0.5s",
+                  backgroundColor: "backgroundElement.children",
+                }}
+              >
+                <Card
+                  className="card mt-3"
+                  sx={{
+                    backgroundColor: "backgroundElement.children",
+                    boxShadow: "none",
+                  }}
+                >
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                   <Button
                     variant="contained"
                     style={{
@@ -100,8 +124,13 @@ const OrderDetailSeller = () => {
                   >
                     <i class="bi bi-caret-left-fill"></i>
                   </Button>
+<<<<<<< HEAD
                 </div>
                 <div className="card-body">
+=======
+                </Card>
+                <CardContent className="">
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">
                       <img
@@ -218,6 +247,7 @@ const OrderDetailSeller = () => {
                       </div>
                     </div>
                     <div className="col-6 text-end">
+<<<<<<< HEAD
                       <div className="card mt-3">
                         <div className="card-body">
                           Tổng cộng:{" "}
@@ -234,6 +264,23 @@ const OrderDetailSeller = () => {
                   </div>
                 </div>
               </div>
+=======
+                      <Typography variant="span">
+                        {" "}
+                        Tổng cộng:{" "}
+                        {formatPrice(
+                          storeProducts.reduce(
+                            (sum, detail) =>
+                              sum + detail.price * detail.quantity,
+                            0
+                          )
+                        ) + " VNĐ"}
+                      </Typography>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
             );
           })
         )}

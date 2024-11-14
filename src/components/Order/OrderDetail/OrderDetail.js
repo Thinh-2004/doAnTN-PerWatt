@@ -2,15 +2,25 @@ import React, { useEffect, useState } from "react";
 import Header from "../../Header/Header";
 import Footer from "../../Footer/Footer";
 import axios from "../../../Localhost/Custumize-axios";
-import { useParams } from "react-router-dom";
 import { tailspin } from "ldrs";
+<<<<<<< HEAD
 import { Button } from "@mui/material";
 import { format } from "date-fns";
+=======
+import { Button, Card, CardContent, Typography } from "@mui/material";
+import { format } from "date-fns";
+import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
 const OrderDetail = () => {
   const [groupedByStore, setGroupedByStore] = useState({});
   const [loading, setLoading] = useState(true);
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
   const { id } = useParams();
+
   tailspin.register();
 
   const geturlIMG = (productId, filename) => {
@@ -36,7 +46,7 @@ const OrderDetail = () => {
       }
     };
     load();
-  }, [id]);
+  }, [user.id]);
 
   const groupByStore = (details) => {
     return details.reduce((groups, detail) => {
@@ -59,6 +69,39 @@ const OrderDetail = () => {
     return format(date, "HH:mm:ss dd/MM/yyyy");
   };
 
+<<<<<<< HEAD
+=======
+  const refundReturn = async (store, totalAmount, productDetailId) => {
+    const resWalletShop = await axios.get(`wallet/${store.user.id}`);
+    if (resWalletShop.data.balance >= totalAmount) {
+      const newBalanceShop = resWalletShop.data.balance - totalAmount * 0.9;
+
+      await axios.put(`wallet/update/${store.user.id}`, {
+        balance: newBalanceShop,
+      });
+
+      const resWalletAdmin = await axios.get(`wallet/${1}`);
+      const newBalanceAdmin = resWalletAdmin.data.balance - totalAmount * 0.1;
+
+      await axios.put(`wallet/update/${1}`, {
+        balance: newBalanceAdmin,
+      });
+
+      const resWalletUser = await axios.get(`wallet/${user.id}`);
+      const newBalanceUser = resWalletUser.data.balance + totalAmount;
+
+      await axios.put(`wallet/update/${user.id}`, {
+        balance: newBalanceUser,
+      });
+
+      toast.success("Hoàn tiền thành công");
+    } else {
+      toast.warning("Tài khoản cửa hàng không đủ để hoàn tiền");
+      return;
+    }
+  };
+
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
   return (
     <div>
       <Header />
@@ -82,18 +125,25 @@ const OrderDetail = () => {
             const store = storeProducts[0].productDetail.product.store;
             const order = storeProducts[0].order;
             return (
-              <div
-                className="card mt-3"
+              <Card
+                className="rounded-3 mt-3"
                 key={storeId}
-                style={{
+                sx={{
                   position: "relative",
                   minHeight: "200px",
                   transition: "0.5s",
+                  backgroundColor: "backgroundElement.children",
                 }}
               >
+<<<<<<< HEAD
                 <div className="card-body">
                   <Button
                   className="mb-3"
+=======
+                <CardContent className="">
+                  <Button
+                    className="mb-3"
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                     variant="contained"
                     style={{
                       width: "auto",
@@ -196,17 +246,42 @@ const OrderDetail = () => {
                         </div>
                         <div className="col-8 mx-3 mt-5">
                           <div className="d-flex">
-                            <div className="col-3">
+                            <div className="col-2">
                               Giá: {formatPrice(orderDetail.price) + " VNĐ"}
                             </div>
-                            <div className="col-2">
-                              Số lượng: {orderDetail.quantity}
+                            <div className="col-4 d-flex justify-content-between">
+                              <Typography>
+                                {" "}
+                                Số lượng: {orderDetail.quantity}
+                              </Typography>
+                              <Typography>
+                                {" "}
+                                Thành tiền:{" "}
+                                {formatPrice(
+                                  orderDetail.price * orderDetail.quantity
+                                ) + " VNĐ"}
+                              </Typography>
                             </div>
-                            <div className="col-4">
-                              Thành tiền:{" "}
-                              {formatPrice(
-                                orderDetail.price * orderDetail.quantity
-                              ) + " VNĐ"}
+                            <div className="ms-5 ">
+                              <Button
+                                variant="contained"
+                                style={{
+                                  width: "auto",
+                                  backgroundColor: "rgb(255, 184, 184)",
+                                  color: "rgb(198, 0, 0)",
+                                }}
+                                onClick={() =>
+                                  refundReturn(
+                                    store,
+                                    orderDetail.productDetail.price *
+                                      orderDetail.quantity,
+                                    orderDetail.productDetail.id
+                                  )
+                                }
+                                disableElevation
+                              >
+                                Trả hàng/Hoàn tiền
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -225,6 +300,7 @@ const OrderDetail = () => {
                         Thời gian đặt hàng: {formatDate(order.paymentdate)}
                       </div>
                       <div>
+<<<<<<< HEAD
                         Thời gian nhận hàng: {formatDate(order.receivedate)}
                       </div>
                     </div>
@@ -240,11 +316,33 @@ const OrderDetail = () => {
                             )
                           ) + " VNĐ"}
                         </div>
+=======
+                        {order.receivedate ? (
+                          <>
+                            Thời gian nhận hàng: {formatDate(order.receivedate)}
+                          </>
+                        ) : (
+                          <>Thời gian nhận hàng: chưa nhận</>
+                        )}
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                       </div>
                     </div>
+                    <div className="col-6 text-end">
+                      <Typography variant="span">
+
+                        Tổng cộng:{" "}
+                        {formatPrice(
+                          storeProducts.reduce(
+                            (sum, detail) =>
+                              sum + detail.price * detail.quantity,
+                            0
+                          )
+                        ) + " VNĐ"}
+                      </Typography>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             );
           })
         )}

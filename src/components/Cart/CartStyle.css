@@ -29,9 +29,9 @@
 }
 
 #sticky-top {
-  position: -webkit-sticky; /* Safari */
+  position: -webkit-sticky;
   position: sticky;
-  top: 100px; /* Khoảng cách từ trên cùng của viewport */
+  top: 100px;
   margin-bottom: 16px;
 }
 
@@ -43,9 +43,9 @@
 }
 
 #button:disabled {
-  background-color: rgb(255, 184, 184); /* Màu nền khi bị vô hiệu hóa */
-  color: rgb(198, 0, 0); /* Màu chữ khi bị vô hiệu hóa */
-  opacity: 0.5; /* Thêm một chút độ trong suốt để phân biệt */
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
+  opacity: 0.5;
 }
 
 #button:hover {
@@ -68,9 +68,9 @@
 }
 
 #deleteButton:disabled {
-  background-color: rgb(255, 184, 184); /* Màu nền khi bị vô hiệu hóa */
-  color: rgb(198, 0, 0); /* Màu chữ khi bị vô hiệu hóa */
-  opacity: 0.5; /* Thêm một chút độ trong suốt để phân biệt */
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
+  opacity: 0.5;
 }
 
 #deleteButton:hover {
@@ -98,7 +98,7 @@
 
 #fontSize {
   font-size: 11px;
-  background-color: rgb(245, 245, 245);
+  /* background-color: rgb(245, 245, 245); */
   padding: 5px;
   border-radius: 5px;
 }

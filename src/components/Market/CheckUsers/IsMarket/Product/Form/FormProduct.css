@@ -26,12 +26,12 @@
 }
 #btn-resetProduct {
   background-color: #c5c5c5;
-  color: #222222;
+  color : white;
   transition: 0.5s;
 }
 #btn-resetProduct:hover {
   background-color: #c5c5c5;
-  color: #222222;
+  color : white;
   transform: scale(1.08);
   transition: 0.5s;
 }
@@ -58,7 +58,7 @@
   transition: 0.5s;
 }
 #btn-add-productCate{
-  width: 15%;
+  width: 35%;
   height: 50%;
   background-color: rgb(218, 255, 180);
   color: rgb(45, 91, 0);

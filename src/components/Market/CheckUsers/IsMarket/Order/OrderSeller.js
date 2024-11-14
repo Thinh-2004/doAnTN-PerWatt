@@ -8,7 +8,11 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+<<<<<<< HEAD
 import { Button } from "@mui/material";
+=======
+import { Button, Card, CardContent } from "@mui/material";
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 import useSession from "../../../../../Session/useSession";
 
 const CustomTabPanel = (props) => {
@@ -198,8 +202,17 @@ const Order = () => {
       return <div className="text-center">Chưa có sản phẩm</div>;
     }
     return filteredOrders.map((order) => (
+<<<<<<< HEAD
       <div className="card rounded-3 mt-3" id="cartItem" key={order.id}>
         <div className="card-body">
+=======
+      <Card
+        className=" rounded-3 mt-3"
+        key={order.id}
+        sx={{ backgroundColor: "backgroundElement.children" }}
+      >
+        <CardContent className="">
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
           <div className="d-flex align-items-center mb-1">
             <img
               src={getAvtUser(order.user.id, order.user.avatar, order.id)}
@@ -371,8 +384,13 @@ const Order = () => {
               </div>
             </div>
           </div>
+<<<<<<< HEAD
         </div>
       </div>
+=======
+        </CardContent>
+      </Card>
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
     ));
   };
 
@@ -383,11 +401,19 @@ const Order = () => {
   return (
     <div>
       <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
+<<<<<<< HEAD
       <div
         className="col-12 col-12"
         style={{ transition: "0.5s" }}
       >
         <Box sx={{ width: "100%", background: "white" }} className="rounded-3">
+=======
+      <div className="col-12 col-12" style={{ transition: "0.5s" }}>
+        <Box
+          sx={{ width: "100%", backgroundColor: "backgroundElement.children" }}
+          className="rounded-3"
+        >
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
           <Box
             sx={{
               borderBottom: 1,
@@ -401,7 +427,11 @@ const Order = () => {
               value={value}
               onChange={handleChange}
               aria-label="basic tabs example"
+<<<<<<< HEAD
               sx={{ backgroundColor: "white" }}
+=======
+              sx={{ backgroundColor: "backgroundElement.children" }}
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
             >
               {[
                 "Tất cả",

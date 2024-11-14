@@ -1,0 +1,41 @@
+#voucherFormContainer {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    /* background-color: #f8f9fa; */
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+#voucherFormTitle {
+    color: #343a40;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+#voucherForm {
+    display: flex;
+    flex-direction: column;
+}
+
+#voucherForm .form-group {
+    margin-bottom: 15px;
+}
+
+#voucherNameInput, #idOrderInput, #idStoreInput, #startDayInput, #endDayInput {
+    border-radius: 5px;
+    padding: 10px;
+}
+
+#submitVoucherBtn {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+#submitVoucherBtn:hover {
+    background-color: #0056b3;
+}

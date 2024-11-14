@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./CartStyle.css";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
@@ -8,12 +8,13 @@ import { tailspin } from "ldrs";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import { FaBan } from "react-icons/fa";
-import { Button } from "@mui/material";
+import { Button, Card, CardContent, Typography } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import Box from "@mui/material/Box";
 import Popper from "@mui/material/Popper";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
+import { ThemeModeContext } from "../ThemeMode/ThemeModeProvider";
 
 <FaBan />;
 
@@ -35,6 +36,10 @@ const Cart = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [loading, setLoading] = useState(true); // Trạng thái loading
   const [cartId, setCartId] = useState(null);
+<<<<<<< HEAD
+=======
+  const { mode } = useContext(ThemeModeContext);
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -83,6 +88,7 @@ const Cart = () => {
   };
 
   const fetchCart = async () => {
+<<<<<<< HEAD
     let loadingTimeout;
 
     loadingTimeout = setTimeout(() => setLoading(true), 500);
@@ -92,6 +98,13 @@ const Cart = () => {
       clearTimeout(loadingTimeout);
       setLoading(false);
 
+=======
+    setLoading(true);
+    setFill([]);
+
+    try {
+      const res = await axios.get(`/cart/${user.id}`);
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       setFill(res.data);
       const grouped = groupByStore(res.data);
       setGroupSelection(
@@ -103,14 +116,14 @@ const Cart = () => {
       updateTotalPrice(res.data);
     } catch (error) {
       console.error("Error loading cart items:", error);
+<<<<<<< HEAD
       clearTimeout(loadingTimeout);
+=======
+    } finally {
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchCart();
-  }, []);
 
   const deleteSelectedProducts = async () => {
     confirmAlert({
@@ -278,14 +291,6 @@ const Cart = () => {
     );
   };
 
-  useEffect(() => {
-    updateTotalPrice();
-  }, [selectedProductIds, fill]);
-
-  useEffect(() => {
-    fetchCart();
-  }, [user.id]);
-
   const fetchProductDetails = async (productId) => {
     if (productId) {
       try {
@@ -362,6 +367,14 @@ const Cart = () => {
     }
   };
 
+  useEffect(() => {
+    updateTotalPrice();
+  }, [selectedProductIds, fill]);
+
+  useEffect(() => {
+    fetchCart();
+  }, [user.id]);
+
   return (
     <div>
       <Header reloadCartItems={isCountCart} />
@@ -394,8 +407,11 @@ const Cart = () => {
               </div>
             ) : (
               <>
-                <div className="card mb-3">
-                  <div className="card-body d-flex justify-content-between align-items-center">
+                <Card className=" rounded-3 mb-3">
+                  <CardContent
+                    sx={{ backgroundColor: "backgroundElement.children" }}
+                    className="d-flex justify-content-between align-items-center p-2"
+                  >
                     <div className="d-flex align-items-center">
                       <Checkbox
                         id="selectAll"
@@ -413,15 +429,15 @@ const Cart = () => {
                     >
                       <i className="bi bi-trash3-fill"></i>
                     </Button>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
                 {Object.keys(groupedProducts).map((storeId) => {
                   const storeProducts = groupedProducts[storeId];
                   const store = storeProducts[0].productDetail.product.store;
                   const isGroupSelected = groupSelection[storeId] || false;
                   return (
-                    <div
-                      className="card mb-3"
+                    <Card
+                      className="rounded-3 mb-3"
                       id="cartItem"
                       key={storeId}
                       style={{ position: "relative", minHeight: "200px" }}
@@ -443,9 +459,10 @@ const Cart = () => {
                           }}
                         ></l-tailspin>
                       )}
-                      <div
+                      <CardContent
                         className="card-body"
                         style={{ display: isCardLoaded ? "block" : "none" }}
+                        sx={{ backgroundColor: "backgroundElement.children" }}
                       >
                         <div className="d-flex justify-content-between">
                           <div className="d-flex">
@@ -479,6 +496,7 @@ const Cart = () => {
                                   borderRadius: "100%",
                                 }}
                                 alt=""
+                                loading="lazy"
                               />
                             </Link>
                             <h5 id="nameShop" className="mt-1">
@@ -487,7 +505,10 @@ const Cart = () => {
                                 to={`/pageStore/${store.slug}`}
                                 style={{
                                   textDecoration: "inherit",
-                                  color: "inherit",
+                                  color:
+                                    mode === "light"
+                                      ? "darkslategrey"
+                                      : "white",
                                 }}
                               >
                                 {store.namestore}
@@ -569,6 +590,7 @@ const Cart = () => {
                                     onLoad={() => {
                                       setIsCardLoaded(true);
                                     }}
+                                    // loading="lazy"
                                   />
                                   {cart.productDetail.quantity === 0 && (
                                     <div
@@ -588,6 +610,7 @@ const Cart = () => {
                               <div className="row">
                                 <div className="col-lg-5 col-md-12 mt-3 mx-3 pe-4">
                                   <div className="row">
+<<<<<<< HEAD
                                     <Button
                                       variant="contained"
                                       component={Link}
@@ -605,6 +628,21 @@ const Cart = () => {
                                       {cart.productDetail.product.name}
                                     </div>
                                     <div id="fontSize">
+=======
+                                    <div id="fontSizeTitle">
+                                      <Typography
+                                        sx={{ color: "text.default" }}
+                                      >
+                                        {cart.productDetail.product.name}
+                                      </Typography>
+                                    </div>
+                                    <Box
+                                      id="fontSize"
+                                      sx={{
+                                        backgroundColor: "background.default",
+                                      }}
+                                    >
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                       <div className="d-flex">
                                         <div key={cart.id}>
                                           <div
@@ -711,6 +749,10 @@ const Cart = () => {
                                                                 marginRight:
                                                                   "10px",
                                                               }}
+<<<<<<< HEAD
+=======
+                                                              loading="lazy"
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                                             />
                                                             {detail.namedetail}
                                                           </button>
@@ -752,6 +794,7 @@ const Cart = () => {
                                             </Box>
                                           </Popper>
                                         </div>
+<<<<<<< HEAD
                                         {[
                                           cart.productDetail.product
                                             .productcategory.name,
@@ -764,6 +807,25 @@ const Cart = () => {
                                           .join(", ")}
                                       </div>
                                     </div>
+=======
+                                        <Typography
+                                          sx={{ color: "text.default" }}
+                                          variant="span"
+                                        >
+                                          {[
+                                            cart.productDetail.product
+                                              .productcategory.name,
+                                            cart.productDetail.product.trademark
+                                              .name,
+                                            cart.productDetail.product
+                                              .warranties.name,
+                                          ]
+                                            .filter(Boolean)
+                                            .join(", ")}
+                                        </Typography>
+                                      </div>
+                                    </Box>
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                   </div>
                                 </div>
                                 <div className="col-lg-6 col-md-12">
@@ -772,13 +834,18 @@ const Cart = () => {
                                     id="spinner"
                                     disabled={cart.productDetail.quantity === 0}
                                   >
+<<<<<<< HEAD
                                     {/* <button
+=======
+                                    <Button
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                       className="btn border rounded-0 rounded-start"
                                       id="buttonDown"
                                       onClick={() => handleDecrease(cart.id)}
                                       disabled={
                                         cart.productDetail.quantity === 0
                                       }
+<<<<<<< HEAD
                                     >
                                       <i className="bi bi-dash-lg"></i>
                                     </button> */}
@@ -801,6 +868,21 @@ const Cart = () => {
                                       <i className="bi bi-dash-lg"></i>
                                     </Button>
 
+=======
+                                      variant="contained"
+                                      sx={{
+                                        width: "auto",
+                                        color:
+                                          mode === "light" ? "black" : "white",
+                                        backgroundColor:
+                                          "backgroundElement.children",
+                                      }}
+                                      disableElevation
+                                    >
+                                      <i className="bi bi-dash-lg"></i>
+                                    </Button>
+
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                     <input
                                       type="number"
                                       min={0}
@@ -817,6 +899,17 @@ const Cart = () => {
                                       disabled={
                                         cart.productDetail.quantity === 0
                                       }
+<<<<<<< HEAD
+=======
+                                      style={{
+                                        backgroundColor:
+                                          mode === "light"
+                                            ? "white"
+                                            : "#363535",
+                                        color:
+                                          mode === "light" ? "black" : "white",
+                                      }}
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                     />
                                     <Button
                                       className={`btn border rounded-0 rounded-end ${
@@ -827,7 +920,17 @@ const Cart = () => {
                                           "btn-active"
                                         )
                                       }`}
+<<<<<<< HEAD
                                       id="buttonUp"
+=======
+                                      sx={{
+                                        width: "auto",
+                                        color:
+                                          mode === "light" ? "black" : "white",
+                                        backgroundColor:
+                                          "backgroundElement.children",
+                                      }}
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                       onClick={() => handleIncrease(cart.id)}
                                       disabled={
                                         cart.quantity >=
@@ -835,15 +938,19 @@ const Cart = () => {
                                         cart.productDetail.quantity === 0
                                       }
                                       variant="contained"
+<<<<<<< HEAD
                                       style={{
                                         width: "auto",
                                         backgroundColor: "rgb(250, 250, 250)",
                                         color: "rgb(0, 0, 0)",
                                       }}
+=======
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                       disableElevation
                                     >
                                       <i className="bi bi-plus-lg"></i>
                                     </Button>
+<<<<<<< HEAD
 
                                     {/* <button
                                       className={`btn border rounded-0 rounded-end ${
@@ -866,6 +973,14 @@ const Cart = () => {
                                     </button> */}
                                   </div>
                                   <h5 className="mt-2">
+=======
+                                  </div>
+                                  <Typography
+                                    variant="h5"
+                                    className="mt-2"
+                                    sx={{ color: "text.default" }}
+                                  >
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                     Tổng cộng:{" "}
                                     {formatPrice(
                                       cart.productDetail.price * cart.quantity
@@ -876,24 +991,42 @@ const Cart = () => {
                                         sản phẩm
                                       </div>
                                     )}
+<<<<<<< HEAD
                                   </h5>
+=======
+                                  </Typography>
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                 </div>
                               </div>
                             </div>
                           );
                         })}
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   );
                 })}
               </>
             )}
           </div>
           <div className="col-lg-3 col-md-12">
+<<<<<<< HEAD
             <div className="card" id="sticky-top">
+=======
+            <Box
+              sx={{ backgroundColor: "backgroundElement.children" }}
+              className="card"
+              id="sticky-top"
+            >
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
               <div className="card-body" id="smooth">
                 <div className="d-flex justify-content-between">
-                  <h5 className="text-start">Tổng cộng:</h5>
+                  <Typography
+                    variant="h5"
+                    className="text-start"
+                    sx={{ color: "text.default" }}
+                  >
+                    Tổng cộng:
+                  </Typography>
                   <h5 className="text-end text-danger">
                     {formatPrice(totalPrice)} VNĐ
                   </h5>
@@ -901,10 +1034,15 @@ const Cart = () => {
                 <div>
                   {selectedProductIds.length > 0 ? (
                     <div>
-                      Số lượng sản phẩm đã chọn: {selectedProductIds.length}
+                      <Typography sx={{ color: "text.default" }}>
+                        {" "}
+                        Số lượng sản phẩm đã chọn: {selectedProductIds.length}
+                      </Typography>
                     </div>
                   ) : (
-                    <div>Chưa có sản phẩm nào được chọn.</div>
+                    <Typography sx={{ color: "text.default" }}>
+                      Chưa có sản phẩm nào được chọn.
+                    </Typography>
                   )}
                 </div>
                 <Button
@@ -925,8 +1063,21 @@ const Cart = () => {
                 >
                   Đặt hàng
                 </Button>
+                <Button
+                  variant="contained"
+                  component={Link}
+                  to="/wallet/buyer"
+                  style={{
+                    width: "auto",
+                    backgroundColor: "rgb(218, 255, 180)",
+                    color: "rgb(45, 91, 0)",
+                  }}
+                  disableElevation
+                >
+                  <i class="bi bi-wallet2"></i>
+                </Button>
               </div>
-            </div>
+            </Box>
           </div>
         </div>
       </div>

@@ -1,4 +1,17 @@
-import { Button, styled, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  styled,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+} from "@mui/material";
 import React, { useState, useEffect, useImperativeHandle } from "react";
 
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -16,6 +29,7 @@ const DetailProduct = forwardRef(
       quantity: "",
       imagedetail: "",
       imageName: "",
+      formattedPrice: "",
     });
     const [imagePreview, setImagePreview] = useState("");
     const [editingIndex, setEditingIndex] = useState(null); // Index của mục đang được chỉnh sửa
@@ -257,20 +271,20 @@ const DetailProduct = forwardRef(
           price: "",
           quantity: "",
           imagedetail: "",
-          formattedPrice : ""
+          formattedPrice: "",
         });
         setMoveData([]);
       }
     }, [reloadArrayDetail]);
 
     return (
-      <div className="bg-white shadow">
-        <div className="card">
-          <div className="card-body">
+      <div className="shadow">
+        <Card sx={{backgroundColor: "backgroundElement.children"}}>
+          <CardContent >
             <div className="d-flex justify-content-between">
               {isChangeForm ? (
-                <div className="row">
-                  <div className="col-lg-4 col-md-4 col-sm-4">
+                <Box  className="row">
+                  <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                     <TextField
                       label="Nhập tên phân loại"
                       id="outlined-size-small"
@@ -281,7 +295,7 @@ const DetailProduct = forwardRef(
                       fullWidth
                     />
                   </div>
-                  <div className="col-lg-4 col-md-4 col-sm-4">
+                  <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                     <TextField
                       label="Nhập giá sản phẩm"
                       id="outlined-size-small"
@@ -293,7 +307,7 @@ const DetailProduct = forwardRef(
                       className="me-2"
                     />
                   </div>
-                  <div className="col-lg-4 col-md-4 col-sm-4">
+                  <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                     <TextField
                       label="Nhập số lượng"
                       id="outlined-size-small"
@@ -310,6 +324,7 @@ const DetailProduct = forwardRef(
                       style={{ textTransform: "none", fontSize: "15px" }}
                       onClick={handleAddOrUpdate}
                       className="me-4"
+                      variant="outlined"
                     >
                       {editingIndex !== null ? "Cập nhật" : "Thêm"}
                     </Button>
@@ -340,54 +355,64 @@ const DetailProduct = forwardRef(
                     </div>
                   )}
                   <div className="mt-2">
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">Hình</th>
-                          <th scope="col">Tên phân loại</th>
-                          <th scope="col">Giá phân loại</th>
-                          <th scope="col">Số lượng phân loại</th>
-                          <th scope="col">Thao tác</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {temporaryData.map((fill, index) => (
-                          <tr key={index}>
-                            <td>
-                              <img
-                                src={fill.imagedetail}
-                                alt="Hình ảnh"
-                                style={{ width: "100px", height: "100px" }}
-                              />
-                            </td>
-                            <td>{fill.namedetail}</td>
-                            <td>{fill.price}</td>
-                            <td>{fill.quantity}</td>
-                            <td>
-                              <Button
-                                onClick={() => handleEdit(index)}
-                                color="primary"
-                                startIcon={<EditIcon />}
-                                size="small"
-                                className="me-2"
-                              >
-                                Sửa
-                              </Button>
-                              <Button
-                                onClick={() => handleDelete(index)}
-                                color="error"
-                                startIcon={<DeleteIcon />}
-                                size="small"
-                              >
-                                Xóa
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <TableContainer>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell align="center">Hình</TableCell>
+                            <TableCell align="center">Tên phân loại</TableCell>
+                            <TableCell align="center">Giá phân loại</TableCell>
+                            <TableCell align="center">
+                              Số lượng phân loại
+                            </TableCell>
+                            <TableCell align="center">Thao tác</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {temporaryData.map((fill, index) => (
+                            <TableRow key={index}>
+                              <TableCell align="center">
+                                <img
+                                  src={fill.imagedetail}
+                                  alt="Hình ảnh"
+                                  style={{ width: "100px", height: "100px" }}
+                                />
+                              </TableCell>
+                              <TableCell align="center">
+                                {fill.namedetail}
+                              </TableCell>
+                              <TableCell align="center">
+                                {formatPrice(fill.price)}
+                              </TableCell>
+                              <TableCell align="center">
+                                {fill.quantity}
+                              </TableCell>
+                              <TableCell align="center">
+                                <Button
+                                  onClick={() => handleEdit(index)}
+                                  color="primary"
+                                  startIcon={<EditIcon />}
+                                  size="small"
+                                  className="me-2"
+                                >
+                                  Sửa
+                                </Button>
+                                <Button
+                                  onClick={() => handleDelete(index)}
+                                  color="error"
+                                  startIcon={<DeleteIcon />}
+                                  size="small"
+                                >
+                                  Xóa
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
                   </div>
-                </div>
+                </Box>
               ) : (
                 <>
                   <TextField
@@ -414,8 +439,8 @@ const DetailProduct = forwardRef(
                 </>
               )}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

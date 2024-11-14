@@ -1,8 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import axios from "../../../Localhost/Custumize-axios";
 import { Link } from "react-router-dom";
+import { Box, Chip } from "@mui/material";
+import LoyaltyIcon from "@mui/icons-material/Loyalty";
 
 const ListProductStore = ({ data }) => {
+  //Tạo state nhận api voucher theo id product
+  //Sử dụng đối tượng để lưu voucher theo từng idProduct
+  const [voucher, setVoucher] = useState({});
   const geturlIMG = (productId, filename) => {
     return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
   };
@@ -18,10 +23,30 @@ const ListProductStore = ({ data }) => {
     if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
     return count;
   };
+
+  const loadData = async (idProduct) => {
+    try {
+      const res = await axios.get(`fillVoucherPrice/${idProduct}`);
+      //Lưu voucher theo từng idProduct
+      setVoucher((pre) => ({
+        ...pre,
+        [idProduct]: res.data,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    data.forEach((fill) => {
+      loadData(fill.product.id);
+    });
+  }, [data]);
+
   return (
     <>
-      {data.map((fill, index) => {
-        const firstIMG = fill.images[0];
+      {data.map((fill) => {
+        const firstIMG = fill.product.images[0];
         const productDetail = fill.productDetails;
 
         //Tìm giá nhỏ nhất lớn nhất trong mảng
@@ -37,26 +62,79 @@ const ListProductStore = ({ data }) => {
           (total, detailQuantity) => total + detailQuantity.quantity,
           0
         );
+
+        //Lấy voucher tương ứng với idProduct
+        const productVoucher = voucher[fill.product.id] || [];
+
+        //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
+        const isVoucherPrice = productVoucher.some(
+          (check) => check.productDetail.product.id === fill.product.id
+        );
+        //Kiểm tra status voucher
+        const isStatusVoucher = productVoucher.some(
+          (check) => check.status === "Hoạt động"
+        );
+
+        //Tính giá giảm của voucher
+        let result;
+
+        if (productVoucher.length > 0) {
+          // Nếu chỉ có 1 sản phẩm được chọn
+          if (productVoucher.length === 1) {
+            // Tính giá giảm
+            const priceDown =
+              productVoucher[0].productDetail.price *
+              (productVoucher[0].discountprice / 100);
+            result = formatPrice(
+              productVoucher[0].productDetail?.price - priceDown
+            );
+          } else {
+            // Tính giá giảm cho giá nhỏ nhất và lớn nhất
+            const minPriceProductDetail = Math.min(
+              ...productVoucher.map((filter) => filter.productDetail.price)
+            );
+            const maxPriceProductDetail = Math.max(
+              ...productVoucher.map((filter) => filter.productDetail.price)
+            );
+            // Tính giá giảm First và Last
+            const priceDownFirst =
+              minPriceProductDetail * (productVoucher[0].discountprice / 100);
+            const priceDownLast =
+              maxPriceProductDetail *
+              (productVoucher[productVoucher.length - 1].discountprice / 100);
+            //Kết quả
+            const resultFirst = minPriceProductDetail - priceDownFirst;
+            const resultLast = maxPriceProductDetail - priceDownLast;
+            result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
+          }
+        }
+
         return (
-          <div className="col-lg-3 col-md-3 col-sm-3 mt-3" key={fill.id}>
-            <div
-              className="card shadow rounded-4 mt-4 p-2 d-flex flex-column"
-              style={{ height: "100%" }} // Đảm bảo chiều cao tự điều chỉnh
+          <div
+            className="col-lg-3 col-md-3 col-sm-3 mb-3 mt-2"
+            key={fill.product.id}
+          >
+            <Box
+              className="shadow rounded-3 p-2 d-flex flex-column"
+              sx={{
+                bgcolor: "backgroundElement.children",
+              }} // Đảm bảo chiều cao tự điều chỉnh
               id="product-item"
             >
               <Link
-                to={`/detailProduct/${fill.slug}`}
+                to={`/detailProduct/${fill.product.slug}`}
                 className="position-relative d-flex justify-content-center"
               >
                 <img
                   src={
                     firstIMG
-                      ? geturlIMG(fill.id, firstIMG.imagename)
+                      ? geturlIMG(fill.product.id, firstIMG.imagename)
                       : "/images/no_img.png"
                   }
-                  className="card-img-top img-fluid rounded-4 object-fit-contain"
+                  className="img-fluid rounded-3"
                   alt="..."
-                  style={{ width: "200px", height: "150px" }}
+                  style={{ width: "200px", height: "200px" }}
+                  loading="lazy"
                 />
                 {totalQuantity === 0 && (
                   <div
@@ -66,8 +144,19 @@ const ListProductStore = ({ data }) => {
                     <span className="text-white text-center">Hết hàng</span>
                   </div>
                 )}
-                {fill?.store?.taxcode && (
-                  <div class="position-absolute bottom-0 end-0">
+                {isVoucherPrice && isStatusVoucher ? (
+                  <div className="position-absolute bottom-0 end-0">
+                    <Chip
+                      icon={<LoyaltyIcon />}
+                      label={`Giảm: ${productVoucher[0].discountprice}%`}
+                      size="small"
+                      sx={{ backgroundColor: "backgroundElement.children" }}
+                      className="rounded-3"
+                    />
+                  </div>
+                ): null}
+                {fill?.product?.store?.taxcode && (
+                  <div className="position-absolute bottom-0 end-0">
                     <img
                       src="/images/IconShopMall.png"
                       alt=""
@@ -80,43 +169,56 @@ const ListProductStore = ({ data }) => {
               <div className="mt-2 flex-grow-1 d-flex flex-column justify-content-between">
                 {/* Thêm flex-grow-1 */}
                 <span className="fw-bold fst-italic" id="product-name">
-                  {fill.name}
+                  {fill.product.name}
                 </span>
                 <h5 id="price-product">
-                  <del className="text-secondary me-1">3000000 đ</del> -
-                  <span className="text-danger mx-1" id="price-product-item">
-                    {minPrice === maxPrice
-                      ? formatPrice(minPrice) + " đ"
-                      : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)} đ`}
-                  </span>
+                  {isVoucherPrice && isStatusVoucher ? (
+                    <>
+                      <del className="text-secondary me-1">
+                        {minPrice === maxPrice
+                          ? formatPrice(minPrice) + " đ"
+                          : `${formatPrice(minPrice)} - ${formatPrice(
+                              maxPrice
+                            )}` + " đ"}
+                      </del>
+                      -
+                      <span
+                        className="text-danger mx-1"
+                        id="price-product-item"
+                      >
+                        {result} đ
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span
+                        className="text-danger mx-1"
+                        id="price-product-item"
+                      >
+                        {minPrice === maxPrice
+                          ? formatPrice(minPrice) + " đ"
+                          : `${formatPrice(minPrice)} - ${formatPrice(
+                              maxPrice
+                            )}` + " đ"}
+                      </span>
+                    </>
+                  )}
                 </h5>
-                <hr />
+                <hr className="m-0 p-0" />
                 <div className="d-flex justify-content-between">
                   <div>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
-                    <label htmlFor="" className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                    </label>
+                    <span style={{ fontSize: "12px" }}>
+                      <i className="bi bi-star-fill text-warning"></i> 3.3
+                    </span>
                   </div>
                   <div>
                     <span style={{ fontSize: "12px" }}>
-                      Đã bán: {formatCount(fill.countQuantityOrderBy)}
+                      Đã bán: {formatCount(fill.countOrderSuccess)}
                     </span>
                   </div>
                 </div>
               </div>
-            </div>
+            </Box>
           </div>
         );
       })}

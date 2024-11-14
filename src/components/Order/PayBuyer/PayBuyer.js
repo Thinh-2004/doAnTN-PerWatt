@@ -6,12 +6,21 @@ import axios from "../../../Localhost/Custumize-axios";
 import { toast } from "react-toastify";
 import { tailspin } from "ldrs";
 import "./PayBuyerStyle.css";
+<<<<<<< HEAD
 import { Button } from "@mui/material";
 import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+=======
+import { Box, Button, Card, CardContent } from "@mui/material";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import FormSelectAdress from "../../APIAddressVN/FormSelectAdress.js";
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
 const PayBuyer = () => {
   const [products, setProducts] = useState([]);
@@ -25,12 +34,23 @@ const PayBuyer = () => {
   const navigate = useNavigate();
   const [wallet, setWallet] = useState("");
   const [walletAdmin, setWalletAdmin] = useState("");
+<<<<<<< HEAD
 
+=======
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
   const query = new URLSearchParams(location.search);
   const cartIds = query.get("cartIds");
+  const [resetForm, setResetForm] = useState(false);
+
   tailspin.register();
   const [inputValues, setInputValues] = useState(Array(6).fill(""));
   const inputRefs = useRef([]);
+<<<<<<< HEAD
+=======
+  const handleReset = () => {
+    setResetForm(true);
+  };
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
@@ -60,6 +80,7 @@ const PayBuyer = () => {
     }
   };
 
+<<<<<<< HEAD
   useEffect(() => {
     fetchWallet();
   }, [user.id]);
@@ -195,23 +216,162 @@ const PayBuyer = () => {
         }
         const paymentResponse = await axios.get("/paymentMethod");
         setPaymentMethods(paymentResponse.data);
+=======
+  useEffect(() => {
+    fetchWallet();
+  }, [user.id]);
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
-        if (user.id) {
-          const shippingInfoResponse = await axios.get(
-            `/shippingInfo?userId=${user.id}`
+  const handleWithdraw = async (amount) => {
+    try {
+      if (wallet.balance > amount) {
+        const newBalance = parseFloat(wallet.balance) - parseFloat(amount);
+
+        const res = await axios.put(`wallet/update/${user.id}`, {
+          balance: newBalance,
+        });
+
+        addTransaction(amount, "Thanh toán PerWatt");
+
+        let adminBalance = parseFloat(walletAdmin.balance);
+        for (const storeId in groupedProducts) {
+          const { store, products } = groupedProducts[storeId];
+
+          const storeTotal = products.reduce((sum, product) => {
+            return sum + product.productDetail.price * product.quantity;
+          }, 0);
+
+          adminBalance += storeTotal;
+          const adminRes = await axios.put(`wallet/update/${1}`, {
+            balance: adminBalance,
+          });
+          setWalletAdmin(adminRes.data);
+
+          const transactionUser = await axios.get(
+            `wallettransaction/idWalletByIdUSer/${user.id}`
           );
-          setShippingInfo(shippingInfoResponse.data);
-        }
-      } catch (error) {
-        console.error(
-          "Error fetching data:",
-          error.response ? error.response.data : error.message
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
 
+          await axios.post(
+            `wallettransaction/create/${transactionUser.data.id}`,
+            {
+              amount: -storeTotal,
+              transactiontype: "Thanh toán bằng PerPay",
+              transactiondate: new Date(),
+              user: { id: user.id },
+            }
+          );
+          const transactionType =
+            `Thanh toán từ người dùng: ${user.fullname}`.substring(0, 50);
+          await axios.post(`wallettransaction/create/${1}`, {
+            amount: storeTotal,
+            transactiontype: transactionType,
+            transactiondate: new Date(),
+            user: { id: user.id },
+            store: { id: store.id },
+          });
+
+          const withdrawAmount = storeTotal * 0.9;
+          const adminBalancePlus = storeTotal * 0.1;
+          adminBalance -= withdrawAmount;
+          const adminResWithdraw = await axios.put(`wallet/update/${1}`, {
+            balance: adminBalance,
+          });
+          setWalletAdmin(adminResWithdraw.data);
+
+          const formattedAdminBalance =
+            adminBalancePlus.toLocaleString("vi-VN");
+
+          const transactionTypeWithdraw =
+            `Chuyển tiền về của hàng: ${store.namestore} và lấy ${formattedAdminBalance}`.substring(
+              0,
+              50
+            );
+          await axios.post(`wallettransaction/create/${1}`, {
+            amount: -withdrawAmount,
+            transactiontype: transactionTypeWithdraw,
+            transactiondate: new Date(),
+            user: { id: user.id },
+            store: { id: store.id },
+          });
+
+          const fillWalletStore = await axios.get(`wallet/${store.user.id}`);
+
+          const transactionStore = await axios.get(
+            `wallettransaction/idWalletByIdUSer/${store.user.id}`
+          );
+
+          await axios.put(`wallet/update/${store.user.id}`, {
+            balance: fillWalletStore.data.balance + withdrawAmount,
+          });
+
+          await axios.post(
+            `wallettransaction/create/${transactionStore.data.id}`,
+            {
+              amount: withdrawAmount,
+              transactiontype: "Tiền từ PerWatt",
+              transactiondate: new Date(),
+              user: { id: store.user.id },
+            }
+          );
+        }
+
+        setWallet(res.data);
+        handleOrder();
+      } else {
+        toast.warning("Bạn không đủ tiền trong tài khoản");
+      }
+    } catch (error) {
+      console.error(
+        "Error withdrawing money:",
+        error.response ? error.response.data : error.message
+      );
+    }
+  };
+
+  const addTransaction = async (amount, transactionType) => {
+    const now = new Date();
+
+    try {
+      await axios.post(`wallettransaction/create/${wallet.id}`, {
+        amount: amount,
+        transactiontype: transactionType,
+        transactiondate: now,
+      });
+    } catch (error) {
+      console.error(
+        "Đã có lỗi xảy ra:",
+        error.response ? error.response.data : error.message
+      );
+    }
+  };
+
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      if (cartIds) {
+        const response = await axios.get(`/cart?id=${cartIds}`);
+        setProducts(response.data);
+      }
+      const paymentResponse = await axios.get("/paymentMethod");
+      setPaymentMethods(paymentResponse.data);
+
+      if (user.id) {
+        const shippingInfoResponse = await axios.get(
+          `/shippingInfo?userId=${user.id}`
+        );
+        setShippingInfo(shippingInfoResponse.data);
+      }
+    } catch (error) {
+      console.error(
+        "Error fetching data:",
+        error.response ? error.response.data : error.message
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadProducts();
   }, [cartIds, user.id]);
 
@@ -300,9 +460,22 @@ const PayBuyer = () => {
       }
 
       const groupedProducts = groupByStore(products);
+<<<<<<< HEAD
 
+=======
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       for (const storeId in groupedProducts) {
-        const { store, products: storeProducts } = groupedProducts[storeId];
+        const { products: storeProducts } = groupedProducts[storeId];
+
+        const outOfStockProduct = storeProducts.find(
+          (product) => product.productDetail.quantity === 0
+        );
+        if (outOfStockProduct) {
+          toast.error(
+            "Sản phẩm đã có người mua trước, vui lòng mua sản phẩm khác hoặc mua lại sau"
+          );
+          return;
+        }
 
         const outOfStockProduct = storeProducts.find(
           (product) => product.productDetail.quantity === 0
@@ -362,10 +535,12 @@ const PayBuyer = () => {
 
       setShippingInfo([...shippingInfo, response.data]);
       setNewAddress("");
+      handleReset();
       toast.success("Thêm địa chỉ thành công!");
     } catch (error) {
       toast.error("Thêm địa chỉ thất bại!");
     }
+    loadProducts();
   };
 
   const handleMomo = async () => {
@@ -380,7 +555,10 @@ const PayBuyer = () => {
       },
       0
     );
+<<<<<<< HEAD
 
+=======
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
     const productList = Object.values(groupedProducts).flatMap(({ products }) =>
       products.map((product) => ({
         name: product.productDetail.product.name,
@@ -391,7 +569,15 @@ const PayBuyer = () => {
 
     sessionStorage.setItem("productList", JSON.stringify(productList));
 
+<<<<<<< HEAD
     const data = { amount: totalAmount };
+=======
+    const data = {
+      amount: totalAmount,
+      ids: cartIds,
+      address: selectedShippingInfo,
+    };
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
     const response = await axios.get("/pay", {
       params: data,
     });
@@ -448,9 +634,16 @@ const PayBuyer = () => {
         ) : (
           Object.keys(groupedProducts).map((storeId) => {
             const { store, products: storeProducts } = groupedProducts[storeId];
+            const totalAmount = storeProducts.reduce(
+              (sum, cart) => sum + cart.productDetail.price * cart.quantity,
+              0
+            );
             return (
-              <div className="card mt-3" key={storeId}>
-                <div className="card-body">
+              <Card className="mt-3 rounded-3" key={storeId}>
+                <CardContent
+                  sx={{ backgroundColor: "backgroundElement.children" }}
+                  className=""
+                >
                   <div className="d-flex align-items-center">
                     <img
                       src={getAvtUser(
@@ -638,6 +831,7 @@ const PayBuyer = () => {
                                 Thành tiền:{" "}
                                 {formatPrice(
                                   cart.productDetail.price * cart.quantity
+<<<<<<< HEAD
                                 ) + " VNĐ"}{" "}
                                 Tổng tiền:{" "}
                                 {formatPrice(
@@ -648,6 +842,8 @@ const PayBuyer = () => {
                                         detail.quantity,
                                     0
                                   )
+=======
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                 ) + " VNĐ"}
                               </div>
                             </div>
@@ -656,16 +852,30 @@ const PayBuyer = () => {
                       </div>
                     );
                   })}
-                </div>
-              </div>
+                  <div className="col-lg-11 col-md-12">
+                    <div className="d-flex justify-content-end">
+                      Tổng tiền: {formatPrice(totalAmount) + " VNĐ"}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             );
           })
         )}
+<<<<<<< HEAD
         <div className="card mt-3">
           <div className="row card-body">
             <div className="col-lg-6 col-md-8 col-sm-12">
+=======
+        <Card
+          className="rounded-3 mt-3 p-3"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
+          <CardContent className="row">
+            <div className="col-lg-6 col-md-8 col-sm-12 ">
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
               {paymentMethods.map((method) => (
-                <div className="form-check" key={method.id}>
+                <div className="form-check mb-3" key={method.id}>
                   <div className="d-flex align-items-center">
                     <input
                       className="form-check-input me-1 mb-1"
@@ -677,13 +887,9 @@ const PayBuyer = () => {
                       onChange={() =>
                         setSelectedPaymentMethod(String(method.id))
                       }
+                      style={{ cursor: "pointer" }}
                     />
-                    <label
-                      className="form-check-label me-3"
-                      htmlFor={`paymentMethod${method.id}`}
-                    >
-                      {method.type}
-                    </label>
+                    &nbsp;
                     <img
                       className="image-fixed-size"
                       src={`/images/${
@@ -693,11 +899,16 @@ const PayBuyer = () => {
                           ? "VNPay.png"
                           : method.type === "Thanh toán bằng MoMo"
                           ? "MoMo.png"
+<<<<<<< HEAD
                           : method.type === "Thánh toán bằng PerPay"
+=======
+                          : method.type === "Thanh toán bằng PerPay"
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                           ? "PerPay.png"
                           : "default.png"
                       }`}
                       alt={method.type}
+<<<<<<< HEAD
                       style={{ width: "8%", objectFit: "cover" }}
                     />
                     {method.type === "Thánh toán bằng PerPay" ? (
@@ -717,6 +928,26 @@ const PayBuyer = () => {
                     ) : (
                       ""
                     )}
+=======
+                      style={{
+                        width: "8%",
+                        objectFit: "cover",
+                        borderRadius: "100%",
+                        cursor : "pointer"
+                      }}
+                      onClick={(e) =>
+                        setSelectedPaymentMethod(String(method.id))
+                      }
+                    />
+                    &nbsp;
+                    <label
+                      className="form-check-label me-3"
+                      htmlFor={`paymentMethod${method.id}`}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {method.type}
+                    </label>
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                   </div>
                 </div>
               ))}
@@ -730,13 +961,18 @@ const PayBuyer = () => {
                   </InputLabel>
                   <Select
                     labelId="address-select-label"
+<<<<<<< HEAD
                     id="address-select "
+=======
+                    id="address-select"
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                     value={selectedShippingInfo || ""}
                     label="Chọn địa chỉ nhận hàng"
                     onChange={(e) => setSelectedShippingInfo(e.target.value)}
                   >
                     {shippingInfo.map((shipping) => (
                       <MenuItem key={shipping.id} value={shipping.id}>
+<<<<<<< HEAD
                         {shipping.address}
                       </MenuItem>
                     ))}
@@ -757,6 +993,31 @@ const PayBuyer = () => {
                 >
                   <i class="bi bi-plus"></i>
                 </Button>
+=======
+                        {/* {shipping.user.fullname} <br />
+                        {shipping.user.phone} <br /> */}
+                        {shipping.address}
+                      </MenuItem>
+                    ))}
+                    <MenuItem>
+                      <Button
+                        variant="contained"
+                        data-bs-toggle="modal"
+                        data-bs-target="#exampleModal1"
+                        style={{
+                          width: "100%",
+                          backgroundColor: "rgb(218, 255, 180)",
+                          color: "rgb(45, 91, 0)",
+                          textAlign: "right",
+                        }}
+                        disableElevation
+                      >
+                        <i className="bi bi-plus"></i> Thêm địa chỉ mới
+                      </Button>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
               </div>
               <div className="mt-3"></div>
             </div>
@@ -783,11 +1044,22 @@ const PayBuyer = () => {
                   <div className="modal-body">
                     <input
                       type="text"
-                      className="form-control"
+                      className="form-control mb-3"
                       value={newAddress}
                       onChange={(e) => setNewAddress(e.target.value)}
                       placeholder="Nhập địa chỉ mới"
+                      readOnly
                     />
+<<<<<<< HEAD
+=======
+
+                    <FormSelectAdress
+                      apiAddress={(fullAddress) => setNewAddress(fullAddress)}
+                      resetForm={resetForm}
+                      editFormAddress={newAddress}
+                    />
+
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                     <div className="text-end mt-3">
                       <Button
                         variant="contained"
@@ -806,8 +1078,35 @@ const PayBuyer = () => {
                 </div>
               </div>
             </div>
+<<<<<<< HEAD
           </div>
           <div className="card-body">
+=======
+          </CardContent>
+
+          <div
+            className="card-body"
+            style={{ display: "flex", justifyContent: "flex-end" }}
+          >
+            <Button
+              variant="contained"
+              component={Link}
+              to="/wallet/buyer"
+              sx={{
+                width: "auto",
+                backgroundColor: "rgb(218, 255, 180)",
+                color: "rgb(45, 91, 0)",
+                "&:hover": {
+                  backgroundColor: "rgb(218, 255, 180)",
+                  color: "rgb(45, 91, 0)",
+                },
+              }}
+              className="ms-2 me-3"
+              disableElevation
+            >
+              <i class="bi bi-wallet2"></i>
+            </Button>
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
             <Button
               variant="contained"
               onClick={handleCombinedAction}
@@ -821,7 +1120,7 @@ const PayBuyer = () => {
               Đặt hàng
             </Button>
           </div>
-        </div>
+        </Card>
       </div>
       <Footer />
     </div>

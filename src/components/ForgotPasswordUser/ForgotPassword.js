@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "../../Localhost/Custumize-axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./ForgotPassword.css";
 import { toast } from "react-toastify";
 import { Button, TextField } from "@mui/material";
@@ -45,7 +45,7 @@ const ForgotPassword = () => {
     <div className="container" id="container">
       <div className="form-container shadow" id="form-container">
         <h2 id="title">Quên mật khẩu</h2>
-        <form onSubmit={sendOtp}>
+        <form onSubmit={sendOtp} className="mb-3">
           <div className="form-group" id="form-group">
             <TextField
               id="outlined-basic"
@@ -55,10 +55,19 @@ const ForgotPassword = () => {
               onChange={(e) => setEmail(e.target.value)}
               size="small"
               fullWidth
-              />
+            />
           </div>
-         <Button  fullWidth disableElevation color="error" type="submit" variant="contained">TIẾP THEO</Button>
+          <Button
+            fullWidth
+            disableElevation
+            color="error"
+            type="submit"
+            variant="contained"
+          >
+            TIẾP THEO
+          </Button>
         </form>
+        <Link to={"/"}>Quay lại trang chủ</Link>
       </div>
     </div>
   );

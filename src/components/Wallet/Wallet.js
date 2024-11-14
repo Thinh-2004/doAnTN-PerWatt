@@ -3,12 +3,17 @@ import axios from "../../Localhost/Custumize-axios";
 import { format } from "date-fns";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
+<<<<<<< HEAD
 import { Button } from "@mui/material";
+=======
+import { Button, Card, CardContent } from "@mui/material";
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 import { useParams } from "react-router-dom";
 
 const Wallet = () => {
   const [wallet, setWallet] = useState("");
   const [walletAdmin, setWalletAdmin] = useState("");
+<<<<<<< HEAD
 
   const [walletTransactions, setWalletTransactions] = useState(null);
   const [walletTransactionsAdmin, setWalletTransactionsAdmin] = useState(null);
@@ -17,6 +22,13 @@ const Wallet = () => {
   const [inputValues, setInputValues] = useState(Array(6).fill(""));
   const { status } = useParams();
 
+=======
+  const [walletTransactions, setWalletTransactions] = useState(null);
+  const [walletTransactionsAdmin, setWalletTransactionsAdmin] = useState(null);
+  const inputRefs = useRef([]);
+  const [inputValues, setInputValues] = useState(Array(6).fill(""));
+  const { status } = useParams();
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
@@ -35,6 +47,10 @@ const Wallet = () => {
     try {
       const resAdmin = await axios.get(`wallet/${1}`);
       setWalletAdmin(resAdmin.data);
+<<<<<<< HEAD
+=======
+      console.log(resAdmin.data);
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
     } catch (error) {
       console.error(
         "Error fetching wallet data:",
@@ -54,7 +70,11 @@ const Wallet = () => {
       );
     }
     try {
+<<<<<<< HEAD
       const resAdmin = await axios.get(`wallettransaction/${2}`);
+=======
+      const resAdmin = await axios.get(`wallettransaction/${1}`);
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       setWalletTransactionsAdmin(resAdmin.data);
     } catch (error) {
       console.error(
@@ -116,7 +136,11 @@ const Wallet = () => {
 
   return (
     <div>
+<<<<<<< HEAD
       {status === "seller" ? null : <Header />}
+=======
+      {status === "seller" ? null : user.id === 1 ? <Header /> : <Header />}
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       <h1 className="text-center mt-4 mb-4">PerPay</h1>
       <div
         className={`col-12 col-md-12 ${
@@ -124,8 +148,16 @@ const Wallet = () => {
         } mt-3`}
         style={{ transition: "0.5s" }}
       >
+<<<<<<< HEAD
         <div className="card">
           <div className="card-body">
+=======
+        <Card
+          className="rounded-3"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
+          <CardContent className="">
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
             <div className="row">
               <div className="col-6">
                 {wallet ? (
@@ -165,6 +197,16 @@ const Wallet = () => {
                         </Button>
                       </div>
                     </div>
+<<<<<<< HEAD
+=======
+                    <h1>Admin</h1>
+                    <div>
+                      {"Tên người dùng: " + walletAdmin?.user?.fullname}
+                    </div>
+                    <div>
+                      {"Số dư: " + formatPrice(walletAdmin.balance) + " VNĐ"}
+                    </div>
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                   </div>
                 ) : (
                   <div>Không có thông tin ví</div>
@@ -182,6 +224,7 @@ const Wallet = () => {
                   {walletTransactions && walletTransactions.length > 0 ? (
                     walletTransactions.map((walletTransaction) => (
                       <div key={walletTransaction.id}>
+<<<<<<< HEAD
                         <div
                           className="card mb-3"
                           style={{
@@ -190,6 +233,16 @@ const Wallet = () => {
                           }}
                         >
                           <div className="card-body">
+=======
+                        <Card
+                          className="rounded-3 mb-3"
+                          sx={{
+                            backgroundColor: "background.default",
+                            boxShadow: "5px 5px 20px rgba(0, 0, 0, 0.1)",
+                          }}
+                        >
+                          <CardContent className="">
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                             <div className="d-flex">
                               {walletTransaction.user.role.id === 1 ? (
                                 <>
@@ -310,8 +363,13 @@ const Wallet = () => {
                                 </div>
                               </div>
                             </div>
+<<<<<<< HEAD
                           </div>
                         </div>
+=======
+                          </CardContent>
+                        </Card>
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                       </div>
                     ))
                   ) : (
@@ -353,12 +411,20 @@ const Wallet = () => {
                                 </div>
                                 {walletTransaction.amount > 0 ? (
                                   <div className="col-5">
+<<<<<<< HEAD
                                     Gữi từ: {walletTransaction.user.fullname}
                                   </div>
                                 ) : (
                                   <div className="col-5">
                                     Lấy 10% doanh thu và gữi đến:{" "}
                                     {walletTransaction.store?.namestore}
+=======
+                                    {walletTransaction.transactiontype}
+                                  </div>
+                                ) : (
+                                  <div className="col-5">
+                                    {walletTransaction.transactiontype}
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                   </div>
                                 )}
                               </>
@@ -373,10 +439,17 @@ const Wallet = () => {
                 </div>
               </div>
             </div>
+<<<<<<< HEAD
           </div>
         </div>
       </div>
       {status === "seller" ? null : <Footer />}
+=======
+          </CardContent>
+        </Card>
+      </div>
+      {status === "seller" || user.id === 1 ? null : <Footer />}
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
     </div>
   );
 };

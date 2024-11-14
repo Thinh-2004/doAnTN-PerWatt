@@ -1,12 +1,24 @@
-import { Button, styled, TextField } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  styled,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+} from "@mui/material";
 import React, { useState, useEffect } from "react";
-import axios from "../../../../../Localhost/Custumize-axios";
+import axios from "../../../../../../Localhost/Custumize-axios";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { toast } from "react-toastify";
 
-const EditDetailProduct = ({CountData, idProduct, isChangeFormEdit }) => {
+const EditDetailProduct = ({ CountData, idProduct, isChangeFormEdit }) => {
   const [fillData, setFillData] = useState([]); //để fill dữ liệu;
   const [isHiddenDetailPro, setIsHiddenDetailPro] = useState(isChangeFormEdit); //Điều kiện hiển thị chi tiết sản phẩm
   const [newTemporaryData, setNewTemporaryData] = useState({
@@ -365,15 +377,14 @@ const EditDetailProduct = ({CountData, idProduct, isChangeFormEdit }) => {
     }
   }, [fillData]);
 
-
   return (
     <>
-      <div className="bg-white shadow">
-        <div className="card">
-          <div className="card-body">
-            {isHiddenDetailPro  ? ( //Show bảng và form phân loại
+      <div className=" shadow">
+        <Card sx={{backgroundColor: "backgroundElement.children"}}>
+          <CardContent className="">
+            {isHiddenDetailPro ? ( //Show bảng và form phân loại
               <div className="row">
-                <div className="col-lg-4 col-md-4 col-sm-4">
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                   <TextField
                     label="Nhập tên phân loại"
                     id="outlined-size-small"
@@ -384,7 +395,7 @@ const EditDetailProduct = ({CountData, idProduct, isChangeFormEdit }) => {
                     fullWidth
                   />
                 </div>
-                <div className="col-lg-4 col-md-4 col-sm-4">
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                   <TextField
                     label="Nhập giá sản phẩm"
                     id="outlined-size-small"
@@ -396,7 +407,7 @@ const EditDetailProduct = ({CountData, idProduct, isChangeFormEdit }) => {
                     className="me-2"
                   />
                 </div>
-                <div className="col-lg-4 col-md-4 col-sm-4">
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                   <TextField
                     label="Nhập số lượng"
                     id="outlined-size-small"
@@ -414,6 +425,7 @@ const EditDetailProduct = ({CountData, idProduct, isChangeFormEdit }) => {
                     onClick={handleAddOrUpdate}
                     className="me-4"
                     type="submit"
+                    variant="outlined"
                   >
                     {editingIndex !== null ? "Cập nhật" : "Thêm"}
                   </Button>
@@ -455,34 +467,32 @@ const EditDetailProduct = ({CountData, idProduct, isChangeFormEdit }) => {
                   </div>
                 )}
                 <div className="mt-2">
-                  <table
-                    className="table text-center"
-                    style={{ verticalAlign: "middle" }}
-                  >
-                    <thead>
-                      <tr>
-                        <th scope="col">Hình</th>
-                        <th scope="col">Tên phân loại</th>
-                        <th scope="col">Giá phân loại</th>
-                        <th scope="col">Số lượng phân loại</th>
-                        <th scope="col">Thao tác</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell align="center">Hình</TableCell>
+                          <TableCell align="center">Tên phân loại</TableCell>
+                          <TableCell align="center">Giá phân loại</TableCell>
+                          <TableCell align="center">Số lượng phân loại</TableCell>
+                          <TableCell align="center">Thao tác</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
                       {fillData.map((fill) => (
-                        <tr key={fill.id}>
-                          <td>
+                        <TableRow key={fill.id}>
+                          <TableCell align="center">
                             <img
                               src={geturlIMG(fill.id, fill.imagedetail)}
                               alt="Hình ảnh"
                               style={{ width: "100px", height: "100px" }}
                               className="img-fluid rounded-3"
                             />
-                          </td>
-                          <td>{fill.namedetail}</td>
-                          <td>{formatPrice(fill.price.toString())}</td>
-                          <td>{fill.quantity}</td>
-                          <td>
+                          </TableCell>
+                          <TableCell align="center">{fill.namedetail}</TableCell>
+                          <TableCell align="center">{formatPrice(fill.price.toString())}</TableCell>
+                          <TableCell align="center">{fill.quantity}</TableCell>
+                          <TableCell align="center">
                             <Button
                               onClick={() => handleEdit(fill.id)} // Truyền id vào đây
                               color="primary"
@@ -500,11 +510,12 @@ const EditDetailProduct = ({CountData, idProduct, isChangeFormEdit }) => {
                             >
                               Xóa
                             </Button>
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 </div>
               </div>
             ) : (
@@ -573,15 +584,16 @@ const EditDetailProduct = ({CountData, idProduct, isChangeFormEdit }) => {
                   color="success"
                   style={{ textTransform: "none", fontSize: "15px" }}
                   onClick={() => handleUpdate(dataEdit.id)}
-                  className="mx-2 mt-2 me-2"
+                  className=" mt-2 me-2"
                   type="button"
+                  variant="outlined"
                 >
                   Cập nhật
                 </Button>
               </>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </>
   );

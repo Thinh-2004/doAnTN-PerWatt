@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { GoogleLogin } from "@react-oauth/google";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { ThemeModeContext } from "../../../components/ThemeMode/ThemeModeProvider";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +21,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const navigate = useNavigate();
-
+  const {mode} = useContext(ThemeModeContext);
   const searchStoreByidUser = async (isUser) => {
     const searchStoreById = await axios.get(`searchStore/${isUser}`);
     if (searchStoreById === null) {
@@ -167,7 +168,13 @@ const Login = () => {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="form-sign">
+      <form
+        onSubmit={handleSubmit}
+        className="form-sign"
+        style={{
+          backgroundColor: mode === "light" ? " #fff" : "#363535",
+        }}
+      >
         <h2 className="title">Đăng nhập</h2>
         <p className="subject">
           Hãy đăng nhập để có trải nghiệm dịch vụ tốt nhất!!!
@@ -228,7 +235,16 @@ const Login = () => {
         <Link to={"/forgotPass"} className="text-end">
           <span htmlFor="">Quên mật khẩu?</span>
         </Link>
-        <button type="submit" className="button w-100">
+        <button
+          type="submit"
+          className="button w-100"
+          style={{
+            background:
+              mode === "light"
+                ? "linear-gradient(to right, #28ffdb, #228dff)"
+                : "linear-gradient(to right, #1c4a43, #072748)",
+          }}
+        >
           Đăng nhập
         </button>
         <div>
@@ -237,6 +253,9 @@ const Login = () => {
           </label>
           <div className="mt-2">
             <GoogleLogin
+              theme={
+                mode === "light" ? "outline" : "filled_black"
+              }
               onSuccess={handleLoginByGoogle}
               onError={() => {
                 console.log("Login Failed");

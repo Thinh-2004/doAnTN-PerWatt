@@ -1,22 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
-import { Button } from "@mui/material";
+import { Button, Card, CardContent } from "@mui/material";
+import { CardBody } from "@chakra-ui/react";
 
 const Successful = () => {
   const [products, setProducts] = useState([]);
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
+  const idStore = localStorage.getItem("idStore");
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const statusVNPay = query.get("vnp_ResponseCode");
   const vnp_OrderInfo = query.get("vnp_OrderInfo");
   const addressIds = vnp_OrderInfo.split(",").pop().trim();
   const cartIds = vnp_OrderInfo.split(",").slice(0, -1).join(",").trim();
+<<<<<<< HEAD
   const [hasDeposited, setHasDeposited] = useState(false);
 
   const vnp_Amount = query.get("vnp_Amount");
+=======
+  const vnp_Amount = query.get("vnp_Amount");
+  const hasRun = useRef(false);
+  const storedDepositAmount = sessionStorage.getItem("depositAmount");
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
   const groupByStore = (products) => {
     return products.reduce((groups, product) => {
@@ -35,6 +43,7 @@ const Successful = () => {
   const storedDepositAmount = sessionStorage.getItem("depositAmount");
 
   useEffect(() => {
+<<<<<<< HEAD
     if (storedDepositAmount !== "Nạp tiền") {
       (async () => {
         try {
@@ -54,6 +63,23 @@ const Successful = () => {
           const resWallet = await axios.get(`wallet/${user.id}`);
           const newBalance =
             parseFloat(resWallet.data.balance) + parseFloat(vnp_Amount);
+=======
+    (async () => {
+      try {
+        const response = await axios.get(`/cart?id=${cartIds}`);
+        setProducts(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, [user.id]);
+
+  useEffect(() => {
+    //xủ lí thanh toán
+    const createVnPay = async () => {
+      try {
+        const groupedProducts = groupByStore(products);
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
           await axios.put(`wallet/update/${user.id}`, {
             balance: newBalance,
@@ -73,6 +99,7 @@ const Successful = () => {
             error.response ? error.response.data : error.message
           );
         }
+<<<<<<< HEAD
       };
 
       handlePerPay();
@@ -123,6 +150,52 @@ const Successful = () => {
     vnp_Amount,
     statusVNPay,
     addressIds,
+=======
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    //xử ví nạp ví
+    const handlePerPay = async () => {
+      hasRun.current = true;
+      try {
+        const resWallet = await axios.get(`wallet/${user.id}`);
+        const newVnp_Amount = vnp_Amount / 100;
+        const newBalance =
+          parseFloat(resWallet.data.balance) + parseFloat(newVnp_Amount);
+
+        await axios.put(`wallet/update/${user.id}`, {
+          balance: newBalance,
+        });
+
+        await axios.post(`wallettransaction/create/${resWallet.data.id}`, {
+          amount: newVnp_Amount,
+          transactiontype: "Nạp tiền thông qua VN Pay",
+          transactiondate: new Date(),
+          user: { id: user.id },
+        });
+        sessionStorage.removeItem("depositAmount");
+      } catch (error) {
+        console.error(
+          "Error depositing money:",
+          error.response ? error.response.data : error.message
+        );
+      }
+    };
+    if (storedDepositAmount === "Nạp tiền" && !hasRun.current) {
+      handlePerPay();
+    } else {
+      createVnPay();
+    }
+  }, [
+    storedDepositAmount,
+    addressIds,
+    products,
+    statusVNPay,
+    user.id,
+    vnp_Amount,
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
   ]);
 
   return (
@@ -130,10 +203,17 @@ const Successful = () => {
       {statusVNPay === "00" ? (
         <div className="d-flex justify-content-center align-items-center vh-100">
           <div className="col-4">
-            <div className="card text-center">
-              <div className="card-body">
+            <Card
+              className="text-center rounded-3"
+              sx={{ backgroundColor: "backgroundElement.children" }}
+            >
+              <CardContent className="">
                 <div className="col-12">
-                  <img src="/images/7efs.gif" alt="" />
+                  <img
+                    src="/images/7efs.gif"
+                    alt=""
+                    className="rounded-circle"
+                  />
                 </div>
                 <h1>Thanh toán thành công</h1>
                 <div className="my-5">
@@ -149,6 +229,7 @@ const Successful = () => {
                   >
                     Quay về trang chủ
                   </Button>
+<<<<<<< HEAD
                   <Button
                     variant="contained"
                     className="me-3"
@@ -172,18 +253,60 @@ const Successful = () => {
                   >
                     Ví
                   </Button>
+=======
+                  {storedDepositAmount === "Nạp tiền" ? (
+                    <Button
+                      variant="contained"
+                      href={
+                        idStore !== "undefined"
+                          ? "/profileMarket/wallet/seller"
+                          : user.id === 1
+                          ? "/admin/wallet"
+                          : "/wallet/buyer"
+                      }
+                      style={{
+                        backgroundColor: "rgb(218,255,180)",
+                        color: "rgb(45,91,0)",
+                      }}
+                      disableElevation
+                    >
+                      Ví
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      className="me-3"
+                      href="/order"
+                      style={{
+                        backgroundColor: "rgb(204,244,255)",
+                        color: "rgb(0,70,89)",
+                      }}
+                      disableElevation
+                    >
+                      Xem đơn hàng
+                    </Button>
+                  )}
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       ) : (
         <div className="d-flex justify-content-center align-items-center vh-100">
           <div className="col-4">
-            <div className="card text-center">
-              <div className="card-body">
+            <Card
+              className="text-center rounded-3"
+              sx={{ backgroundColor: "backgroundElement.children" }}
+            >
+              <CardContent className="">
                 <div className="col-12">
-                  <img src="/images/4Bmb.gif" alt="" />
+                  <img
+                    src="/images/cancelVNPAY.jpg"
+                    alt=""
+                    style={{ borderRadius: "50%" }}
+                    className="w-25"
+                  />
                 </div>
                 <h1 className="mt-5">Bạn đã hủy đơn hàng</h1>
                 <div className="my-5">
@@ -211,8 +334,8 @@ const Successful = () => {
                     Bạn muốn mua lại không!
                   </Button>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}

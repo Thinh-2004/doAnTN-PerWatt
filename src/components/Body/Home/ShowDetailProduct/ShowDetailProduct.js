@@ -1,19 +1,15 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../Header/Header";
 import "./ShowDetailProduct.css";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  TextField,
-} from "@mui/material";
+import { Box, Button, TextField, useTheme } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ListImageDetailProduct from "./ListImageDetailProduct";
+import NavStore from "./NavStore";
+import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 
 const DetailProduct = () => {
   const { slug } = useParams();
@@ -26,9 +22,6 @@ const DetailProduct = () => {
   const [quantity, setQuantity] = useState(1); //trạng thái cho số lượng trước khi thêm giỏ hàng
   const [productDetailIds, setproductDetailIds] = useState(null);
 
-  const geturlIMGStore = (userId, filename) => {
-    return `${axios.defaults.baseURL}files/user/${userId}/${filename}`;
-  };
   const geturlImgDetailProduct = (detailId, filename) => {
     return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
   };
@@ -37,6 +30,11 @@ const DetailProduct = () => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [selectedIdDetail, setSelectedIdDetail] = useState(null);
   const [fillDetail, setFilDetail] = useState([]); //fill phân loại sản phẩm
+  const { mode } = useContext(ThemeModeContext);
+  //Tạo state nhận api voucher theo id product
+  const [voucher, setVoucher] = useState([]);
+  const [result, setResult] = useState(""); // Giá sau khi giảm
+
   const loadProductDetail = async () => {
     try {
       //api gọi sản phẩm
@@ -86,7 +84,6 @@ const DetailProduct = () => {
           0
         );
         setCountOrderBuyed(countQuantityOrderBy);
-        console.log(countQuantityOrderBy);
       }
     } catch (error) {
       console.log(error);
@@ -176,13 +173,6 @@ const DetailProduct = () => {
     setQuantity(value);
   };
 
-  const handleViewStoreInfo = () => {
-    const slugStore = FillDetailPr.store.slug;
-    if (slugStore) {
-      changeLink(`/pageStore/${slugStore}`); // Điều hướng đến trang thông tin của store
-    }
-  };
-
   const handleClickIdDetail = (idDetail) => () => {
     setSelectedIdDetail(idDetail);
     const selectedProduct = fillDetail.find((detail) => detail.id === idDetail);
@@ -192,6 +182,14 @@ const DetailProduct = () => {
       setMinPrice(selectedProduct.price);
       setMaxPrice(selectedProduct.price);
       setQuantity(1);
+
+      // Tính giá giảm
+      const priceDown =
+        selectedProduct.price * (voucher[0].discountprice / 100);
+      const result = selectedProduct.price - priceDown;
+      if (result) {
+        setResult(formatPrice(result));
+      }
     }
 
     setproductDetailIds(idDetail);
@@ -207,54 +205,90 @@ const DetailProduct = () => {
     // console.log(totalQuantity);
   }, [fillDetail]);
 
-  //Hàm cắt chuỗi địa chỉ
-  const splitByAddress = (address) => {
-    const parts = address?.split(",");
-    if (parts?.length > 0) {
-      return parts[4];
+  const loadData = async (key) => {
+    try {
+      const res = await axios.get(`fillVoucherPrice/${key}`);
+      setVoucher(res.data);
+      console.log(res.data);
+    } catch (error) {
+      console.log(error);
     }
   };
 
-  const calculateAccountDuration = (accountCreatedDate) => {
-    //Khởi tạo ngày từ CSDL và ngày hiện tại
-    const createdDate = new Date(accountCreatedDate);
-    const now = new Date();
-
-    const diffInMilliseconds = now - createdDate; //Tính khoảng cách (Tính bằng mili)
-    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24)); //Chuyển đổi kết quả mili giây thành ngày
-
-    if (diffInDays <= 7) {
-      //Nhỏ hơn 7 ngày
-      return "Mới tham gia";
+  useEffect(() => {
+    if (FillDetailPr) {
+      loadData(FillDetailPr.id);
     }
+  }, [FillDetailPr]);
 
-    //Tính tổng số tháng
-    const diffInMonths =
-      (now.getFullYear() - createdDate.getFullYear()) * 12 +
-      (now.getMonth() - createdDate.getMonth());
-
-    if (diffInMonths >= 12) {
-      //Kết quả lớn hơn 12 tháng
-      const years = Math.floor(diffInMonths / 12);
-      return years + (years === 1 ? " năm" : " năm");
-    } else if (diffInMonths > 0) {
-      //Kết quả số tháng lớn hơn 0 nhưng nhỏ hơn 12
-      return diffInMonths + (diffInMonths === 1 ? " tháng" : " tháng");
-    } else {
-      //Ngược lại lấy số ngày
-      return diffInDays + " ngày";
+  //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
+  const isVoucherPrice = voucher.some(
+    (check) => check.productDetail.product.id === FillDetailPr.id
+  );
+  //Lấy phần trăm giảm từng sản phẩm
+  const disCountPrice = voucher.reduce((take, item) => {
+    if (item.status === "Hoạt động") {
+      if (item.productDetail.product.id === FillDetailPr.id) {
+        return item.discountprice;
+      } else {
+        return null;
+      }
     }
-  };
+    return take;
+  }, 0);
+
+  //Render giá gốc và giá sau khi giảm sản phẩm
+  useEffect(() => {
+    // Lọc giá sản phẩm theo voucher
+    const priceProductDetails = voucher.map(
+      (filter) => filter.productDetail.price
+    );
+    const minPriceProductDetail = Math.min(...priceProductDetails);
+    const maxPriceProductDetail = Math.max(...priceProductDetails);
+
+    // Nếu có ít nhất 1 sản phẩm được chọn
+    if (voucher.length > 0) {
+      // Nếu chỉ có 1 sản phẩm được chọn
+      if (voucher.length === 1) {
+        // Tính giá giảm
+        const priceDown =
+          voucher[0].productDetail.price * (voucher[0].discountprice / 100);
+        const result = voucher[0].productDetail?.price - priceDown;
+        if (result) {
+          setResult(formatPrice(result));
+        }
+      } else {
+        // Tính giá giảm First
+        const priceDownFirst =
+          minPriceProductDetail * (voucher[0].discountprice / 100);
+        const resultFirst = minPriceProductDetail - priceDownFirst;
+        // Tính giá giảm First
+        const priceDownLast =
+          maxPriceProductDetail *
+          (voucher[voucher.length - 1].discountprice / 100);
+        const resultLast = maxPriceProductDetail - priceDownLast;
+
+        // Nếu tìm thấy cả 2 sản phẩm đầu tiên và cuối cùng, hiển thị giá của chúng
+        setResult(`${formatPrice(resultFirst)} - ${formatPrice(resultLast)}`);
+      }
+    }
+  }, [voucher]);
 
   return (
     <>
       <Header reloadCartItems={isCountCart} />
       <div className="container mt-4">
-        <div className="row bg-white rounded-4">
-          <ListImageDetailProduct
-            dataImage={FillDetailPr}
-            totalQuantity={totalQuantity}
-          />
+        <Box
+          className="row rounded-4 shadow"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
+          <div className="col-md-4 col-lg-4 col-sm-4 border-end">
+            <ListImageDetailProduct
+              dataImage={FillDetailPr}
+              totalQuantity={totalQuantity}
+            />
+          </div>
+
           <div className="col-md-8 col-lg-8 col-sm-8 d-flex flex-column">
             <div className="p-3 border-bottom">
               <h1 className="fst-italic" id="productName">
@@ -306,18 +340,39 @@ const DetailProduct = () => {
                 </span>
               </div>
             </div>
-            <div className="bg-light w-100 h-25 mt-4 rounded-4">
+            <div
+              className={`w-100 h-25 mt-4 rounded-4 ${
+                mode === "light" ? "bg-light" : "border"
+              } `}
+            >
               <p className="fs-5 p-1 mx-2">Giá:</p>
               <div className="d-flex align-items-center">
-                <del className="text-secondary fs-5 mx-3">
-                  {formatPrice(3000000)}đ
-                </del>
-                <span className="text-danger fw-bold fs-3 mx-3">
-                  {minPrice === maxPrice
-                    ? formatPrice(minPrice) + " đ"
-                    : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` +
-                      " đ"}
-                </span>
+                {isVoucherPrice && disCountPrice ? (
+                  <>
+                    <del className="text-secondary fs-5 mx-3">
+                      {" "}
+                      {minPrice === maxPrice
+                        ? formatPrice(minPrice) + " đ"
+                        : `${formatPrice(minPrice)} - ${formatPrice(
+                            maxPrice
+                          )}` + " đ"}
+                    </del>{" "}
+                    -
+                    <span className="text-danger fw-bold fs-3 mx-3">
+                      {result} đ
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-danger fw-bold fs-3 mx-3">
+                      {minPrice === maxPrice
+                        ? formatPrice(minPrice) + " đ"
+                        : `${formatPrice(minPrice)} - ${formatPrice(
+                            maxPrice
+                          )}` + " đ"}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
             <div className="row">
@@ -357,7 +412,21 @@ const DetailProduct = () => {
                     </li>
                     <li>
                       <label htmlFor="">Kích thước:</label>
-                      <span>{FillDetailPr ? FillDetailPr.size : "N/A"}</span>
+                      <span>
+                        {FillDetailPr
+                          ? FillDetailPr.size.split("\n").map((line, index) => (
+                              <span
+                                key={index}
+                                style={{
+                                  display: index === 0 ? "" : "block", // Mỗi dòng hiển thị trên một dòng mới
+                                  paddingLeft: index === 0 ? "5px" : "90px", // Không thụt lề dòng đầu tiên, thụt lề các dòng sau
+                                }}
+                              >
+                                {line}
+                              </span>
+                            ))
+                          : "N/A"}
+                      </span>
                     </li>
                     <li>
                       <label htmlFor="">Hỗ trợ chơi game:</label>{" "}
@@ -373,7 +442,7 @@ const DetailProduct = () => {
             </div>
             <div className="row mb-3">
               <div className="col-lg-6 col-md-6 col-sm-6 ">
-                <div className="d-flex justify-content-start mt-3">
+                <div className="d-flex justify-content-start mt-3 mb-3">
                   <TextField
                     id="outlined-number"
                     label="Số lượng"
@@ -382,10 +451,8 @@ const DetailProduct = () => {
                     value={quantity}
                     onChange={handleChangeQuantity}
                     inputProps={{ min: 1 }} //đặt giá trị nhỏ nhất là
-                    slotProps={{
-                      inputLabel: {
-                        shrink: true, // cho phép Label lên xuống TextField
-                      },
+                    InputLabelProps={{
+                      shrink: true, // cho phép Label lên xuống TextField
                     }}
                     size="small"
                   />
@@ -430,13 +497,15 @@ const DetailProduct = () => {
               >
                 <p className="p-3 fst-italic fs-5 m-0">Phân loại sản phẩm</p>
                 <div
-                  className="bg-light rounded-3 p-2 m-2 d-flex flex-wrap overflow-auto"
+                  className={`${
+                    mode === "light" ? "bg-light" : "border"
+                  } rounded-3 p-2 m-2 d-flex flex-wrap overflow-auto`}
                   style={{ height: "70%" }}
                 >
                   {fillDetail &&
                     fillDetail.length > 0 &&
                     fillDetail.map((fillDetail, index) => (
-                      <div
+                      <Box
                         className={`d-flex align-items-center text-nowrap rounded-2 p-2 m-2 position-relative ${
                           selectedIdDetail === fillDetail.id
                             ? "active-selected-detailProduct"
@@ -449,10 +518,11 @@ const DetailProduct = () => {
                             : "hover-idDetailProduct"
                         }`}
                         onClick={handleClickIdDetail(fillDetail.id)}
-                        style={{
+                        sx={{
                           opacity: fillDetail.quantity === 0 ? 0.5 : 1,
                           pointerEvents:
                             fillDetail.quantity === 0 ? "none" : "auto",
+                          backgroundColor: "backgroundElement.default",
                         }}
                       >
                         <img
@@ -465,7 +535,9 @@ const DetailProduct = () => {
                           style={{ maxWidth: "50px", maxHeight: "50px" }}
                         />
 
-                        <label className="ms-2">{fillDetail.namedetail}</label>
+                        <label className={`ms-2`}>
+                          {fillDetail.namedetail}
+                        </label>
 
                         {fillDetail.quantity === 0 && (
                           <div
@@ -489,108 +561,21 @@ const DetailProduct = () => {
                             style={{ color: "#00C7FF" }}
                           />
                         </div>
-                      </div>
+                      </Box>
                     ))}
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="row bg-white rounded-4 mt-3">
-          <div className="col-lg-4 col-md-4 col-sm-4 border-end">
-            <div className="d-flex justify-content-center">
-              <div className="p-2 d-flex justify-content-center">
-                <img
-                  src={
-                    FillDetailPr && FillDetailPr.store
-                      ? geturlIMGStore(
-                          FillDetailPr.store.user.id,
-                          FillDetailPr.store.user.avatar
-                        )
-                      : "/images/no_img.png"
-                  }
-                  alt=""
-                  id="avt-store"
-                  onClick={handleViewStoreInfo}
-                  style={{ cursor: "pointer" }}
-                />
-              </div>
-              <div className=" mt-3 ">
-                <div className="text-center">
-                  <span
-                    htmlFor=""
-                    className="fs-6"
-                    onClick={handleViewStoreInfo}
-                    style={{ cursor: "pointer" }}
-                  >
-                    {FillDetailPr && FillDetailPr.store
-                      ? FillDetailPr.store.namestore
-                      : "N/A"}
-                  </span>
-                </div>
-                <div className="d-flex">
-                  <button
-                    className="btn btn-sm mx-2"
-                    onClick={handleViewStoreInfo}
-                    id="btn-infor-shop"
-                  >
-                    Xem thông tin
-                  </button>
-                  <button className="btn btn-sm" id="btn-chatMessage">
-                    Nhắn tin shop
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-8 col-md-8 col-sm-8">
-            <div className="row mt-4">
-              <div className="row">
-                <div className="col-lg-4 col-md-4 col-sm-4 mb-3 border-end">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="fst-italic">Sản phẩm đã đăng bán:</label>
-                    <span className="text-primary">{countProductStore}</span>
-                  </div>
-                </div>
-
-                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="fst-italic">Địa chỉ:</label>
-                    <span className="text-primary">
-                      {splitByAddress(FillDetailPr?.store.address)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="fst-italic">Người theo dõi:</label>
-                    <span className="text-primary">999</span>
-                  </div>
-                </div>
-
-                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="fst-italic">Đã tham gia:</label>
-                    <span className="text-primary">
-                      {calculateAccountDuration(
-                        FillDetailPr?.store.createdtime
-                      )}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="fst-italic">Đánh giá cửa hàng:</label>
-                    <span className="text-primary">100</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="row bg-white rounded-4 mt-3">
+        </Box>
+        <NavStore
+          FillDetailPr={FillDetailPr}
+          countProductStore={countProductStore}
+        />
+        <Box
+          className="row rounded-4 mt-3"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
           <div className="p-3">
             <h4>Thông tin chi tiết sản phẩm</h4>
             <span className="p-0 m-0">
@@ -600,15 +585,18 @@ const DetailProduct = () => {
               {FillDetailPr ? FillDetailPr.description : "N/A"}
             </span>
           </div>
-        </div>
-        <div className="row bg-white rounded-4 mt-3">
+        </Box>
+        <Box
+          className="row rounded-4 mt-3"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
           <div className="p-3">
             <h4>Đánh giá sản phẩm</h4>
             <span className="p-0 m-0">
               <hr />
             </span>
           </div>
-        </div>
+        </Box>
       </div>
     </>
   );

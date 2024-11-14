@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import Category from "../../CategoryProduct/Category";
-import Brand from "../../Brand/Brand";
-import Warranties from "../../Warranties/Warranties";
 import { toast } from "react-toastify";
 import axios from "../../../../../../Localhost/Custumize-axios";
-import { Button, styled, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  styled,
+  TextField,
+} from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import EditDetailProduct from "../../DetailProduct/EditDetailProduct";
-import { load } from "@teachablemachine/image";
+import EditDetailProduct from "../DetailProduct/EditDetailProduct";
+import InfoDetailProduct from "./ChildrenForm/InfoDetailProduct";
 
 const EditProduct = () => {
   const slug = useParams();
@@ -34,6 +38,9 @@ const EditProduct = () => {
   const maxFiles = 9;
   const changeLink = useNavigate();
   const [editDetailProduct, setEditDetailProduct] = useState([]);
+  const [charCount, setCharCount] = useState(0); // State để lưu số từ
+  const [charCountDesception, setCharCountDesception] = useState(0); // State để lưu số từ
+  const maxCharLimitName = 150; // Giới hạn ký tự
 
   // Fill dữ liệu edit
   const fillData = async () => {
@@ -71,6 +78,12 @@ const EditProduct = () => {
     // Fill dữ liệu
     fillData();
   }, []);
+
+  useEffect(() => {
+     //Truyền dữ liệu vào state đếm kí tự
+    setCharCount(formEditProduct.name.length);
+    setCharCountDesception(formEditProduct.description.length);
+  },[formEditProduct.name.length, formEditProduct.description.length])
 
   // Hàm xử lí sự kiện thay đổi File
   const handleFileChange = (event) => {
@@ -117,6 +130,22 @@ const EditProduct = () => {
       ...prevFormProduct,
       [name]: value,
     }));
+
+    // Kiểm tra số ký tự trước khi cập nhật
+    if (name === "name" && value.length > maxCharLimitName) {
+      return; // Ngăn người dùng nhập nếu vượt quá 100 ký tự
+    }
+
+    // Đếm số từ trong trường 'name'
+    if (name === "name") {
+      const charCount = value.length;
+      setCharCount(charCount);
+    }
+
+    if (name === "description") {
+      const charCountDescription = value.length;
+      setCharCountDesception(charCountDescription);
+    }
   };
 
   // Bắt lỗi
@@ -247,24 +276,27 @@ const EditProduct = () => {
 
   const handleReceiveData = (data) => {
     setReceiveDataDetail(data);
-  }
+  };
 
   useEffect(() => {
-    if(receiveDataDetail === 1){
+    if (receiveDataDetail === 1) {
       fillData();
-    }else {
+    } else {
       fillData();
     }
-  }, [receiveDataDetail])
+  }, [receiveDataDetail]);
 
   return (
     <div className="row mt-4">
       {/* Product Info */}
       <div className="col-lg-12">
-        <div className="bg-white rounded-4">
-          <div className="card">
+        <div className=" rounded-4">
+          <Card
+            className=""
+            sx={{ backgroundColor: "backgroundElement.children" }}
+          >
             <h3 className="text-center mt-4">Thông tin sản phẩm</h3>
-            <div className="card-body">
+            <CardContent className="">
               <div className="row">
                 <div className="col-lg-6 border-end">
                   <div className="mb-3">
@@ -276,7 +308,11 @@ const EditProduct = () => {
                       value={formEditProduct.name}
                       onChange={handleInputChange}
                       fullWidth
+                      inputProps={{ maxLength: maxCharLimitName }} // Giới hạn trực quan cho người dùng
                     />
+                      <label>
+                        {charCount}/{maxCharLimitName}
+                      </label>
                   </div>
                   <div className="mb-3">
                     <TextField
@@ -289,6 +325,7 @@ const EditProduct = () => {
                       onChange={handleInputChange}
                       fullWidth
                     />
+                    <label htmlFor="">{charCountDesception} kí tự</label>
                   </div>
                 </div>
                 <div className="col-lg-6">
@@ -348,111 +385,59 @@ const EditProduct = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
       {/* Detail product */}
       <div className="col-lg-12 col-md-12 col-sm-12">
-        <div className="bg-white rounded-4 mt-3">
-          <div className="card">
-            <div className="d-flex justify-content-between align-items-center">
-              <h3 className="mx-4 mt-4">Thông tin bán hàng</h3>
-              {isHiddenDetailPro ? (
-                <button
-                  className="btn me-4"
-                  type="button"
-                  onClick={() => setIsHiddenDetailPro(false)}
-                  hidden={editDetailProduct.length > 1}
-                >
-                  X
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="btn me-4"
-                  id="btn-add-productCate"
-                  onClick={handleClickHidden}
-                  hidden={editDetailProduct.length < 1}
-                >
-                  Thêm phân loại bán hàng
-                </button>
-              )}
+        <Box className=" rounded-4 mt-3">
+          <Card
+            className=""
+            sx={{ backgroundColor: "backgroundElement.children" }}
+          >
+            <div className="row align-items-center p-3">
+              <h3 className="col-lg-6 col-md-6 col-sm-6 w-25">
+                Thông tin bán hàng
+              </h3>
+              <div className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-end w-75">
+                {isHiddenDetailPro ? (
+                  <button
+                    className="btn"
+                    type="button"
+                    onClick={() => setIsHiddenDetailPro(false)}
+                  >
+                    X
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn"
+                    id="btn-add-productCate"
+                    onClick={handleClickHidden}
+                  >
+                    Thêm phân loại bán hàng
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div className="card-body">
+            <CardContent className="">
               <EditDetailProduct
                 idProduct={formEditProduct}
                 isChangeFormEdit={isHiddenDetailPro}
                 CountData={handleReceiveData}
               />
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
+        </Box>
       </div>
       {/* Detailed Info */}
       <div className="col-lg-12">
-        <div className="bg-white rounded-4 mt-3">
-          <div className="card">
-            <h3 className="mx-4 mt-4">Thông tin chi tiết</h3>
-            <div className="card-body">
-              <div className="row">
-                <div className="col-lg-6">
-                  <div className="mb-4 d-flex">
-                    {/* Category Component */}
-                    <Category
-                      name="productcategory"
-                      value={formEditProduct.productcategory}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-4 d-flex">
-                    {/* Brand Component */}
-                    <Brand
-                      name="trademark"
-                      value={formEditProduct.trademark}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-4 d-flex">
-                    {/* Warranties Component */}
-                    <Warranties
-                      name="warranties"
-                      value={formEditProduct.warranties}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-                <div className="col-lg-6 border-start">
-                  <div className="mb-4 d-flex">
-                    <select
-                      name="specializedgame"
-                      className="form-select"
-                      value={formEditProduct.specializedgame}
-                      onChange={handleInputChange}
-                    >
-                      <option value="" className="text-secondary" hidden>
-                        Chuyên dụng game
-                      </option>
-                      <option value="Y">Có</option>
-                      <option value="N">Không</option>
-                    </select>
-                  </div>
-                  <div className="mb-4 d-flex">
-                    <input
-                      type="text"
-                      placeholder="Nhập kích cỡ (dài x rộng x cao)"
-                      className="form-control"
-                      name="size"
-                      value={formEditProduct.size}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <InfoDetailProduct
+          formProduct={formEditProduct}
+          handleInputChange={handleInputChange}
+        />
       </div>
       {/* Form Actions */}
       <div className="mt-4 mb-4">

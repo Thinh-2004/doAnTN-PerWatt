@@ -10,9 +10,14 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+<<<<<<< HEAD
 import { Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import useSession from "../../../Session/useSession";
+=======
+import { Button, Card, CardContent } from "@mui/material";
+import { Link, useLocation } from "react-router-dom";
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -57,6 +62,87 @@ const Order = () => {
     return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
   };
 
+<<<<<<< HEAD
+=======
+  const [products, setProducts] = useState([]);
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const resultCode = query.get("resultCode");
+  const orderInfo = query.get("orderInfo");
+  const addressIds = orderInfo ? orderInfo.split(",").pop().trim() : "";
+  const cartIds = orderInfo
+    ? orderInfo.match(/\d+/g).slice(0, -1).join(",").trim()
+    : "";
+
+  const groupByStore = (products) => {
+    return products.reduce((groups, product) => {
+      const storeId = product.productDetail.product.store.id;
+      if (!groups[storeId]) {
+        groups[storeId] = {
+          store: product.productDetail.product.store,
+          products: [],
+        };
+      }
+      groups[storeId].products.push(product);
+      return groups;
+    }, {});
+  };
+
+  useEffect(() => {
+    if (cartIds) {
+      (async () => {
+        try {
+          const response = await axios.get(`/cart?id=${cartIds}`);
+          setProducts(response.data);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    }
+  }, [user.id]);
+
+  const createMethodMoMo = async () => {
+    try {
+      const groupedProducts = groupByStore(products);
+
+      for (const storeId in groupedProducts) {
+        const { products: storeProducts } = groupedProducts[storeId];
+
+        const order = {
+          user: { id: user.id },
+          shippinginfor: { id: addressIds },
+          store: { id: storeId },
+          paymentdate: new Date().toISOString(),
+          orderstatus: "Đang chờ duyệt",
+        };
+
+        const orderDetails = storeProducts.map((product) => ({
+          productDetail: { id: product.productDetail.id },
+          quantity: product.quantity,
+          price: product.productDetail.price,
+        }));
+        //00 = thành công
+        if (resultCode === "0") {
+          console.log("Calling API...");
+          const res = await axios.post("/createMoMoOrder", {
+            order,
+            orderDetails,
+          });
+          console.log(res.data);
+        } else {
+          return;
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    createMethodMoMo();
+  }, [fill]);
+
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
   useEffect(() => {
     const load = async () => {
       try {
@@ -72,6 +158,8 @@ const Order = () => {
         setLoading(false);
       }
     };
+
+    load();
     load();
   }, [user.id]);
 
@@ -167,9 +255,15 @@ const Order = () => {
     if (filteredOrders.length === 0) {
       return <div className="text-center">Chưa có sản phẩm</div>;
     }
+
     return filteredOrders.map((order) => (
+<<<<<<< HEAD
       <div className="card rounded-3 mt-3" id="cartItem" key={order.id}>
         <div className="card-body">
+=======
+      <Card className="rounded-3 mt-3" key={order.id} sx={{backgroundColor : "backgroundElement.children"}}>
+        <CardContent className="">
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
           <div className="d-flex align-items-center mb-1">
             <Link to={`/pageStore/${order.store.slug}`}>
               <img
@@ -246,12 +340,22 @@ const Order = () => {
                           Phân loại: {orderDetail.productDetail.namedetail}
                         </label>
                       )}
+<<<<<<< HEAD
+=======
+                      <div>Giá: {formatPrice(orderDetail.price) + " VNĐ"}</div>
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                       <div>x {orderDetail.quantity}</div>
 
                       <div>
                         Tổng:{" "}
                         <span className="text-danger">
+<<<<<<< HEAD
                           {formatPrice(orderDetail.price) + " VNĐ"}
+=======
+                          {formatPrice(
+                            orderDetail.price * orderDetail.quantity
+                          ) + " VNĐ"}
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                         </span>
                       </div>
                     </div>
@@ -351,8 +455,8 @@ const Order = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     ));
   };
 
@@ -364,12 +468,20 @@ const Order = () => {
     <div>
       <Header />
       <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       <div
         className="col-12 col-md-12 col-lg-10 offset-lg-1"
         style={{ transition: "0.5s" }}
       >
+<<<<<<< HEAD
         <Box sx={{ width: "100%", background: "white" }} className="rounded-3">
+=======
+        <Box sx={{ width: "100%", backgroundColor: "backgroundElement.children" }} className="rounded-3">
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
           <Box
             sx={{
               borderBottom: 1,
@@ -383,7 +495,11 @@ const Order = () => {
               value={value}
               onChange={handleChange}
               aria-label="basic tabs example"
+<<<<<<< HEAD
               sx={{ backgroundColor: "white" }}
+=======
+              sx={{ backgroundColor: "backgroundElement.children" }}
+>>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
             >
               {[
                 "Tất cả",
