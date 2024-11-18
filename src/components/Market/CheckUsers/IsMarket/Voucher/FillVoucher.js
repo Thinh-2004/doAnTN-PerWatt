@@ -164,7 +164,7 @@ function VoucherList() {
     //   setIsSortQuantity(false);
     // }
 
-    // console.log(property);
+    console.log(property);
   }, []);
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./ProductItemStyle.css";
+import "../../../../ListItemProduct/ProductItemStyle.css";
 import axios from "../../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
 import useDebounce from "../../../../../CustumHook/useDebounce";

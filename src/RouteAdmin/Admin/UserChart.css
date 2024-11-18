@@ -1,0 +1,69 @@
+.user-chart-container {
+  width: 70%;
+  margin: 0 auto; /* Center the chart horizontally */
+}
+
+@media (max-width: 1200px) {
+  .revenue-chart-container {
+    width: 85%;
+  }
+}
+
+@media (max-width: 992px) {
+  .revenue-chart-container {
+    width: 80%;
+  }
+}
+
+@media (max-width: 768px) {
+  .revenue-chart-container {
+    width: 100%; /* Full width for smaller screens */
+  }
+}
+
+@media (max-width: 576px) {
+  .revenue-chart-container {
+    width: 100%; /* Full width for very small screens */
+    padding: 0 10px; /* Add some padding for better appearance */
+  }
+}
+
+/* Styling for the toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Allow items to wrap to the next line on smaller screens */
+}
+
+.toolbar label {
+  font-size: 16px;
+  margin-right: 10px;
+}
+
+#period-select,
+#year-select {
+  padding: 5px 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.3s ease;
+  margin-right: 10px; /* Add some space between the dropdowns */
+}
+
+#period-select:focus,
+#year-select:focus {
+  border-color: #007bff; /* Change border color on focus */
+}
+
+select {
+  width: 150px; /* Fixed width for consistency */
+}
+
+/* Optional: Add styles for the chart itself */
+.apexcharts-canvas {
+  margin: 0 auto; /* Center the chart */
+}

@@ -202,7 +202,7 @@ const CheckItemProduct = () => {
 
   return (
     <>
-      <div className="container mt-4">
+      <div className="container-lg mt-4">
         <Button
           variant="contained"
           className="mb-4"

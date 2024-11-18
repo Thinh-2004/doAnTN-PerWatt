@@ -28,18 +28,19 @@ const OrderDetail = () => {
   const geturlIMGDetail = (productDetailId, filename) => {
     return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
   };
+
+  const load = async () => {
+    try {
+      const res = await axios.get(`/orderDetail/${id}`);
+      const grouped = groupByStore(res.data);
+      setGroupedByStore(grouped);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await axios.get(`/orderDetail/${id}`);
-        const grouped = groupByStore(res.data);
-        setGroupedByStore(grouped);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
   }, [user.id]);
 
@@ -67,25 +68,79 @@ const OrderDetail = () => {
   const refundReturn = async (store, totalAmount, productDetailId) => {
     const resWalletShop = await axios.get(`wallet/${store.user.id}`);
     if (resWalletShop.data.balance >= totalAmount) {
+      //store
       const newBalanceShop = resWalletShop.data.balance - totalAmount * 0.9;
-
       await axios.put(`wallet/update/${store.user.id}`, {
         balance: newBalanceShop,
       });
-
+      //admin
       const resWalletAdmin = await axios.get(`wallet/${1}`);
       const newBalanceAdmin = resWalletAdmin.data.balance - totalAmount * 0.1;
 
       await axios.put(`wallet/update/${1}`, {
         balance: newBalanceAdmin,
       });
-
+      //user
       const resWalletUser = await axios.get(`wallet/${user.id}`);
       const newBalanceUser = resWalletUser.data.balance + totalAmount;
 
       await axios.put(`wallet/update/${user.id}`, {
         balance: newBalanceUser,
       });
+
+      //store
+      const fillWalletStore = await axios.get(`wallet/${store.user.id}`);
+      console.log(store.user.id);
+      console.log(fillWalletStore);
+
+      const transactionTypeStore =
+        `Hoàn tiền về người dùng: ${user.fullname}`.substring(0, 50);
+      await axios.post(`wallettransaction/create/${fillWalletStore.data.id}`, {
+        amount: -totalAmount * 0.9,
+        transactiontype: transactionTypeStore,
+        transactiondate: new Date(),
+        user: { id: user.id },
+        store: { id: store.id },
+      });
+
+      //admin
+      const transactionTypeAdmin =
+        `Hoàn tiền về người dùng: ${user.fullname}`.substring(0, 50);
+      await axios.post(`wallettransaction/create/${1}`, {
+        amount: -totalAmount * 0.1,
+        transactiontype: transactionTypeAdmin,
+        transactiondate: new Date(),
+        user: { id: user.id },
+        store: { id: store.id },
+      });
+
+      //userStore
+      const fillWalletUser = await axios.get(`wallet/${user.id}`);
+
+      const transactionTypeUserStore =
+        `Hoàn tiền về từ cửa hàng: ${store.namestore}`.substring(0, 50);
+      await axios.post(`wallettransaction/create/${fillWalletUser.data.id}`, {
+        amount: totalAmount * 0.9,
+        transactiontype: transactionTypeUserStore,
+        transactiondate: new Date(),
+        user: { id: user.id },
+        store: { id: store.id },
+      });
+
+      //userAdmin
+      const transactionTypeUserAdmin = "Hoàn tiền về từ PerWatt";
+      await axios.post(`wallettransaction/create/${fillWalletUser.data.id}`, {
+        amount: totalAmount * 0.1,
+        transactiontype: transactionTypeUserAdmin,
+        transactiondate: new Date(),
+        user: { id: user.id },
+        store: { id: store.id },
+      });
+
+      console.log(productDetailId);
+
+      await axios.put(`/order/${id}/status`, { status: "Trả hàng" });
+      load();
 
       toast.success("Hoàn tiền thành công");
     } else {
@@ -248,27 +303,31 @@ const OrderDetail = () => {
                                 ) + " VNĐ"}
                               </Typography>
                             </div>
-                            <div className="ms-5 ">
-                              <Button
-                                variant="contained"
-                                style={{
-                                  width: "auto",
-                                  backgroundColor: "rgb(255, 184, 184)",
-                                  color: "rgb(198, 0, 0)",
-                                }}
-                                onClick={() =>
-                                  refundReturn(
-                                    store,
-                                    orderDetail.productDetail.price *
-                                      orderDetail.quantity,
-                                    orderDetail.productDetail.id
-                                  )
-                                }
-                                disableElevation
-                              >
-                                Trả hàng/Hoàn tiền
-                              </Button>
-                            </div>
+                            {order.orderstatus === "Hoàn thành" ? (
+                              <div className="ms-5">
+                                <Button
+                                  variant="contained"
+                                  style={{
+                                    width: "auto",
+                                    backgroundColor: "rgb(255, 184, 184)",
+                                    color: "rgb(198, 0, 0)",
+                                  }}
+                                  onClick={() =>
+                                    refundReturn(
+                                      store,
+                                      orderDetail.productDetail.price *
+                                        orderDetail.quantity,
+                                      orderDetail.productDetail.id
+                                    )
+                                  }
+                                  disableElevation
+                                >
+                                  Trả hàng/Hoàn tiền
+                                </Button>
+                              </div>
+                            ) : (
+                              ""
+                            )}
                           </div>
                         </div>
                       </div>
@@ -278,7 +337,11 @@ const OrderDetail = () => {
                   <div className="d-flex">
                     <div className="col-6">
                       <div>Họ và tên người nhận: {order.user.fullname}</div>
-                      <div>Số điện thoại: {order.user.phone}</div>
+                      {order.receivedate ? (
+                        <div>Số điện thoại: {order.user.phone}</div>
+                      ) : (
+                        ""
+                      )}
                       <div>
                         Địa chỉ nhận hàng: {order.shippinginfor.address}
                       </div>
@@ -297,7 +360,6 @@ const OrderDetail = () => {
                     </div>
                     <div className="col-6 text-end">
                       <Typography variant="span">
-
                         Tổng cộng:{" "}
                         {formatPrice(
                           storeProducts.reduce(

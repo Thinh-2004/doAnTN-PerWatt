@@ -33,6 +33,9 @@ const Store = () => {
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
+  const getUrlIMG = (productId, filename) => {
+    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
+  };
   // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
   const updateItemsPerPage = () => {
     const width = window.innerWidth;
@@ -168,11 +171,9 @@ const Store = () => {
     try {
       const voucherDetailRequest = {
         user: { id: user.id },
-        voucher: { id: id ,
-          vouchername : vouchername
-        },
+        voucher: { id: id, vouchername: vouchername },
       };
-console.log(voucherDetailRequest);
+      console.log(voucherDetailRequest);
       await axios.post(`addVoucherDetails`, voucherDetailRequest);
       toast.success("Nhận voucher thành công");
       setIsAddVoucherDetail(true);
@@ -249,7 +250,7 @@ console.log(voucherDetailRequest);
             alt=""
             id="background-img-filter"
           />
-          <div className="container position-absolute top-50 start-50 translate-middle">
+          <div className="container-lg position-absolute top-50 start-50 translate-middle">
             <img
               src={geturlBgStore(fill.id, fill.imgbackgound)}
               alt=""
@@ -258,7 +259,7 @@ console.log(voucherDetailRequest);
             />
           </div>
         </div>
-        <div className="container position-absolute start-50 translate-middle mt-3">
+        <div className="container-lg position-absolute start-50 translate-middle mt-3">
           <div className="row">
             <div className="col-lg-8 col-md-8 col-sm-8">
               <div className=" d-flex justify-content-start">
@@ -298,7 +299,7 @@ console.log(voucherDetailRequest);
           </div>
         </div>
         <div
-          className="container border rounded-3"
+          className="container-lg border rounded-3"
           style={{ marginTop: valueMT + "%" }}
         >
           <div className="row d-flex justify-content-between p-3">
@@ -341,7 +342,7 @@ console.log(voucherDetailRequest);
           </div>
         </div>
       </div>
-      <div className="container mt-5">
+      <div className="container-lg mt-5">
         <div className="row">
           <Box
             className="col-lg-3 col-md-3 col-sm-3 border-end  rounded-3"
@@ -417,6 +418,15 @@ console.log(voucherDetailRequest);
                         <Typography variant="h5" component="div">
                           {voucher.vouchername}
                         </Typography>
+                        <img
+                          src={getUrlIMG(
+                            voucher.productDetail.product.id,
+                            voucher.productDetail.product.images[0].imagename
+                          )}
+                          alt=""
+                          id="img-product-voucher"
+                          className="mb-2 mt-2"
+                        />
                         <Typography sx={{ mb: 1.5 }} color="text.secondary">
                           Ngày kết thúc:{" "}
                           {dayjs(voucher.endday).format("DD-MM-YYYY")}
@@ -429,7 +439,12 @@ console.log(voucherDetailRequest);
                           ) : (
                             <button
                               className="btn btn-danger"
-                              onClick={() => addVoucherDetails(voucher.id, voucher.vouchername)}
+                              onClick={() =>
+                                addVoucherDetails(
+                                  voucher.id,
+                                  voucher.vouchername
+                                )
+                              }
                             >
                               Nhận mã
                             </button>

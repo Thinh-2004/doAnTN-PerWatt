@@ -8,6 +8,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import DoNotDisturbIcon from "@mui/icons-material/DoNotDisturb";
 import BannerBot from "../../../../Banner/BannerBot";
+import { Box } from "@mui/material";
 
 const ProductItemPerMall = () => {
   const [fill, setFill] = useState([]);
@@ -66,7 +67,7 @@ const ProductItemPerMall = () => {
       <div className="col-lg-4 col-md-4 col-sm-4 mt-2 border-end ">
         <BannerBot></BannerBot>
       </div>
-      <div className="col-lg-8 col-md-8 col-sm-8 mt-2 d-flex">
+      <Box className="col-lg-8 col-md-8 col-sm-8 mt-2 d-flex">
         <div className="align-content-center border-start p-2">
           {currentPage === 0 ? (
             <div id="sold-page" className="align-items-center">
@@ -112,7 +113,7 @@ const ProductItemPerMall = () => {
             </div>
           )}
         </div>
-      </div>
+      </Box>
     </>
   );
 };

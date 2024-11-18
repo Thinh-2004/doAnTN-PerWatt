@@ -46,10 +46,10 @@ const Banner = () => {
   return (
     <>
       {topBanners.length > 0 && (
-        <a
-          href={`http://localhost:3000/findMoreProduct/${encodeURIComponent(
-            topBanners[topIndex].bannername
-          )}`} // Thay đổi href
+        <div
+          // href={`http://localhost:3000/findMoreProduct/${encodeURIComponent(
+          //   topBanners[topIndex].bannername
+          // )}`} // Thay đổi href
           className="rounded-4 w-100 h-100"
         >
           <img
@@ -61,7 +61,7 @@ const Banner = () => {
               height: "600px",
             }}
           />
-        </a>
+        </div>
       )}
     </>
   );

@@ -3,6 +3,7 @@ import axios from "../../Localhost/Custumize-axios";
 import { format } from "date-fns";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
+
 import { Button, Card, CardContent } from "@mui/material";
 import { useParams } from "react-router-dom";
 
@@ -194,7 +195,7 @@ const Wallet = () => {
                           className="rounded-3 mb-3"
                           sx={{
                             backgroundColor: "background.default",
-                            boxShadow: "5px 5px 20px rgba(0, 0, 0, 0.1)",
+                            boxShadow: "none",
                           }}
                         >
                           <CardContent className="">

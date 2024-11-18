@@ -19,6 +19,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import WarehouseVoucherUser from "./WarehouseVoucherUser/WarehouseVoucherUser";
 
 const ProfileUser = () => {
   const [fill, setFill] = useState([]);
@@ -96,7 +97,7 @@ const ProfileUser = () => {
   return (
     <div>
       <Header />
-      <div className="container">
+      <div className="container-lg">
         <div className="row">
           <div className="col-lg-3 mt-4">
             <Box
@@ -273,6 +274,7 @@ const ProfileUser = () => {
                 <Link
                   className="mx-2 text-decoration-none"
                   onClick={() => setIsChangePassClicked(false)}
+                  to={`warehouse/voucher`}
                 >
                   <i className="bi bi-ticket-perforated fs-3 text-danger me-2"></i>
                   <span
@@ -282,7 +284,7 @@ const ProfileUser = () => {
                         : "text-white"
                     }`}
                   >
-                    Kho Voucher
+                    Kho Voucher của tôi
                   </span>
                 </Link>
               </div>
@@ -300,6 +302,7 @@ const ProfileUser = () => {
                 }
               />
               <Route path="/shippingInfo" element={<ShippingList />} />
+               <Route path="/warehouse/voucher" element={<WarehouseVoucherUser />} />
             </Routes>
           </div>
         </div>
