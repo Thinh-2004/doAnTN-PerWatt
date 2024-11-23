@@ -49,8 +49,8 @@ const CenterHeader = ({ textSearch, resetSearch }) => {
       }
     };
 
-    loadModel();
-  }, [model]);
+   if(open) loadModel(); //chỉ chạy khi dialog được mở
+  }, [model, open]);
 
   useEffect(() => {
     if (resetSearch) {
@@ -84,6 +84,7 @@ const CenterHeader = ({ textSearch, resetSearch }) => {
     //setSearch(maxPrediction.className);
     if (maxPrediction.probability.toFixed(2) >= 0.5) {
       setSearch(maxPrediction.className);
+      textSearch(maxPrediction.className);
       setOpen(false);
       setImage(null); //đặt lại hình ảnh khi thoát khỏi tìm kiếm
     } else {

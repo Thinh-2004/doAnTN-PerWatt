@@ -41,7 +41,6 @@ const Cart = () => {
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
-
   const open = Boolean(anchorEl);
 
   tailspin.register();
@@ -388,9 +387,12 @@ const Cart = () => {
               </div>
             ) : (
               <>
-                <Card className=" rounded-3 mb-3">
+                <Card className=" rounded-3 mb-3" sx={{ boxShadow: "none" }}>
                   <CardContent
-                    sx={{ backgroundColor: "backgroundElement.children" }}
+                    sx={{
+                      backgroundColor: "backgroundElement.children",
+                      boxShadow: "none",
+                    }}
                     className="d-flex justify-content-between align-items-center p-2"
                   >
                     <div className="d-flex align-items-center">
@@ -399,7 +401,9 @@ const Cart = () => {
                         checked={selectAll}
                         onChange={(e) => handleSelectAll(e.target.checked)}
                       />
-                      <label htmlFor="selectAll">Chọn tất cả sản phẩm</label>
+                      <label htmlFor="selectAll" style={{ cursor: "pointer" }}>
+                        Chọn tất cả sản phẩm
+                      </label>
                     </div>
                     <Button
                       variant="contained"
@@ -422,6 +426,7 @@ const Cart = () => {
                       id="cartItem"
                       key={storeId}
                       style={{ position: "relative", minHeight: "200px" }}
+                      sx={{ boxShadow: "none" }}
                     >
                       {!isCardLoaded && (
                         <l-tailspin
@@ -458,6 +463,7 @@ const Cart = () => {
                                 )
                               }
                             />
+
                             <Link to={`/pageStore/${store.slug}`}>
                               <img
                                 src={getAvtUser(
@@ -879,12 +885,14 @@ const Cart = () => {
             )}
           </div>
           <div className="col-lg-3 col-md-12">
-            <Box
-              sx={{ backgroundColor: "backgroundElement.children" }}
-              className="card"
+            <Card
+              sx={{
+                backgroundColor: "backgroundElement.children",
+                boxShadow: "none",
+              }}
               id="sticky-top"
             >
-              <div className="card-body" id="smooth">
+              <CardContent id="smooth">
                 <div className="d-flex justify-content-between">
                   <Typography
                     variant="h5"
@@ -929,21 +937,8 @@ const Cart = () => {
                 >
                   Đặt hàng
                 </Button>
-                <Button
-                  variant="contained"
-                  component={Link}
-                  to="/wallet/buyer"
-                  style={{
-                    width: "auto",
-                    backgroundColor: "rgb(218, 255, 180)",
-                    color: "rgb(45, 91, 0)",
-                  }}
-                  disableElevation
-                >
-                  <i class="bi bi-wallet2"></i>
-                </Button>
-              </div>
-            </Box>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

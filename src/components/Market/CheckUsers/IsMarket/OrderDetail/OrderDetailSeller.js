@@ -86,7 +86,7 @@ const OrderDetailSeller = () => {
                 }}
               >
                 <Card
-                  className="card mt-3"
+                  className=" ms-3 mt-3"
                   sx={{
                     backgroundColor: "backgroundElement.children",
                     boxShadow: "none",
@@ -96,7 +96,6 @@ const OrderDetailSeller = () => {
                     variant="contained"
                     style={{
                       width: "40px",
-                      marginLeft: "10px",
                       height: "40px",
                       backgroundColor: "rgb(204,244,255)",
                       color: "rgb(0,70,89)",
@@ -108,6 +107,7 @@ const OrderDetailSeller = () => {
                     <i class="bi bi-caret-left-fill"></i>
                   </Button>
                 </Card>
+
                 <CardContent className="">
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">

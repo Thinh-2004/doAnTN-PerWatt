@@ -18,7 +18,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { toast } from "react-toastify";
 
-const EditDetailProduct = ({ CountData, idProduct, isChangeFormEdit }) => {
+const EditDetailProduct = ({
+  CountData,
+  idProduct,
+  isChangeFormEdit,
+  updateChangeForm,
+}) => {
   const [fillData, setFillData] = useState([]); //để fill dữ liệu;
   const [isHiddenDetailPro, setIsHiddenDetailPro] = useState(isChangeFormEdit); //Điều kiện hiển thị chi tiết sản phẩm
   const [newTemporaryData, setNewTemporaryData] = useState({
@@ -251,12 +256,21 @@ const EditDetailProduct = ({ CountData, idProduct, isChangeFormEdit }) => {
           loadData();
           setImageEdit("");
           setEditingIndex(null);
+          if (isHiddenDetailPro) {
+            setIsHiddenDetailPro(true);
+            updateChangeForm(true);
+          } else {
+            setIsHiddenDetailPro(false);
+            updateChangeForm(false);
+          }
+          toast.success("Cập nhật dữ liệu thành công");
         } else {
           const res = await axios.post("/detailProduct", formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
           setFillData((prevData) => [...prevData, res.data]);
           loadData();
+          toast.success("Lưu dữ liệu thành công");
         }
         // Reset form
         setNewTemporaryData({
@@ -266,7 +280,6 @@ const EditDetailProduct = ({ CountData, idProduct, isChangeFormEdit }) => {
           imagedetail: null,
         });
         setImagePreview("");
-        toast.success("Lưu dữ liệu thành công");
       } catch (error) {
         console.error(error.response.data);
         toast.error("Có lỗi xảy ra khi lưu dữ liệu");
@@ -311,6 +324,13 @@ const EditDetailProduct = ({ CountData, idProduct, isChangeFormEdit }) => {
         loadData();
         setImageEdit("");
         setEditingIndex(null);
+        if (isHiddenDetailPro) {
+          setIsHiddenDetailPro(true);
+          updateChangeForm(true);
+        } else {
+          setIsHiddenDetailPro(false);
+          updateChangeForm(false);
+        }
       } catch (error) {
         toast.error("Cập nhật thất bại");
         console.log(error);
@@ -368,7 +388,7 @@ const EditDetailProduct = ({ CountData, idProduct, isChangeFormEdit }) => {
 
   useEffect(() => {
     // Chỉ cập nhật state nếu giá trị thay đổi
-    if (fillData.length > 1) {
+    if (fillData.length > 1 || (fillData[0]?.namedetail !== null && fillData[0]?.imagedetail !== null) ) {
       setIsHiddenDetailPro(true);
       CountData(2);
     } else {
@@ -380,7 +400,7 @@ const EditDetailProduct = ({ CountData, idProduct, isChangeFormEdit }) => {
   return (
     <>
       <div className=" shadow">
-        <Card sx={{backgroundColor: "backgroundElement.children"}}>
+        <Card sx={{ backgroundColor: "backgroundElement.children" }}>
           <CardContent className="">
             {isHiddenDetailPro ? ( //Show bảng và form phân loại
               <div className="row">
@@ -474,45 +494,53 @@ const EditDetailProduct = ({ CountData, idProduct, isChangeFormEdit }) => {
                           <TableCell align="center">Hình</TableCell>
                           <TableCell align="center">Tên phân loại</TableCell>
                           <TableCell align="center">Giá phân loại</TableCell>
-                          <TableCell align="center">Số lượng phân loại</TableCell>
+                          <TableCell align="center">
+                            Số lượng phân loại
+                          </TableCell>
                           <TableCell align="center">Thao tác</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                      {fillData.map((fill) => (
-                        <TableRow key={fill.id}>
-                          <TableCell align="center">
-                            <img
-                              src={geturlIMG(fill.id, fill.imagedetail)}
-                              alt="Hình ảnh"
-                              style={{ width: "100px", height: "100px" }}
-                              className="img-fluid rounded-3"
-                            />
-                          </TableCell>
-                          <TableCell align="center">{fill.namedetail}</TableCell>
-                          <TableCell align="center">{formatPrice(fill.price.toString())}</TableCell>
-                          <TableCell align="center">{fill.quantity}</TableCell>
-                          <TableCell align="center">
-                            <Button
-                              onClick={() => handleEdit(fill.id)} // Truyền id vào đây
-                              color="primary"
-                              startIcon={<EditIcon />}
-                              size="small"
-                              className="me-2"
-                            >
-                              Sửa
-                            </Button>
-                            <Button
-                              onClick={() => handleDelete(fill.id)}
-                              color="error"
-                              startIcon={<DeleteIcon />}
-                              size="small"
-                            >
-                              Xóa
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                        {fillData.map((fill) => (
+                          <TableRow key={fill.id}>
+                            <TableCell align="center">
+                              <img
+                                src={geturlIMG(fill.id, fill.imagedetail)}
+                                alt="Hình ảnh"
+                                style={{ width: "100px", height: "100px" }}
+                                className="img-fluid rounded-3"
+                              />
+                            </TableCell>
+                            <TableCell align="center">
+                              {fill.namedetail}
+                            </TableCell>
+                            <TableCell align="center">
+                              {formatPrice(fill.price.toString())}
+                            </TableCell>
+                            <TableCell align="center">
+                              {fill.quantity}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Button
+                                onClick={() => handleEdit(fill.id)} // Truyền id vào đây
+                                color="primary"
+                                startIcon={<EditIcon />}
+                                size="small"
+                                className="me-2"
+                              >
+                                Sửa
+                              </Button>
+                              <Button
+                                onClick={() => handleDelete(fill.id)}
+                                color="error"
+                                startIcon={<DeleteIcon />}
+                                size="small"
+                              >
+                                Xóa
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
                       </TableBody>
                     </Table>
                   </TableContainer>

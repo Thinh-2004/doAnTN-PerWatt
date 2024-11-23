@@ -10,7 +10,7 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import { Link } from "react-router-dom";
-import { Box, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import axios from "../../../Localhost/Custumize-axios";
 
 const Home = () => {
@@ -83,8 +83,10 @@ const Home = () => {
   //Truyền dữ liệu xuống Header
   const handleSearch = useCallback((context) => {
     setSearchProduct(context);
-    //Lưu vào localStorage
-    localStorage.setItem("textSearchHome", context);
+    setTimeout(() => {
+      //Lưu vào localStorage
+      localStorage.setItem("textSearchHome", context);
+    }, 500);
     //Xóa localSession idCateSearchHome
     localStorage.removeItem("idCateSearchHome");
     setJoinCate("");
@@ -121,23 +123,26 @@ const Home = () => {
       <div>
         <About idCategory={handleIdCate} />
       </div>
-      <div className="container">
-        <label htmlFor="">&nbsp; </label>
-      </div>
+      <label htmlFor="">&nbsp; </label>
       {checkShowBannerMid.length !== 0 ? (
         <div className="container-fluid" style={{ marginTop: valueMT + "%" }}>
           <h2 id="banner-title">Sự kiện shop</h2>
           <BannerMiddle />
         </div>
       ) : (
-        <div style={{marginTop : "10%"}}></div>
+        <div style={{ marginTop: "10%" }}></div>
       )}
-      <div className="container">
-        <div className="border mt-4 rounded-3">
+      <Container className="" maxWidth="xl">
+        <Box
+          className="border mt-4 rounded-3"
+          sx={{
+            backgroundColor: "background.default",
+          }}
+        >
           <Box
             className="rounded-3"
             sx={{
-              bgcolor: "backgroundElement.children",
+              backgroundColor: "backgroundElement.children",
             }}
           >
             <div className="d-flex justify-content-center p-2 border-bottom">
@@ -175,10 +180,10 @@ const Home = () => {
               </div>
             </div>
           </Box>
-          <div className="row mb-3">
+          <Box className="row mb-3 mt-3">
             <ProductItemPerMall />
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         <h4 className="text-center fw-bold mt-4">Sản phẩm dành cho bạn</h4>
         <div className="row d-flex justify-content-center">
@@ -188,7 +193,7 @@ const Home = () => {
             handleReset={handleReloadProduct}
           />
         </div>
-      </div>
+      </Container>
       <Footer />
     </>
   );

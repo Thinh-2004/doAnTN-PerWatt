@@ -84,7 +84,11 @@ const Order = () => {
     if (cartIds) {
       (async () => {
         try {
-          const response = await axios.get(`/cart?id=${cartIds}`);
+          const response = await axios.get(`/cart?id=${cartIds}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+            },
+          });
           setProducts(response.data);
         } catch (error) {
           console.log(error);
@@ -116,10 +120,18 @@ const Order = () => {
         //00 = thành công
         if (resultCode === "0") {
           console.log("Calling API...");
-          const res = await axios.post("/createMoMoOrder", {
-            order,
-            orderDetails,
-          });
+          const res = await axios.post(
+            "/createMoMoOrder",
+            {
+              order,
+              orderDetails,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+              },
+            }
+          );
           console.log(res.data);
         } else {
           return;
@@ -137,7 +149,11 @@ const Order = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get(`orderFill/${user.id}`);
+        const res = await axios.get(`orderFill/${user.id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        });
         setFill(res.data);
 
         res.data.forEach((order) => {
@@ -168,10 +184,20 @@ const Order = () => {
           label: "Có",
           onClick: async () => {
             try {
-              await axios.put(`/order/${orderId}/status`, {
-                status: "Hủy",
-                note: "Đơn hàng được huỷ bởi người dùng",
-              });
+              await axios.put(
+                `/order/${orderId}/status`,
+                {
+                  status: "Hủy",
+                  note: "Đơn hàng được huỷ bởi người dùng",
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem(
+                      "hadfjkdshf"
+                    )}`,
+                  },
+                }
+              );
               setFill((prevFill) =>
                 prevFill.map((order) =>
                   order.id === orderId
@@ -196,10 +222,18 @@ const Order = () => {
   const handleMarkAsReceived = async (orderId) => {
     const now = new Date().toISOString();
     try {
-      await axios.put(`/order/${orderId}/status`, {
-        status: "Hoàn thành",
-        receivedate: now,
-      });
+      await axios.put(
+        `/order/${orderId}/status`,
+        {
+          status: "Hoàn thành",
+          receivedate: now,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        }
+      );
       setFill((prevFill) =>
         prevFill.map((order) =>
           order.id === orderId
@@ -214,7 +248,11 @@ const Order = () => {
 
   const fillOrderDetailbyOrderID = async (orderId) => {
     try {
-      const res = await axios.get(`/orderDetail/${orderId}`);
+      const res = await axios.get(`/orderDetail/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+        },
+      });
       setOrderDetails((prevOrderDetails) => ({
         ...prevOrderDetails,
         [orderId]: res.data,
@@ -248,7 +286,11 @@ const Order = () => {
     }
 
     return filteredOrders.map((order) => (
-      <Card className="rounded-3 mt-3" key={order.id} sx={{backgroundColor : "backgroundElement.children"}}>
+      <Card
+        className="rounded-3 mt-3"
+        key={order.id}
+        sx={{ backgroundColor: "backgroundElement.children" }}
+      >
         <CardContent className="">
           <div className="d-flex align-items-center mb-1">
             <Link to={`/pageStore/${order.store.slug}`}>
@@ -447,12 +489,28 @@ const Order = () => {
     <div>
       <Header />
       <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
-
       <div
         className="col-12 col-md-12 col-lg-10 offset-lg-1"
         style={{ transition: "0.5s" }}
       >
-        <Box sx={{ width: "100%", backgroundColor: "backgroundElement.children" }} className="rounded-3">
+        {/* <Button
+          variant="contained"
+          component={Link}
+          to="/wallet/buyer"
+          style={{
+            width: "auto",
+            backgroundColor: "rgb(218, 255, 180)",
+            color: "rgb(45, 91, 0)",
+          }}
+          disableElevation
+        >
+          <i class="bi bi-wallet2"></i>
+        </Button> */}
+
+        <Box
+          sx={{ width: "100%", backgroundColor: "backgroundElement.children" }}
+          className="rounded-3"
+        >
           <Box
             sx={{
               borderBottom: 1,
@@ -471,9 +529,10 @@ const Order = () => {
               {[
                 "Tất cả",
                 "Đang chờ duyệt",
-                "Chờ giao hàng",
+                "Đang vận chuyển",
                 "Hoàn thành",
                 "Hủy",
+                "Trả hàng",
               ].map((tab, index) => (
                 <Tab label={tab} key={index} />
               ))}
@@ -482,9 +541,10 @@ const Order = () => {
           {[
             "Tất cả",
             "Đang chờ duyệt",
-            "Chờ giao hàng",
+            "Đang vận chuyển",
             "Hoàn thành",
             "Hủy",
+            "Trả hàng",
           ].map((tab, index) => (
             <CustomTabPanel value={value} index={index} key={index}>
               <div>
@@ -494,12 +554,14 @@ const Order = () => {
                       return true;
                     case "Đang chờ duyệt":
                       return order.orderstatus === "Đang chờ duyệt";
-                    case "Chờ giao hàng":
-                      return order.orderstatus === "Chờ giao hàng";
+                    case "Đang vận chuyển":
+                      return order.orderstatus === "Đang vận chuyển";
                     case "Hoàn thành":
                       return order.orderstatus === "Hoàn thành";
                     case "Hủy":
                       return order.orderstatus === "Hủy";
+                    case "Trả hàng":
+                      return order.orderstatus === "Trả hàng";
                     default:
                       return false;
                   }

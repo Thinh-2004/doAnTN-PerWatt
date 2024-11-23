@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../Localhost/Custumize-axios";
 import { toast } from "react-toastify";
-import { Button } from "@mui/material";
+import { Box, Button, Card, CardContent } from "@mui/material";
 import { confirmAlert } from "react-confirm-alert";
 import FormSelectAdress from "../APIAddressVN/FormSelectAdress.js";
 import TextField from "@mui/material/TextField";
@@ -20,6 +20,9 @@ const ShippingList = () => {
     try {
       const response = await axios.get(`/shippingInfo`, {
         params: { userId: user.id },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+        },
       });
       setShippingInfo(response.data);
     } catch (error) {
@@ -43,10 +46,18 @@ const ShippingList = () => {
       return;
     }
     try {
-      await axios.post(`/shippingInfoCreate`, {
-        address: addingAddress,
-        user: { id: user.id },
-      });
+      await axios.post(
+        `/shippingInfoCreate`,
+        {
+          address: addingAddress,
+          user: { id: user.id },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        }
+      );
 
       handleReset();
       toast.success("Thêm địa chỉ thành công!");
@@ -70,10 +81,18 @@ const ShippingList = () => {
     }
 
     try {
-      await axios.put(`/shippingInfoUpdate/${selectedShipping.id}`, {
-        ...selectedShipping,
-        address: newAddress,
-      });
+      await axios.put(
+        `/shippingInfoUpdate/${selectedShipping.id}`,
+        {
+          ...selectedShipping,
+          address: newAddress,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        }
+      );
       handleReset();
       toast.success("Cập nhật địa chỉ thành công!");
       fetchShippingInfo();
@@ -98,7 +117,11 @@ const ShippingList = () => {
           label: "Có",
           onClick: async () => {
             try {
-              await axios.delete(`/shippingInfoDelete/${id}`);
+              await axios.delete(`/shippingInfoDelete/${id}`, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+                },
+              });
               toast.success("Xóa địa chỉ thành công!");
               fetchShippingInfo();
             } catch (error) {
@@ -116,12 +139,20 @@ const ShippingList = () => {
 
   return (
     <>
-      <div
+      <Box
         className="col-12 col-md-12 col-lg-12 offset-lg-0"
-        style={{ transition: "0.5s" }}
+        sx={{
+          transition: "0.5s",
+        }}
       >
-        <div className="card rounded-4">
-          <div className="card-body">
+        <Card
+          className=" rounded-4"
+          sx={{
+            backgroundColor: "backgroundElement.children",
+            transition: "0.5s",
+          }}
+        >
+          <CardContent className="">
             <h3 className="d-flex justify-content-between align-items-center">
               Danh sách địa chỉ nhận hàng
               <Button
@@ -138,11 +169,14 @@ const ShippingList = () => {
               </Button>
             </h3>
             <hr />
-            <div className="card">
+            <Box className="">
               {shippingInfo.length > 0 ? (
                 shippingInfo.map((info) => (
-                  <div className="card mb-3" id="cartItem" key={info.id}>
-                    <div className="card-body d-flex justify-content-between align-items-center">
+                  <Card className="mb-3" id="cartItem" key={info.id}>
+                    <CardContent
+                      className="d-flex justify-content-between align-items-center"
+                      sx={{ backgroundColor: "background.default" }}
+                    >
                       <h5 className="mb-1">{info.address}</h5>
                       <div className="button-group">
                         <Button
@@ -171,16 +205,16 @@ const ShippingList = () => {
                           Xóa
                         </Button>
                       </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 ))
               ) : (
                 <h1>Chưa có địa chỉ nhận hàng nào.</h1>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
 
       <div
         className="modal fade"

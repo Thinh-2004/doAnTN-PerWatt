@@ -126,6 +126,7 @@ const ProductTable = ({
                       alt=""
                       className="img-fluid"
                       id="img-product-item"
+                      loading="lazy"
                     />
                   ) : (
                     <img

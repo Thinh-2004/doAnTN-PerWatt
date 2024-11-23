@@ -38,7 +38,11 @@ const Profile = () => {
 
   const loadData = async () => {
     try {
-      const res = await axios.get(`userProFile/${user.id}`);
+      const res = await axios.get(`/userProFile/myInfo`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+        },
+      });
       setFill(res.data);
       // console.log(res.data);
       // Set the preview URL if there is an avatar
@@ -172,6 +176,7 @@ const Profile = () => {
         const res = await axios.put(`/user/${user.id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
           },
         });
 

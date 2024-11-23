@@ -8,7 +8,6 @@ import {
   DialogActions,
   DialogContent,
   TextField,
-  Typography,
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -202,7 +201,7 @@ const CheckItemProduct = () => {
 
   return (
     <>
-      <div className="container mt-4">
+      <div className="container-lg mt-4">
         <Button
           variant="contained"
           className="mb-4"

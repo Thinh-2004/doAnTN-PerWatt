@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "../../Header/Header";
 import Footer from "../../Footer/Footer";
@@ -6,7 +6,7 @@ import axios from "../../../Localhost/Custumize-axios";
 import { toast } from "react-toastify";
 import { tailspin } from "ldrs";
 import "./PayBuyerStyle.css";
-import { Box, Button, Card, CardContent } from "@mui/material";
+import { Button, Card, CardContent } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
@@ -28,6 +28,12 @@ const PayBuyer = () => {
   const query = new URLSearchParams(location.search);
   const cartIds = query.get("cartIds");
   const [resetForm, setResetForm] = useState(false);
+  const [totalAmountProduct, setTotalAmountProduct] = useState(0); // Khai báo state để lưu tổng tiền
+  const [isLoadingShipping, setIsLoadingShipping] = useState(false); // Trạng thái loading
+  // const [userAddress, setUserAddress] = useState("Hà Nội");
+  // const [storeAddress, setStoreAddress] = useState("Cần Thơ"); // Địa chỉ cửa hàng
+  const [shippingFee, setShippingFee] = useState(0);
+  const [voucher, setVoucher] = useState(0); // Lỗi nếu có
 
   tailspin.register();
   const [inputValues, setInputValues] = useState(Array(6).fill(""));
@@ -84,7 +90,11 @@ const PayBuyer = () => {
           const { store, products } = groupedProducts[storeId];
 
           const storeTotal = products.reduce((sum, product) => {
-            return sum + product.productDetail.price * product.quantity;
+            const price = parseFloat(product.productDetail.price) || 0;
+            const quantity = parseInt(product.quantity, 10) || 0;
+            const shipping = parseFloat(shippingFee) || 0;
+
+            return sum + price * quantity + shipping;
           }, 0);
 
           adminBalance += storeTotal;
@@ -141,7 +151,6 @@ const PayBuyer = () => {
           });
 
           const fillWalletStore = await axios.get(`wallet/${store.user.id}`);
-
           const transactionStore = await axios.get(
             `wallettransaction/idWalletByIdUSer/${store.user.id}`
           );
@@ -197,6 +206,7 @@ const PayBuyer = () => {
       if (cartIds) {
         const response = await axios.get(`/cart?id=${cartIds}`);
         setProducts(response.data);
+        console.log(response.data);
       }
       const paymentResponse = await axios.get("/paymentMethod");
       setPaymentMethods(paymentResponse.data);
@@ -207,6 +217,11 @@ const PayBuyer = () => {
         );
         setShippingInfo(shippingInfoResponse.data);
       }
+      const VoucherResponse = await axios.get(
+        `/findVoucherByIdUser/${user.id}`
+      );
+      setVoucher(VoucherResponse.data);
+      console.log(VoucherResponse.data);
     } catch (error) {
       console.error(
         "Error fetching data:",
@@ -244,21 +259,56 @@ const PayBuyer = () => {
     }
   };
 
+  // const groupByStore = (products) => {
+  //   return products.reduce((groups, product) => {
+  //     const storeId = product.productDetail.product.store.id;
+  //     if (!groups[storeId]) {
+  //       groups[storeId] = {
+  //         store: product.productDetail.product.store,
+  //         products: [],
+  //       };
+  //     }
+  //     groups[storeId].products.push(product);
+  //     return groups;
+  //   }, {});
+  // };
+
   const groupByStore = (products) => {
-    return products.reduce((groups, product) => {
+    const groupedProducts = products.reduce((groups, product) => {
       const storeId = product.productDetail.product.store.id;
+      const store = product.productDetail.product.store;
+      const address = product.productDetail.product.store.address;
+
+      let feeShip = []; // Khởi tạo mảng feeShip
       if (!groups[storeId]) {
         groups[storeId] = {
-          store: product.productDetail.product.store,
+          store,
+          address, // Địa chỉ cửa hàng
           products: [],
+          feeShip: feeShip, // Thêm phí ship vào đây
         };
       }
+
       groups[storeId].products.push(product);
       return groups;
     }, {});
+    return groupedProducts;
   };
 
+  // useEffect(() => {
+  //   const addresses = products.reduce((addresses, product) => {
+  //     const address = product.productDetail.product.store.user.address;
+  //     if (!addresses.includes(address)) {
+  //       addresses.push(address);
+  //     }
+  //     return addresses;
+  //   }, []);
+
+  //   setStoreAddress(addresses); // Chỉ gọi setStoreAddress một lần
+  // }, [products, selectedShippingInfo]); // useEffect chỉ chạy khi products thay đổi
+
   const groupedProducts = groupByStore(products);
+  console.log(groupedProducts);
 
   const handlePayment = async () => {
     try {
@@ -290,6 +340,7 @@ const PayBuyer = () => {
         ids: cartIds,
         address: selectedShippingInfo,
       });
+      console.log(totalAmount);
 
       window.location.href = response.data.url;
     } catch (error) {
@@ -308,6 +359,16 @@ const PayBuyer = () => {
       const groupedProducts = groupByStore(products);
       for (const storeId in groupedProducts) {
         const { products: storeProducts } = groupedProducts[storeId];
+
+        // const outOfStockProduct = storeProducts.find(
+        //   (product) => product.productDetail.quantity === 0
+        // );
+        // if (outOfStockProduct) {
+        //   toast.error(
+        //     "Sản phẩm đã có người mua trước, vui lòng mua sản phẩm khác hoặc mua lại sau"
+        //   );
+        //   return;
+        // }
 
         const outOfStockProduct = storeProducts.find(
           (product) => product.productDetail.quantity === 0
@@ -396,7 +457,6 @@ const PayBuyer = () => {
     );
 
     sessionStorage.setItem("productList", JSON.stringify(productList));
-
     const data = {
       amount: totalAmount,
       ids: cartIds,
@@ -412,6 +472,7 @@ const PayBuyer = () => {
   const handleCombinedAction = async () => {
     if (!selectedShippingInfo) {
       toast.warning("Bạn chưa chọn địa chỉ nhận hàng!");
+      return;
     } else {
       try {
         if (selectedPaymentMethod === "1") {
@@ -442,6 +503,162 @@ const PayBuyer = () => {
     return Number(value).toLocaleString("vi-VN");
   };
 
+  useEffect(() => {
+    const calculatedTotalAmount = Object.values(groupedProducts).reduce(
+      (sum, { products }) => {
+        return (
+          sum +
+          products.reduce((productSum, product) => {
+            return productSum + product.productDetail.price * product.quantity;
+          }, 0)
+        );
+      },
+      0
+    );
+
+    setTotalAmountProduct(calculatedTotalAmount); // Cập nhật tổng tiền vào state
+  }, [groupedProducts]); // Chỉ chạy lại khi groupedProducts thay đổi
+
+  // Hàm lấy phần cuối của địa chỉ
+  const getLastPartOfAddress = (address) => {
+    const parts = address.split(","); // Chia chuỗi theo dấu phẩy
+    return parts[parts.length - 1].trim(); // Lấy phần tử cuối cùng và loại bỏ khoảng trắng
+  };
+
+  // Hàm chuyển địa chỉ thành tọa độ
+  const getCoordinatesFromAddress = async (address) => {
+    const lastPart = getLastPartOfAddress(address); // Lấy phần cuối của địa chỉ
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${lastPart}`;
+
+    try {
+      const response = await axios.get(url);
+      if (response.data.length > 0) {
+        const { lat, lon } = response.data[0];
+        return { lat: parseFloat(lat), lon: parseFloat(lon) };
+      } else {
+        console.log("Không tìm thấy tọa độ cho địa chỉ này");
+        return null;
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+      return null;
+    }
+  };
+
+  // Hàm tính khoảng cách giữa hai tọa độ
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const toRad = (value) => (value * Math.PI) / 180;
+
+    const R = 6371; // Bán kính trái đất (km)
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance = R * c; // Khoảng cách tính được (km)
+    console.log(distance);
+    return distance;
+  };
+
+  // Hàm tính phí ship
+  const calculateShippingFee = (distance) => {
+    const baseFee = 5000; // Phí cố định cho 0-5 km
+    const additionalFeePerKm = 100; // Phí cho mỗi km sau 5 km
+    const maxFee = 200000; // Phí tối đa (tối đa cho các chuyến giao hàng xa)
+
+    let fee = baseFee; // Bắt đầu với phí cơ bản
+
+    if (distance > 5) {
+      // Tính phí cho các km vượt qua 5 km
+      const additionalDistance = distance - 5;
+      fee += additionalDistance * additionalFeePerKm;
+    }
+
+    // Nếu phí tính ra vượt quá mức phí tối đa, áp dụng phí tối đa
+    if (fee > maxFee) {
+      fee = maxFee;
+    }
+
+    // Làm tròn phí
+    return Math.round(fee);
+  };
+
+  const [groupedProductss, setGroupedProducts] = useState([]);
+
+  useEffect(() => {
+    setGroupedProducts(groupByStore(products));
+  }, [products]);
+
+  const handleCalculateShipping = async (idShipping) => {
+    setSelectedShippingInfo(idShipping);
+
+    if (!idShipping) {
+      toast.warning("Vui lòng nhập cả địa chỉ người dùng và cửa hàng!");
+      return;
+    }
+
+    const selectedShipping = shippingInfo.find(
+      (shipping) => shipping.id === idShipping
+    );
+
+    if (!selectedShipping) {
+      toast.warning("Địa chỉ không hợp lệ");
+      return;
+    }
+
+    setIsLoadingShipping(true); // Bắt đầu tính toán, set trạng thái loading
+
+    const userCoords = await getCoordinatesFromAddress(
+      selectedShipping.address
+    ); // Sử dụng địa chỉ người dùng
+
+    const updatedGroupedProducts = { ...groupedProducts }; // Tạo bản sao để cập nhật
+    let totalShippingFee = 0;
+    await Promise.all(
+      Object.keys(updatedGroupedProducts).map(async (storeId) => {
+        const storeGroup = updatedGroupedProducts[storeId];
+        const parts = storeGroup.address.split(","); // Chia chuỗi theo dấu phẩy
+        const storeCoords = await getCoordinatesFromAddress(
+          parts[parts.length - 1].trim()
+        ); // Lấy tọa độ cửa hàng
+
+        if (userCoords && storeCoords) {
+          const { lat: userLat, lon: userLon } = userCoords;
+          const { lat: storeLat, lon: storeLon } = storeCoords;
+
+          const distance = calculateDistance(
+            userLat,
+            userLon,
+            storeLat,
+            storeLon
+          );
+          console.log("Khoảng cách: ", distance);
+
+          const fee = calculateShippingFee(distance);
+          console.log("Phí ship: ", fee);
+
+          // Cập nhật phí ship vào nhóm
+          storeGroup.feeShip.push(fee);
+
+          totalShippingFee += fee;
+        } else {
+          toast.error("Server tính tiền ship không phản hồi");
+        }
+      })
+    );
+
+    setGroupedProducts(updatedGroupedProducts); // Cập nhật state của groupedProducts
+    setShippingFee(totalShippingFee);
+
+    setIsLoadingShipping(false);
+  };
+
   return (
     <div>
       <Header />
@@ -456,12 +673,18 @@ const PayBuyer = () => {
             ></l-tailspin>
           </div>
         ) : (
-          Object.keys(groupedProducts).map((storeId) => {
-            const { store, products: storeProducts } = groupedProducts[storeId];
+          Object.keys(groupedProductss).map((storeId) => {
+            const {
+              store,
+              products: storeProducts,
+              feeShip,
+            } = groupedProductss[storeId];
+
             const totalAmount = storeProducts.reduce(
               (sum, cart) => sum + cart.productDetail.price * cart.quantity,
               0
             );
+
             return (
               <Card className="mt-3 rounded-3" key={storeId}>
                 <CardContent
@@ -582,17 +805,13 @@ const PayBuyer = () => {
                                   ></button>
                                 </div>
                                 <div className="modal-body">
-                                  <div>
-                                    Số tiền thanh toán:{" "}
-                                    {formatPrice(
-                                      cart.productDetail.price * cart.quantity
-                                    ) + " VNĐ"}
-                                  </div>
+                                  Số tiền thanh toán:{" "}
+                                  {formatPrice(totalAmountProduct + feeShip) +
+                                    " VNĐ"}
                                   <div>
                                     Số dư PerPay:{" "}
                                     {formatPrice(wallet.balance) + " VNĐ"}
                                   </div>
-
                                   <div className="row mt-3">
                                     {[...Array(6)].map((_, index) => (
                                       <div className="col-2" key={index}>
@@ -663,9 +882,47 @@ const PayBuyer = () => {
                       </div>
                     );
                   })}
+
                   <div className="col-lg-11 col-md-12">
-                    <div className="d-flex justify-content-end">
-                      Tổng tiền: {formatPrice(totalAmount) + " VNĐ"}
+                    <div className="d-flex justify-content-between mt-3">
+                      <FormControl size="small" sx={{width : "30%"}}>
+                        <InputLabel id="address-select-label">
+                          Voucher
+                        </InputLabel>
+                        <Select
+                          labelId="address-select-label"
+                          id="address-select"
+                          // value={selectedShippingInfo || ""}
+                          label="Voucher"
+                          // onChange={(e) => {
+                          //   handleCalculateShipping(e.target.value); // Gọi hàm tính phí ship sau khi chọn địa chỉ
+                          // }}
+                        >
+                          {voucher.length === 0 ? (
+                            <MenuItem>
+                              Hiện tại bạn chưa có voucher nào
+                            </MenuItem>
+                          ) : (
+                            voucher.map((shipping) => (
+                            <MenuItem key={shipping.id} value={shipping.id}>
+                              {shipping.voucher.vouchername}
+                            </MenuItem>
+                          ))
+                          )}
+                        </Select>
+                      </FormControl>
+                      <div>
+                        <div className="d-flex justify-content-end">
+                          Tổng tiền: {formatPrice(totalAmount) + " VNĐ"}
+                        </div>
+
+                        <div className="d-flex justify-content-end">
+                          Phí ship:{" "}
+                          {isLoadingShipping
+                            ? "Đang tính phí ship..."
+                            : `${formatPrice(feeShip)} VNĐ`}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -713,7 +970,7 @@ const PayBuyer = () => {
                         width: "8%",
                         objectFit: "cover",
                         borderRadius: "100%",
-                        cursor : "pointer"
+                        cursor: "pointer",
                       }}
                       onClick={(e) =>
                         setSelectedPaymentMethod(String(method.id))
@@ -743,12 +1000,21 @@ const PayBuyer = () => {
                     id="address-select"
                     value={selectedShippingInfo || ""}
                     label="Chọn địa chỉ nhận hàng"
-                    onChange={(e) => setSelectedShippingInfo(e.target.value)}
+                    onChange={(e) => {
+                      handleCalculateShipping(e.target.value); // Gọi hàm tính phí ship sau khi chọn địa chỉ
+                    }}
                   >
                     {shippingInfo.map((shipping) => (
                       <MenuItem key={shipping.id} value={shipping.id}>
-                        {/* {shipping.user.fullname} <br />
-                        {shipping.user.phone} <br /> */}
+                        {shipping.user.fullname} <br />
+                        {shipping.user.phone ? (
+                          <>
+                            {shipping.user.phone}
+                            <br />
+                          </>
+                        ) : (
+                          ""
+                        )}
                         {shipping.address}
                       </MenuItem>
                     ))}
@@ -831,38 +1097,70 @@ const PayBuyer = () => {
 
           <div
             className="card-body"
-            style={{ display: "flex", justifyContent: "flex-end" }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+            }}
           >
-            <Button
-              variant="contained"
-              component={Link}
-              to="/wallet/buyer"
-              sx={{
-                width: "auto",
-                backgroundColor: "rgb(218, 255, 180)",
-                color: "rgb(45, 91, 0)",
-                "&:hover": {
+            <div className="mb-3">
+              <div className="d-flex justify-content-between">
+                <span>Tổng tiền:</span>
+                <span>{formatPrice(totalAmountProduct) + " VNĐ"}</span>
+              </div>
+              <hr />
+              <div className="d-flex justify-content-between">
+                <span>Phí ship:</span>
+                <span>
+                  {isLoadingShipping
+                    ? "Đang tính phí ship..."
+                    : `${formatPrice(shippingFee)} VNĐ`}
+                </span>
+              </div>
+              <hr />
+              <div className="d-flex justify-content-between">
+                <span className="mt-3 me-3">Thành tiền:</span>
+                <span className="text-danger fw-bold fs-2">
+                  {isLoadingShipping
+                    ? "Đang tính thành tiền..."
+                    : `${formatPrice(totalAmountProduct + shippingFee)} VNĐ`}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Button
+                variant="contained"
+                component={Link}
+                to="/wallet/buyer"
+                sx={{
+                  width: "auto",
                   backgroundColor: "rgb(218, 255, 180)",
                   color: "rgb(45, 91, 0)",
-                },
-              }}
-              className="ms-2 me-3"
-              disableElevation
-            >
-              <i class="bi bi-wallet2"></i>
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleCombinedAction}
-              style={{
-                width: "auto",
-                backgroundColor: "rgb(218, 255, 180)",
-                color: "rgb(45, 91, 0)",
-              }}
-              disableElevation
-            >
-              Đặt hàng
-            </Button>
+                  "&:hover": {
+                    backgroundColor: "rgb(218, 255, 180)",
+                    color: "rgb(45, 91, 0)",
+                  },
+                }}
+                className="ms-2 me-3"
+                disableElevation
+              >
+                <i className="bi bi-wallet2"></i>
+              </Button>
+
+              <Button
+                variant="contained"
+                onClick={handleCombinedAction}
+                style={{
+                  width: "auto",
+                  backgroundColor: "rgb(218, 255, 180)",
+                  color: "rgb(45, 91, 0)",
+                }}
+                disableElevation
+              >
+                Đặt hàng
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

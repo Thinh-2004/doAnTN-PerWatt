@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./ProductItemStyle.css";
+import "../../../../ListItemProduct/ProductItemStyle.css";
 import axios from "../../../../../Localhost/Custumize-axios";
 import { trefoil } from "ldrs";
 import useDebounce from "../../../../../CustumHook/useDebounce";
@@ -41,19 +41,20 @@ const Product = ({ item, idCate, handleReset }) => {
   };
 
   useEffect(() => {
-    const loadingData = async () => {
-      // setLoading(true);
-      try {
-        if (debouncedItem) {
-          await loadData(0, 20, debouncedItem);
-        } else if (debouncedIdCate) {
-          await loadData(0, 20, debouncedIdCate);
-        } else {
-          await loadData();
-        }
-      } catch {}
-    };
-    loadingData();
+    // const loadingData = async () => {
+    //   // setLoading(true);
+    //   try {
+    //     if (debouncedItem) {
+    //       await loadData(0, 20, debouncedItem);
+    //     } else if (debouncedIdCate) {
+    //       await loadData(0, 20, debouncedIdCate);
+    //     } else {
+    //       await loadData();
+    //     }
+    //   } catch {}
+    // };
+    // loadingData();
+    loadData(0, 20, debouncedItem ? debouncedItem : debouncedIdCate);
   }, [debouncedItem, debouncedIdCate]);
 
   // Sự kiện đặt lại giá trị cho số trang
@@ -129,9 +130,7 @@ const Product = ({ item, idCate, handleReset }) => {
       ) : (
         <ListItemProduct
           data={fillAllProduct}
-          classNameCol={
-            "col-lg-2 col-md-3 col-sm-4"
-          }
+          classNameCol={"col-lg-2 col-md-3 col-sm-4"}
         />
       )}
       <div className="mt-3 mb-3 d-flex justify-content-center">

@@ -3,7 +3,7 @@ import Header from "../../../Header/Header";
 import ToolBar from "./ToolBar/ToolBar";
 import axios from "../../../../Localhost/Custumize-axios";
 import SkeletonLoad from "../../../../Skeleton/SkeletonLoad";
-import { Box, Pagination } from "@mui/material";
+import { Box, Container, Pagination } from "@mui/material";
 import useDebounce from "../../../../CustumHook/useDebounce";
 import Footer from "../../../../components/Footer/Footer"
 import "./FindMoreProductPerMallStyle.css";
@@ -114,7 +114,7 @@ const FindMoreProductPerMall = () => {
         contextSearch={handleTakeTextSearch}
         resetSearch={isResetSearch}
       />
-      <div className="container mt-3">
+      <Container className="mt-3" maxWidth="xl">
         <div className="d-flex justify-content-between">
           <ToolBar
             isAscending={isAscending}
@@ -183,7 +183,7 @@ const FindMoreProductPerMall = () => {
             color="primary"
           />
         </div>
-      </div>
+      </Container>
       <Footer/>
     </>
   );
