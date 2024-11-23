@@ -44,10 +44,18 @@ const ProfileUser = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await axios.get(`userProFile/${id}`);
+        const res = await axios.get(`/userProFile/myInfo`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        });
         setFill(res.data);
 
-        const resUser = await axios.get(`userProFile/${id}`);
+        const resUser = await axios.get(`/userProFile/myInfo`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        });
         setCheckPsasword(resUser.data.password);
         // console.log(checkPassword);
       } catch (error) {
@@ -68,7 +76,15 @@ const ProfileUser = () => {
     }
     try {
       // Gọi API xác thực mật khẩu (nếu có)
-      const res = await axios.post("checkPass", { password, id });
+      const res = await axios.post(
+        "checkPass",
+        { password, id },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        }
+      );
       toast.success("Truy cập thành công");
       setIsChangePassClicked(true);
       changeLink("changePass");
@@ -302,7 +318,10 @@ const ProfileUser = () => {
                 }
               />
               <Route path="/shippingInfo" element={<ShippingList />} />
-               <Route path="/warehouse/voucher" element={<WarehouseVoucherUser />} />
+              <Route
+                path="/warehouse/voucher"
+                element={<WarehouseVoucherUser />}
+              />
             </Routes>
           </div>
         </div>

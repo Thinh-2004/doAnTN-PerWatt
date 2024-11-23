@@ -19,6 +19,7 @@ import FillVoucher from "./Voucher/FillVoucher";
 import EditVoucher from "./Voucher/UpdateVoucher";
 import Wallet from "../../../Wallet/Wallet";
 import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
+import PromotionalCard from "./StatisticalOrders/PromotionalCard";
 
 const IsMarket = () => {
   const user = localStorage.getItem("user")
@@ -187,7 +188,7 @@ const IsMarket = () => {
             >
               <Typography>
                 <i class="bi bi-tag fs-4"></i>
-                <span className="mx-3">Khuyến mãi của shop</span>
+                <span className="mx-3">Chương trình khuyến mãi</span>
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
@@ -210,6 +211,14 @@ const IsMarket = () => {
                       to="/profileMarket/fillVoucher"
                     >
                       Quản lý khuyến mãi
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      style={{ textDecoration: "none" }}
+                      to="/profileMarket/voucher/webite"
+                    >
+                      Chương trình PerWatt
                     </Link>
                   </li>
                 </ul>
@@ -236,6 +245,7 @@ const IsMarket = () => {
               element={<OrderSeller></OrderSeller>}
             />
             <Route path="/wallet/:status" element={<Wallet />} />
+            <Route path="/voucher/webite" element={<PromotionalCard />} />
           </Routes>
         </div>
       </div>

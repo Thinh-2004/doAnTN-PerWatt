@@ -222,7 +222,7 @@ const ListProduct = () => {
           <div className="mt-4 mb-4 d-flex justify-content-center">
             <l-bouncy size="60" speed="0.75" color="black"></l-bouncy>
           </div>
-        ) : fetchData.length === 0 && !fill ? (
+        ) :  fill.length === 0 ? (
           <>
             <hr />
             <h1 className="text-center">Bạn chưa đăng bán sản phẩm.</h1>

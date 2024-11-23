@@ -83,8 +83,10 @@ const Home = () => {
   //Truyền dữ liệu xuống Header
   const handleSearch = useCallback((context) => {
     setSearchProduct(context);
-    //Lưu vào localStorage
-    localStorage.setItem("textSearchHome", context);
+    setTimeout(() => {
+      //Lưu vào localStorage
+      localStorage.setItem("textSearchHome", context);
+    }, 500);
     //Xóa localSession idCateSearchHome
     localStorage.removeItem("idCateSearchHome");
     setJoinCate("");

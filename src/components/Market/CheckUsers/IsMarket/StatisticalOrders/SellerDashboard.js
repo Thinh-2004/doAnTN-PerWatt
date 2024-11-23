@@ -1,23 +1,19 @@
 import React, { useState, useEffect, useContext } from "react";
 import Slider from "react-slick";
 import Chart from "react-apexcharts";
-import axios from "axios";
-import { Spin } from "antd";
+import axios from "../../../../../Localhost/Custumize-axios";
+import { Spin, Modal, Table, DatePicker, Select } from "antd";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./SellerDashboard.css";
-import { Box, Card, CardContent, Typography } from "@mui/material";
 import { ThemeModeContext } from "../../../../ThemeMode/ThemeModeProvider";
-import { Link } from "react-router-dom";
 
-// Format currency to VND
 const formatPrice = (price) => {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
     .format(price)
     .replace("₫", "đ");
 };
 
-// Fetch Order Data
 const fetchOrderData = async (
   idStore,
   setOrders,
@@ -26,19 +22,25 @@ const fetchOrderData = async (
   setCompletedOrders,
   setPendingApprovalOrders
 ) => {
-  const ordersResponse = await axios.get(
-    `http://localhost:8080/count-orders/${idStore}`
-  );
+  const ordersResponse = await axios.get(`/count-orders/${idStore}`);
   const ordersData = ordersResponse.data;
 
   const pending =
-    ordersData.find((item) => item.orderStatus === "Chờ giao hàng")?.count || 0;
+    (ordersData &&
+      ordersData.find((item) => item.orderStatus === "Chờ giao hàng")?.count) ||
+    0;
   const completed =
-    ordersData.find((item) => item.orderStatus === "Hoàn thành")?.count || 0;
+    (ordersData &&
+      ordersData.find((item) => item.orderStatus === "Hoàn thành")?.count) ||
+    0;
   const processed =
-    ordersData.find((item) => item.orderStatus === "Hủy")?.count || 0;
+    (ordersData &&
+      ordersData.find((item) => item.orderStatus === "Hủy")?.count) ||
+    0;
   const pendingApproval =
-    ordersData.find((item) => item.orderStatus === "Đang chờ duyệt")?.count ||
+    (ordersData &&
+      ordersData.find((item) => item.orderStatus === "Đang chờ duyệt")
+        ?.count) ||
     0;
 
   setOrders(pending + completed + processed + pendingApproval);
@@ -48,7 +50,6 @@ const fetchOrderData = async (
   setPendingApprovalOrders(pendingApproval);
 };
 
-// Fetch Product Data
 const fetchProductData = async (
   idStore,
   setTopProducts,
@@ -56,11 +57,8 @@ const fetchProductData = async (
 ) => {
   setLoadingProducts(true);
   try {
-    const productsResponse = await axios.get(
-      `http://localhost:8080/top10-products/${idStore}`
-    );
+    const productsResponse = await axios.get(`/top10-products/${idStore}`);
     const productsData = productsResponse.data;
-    // console.log(productsResponse.data);
 
     const formattedProducts = productsData.map((product) => {
       const calculateRating = (sold) => {
@@ -72,8 +70,7 @@ const fetchProductData = async (
         return "";
       };
 
-      // Kiểm tra nếu không có nameDetail thì dùng productName, nếu không có imageNameDetail thì dùng productImage
-      const productName = product.productName;
+      const productName = product.nameDetail || product.productName;
       const productImage = product.imageNameDetail
         ? `http://localhost:8080/files/detailProduct/${product.productDetailId}/${product.imageNameDetail}`
         : `http://localhost:8080/files/product-images/${product.productId}/${product.productImage}`;
@@ -85,7 +82,6 @@ const fetchProductData = async (
         sold: product.sold,
         rating: calculateRating(product.sold),
         imgSrc: productImage || "https://via.placeholder.com/100",
-        slugProduct : product.slugProduct
       };
     });
 
@@ -97,33 +93,112 @@ const fetchProductData = async (
   }
 };
 
-// Fetch Revenue and Chart Data
 const fetchChartData = async (
   idStore,
   setRevenueData,
   setPieChartData,
-  setMixedChartData
+  setMixedChartData,
+  dateRange, // Thêm tham số lọc ngày
+  selectedQuarter // Thêm tham số lọc quý
 ) => {
-  const revenueResponse = await axios.get(
-    `http://localhost:8080/revenue/${idStore}?period=year`
-  );
-  setRevenueData(
-    revenueResponse.data.map((item) => ({
-      date: item.date,
-      revenue: item.revenue,
-    }))
-  );
+  try {
+    let dateQuery = "";
 
-  const pieChartResponse = await axios.get(
-    `http://localhost:8080/pie-chart/${idStore}`
-  );
-  setPieChartData(pieChartResponse.data);
-  // console.log(pieChartResponse.data);
+    if (dateRange && dateRange.length === 2) {
+      // Đảm bảo rằng ngày có định dạng yyyy-MM-dd
+      const startDate = new Date(dateRange[0]).toISOString().split("T")[0]; // Chuyển sang yyyy-MM-dd
+      const endDate = new Date(dateRange[1]).toISOString().split("T")[0]; // Chuyển sang yyyy-MM-dd
+      dateQuery = `?startDate=${startDate}&endDate=${endDate}`;
+    } else if (selectedQuarter) {
+      // Xử lý lọc theo quý và chuyển sang định dạng yyyy-MM-dd
+      const quarterRanges = {
+        1: ["2024-01-01", "2024-03-31"], // Quý 1
+        2: ["2024-04-01", "2024-06-30"], // Quý 2
+        3: ["2024-07-01", "2024-09-30"], // Quý 3
+        4: ["2024-10-01", "2024-12-31"], // Quý 4
+      };
 
-  const mixedChartResponse = await axios.get(
-    `http://localhost:8080/mixed-chart/${idStore}`
-  );
-  setMixedChartData(mixedChartResponse.data);
+      const [start, end] = quarterRanges[selectedQuarter];
+      dateQuery = `?startDate=${start}&endDate=${end}`;
+    }
+
+    // Gọi API để lấy dữ liệu biểu đồ doanh thu theo năm (hoặc theo ngày/quý nếu có lọc)
+    const revenueResponse = await axios.get(
+      `/revenue/${idStore}?period=year${dateQuery}`
+    );
+    setRevenueData(
+      revenueResponse.data.map((item) => ({
+        date: item.date,
+        revenue: item.revenue,
+      }))
+    );
+
+    // Gọi API để lấy dữ liệu biểu đồ dạng bánh (pie chart)
+    const pieChartResponse = await axios.get(
+      `/pie-chart/${idStore}${dateQuery}`
+    );
+    setPieChartData(pieChartResponse.data);
+
+    // Gọi API để lấy dữ liệu biểu đồ kết hợp (mixed chart)
+    const response = await axios.get(`/mixed-chart/${idStore}${dateQuery}`);
+    // Nhóm dữ liệu theo tháng với định dạng MM-yyyy
+    const groupedData = response.data.reduce((acc, item) => {
+      const {
+        month,
+        productDetailName,
+        productName,
+        revenue,
+        orders,
+        totalQuantity,
+        totalProductRevenue,
+      } = item;
+
+      // Chuyển đổi tháng sang định dạng MM-yyyy
+      const formattedMonth =
+        month.substring(5, 7) + "-" + month.substring(0, 4); // Lấy MM-yyyy từ yyyy-MM-dd
+
+      // Kiểm tra và lưu lại nhóm dữ liệu cho mỗi tháng
+      if (!acc[formattedMonth]) {
+        acc[formattedMonth] = {
+          month: formattedMonth,
+          revenue: 0,
+          orders: 0,
+          totalQuantity: 0,
+          totalProductRevenue: 0,
+          details: [],
+        };
+      }
+
+      // Cộng dồn dữ liệu cho mỗi tháng
+      acc[formattedMonth].revenue += revenue;
+      acc[formattedMonth].orders += orders;
+      acc[formattedMonth].totalQuantity += totalQuantity;
+      acc[formattedMonth].totalProductRevenue += totalProductRevenue;
+
+      // Thêm chi tiết sản phẩm vào danh sách của tháng
+      acc[formattedMonth].details.push({
+        productDetailName: productDetailName || productName, // Dùng productName nếu productDetailName không có
+        productName,
+        revenue,
+        orders,
+        totalQuantity,
+        totalProductRevenue,
+        productDetailId: item.productDetailId,
+        productId: item.productId,
+        orderDetailId: item.orderDetailId,
+      });
+
+      return acc;
+    }, {});
+
+    // Chuyển đổi dữ liệu từ object sang mảng
+    const chartData = Object.values(groupedData);
+
+    // Cập nhật state mixedChartData
+    setMixedChartData(chartData);
+  } catch (error) {
+    console.error("Error fetching chart data:", error);
+  }
 };
 
 const SellerDashboard = () => {
@@ -137,12 +212,86 @@ const SellerDashboard = () => {
   const [pieChartData, setPieChartData] = useState([]);
   const [mixedChartData, setMixedChartData] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
-
+  const [selectedDateRange, setSelectedDateRange] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedColumnData, setSelectedColumnData] = useState([]);
   const idStore = localStorage.getItem("idStore");
-  const user = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
-    : null;
+  const nameStore = localStorage.getItem("fullName");
+  const { RangePicker } = DatePicker;
+  const [dateRange, setDateRange] = useState([]); // Khai báo state cho dateRange
+  const [selectedQuarter, setSelectedQuarter] = useState(null);
+
   const { mode } = useContext(ThemeModeContext);
+
+  const handleDateChange = (dates) => {
+    if (dates && dates.length === 2) {
+      const startDate = dates[0].format("YYYY-MM-DD");
+      const endDate = dates[1].format("YYYY-MM-DD");
+      setSelectedDateRange([startDate, endDate]);
+
+      // Gọi lại fetchChartData với khoảng ngày
+      fetchChartData(
+        idStore,
+        setRevenueData,
+        setPieChartData,
+        setMixedChartData,
+        [startDate, endDate]
+      );
+    } else {
+      // Nếu không chọn ngày, gọi lại với toàn bộ dữ liệu
+      setSelectedDateRange(null);
+      fetchChartData(
+        idStore,
+        setRevenueData,
+        setPieChartData,
+        setMixedChartData
+      );
+    }
+  };
+
+  const handleQuarterChange = (value) => {
+    setSelectedQuarter(value); // Lưu quý người dùng chọn
+    fetchChartData(
+      idStore,
+      setRevenueData,
+      setPieChartData,
+      setMixedChartData,
+      dateRange,
+      value
+    );
+  };
+  //
+  useEffect(() => {
+    // Lấy dữ liệu ban đầu khi không có dải ngày
+    fetchChartData(idStore, setRevenueData, setPieChartData, setMixedChartData);
+  }, [idStore]);
+
+  //////
+  const formatPrice = (value) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(value);
+  };
+  //
+  const extractOrderDate = (date) => {
+    return date.toLocaleDateString("vi-VN"); // Định dạng ngày theo kiểu VN
+  };
+  //
+  const truncateProductName = (name, maxLength = 30) => {
+    if (name.length > maxLength) {
+      return name.substring(0, maxLength) + "..."; // Cắt tên và thêm dấu "..."
+    }
+    return name;
+  };
+  //
+  const calculateTotalRevenue = () => {
+    return selectedColumnData.reduce((total, item) => total + item.revenue, 0);
+  };
+
+  // Hiển thị tổng doanh thu
+  const totalRevenue = calculateTotalRevenue();
+  ////
 
   useEffect(() => {
     if (!idStore) {
@@ -169,7 +318,6 @@ const SellerDashboard = () => {
       ? "Chào buổi chiều"
       : "Chào buổi tối";
   };
-
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -177,7 +325,7 @@ const SellerDashboard = () => {
     slidesToShow: 5,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 1000,
+    autoplaySpeed: 2000,
     arrows: true,
     centerMode: true,
     centerPadding: "10px",
@@ -190,65 +338,24 @@ const SellerDashboard = () => {
         categories: revenueData.map((item) => item.date),
         title: {
           text: "Thời gian", // Title for the x-axis (optional)
-          style: {
-            color: mode === "light" ? "black" : "white",
-          },
-        },
-        labels: {
-          style: {
-            colors: mode === "light" ? "black" : "white",
-          },
         },
       },
       yaxis: {
         title: {
           text: "Doanh thu (đ)",
-          style: {
-            color: mode === "light" ? "black" : "white",
-          },
         },
         labels: {
           formatter: function (value) {
             return formatPrice(value); // Format revenue values as currency
           },
-          style: {
-            colors: mode === "light" ? "black" : "white",
-          },
         },
       },
       tooltip: {
-        enabled: true,
-        style: {
-          fontSize: "12px", // Font size of tooltip
-          fontFamily: "Arial, sans-serif",
-        },
-        onDatasetHover: {
-          highlightDataSeries: true, // Highlight the data series when hovered
-        },
-        marker: {
-          show: true, // Show marker on tooltip
-          fillColors: mode === "light" ? "#000" : "#fff", // Change marker color on hover
-        },
-        x: {
-          show: true, // Show value on the x-axis
-        },
         y: {
-          title: {
-            formatter: (seriesName) => `${seriesName}:`,
-          },
           formatter: function (value) {
             return formatPrice(value); // Format tooltip for each point
           },
-          style: {
-            colors: mode === "light" ? "#333" : "#fff", // Tooltip Y value color
-          },
         },
-        theme: mode === "light" ? "light" : "dark", // Theme for the tooltip
-      },
-      legend: {
-        position: "top",
-        horizontalAlign: "center",
-        floating: true,
       },
     },
     series: [
@@ -259,11 +366,84 @@ const SellerDashboard = () => {
     ],
   };
 
+  useEffect(() => {
+    const handleContextMenu = (e) => {
+      e.preventDefault(); // Ngừng hành vi mặc định khi chuột phải
+    };
+
+    const handleMouseUp = (e) => {
+      if (e.button === 2) {
+        e.preventDefault(); // Ngừng hành vi mặc định khi thả chuột phải
+      }
+    };
+
+    // Lắng nghe sự kiện khi chuột phải nhấn xuống và thả ra
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    // Cleanup event listeners khi component bị unmount
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
+
+  // Sắp xếp mixedChartData theo tháng và năm
+  mixedChartData.sort((a, b) => {
+    // Giả sử a.month và b.month có định dạng "MM-YYYY" (ví dụ: "01-2023")
+    const [monthA, yearA] = a.month.split("-").map(Number);
+    const [monthB, yearB] = b.month.split("-").map(Number);
+
+    // So sánh năm trước
+    if (yearA !== yearB) {
+      return yearA - yearB;
+    }
+    // Nếu năm giống nhau, so sánh tháng
+    return monthA - monthB;
+  });
+
   const mixedChartConfig = {
     options: {
       chart: {
         type: "line",
         height: 350,
+        events: {
+          // Sự kiện khi nhấn chuột phải vào điểm dữ liệu
+          dataPointSelection: (event, chartContext, { dataPointIndex }) => {
+            // Kiểm tra nếu đây là sự kiện chuột phải (button === 2)
+            if (event.button !== 2) {
+              return; // Nếu không phải chuột phải, không làm gì
+            }
+
+            // Ngừng hiển thị menu chuột phải mặc định
+            event.preventDefault();
+
+            // Kiểm tra dữ liệu và chart context
+            if (!chartContext || dataPointIndex === undefined) {
+              console.error("Chart context or data point index is undefined.");
+              return;
+            }
+
+            const selectedMonthData = mixedChartData[dataPointIndex];
+            if (!selectedMonthData) {
+              console.error("No data found for selected point.");
+              return;
+            }
+
+            // Đảm bảo rằng details tồn tại trước khi cập nhật state
+            if (selectedMonthData.details) {
+              setSelectedColumnData(selectedMonthData.details); // Cập nhật dữ liệu cho Modal
+              setIsModalVisible(true); // Mở modal khi chuột phải vào điểm dữ liệu
+            } else {
+              console.error("No details available for this month.");
+            }
+          },
+
+          // Ngừng menu chuột phải mặc định trên toàn bộ biểu đồ
+          contextMenu: (event) => {
+            event.preventDefault(); // Tắt hoàn toàn menu chuột phải trình duyệt
+          },
+        },
       },
       stroke: {
         width: [0, 4],
@@ -288,6 +468,7 @@ const SellerDashboard = () => {
           },
         },
       },
+
       yaxis: [
         {
           title: {
@@ -313,6 +494,7 @@ const SellerDashboard = () => {
               color: mode === "light" ? "#333" : "#fff", // Màu chữ trục Y thứ hai
             },
           },
+
           labels: {
             style: {
               colors: mode === "light" ? "black" : "white", // Màu chữ nhãn trục Y thứ hai
@@ -322,7 +504,14 @@ const SellerDashboard = () => {
       ],
       tooltip: {
         theme: mode === "light" ? "light" : "dark", // Chủ đề tooltip
+        shared: true,
+        intersect: false,
         y: {
+          formatter: function (value, { seriesIndex }) {
+            return seriesIndex === 0
+              ? formatPrice(value) + " đ" // Định dạng tooltip cho doanh thu
+              : value + " đơn hàng"; // Định dạng tooltip cho số lượng đơn hàng
+          },
           title: {
             formatter: (seriesName) => `${seriesName}:`,
           },
@@ -330,17 +519,10 @@ const SellerDashboard = () => {
             color: mode === "light" ? "#333" : "#fff", // Màu chữ tooltip giá trị Y
           },
         },
-      },
-      legend: {
-        labels: {
-          colors: mode === "light" ? "#333" : "#fff", // Màu chữ cho nhãn series trong legend
-        },
-      },
-      dataLabels: {
-        enabled: true,
-        style: {
-          fontSize: "12px",
-          fontWeight: "bold",
+        legend: {
+          labels: {
+            colors: mode === "light" ? "#333" : "#fff", // Màu chữ cho nhãn series trong legend
+          },
         },
       },
     },
@@ -359,22 +541,16 @@ const SellerDashboard = () => {
   };
 
   return (
-    <Box
-      sx={{ backgroundColor: "backgroundElement.children" }}
-      className="sellerDashboardClass rounded-3"
-    >
+    <div className="sellerDashboardClass">
       <div className="header">
         <div className="mb-6">
           <h2 className="text-xl font-semibold">
-            {getGreeting()}, {user.fullname} 👋
+            {getGreeting()}, {nameStore} 👋
           </h2>
           <p className="text-muted-foreground">
             Đây là những gì đang xảy ra trên cửa hàng của bạn ngày hôm nay. Xem
             số liệu thống kê cùng một lúc.
           </p>
-        </div>
-        <div className="notificationWrapperClass">
-          <button className="buttonClass">🔔</button>
         </div>
       </div>
 
@@ -458,13 +634,41 @@ const SellerDashboard = () => {
         </div>
       </div>
 
-      <div className="mixedChartClass">
-        <Chart
-          options={mixedChartConfig.options}
-          series={mixedChartConfig.series}
-          type="line"
-          height={350}
+      <div>
+        <RangePicker
+          onChange={handleDateChange}
+          format="YYYY-MM-DD"
+          style={{
+            marginBottom: "20px",
+            backgroundColor: mode === "light" ? "white" : "#363535",
+          }}
         />
+        <Select
+          defaultValue={null}
+          onChange={handleQuarterChange}
+          style={{
+            marginBottom: "20px",
+            backgroundColor: mode === "light" ? "white" : "#363535",
+          }}
+          className="selectClass"
+        >
+          <Select.Option value={0}>Quý</Select.Option>
+          <Select.Option value={1}>Quý 1</Select.Option>
+          <Select.Option value={2}>Quý 2</Select.Option>
+          <Select.Option value={3}>Quý 3</Select.Option>
+          <Select.Option value={4}>Quý 4</Select.Option>
+        </Select>
+        <div
+          className="mixedChartClass"
+          onContextMenu={(e) => e.preventDefault()} // Ngăn menu chuột phải mặc định
+        >
+          <Chart
+            options={mixedChartConfig.options}
+            series={mixedChartConfig.series}
+            type="line"
+            height={350}
+          />
+        </div>
       </div>
 
       <div className="topProductsClass">
@@ -480,31 +684,65 @@ const SellerDashboard = () => {
         ) : (
           <Slider {...sliderSettings}>
             {topProducts.map((product) => (
-              <Link to={`/detailProduct/${product.slugProduct}`}>
-                <Card key={product.id} className="productCardClass rounded-3" sx={{backgroundColor :"backgroundElement.children"}}>
-                  <CardContent>
-                    <img
-                      src={product.imgSrc}
-                      alt={product.name}
-                      className="productImageClass"
-                    />
-                    <h3 className="productNameClass">{product.name}</h3>
-                    <span className="productPriceClass text-danger">
-                      {product.price}
-                    </span>
-                    <br />
-                    <span className="productSoldClass">
-                      Đã bán: {product.sold}
-                    </span>
-                    <span className="productRatingClass">{product.rating}</span>
-                  </CardContent>
-                </Card>
-              </Link>
+              <div key={product.id} className="productCardClass">
+                <img
+                  src={product.imgSrc}
+                  alt={product.name}
+                  className="productImageClass"
+                />
+                <h3 className="productNameClass">{product.name}</h3>
+                <p className="productPriceClass">{product.price}</p>
+                <p className="productSoldClass">Đã bán: {product.sold}</p>
+                <p className="productRatingClass">{product.rating}</p>
+              </div>
             ))}
           </Slider>
         )}
       </div>
-    </Box>
+
+      <Modal
+        title="Chi tiết sản phẩm đã đặt"
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={[
+          <div key="footer" style={{ textAlign: "right", fontWeight: "bold" }}>
+            <span>Tổng doanh thu: </span>
+            <span>{formatPrice(totalRevenue)}</span>{" "}
+            {/* Sử dụng hàm formatPrice nếu có */}
+          </div>,
+        ]}
+      >
+        <Table
+          dataSource={selectedColumnData}
+          columns={[
+            {
+              title: "Tên sản phẩm",
+              dataIndex: "productDetailName",
+              key: "productDetailName",
+              render: (value) => truncateProductName(value), // Hàm cắt ngắn tên sản phẩm
+            },
+            {
+              title: "Ngày đặt",
+              dataIndex: "orderDate", // Sử dụng orderDate trong chi tiết
+              key: "orderDate",
+              render: (value) => extractOrderDate(new Date(value)), // Chuyển đổi giá trị ngày
+            },
+            {
+              title: "Số lượng đã bán",
+              dataIndex: "totalQuantity",
+              key: "totalQuantity",
+            },
+            {
+              title: "Doanh thu",
+              dataIndex: "revenue",
+              key: "revenue",
+              render: (value) => formatPrice(value), // Format doanh thu
+            },
+          ]}
+          rowKey="orderDetailId"
+        />
+      </Modal>
+    </div>
   );
 };
 

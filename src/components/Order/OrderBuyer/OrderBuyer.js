@@ -84,7 +84,11 @@ const Order = () => {
     if (cartIds) {
       (async () => {
         try {
-          const response = await axios.get(`/cart?id=${cartIds}`);
+          const response = await axios.get(`/cart?id=${cartIds}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+            },
+          });
           setProducts(response.data);
         } catch (error) {
           console.log(error);
@@ -116,10 +120,18 @@ const Order = () => {
         //00 = thành công
         if (resultCode === "0") {
           console.log("Calling API...");
-          const res = await axios.post("/createMoMoOrder", {
-            order,
-            orderDetails,
-          });
+          const res = await axios.post(
+            "/createMoMoOrder",
+            {
+              order,
+              orderDetails,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+              },
+            }
+          );
           console.log(res.data);
         } else {
           return;
@@ -137,7 +149,11 @@ const Order = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get(`orderFill/${user.id}`);
+        const res = await axios.get(`orderFill/${user.id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        });
         setFill(res.data);
 
         res.data.forEach((order) => {
@@ -168,10 +184,20 @@ const Order = () => {
           label: "Có",
           onClick: async () => {
             try {
-              await axios.put(`/order/${orderId}/status`, {
-                status: "Hủy",
-                note: "Đơn hàng được huỷ bởi người dùng",
-              });
+              await axios.put(
+                `/order/${orderId}/status`,
+                {
+                  status: "Hủy",
+                  note: "Đơn hàng được huỷ bởi người dùng",
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem(
+                      "hadfjkdshf"
+                    )}`,
+                  },
+                }
+              );
               setFill((prevFill) =>
                 prevFill.map((order) =>
                   order.id === orderId
@@ -196,10 +222,18 @@ const Order = () => {
   const handleMarkAsReceived = async (orderId) => {
     const now = new Date().toISOString();
     try {
-      await axios.put(`/order/${orderId}/status`, {
-        status: "Hoàn thành",
-        receivedate: now,
-      });
+      await axios.put(
+        `/order/${orderId}/status`,
+        {
+          status: "Hoàn thành",
+          receivedate: now,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        }
+      );
       setFill((prevFill) =>
         prevFill.map((order) =>
           order.id === orderId
@@ -214,7 +248,11 @@ const Order = () => {
 
   const fillOrderDetailbyOrderID = async (orderId) => {
     try {
-      const res = await axios.get(`/orderDetail/${orderId}`);
+      const res = await axios.get(`/orderDetail/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+        },
+      });
       setOrderDetails((prevOrderDetails) => ({
         ...prevOrderDetails,
         [orderId]: res.data,
@@ -455,7 +493,7 @@ const Order = () => {
         className="col-12 col-md-12 col-lg-10 offset-lg-1"
         style={{ transition: "0.5s" }}
       >
-        <Button
+        {/* <Button
           variant="contained"
           component={Link}
           to="/wallet/buyer"
@@ -467,7 +505,7 @@ const Order = () => {
           disableElevation
         >
           <i class="bi bi-wallet2"></i>
-        </Button>
+        </Button> */}
 
         <Box
           sx={{ width: "100%", backgroundColor: "backgroundElement.children" }}

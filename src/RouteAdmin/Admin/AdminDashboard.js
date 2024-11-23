@@ -5,7 +5,7 @@ import Dashboard from "./Dashboard";
 const AdminDashboard = () => {
   return (
     <div>
-      <Header></Header>
+      <Header/>
       <div className="mt-2">
         <Dashboard></Dashboard>
       </div>

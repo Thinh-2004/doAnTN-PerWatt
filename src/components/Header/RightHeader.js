@@ -25,7 +25,8 @@ import MotionPhotosAutoIcon from "@mui/icons-material/MotionPhotosAuto";
 import AccountBoxIcon from "@mui/icons-material/AccountBox";
 import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
-import WalletIcon from '@mui/icons-material/Wallet';
+import WalletIcon from "@mui/icons-material/Wallet";
+import RoofingIcon from "@mui/icons-material/Roofing";
 
 const RightHeader = ({ reloadCartItems }) => {
   const changeLink = useNavigate();
@@ -70,28 +71,53 @@ const RightHeader = ({ reloadCartItems }) => {
           label: "Có",
           onClick: async () => {
             const toastId = toast.loading("Vui lòng chờ...");
+
+            // Xóa localStorage ngay khi người dùng nhấn "Đăng xuất"
+            localStorage.clear();
+            sessionStorage.clear();
+
             try {
-              setTimeout(() => {
-                toast.update(toastId, {
-                  render: "Đăng xuất thành công",
-                  type: "success",
-                  isLoading: false,
-                  autoClose: 5000,
-                  closeButton: true,
-                });
-                //Xóa session khỏi website
-                localStorage.clear();
-                sessionStorage.clear();
-                changeLink("/"); // Chuyển hướng về trang chủ
-              }, 500);
-            } catch (error) {
+              // Gửi yêu cầu logout
+              const token = localStorage.getItem("hadfjkdshf");
+              await axios.post(
+                `/logout`,
+                { token: token }, // Gửi qua body
+                { headers: { "Content-Type": "application/json" } }
+              );
+
+              // Hiển thị thông báo thành công
               toast.update(toastId, {
-                render: "Đăng xuất thất bại",
-                type: "error",
+                render: "Đăng xuất thành công",
+                type: "success",
                 isLoading: false,
                 autoClose: 5000,
                 closeButton: true,
               });
+
+              // Chuyển hướng về trang chủ
+              changeLink("/");
+            } catch (error) {
+              console.error("Logout error:", error);
+
+              // Hiển thị thông báo lỗi
+              // toast.update(toastId, {
+              //   render: "Đăng xuất thất bại",
+              //   type: "error",
+              //   isLoading: false,
+              //   autoClose: 5000,
+              //   closeButton: true,
+              // });
+              // Hiển thị thông báo thành công
+              toast.update(toastId, {
+                render: "Đăng xuất thành công",
+                type: "success",
+                isLoading: false,
+                autoClose: 5000,
+                closeButton: true,
+              });
+
+              // Chuyển hướng về trang chủ
+              changeLink("/");
             }
           },
         },
@@ -313,58 +339,65 @@ const RightHeader = ({ reloadCartItems }) => {
       <div className="d-flex align-items-center border-end me-3 ">
         {matchSeller ? (
           <>
-            <Link
-              type="button"
-              className="btn btn-icon position-relative rounded-3 me-3"
-              to={"/"}
-            >
-              <Typography sx={{ color: "text.primary" }}>
-                <i className="bi bi-houses fs-4"></i>
-              </Typography>
-            </Link>
-            <Link
-              type="button"
-              className="btn btn-icon position-relative rounded-3 me-3"
-              to={"/cart"}
-            >
-              <Typography sx={{ color: "text.primary" }}>
-                <i className="bi bi-cart4 fs-4"></i>
-              </Typography>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                {count}
-              </span>
-            </Link>
-            <Link
-              onClick={checkUserId}
-              type="button"
-              className="btn btn-icon btn-sm rounded-3 me-3"
-              to={""}
-            >
-              <Typography sx={{ color: "text.primary" }}>
-                <i className="bi bi-gear fs-4"></i>
-              </Typography>
-            </Link>
-            <Link
-              type="button"
-              className="btn btn-icon btn-sm  position-relative rounded-3 me-3"
-              to={"/notifications"}
-            >
-              <Typography sx={{ color: "text.primary" }}>
-                <i className="bi bi-bell fs-4"></i>
-              </Typography>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                {countOrder}
-              </span>
-            </Link>
+            <Tooltip title="Trang chủ PerWatt">
+              <Link
+                type="button"
+                className="btn btn-icon position-relative rounded-3 me-3"
+                to={"/"}
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <i className="bi bi-houses fs-4"></i>
+                </Typography>
+              </Link>
+            </Tooltip>
+            <Tooltip title="Giỏ hàng">
+              <Link
+                type="button"
+                className="btn btn-icon position-relative rounded-3 me-3"
+                to={"/cart"}
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <i className="bi bi-cart4 fs-4"></i>
+                </Typography>
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {count}
+                </span>
+              </Link>
+            </Tooltip>
+            <Tooltip title="Cài đặt">
+              <Link
+                onClick={checkUserId}
+                type="button"
+                className="btn btn-icon btn-sm rounded-3 me-3"
+                to={""}
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <i className="bi bi-gear fs-4"></i>
+                </Typography>
+              </Link>
+            </Tooltip>
+            <Tooltip title="Thông báo">
+              <Link
+                type="button"
+                className="btn btn-icon btn-sm  position-relative rounded-3 me-3"
+                to={"/notifications"}
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <i className="bi bi-bell fs-4"></i>
+                </Typography>
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {countOrder}
+                </span>
+              </Link>
+            </Tooltip>
           </>
         ) : matchAdmin ? (
           <>
-          <Tooltip title="Ví của tôi">
+            <Tooltip title="Ví của tôi">
               <Link
                 type="button"
-                className="btn btn-icon position-relative rounded-4 "
+                className="btn btn-icon position-relative rounded-4 me-2"
                 to={"/admin/wallet"}
-
               >
                 <Typography sx={{ color: "text.primary" }}>
                   <WalletIcon />
@@ -396,7 +429,7 @@ const RightHeader = ({ reloadCartItems }) => {
             <Tooltip title="Đăng xuất">
               <Link
                 type="button"
-                className="btn btn-icon btn-sm rounded-4 me-3"
+                className="btn btn-icon btn-sm rounded-4"
                 id="btn-logOut"
                 onClick={handleLogOut}
               >
@@ -479,6 +512,7 @@ const RightHeader = ({ reloadCartItems }) => {
 
               <Tooltip
                 title="Website sẽ tự động điều chỉnh màn hình theo cài đặt hệ thống trên thiết bị của bạn."
+                placement="top"
                 className="d-flex align-items-center"
                 TransitionComponent={Zoom}
               >
@@ -497,35 +531,56 @@ const RightHeader = ({ reloadCartItems }) => {
           </>
         ) : (
           <>
-            <Link
-              type="button"
-              className="btn btn-icon position-relative rounded-3 me-3"
-              onClick={checkUserIdOnCart}
-            >
-              <Typography sx={{ color: "text.primary" }}>
-                <i className="bi bi-cart4 fs-4"></i>
-              </Typography>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                {count}
-              </span>
-            </Link>
-            <Link
-              onClick={checkUserId}
-              type="button"
-              className="btn btn-icon btn-sm rounded-3 me-3"
-            >
-              <Typography sx={{ color: "text.primary" }}>
-                {" "}
-                <i className="bi bi-shop fs-4"></i>
-              </Typography>
-            </Link>
-            <Link type="button" className="btn btn-icon btn-sm rounded-3 me-3">
-              <Typography sx={{ color: "text.primary" }}>
-                {" "}
-                <i className="bi bi-bell fs-4"></i>
-              </Typography>
-            </Link>
-            
+            {user?.id === 1 && (
+              <Tooltip title="Trang admin">
+                <Link
+                  type="button"
+                  className="btn btn-icon position-relative rounded-3 me-3"
+                  to={"/admin"}
+                >
+                  <Typography sx={{ color: "text.primary" }}>
+                    <RoofingIcon />
+                  </Typography>
+                </Link>
+              </Tooltip>
+            )}
+            <Tooltip title="Giỏ hàng">
+              <Link
+                type="button"
+                className="btn btn-icon position-relative rounded-3 me-3"
+                onClick={checkUserIdOnCart}
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <i className="bi bi-cart4 fs-4"></i>
+                </Typography>
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {count}
+                </span>
+              </Link>
+            </Tooltip>
+            <Tooltip title="Cửa hàng">
+              <Link
+                onClick={checkUserId}
+                type="button"
+                className="btn btn-icon btn-sm rounded-3 me-3"
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  {" "}
+                  <i className="bi bi-shop fs-4"></i>
+                </Typography>
+              </Link>
+            </Tooltip>
+            <Tooltip title="Thông báo">
+              <Link
+                type="button"
+                className="btn btn-icon btn-sm rounded-3 me-3"
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  {" "}
+                  <i className="bi bi-bell fs-4"></i>
+                </Typography>
+              </Link>
+            </Tooltip>
           </>
         )}
       </div>
@@ -635,7 +690,16 @@ const RightHeader = ({ reloadCartItems }) => {
                 </Link>
               </MenuItem>
               <MenuItem onClick={handleCloseMenuUser}>
-                <Link className="text-dark " to={idStore !== "undefined" ? "/profileMarket/wallet/seller" : "/wallet/buyer"}>
+                <Link
+                  className="text-dark"
+                  to={
+                    idStore !== "undefined"
+                      ? "/profileMarket/wallet/seller"
+                      : user?.id === 1
+                      ? "/admin/wallet"
+                      : "/wallet/buyer"
+                  }
+                >
                   <WalletIcon sx={{ color: "text.primary" }} />
                   &nbsp;
                   <Typography variant="span" sx={{ color: "text.primary" }}>
@@ -662,6 +726,7 @@ const RightHeader = ({ reloadCartItems }) => {
                 title="Website sẽ tự động điều chỉnh màn hình theo cài đặt hệ thống trên thiết bị của bạn."
                 className="d-flex align-items-center"
                 TransitionComponent={Zoom}
+                placement="top"
               >
                 <MenuItem>
                   <Checkbox

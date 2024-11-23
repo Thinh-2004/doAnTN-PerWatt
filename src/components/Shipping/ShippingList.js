@@ -20,6 +20,9 @@ const ShippingList = () => {
     try {
       const response = await axios.get(`/shippingInfo`, {
         params: { userId: user.id },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+        },
       });
       setShippingInfo(response.data);
     } catch (error) {
@@ -43,10 +46,18 @@ const ShippingList = () => {
       return;
     }
     try {
-      await axios.post(`/shippingInfoCreate`, {
-        address: addingAddress,
-        user: { id: user.id },
-      });
+      await axios.post(
+        `/shippingInfoCreate`,
+        {
+          address: addingAddress,
+          user: { id: user.id },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        }
+      );
 
       handleReset();
       toast.success("Thêm địa chỉ thành công!");
@@ -70,10 +81,18 @@ const ShippingList = () => {
     }
 
     try {
-      await axios.put(`/shippingInfoUpdate/${selectedShipping.id}`, {
-        ...selectedShipping,
-        address: newAddress,
-      });
+      await axios.put(
+        `/shippingInfoUpdate/${selectedShipping.id}`,
+        {
+          ...selectedShipping,
+          address: newAddress,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        }
+      );
       handleReset();
       toast.success("Cập nhật địa chỉ thành công!");
       fetchShippingInfo();
@@ -98,7 +117,11 @@ const ShippingList = () => {
           label: "Có",
           onClick: async () => {
             try {
-              await axios.delete(`/shippingInfoDelete/${id}`);
+              await axios.delete(`/shippingInfoDelete/${id}`, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+                },
+              });
               toast.success("Xóa địa chỉ thành công!");
               fetchShippingInfo();
             } catch (error) {
@@ -146,11 +169,14 @@ const ShippingList = () => {
               </Button>
             </h3>
             <hr />
-            <Box className="" >
+            <Box className="">
               {shippingInfo.length > 0 ? (
                 shippingInfo.map((info) => (
                   <Card className="mb-3" id="cartItem" key={info.id}>
-                    <CardContent className="d-flex justify-content-between align-items-center" sx={{backgroundColor  : "background.default"}}>
+                    <CardContent
+                      className="d-flex justify-content-between align-items-center"
+                      sx={{ backgroundColor: "background.default" }}
+                    >
                       <h5 className="mb-1">{info.address}</h5>
                       <div className="button-group">
                         <Button

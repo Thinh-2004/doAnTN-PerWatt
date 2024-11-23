@@ -28,6 +28,7 @@
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",
     "fe-doan-tn": "file:",
+    "firebase": "^11.0.2",
     "framer-motion": "^11.3.21",
     "ldrs": "^1.0.2",
     "moment": "^2.30.1",

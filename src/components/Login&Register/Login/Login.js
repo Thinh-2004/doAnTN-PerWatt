@@ -21,7 +21,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const navigate = useNavigate();
-  const {mode} = useContext(ThemeModeContext);
+  const { mode } = useContext(ThemeModeContext);
   const searchStoreByidUser = async (isUser) => {
     const searchStoreById = await axios.get(`searchStore/${isUser}`);
     if (searchStoreById === null) {
@@ -44,57 +44,72 @@ const Login = () => {
       const idToast = toast.loading("Vui lòng chờ...");
       try {
         const res = await axios.post("/login", { email, password });
-        if (res.status === 200) {
-          const { user } = res.data;
-          //Lọc các thông tin cần lưu
-          const userInfo = {
-            id: user.id,
-            fullname: user.fullname,
-            avatar: user.avatar,
-          };
-
-          // Lưu thông tin vào sessionStorage
-          localStorage.setItem("user", JSON.stringify(userInfo));
-
-          //Tìm id Store
-          searchStoreByidUser(user.id);
-
-          //Lưu time khi login
-          saveTimeNow();
-          setTimeout(() => {
-            toast.update(idToast, {
-              render: "Đăng nhập thành công",
-              type: "success",
-              isLoading: false,
-              autoClose: 5000,
-              closeButton: true,
-            });
-            if (user.role && user.role.id === 1) {
-              navigate("/admin");
-            } else {
-              navigate("/");
-            }
-          }, 500);
-        } else {
-          toast.error(res.data.message || "Đăng nhập thất bại");
-        }
-      } catch (error) {
-        toast.update(idToast, {
-          render:
-            "Đăng nhập thất bại: " +
-            (error.response ? error.response.data.message : error.message),
-          type: "error",
-          isLoading: false,
-          autoClose: 5000,
-          closeButton: true,
+        // Lưu token vào sessionStorage
+        localStorage.setItem("hadfjkdshf", res.data.result.token);
+        const resUserInfo = await axios.get(`/userProFile/myInfo`, {
+          headers: {
+            Authorization: `Bearer ${res.data.result.token}`,
+          },
         });
+        //Lọc các thông tin cần lưu
+        const userInfo = {
+          id: resUserInfo.data.id,
+          fullname: resUserInfo.data.fullname,
+          avatar: resUserInfo.data.avatar,
+        };
+        localStorage.setItem("user", JSON.stringify(userInfo));
+        searchStoreByidUser(userInfo.id)
+        //Lưu time khi login
+        saveTimeNow();
+        setTimeout(() => {
+          toast.update(idToast, {
+            render: "Đăng nhập thành công",
+            type: "success",
+            isLoading: false,
+            autoClose: 5000,
+            closeButton: true,
+          });
+          // console.log(resUserInfo.data);
+          if (resUserInfo.data.role.namerole === "Admin") {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
+        }, 500);
+      } catch (error) {
+        if (error.status === 401) {
+          toast.update(idToast, {
+            render:
+              "Thông tin tài khoản hoặc mật khẩu không chính xác" ,
+            type: "error",
+            isLoading: false,
+            autoClose: 5000,
+            closeButton: true,
+          });
+        } else {
+          toast.update(idToast, {
+            render:
+              "Đăng nhập thất bại: " +
+              (error.response ? error.response.data.message : error.message),
+            type: "error",
+            isLoading: false,
+            autoClose: 5000,
+            closeButton: true,
+          });
+        }
       }
     }
   };
 
   const validate = () => {
-    if (email === "" || password === "") {
+    if (email === "" && password === "") {
       toast.warning("Hãy nhập đầy đủ thông tin");
+      return false;
+    } else if (email === "") {
+      toast.warning("Hãy nhập email");
+      return false;
+    } else if (password === "") {
+      toast.warning("Hãy nhập mật khẩu");
       return false;
     }
     return true;
@@ -113,47 +128,40 @@ const Login = () => {
       // Gửi token đến backend xử lý
       const response = await axios.post("/loginByGoogle", {
         token: res.credential,
+        isGoogleLogin: true,
       });
-
-      // Xử lý phản hồi từ backend
-      if (response.status === 200) {
-        const user = response.data;
-        //Lọc các thông tin cần lưu
-        const userInfo = {
-          id: user.id,
-          fullname: user.fullname,
-          avatar: user.avatar,
-        };
-
-        // Lưu thông tin vào sessionStorage
-        localStorage.setItem("user", JSON.stringify(userInfo));
-        //Lưu idStore
-        searchStoreByidUser(user.id);
-        //Lưu time khi login
-        saveTimeNow();
-        setTimeout(() => {
-          toast.update(idToast, {
-            render: "Đăng nhập thành công",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          if (user.role && user.role.id === 1) {
-            navigate("/admin");
-          } else {
-            navigate("/");
-          }
-        }, 500);
-      } else {
+      // Lưu token vào sessionStorage
+      localStorage.setItem("hadfjkdshf", response.data.result.token);
+      const resUserInfo = await axios.get(`/userProFile/myInfo`, {
+        headers: {
+          Authorization: `Bearer ${response.data.result.token}`,
+        },
+      });
+      //Lọc các thông tin cần lưu
+      const userInfo = {
+        id: resUserInfo.data.id,
+        fullname: resUserInfo.data.fullname,
+        avatar: resUserInfo.data.avatar,
+      };
+      localStorage.setItem("user", JSON.stringify(userInfo));
+      searchStoreByidUser(userInfo.id)
+      //Lưu time khi login
+      saveTimeNow();
+      setTimeout(() => {
         toast.update(idToast, {
-          render: "Đăng nhập thất bại, vui lòng thử lại sau",
-          type: "error",
+          render: "Đăng nhập thành công",
+          type: "success",
           isLoading: false,
           autoClose: 5000,
           closeButton: true,
         });
-      }
+        console.log(resUserInfo.data);
+        if (resUserInfo.data.role.namerole === "Admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+      }, 500);
     } catch (error) {
       console.log(error);
       toast.update(idToast, {
@@ -175,7 +183,7 @@ const Login = () => {
           backgroundColor: mode === "light" ? " #fff" : "#363535",
         }}
       >
-        <h2 className="title">Đăng nhập</h2>
+        <h2 className="titleLogin_Register">Đăng nhập</h2>
         <p className="subject">
           Hãy đăng nhập để có trải nghiệm dịch vụ tốt nhất!!!
         </p>
@@ -253,9 +261,7 @@ const Login = () => {
           </label>
           <div className="mt-2">
             <GoogleLogin
-              theme={
-                mode === "light" ? "outline" : "filled_black"
-              }
+              theme={mode === "light" ? "outline" : "filled_black"}
               onSuccess={handleLoginByGoogle}
               onError={() => {
                 console.log("Login Failed");

@@ -5,7 +5,7 @@ import { useSpring, animated } from "@react-spring/web"; // Import react-spring
 import "./ProductList.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import axios from "axios";
+import axios from "../../Localhost/Custumize-axios";
 import { Card, CardContent, Container } from "@mui/material";
 import { Link } from "react-router-dom";
 import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
@@ -106,7 +106,7 @@ const ProductList = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/product-sales");
+        const response = await axios.get("/product-sales");
         console.log(response.data);
         const productData = response.data.map((product) => {
           const productName = product.ProductName;
@@ -140,7 +140,7 @@ const ProductList = () => {
     const fetchRevenueData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/revenue/net-store-revenue"
+          "/revenue/net-store-revenue"
         );
         setRevenueData(response.data);
         // console.log(response.data);

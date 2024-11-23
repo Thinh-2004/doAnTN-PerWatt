@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import ApexCharts from "react-apexcharts";
 import "./UserChart.css"; // Import the CSS file
 import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
+import axios from "../../Localhost/Custumize-axios";
 
 const UserChart = () => {
   const currentYear = new Date().getFullYear();
@@ -67,20 +68,20 @@ const UserChart = () => {
     let url;
     switch (period) {
       case "year":
-        url = "http://localhost:8080/users-by-year";
+        url = "/users-by-year";
         break;
       case "month":
-        url = "http://localhost:8080/users-by-month";
+        url = "/users-by-month";
         break;
       case "day":
-        url = "http://localhost:8080/users-by-day";
+        url = "/users-by-day";
         break;
       default:
         return;
     }
 
     try {
-      const response = await fetch(url);
+      const response = await axios.get(url);
       const data = await response.json();
 
       if (period === "year") {

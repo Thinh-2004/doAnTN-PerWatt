@@ -65,7 +65,7 @@ const PayBuyer = () => {
     } catch (error) {
       console.error(
         "Error fetching wallet data:",
-error.response ? error.response.data : error.message
+        error.response ? error.response.data : error.message
       );
     }
   };
@@ -151,7 +151,7 @@ error.response ? error.response.data : error.message
           });
 
           const fillWalletStore = await axios.get(`wallet/${store.user.id}`);
-const transactionStore = await axios.get(
+          const transactionStore = await axios.get(
             `wallettransaction/idWalletByIdUSer/${store.user.id}`
           );
 
@@ -260,7 +260,7 @@ const transactionStore = await axios.get(
   };
 
   // const groupByStore = (products) => {
-//   return products.reduce((groups, product) => {
+  //   return products.reduce((groups, product) => {
   //     const storeId = product.productDetail.product.store.id;
   //     if (!groups[storeId]) {
   //       groups[storeId] = {
@@ -357,7 +357,7 @@ const transactionStore = await axios.get(
       }
 
       const groupedProducts = groupByStore(products);
-for (const storeId in groupedProducts) {
+      for (const storeId in groupedProducts) {
         const { products: storeProducts } = groupedProducts[storeId];
 
         // const outOfStockProduct = storeProducts.find(
@@ -457,7 +457,7 @@ for (const storeId in groupedProducts) {
     );
 
     sessionStorage.setItem("productList", JSON.stringify(productList));
-const data = {
+    const data = {
       amount: totalAmount,
       ids: cartIds,
       address: selectedShippingInfo,
@@ -550,7 +550,7 @@ const data = {
     const toRad = (value) => (value * Math.PI) / 180;
 
     const R = 6371; // Bán kính trái đất (km)
-const dLat = toRad(lat2 - lat1);
+    const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
 
     const a =
@@ -648,7 +648,7 @@ const dLat = toRad(lat2 - lat1);
 
           totalShippingFee += fee;
         } else {
-toast.error("Server tính tiền ship không phản hồi");
+          toast.error("Server tính tiền ship không phản hồi");
         }
       })
     );
@@ -731,7 +731,7 @@ toast.error("Server tính tiền ship không phản hồi");
                                     cart.productDetail.imagedetail
                                   )
                                 : geturlIMG(
-cart.productDetail.product.id,
+                                    cart.productDetail.product.id,
                                     firstIMG.imagename
                                   )
                             }
@@ -793,7 +793,7 @@ cart.productDetail.product.id,
                                 <div className="modal-header">
                                   <h1
                                     className="modal-title fs-5"
-id="exampleModalLabel"
+                                    id="exampleModalLabel"
                                   >
                                     Thanh toán bằng PerPay
                                   </h1>
@@ -848,7 +848,7 @@ id="exampleModalLabel"
                                             sum +
                                             detail.productDetail.price *
                                               detail.quantity,
-0
+                                          0
                                         )
                                       )
                                     }
@@ -884,18 +884,8 @@ id="exampleModalLabel"
                   })}
 
                   <div className="col-lg-11 col-md-12">
-                    <div className="d-flex justify-content-end">
-                      Tổng tiền: {formatPrice(totalAmount) + " VNĐ"}
-                    </div>
-
-                    <div className="d-flex justify-content-end">
-                      Phí ship:{" "}
-                      {isLoadingShipping
-                        ? "Đang tính phí ship..."
-                        : `${formatPrice(feeShip)} VNĐ`}
-                    </div>
-                    <div className="offset-7">
-                      <FormControl fullWidth size="small">
+                    <div className="d-flex justify-content-between mt-3">
+                      <FormControl size="small" sx={{width : "30%"}}>
                         <InputLabel id="address-select-label">
                           Voucher
                         </InputLabel>
@@ -908,14 +898,32 @@ id="exampleModalLabel"
                           //   handleCalculateShipping(e.target.value); // Gọi hàm tính phí ship sau khi chọn địa chỉ
                           // }}
                         >
-                          {voucher.map((shipping) => (
+                          {voucher.length === 0 ? (
+                            <MenuItem>
+                              Hiện tại bạn chưa có voucher nào
+                            </MenuItem>
+                          ) : (
+                            voucher.map((shipping) => (
                             <MenuItem key={shipping.id} value={shipping.id}>
                               {shipping.voucher.vouchername}
                             </MenuItem>
-                          ))}
+                          ))
+                          )}
                         </Select>
                       </FormControl>
-</div>
+                      <div>
+                        <div className="d-flex justify-content-end">
+                          Tổng tiền: {formatPrice(totalAmount) + " VNĐ"}
+                        </div>
+
+                        <div className="d-flex justify-content-end">
+                          Phí ship:{" "}
+                          {isLoadingShipping
+                            ? "Đang tính phí ship..."
+                            : `${formatPrice(feeShip)} VNĐ`}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -990,7 +998,7 @@ id="exampleModalLabel"
                   <Select
                     labelId="address-select-label"
                     id="address-select"
-value={selectedShippingInfo || ""}
+                    value={selectedShippingInfo || ""}
                     label="Chọn địa chỉ nhận hàng"
                     onChange={(e) => {
                       handleCalculateShipping(e.target.value); // Gọi hàm tính phí ship sau khi chọn địa chỉ
@@ -1064,7 +1072,7 @@ value={selectedShippingInfo || ""}
                     <FormSelectAdress
                       apiAddress={(fullAddress) => setNewAddress(fullAddress)}
                       resetForm={resetForm}
-editFormAddress={newAddress}
+                      editFormAddress={newAddress}
                     />
 
                     <div className="text-end mt-3">
@@ -1151,7 +1159,7 @@ editFormAddress={newAddress}
                 disableElevation
               >
                 Đặt hàng
-</Button>
+              </Button>
             </div>
           </div>
         </Card>

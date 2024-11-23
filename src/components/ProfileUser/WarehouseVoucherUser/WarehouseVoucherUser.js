@@ -17,7 +17,11 @@ const WarehouseVoucherUser = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await axios.get(`findVoucherByIdUser/${user.id}`);
+        const res = await axios.get(`findVoucherByIdUser/${user.id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        });
         setVoucherByUser(res.data);
       } catch (error) {
         toast.error("Không thể tải dữ liệu ");
@@ -62,59 +66,68 @@ const WarehouseVoucherUser = () => {
         </Typography>
         <hr className="m-0 p-0" />
         <Box className="p-3">
-          {groupedVoucherArray.map((fill) => {
-            return (
-              <Card className="mb-3" sx={{backgroundColor : "backgroundElement.children"}}>
-                <CardContent key={fill.id} className="mt-2">
-                  <Typography
-                    sx={{ fontSize: 14 }}
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Giảm{" "}
-                    <span className="text-danger">
-                      {fill.vouchers[0].voucher.discountprice}%
-                    </span>
-                  </Typography>
+          {groupedVoucherArray.length === 0 ? (
+            <Typography variant="h5" className="text-center">
+              Bạn chưa có voucher.
+            </Typography>
+          ) : (
+            groupedVoucherArray.map((fill) => {
+              return (
+                <Card
+                  className="mb-3"
+                  sx={{ backgroundColor: "backgroundElement.children" }}
+                >
+                  <CardContent key={fill.id} className="mt-2">
+                    <Typography
+                      sx={{ fontSize: 14 }}
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      Giảm{" "}
+                      <span className="text-danger">
+                        {fill.vouchers[0].voucher.discountprice}%
+                      </span>
+                    </Typography>
 
-                  <div className="d-flex justify-content-between">
-                    <div>
-                      <Typography variant="h5" component="div">
-                        {fill.vouchername}
-                      </Typography>
-                      <img
-                        src={getUrlIMG(
-                          fill.vouchers[0].voucher.productDetail.product.id,
-                          fill.vouchers[0].voucher.productDetail.product
-                            .images[0].imagename
-                        )}
-                        alt=""
-                        id="img-product-voucher"
-                        className="mb-2 mt-2"
-                      />
-                      <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                        Ngày kết thúc:{" "}
-                        <span className="text-danger">
-                          {dayjs(fill.vouchers[0].voucher.endday).format(
-                            "DD-MM-YYYY"
+                    <div className="d-flex justify-content-between">
+                      <div>
+                        <Typography variant="h5" component="div">
+                          {fill.vouchername}
+                        </Typography>
+                        <img
+                          src={getUrlIMG(
+                            fill.vouchers[0].voucher.productDetail.product.id,
+                            fill.vouchers[0].voucher.productDetail.product
+                              .images[0].imagename
                           )}
-                        </span>
-                      </Typography>
+                          alt=""
+                          id="img-product-voucher"
+                          className="mb-2 mt-2"
+                        />
+                        <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                          Ngày kết thúc:{" "}
+                          <span className="text-danger">
+                            {dayjs(fill.vouchers[0].voucher.endday).format(
+                              "DD-MM-YYYY"
+                            )}
+                          </span>
+                        </Typography>
+                      </div>
+                      <div className="align-content-center">
+                        <Link
+                          className="btn"
+                          id="btn-use-now"
+                          to={`/detailProduct/${fill.vouchers[0].voucher.productDetail.product.slug}`}
+                        >
+                          Dùng ngay
+                        </Link>
+                      </div>
                     </div>
-                    <div className="align-content-center">
-                      <Link
-                        className="btn"
-                        id="btn-use-now"
-                        to={`/detailProduct/${fill.vouchers[0].voucher.productDetail.product.slug}`}
-                      >
-                        Dùng ngay
-                      </Link>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
         </Box>
       </Box>
     </>

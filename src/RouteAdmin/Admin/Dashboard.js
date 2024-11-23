@@ -4,10 +4,11 @@ import StoresChart from "./StoresChart";
 import UserChart from "./UserChart";
 import ProductList from "./ProductList"; // Nhập ProductList từ file tương ứng
 import { UilTimes } from "@iconscout/react-unicons";
-import axios from "axios";
+import axios from "../../Localhost/Custumize-axios";
 import "./Dashboard.css";
-import { Box, Button, Container } from "@mui/material";
+import { Box, Button, Container, Typography } from "@mui/material";
 import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
+import { Link } from "react-router-dom";
 
 const checkUserRole = (role) => {
   const token = localStorage.getItem("token");
@@ -32,7 +33,7 @@ if (checkUserRole("ROLE_ADMIN")) {
 // Hàm gọi API thực tế để lấy doanh thu của tháng lớn nhất trong năm lớn nhất
 const fetchRevenueOfMaxMonth = async () => {
   try {
-    const response = await axios.get("http://localhost:8080/revenue-by-month");
+    const response = await axios.get("/revenue-by-month");
     const data = response.data;
 
     // Tìm năm lớn nhất
@@ -67,9 +68,7 @@ const fetchRevenueOfMaxMonth = async () => {
 // Hàm gọi API để lấy số lượng cửa hàng
 const fetchTotalStoresCount = async () => {
   try {
-    const response = await axios.get(
-      "http://localhost:8080/total-stores-count"
-    );
+    const response = await axios.get("/total-stores-count");
     return response.data.totalStoresCount || 0; // Trả về số lượng cửa hàng hoặc 0 nếu không có dữ liệu
   } catch (error) {
     console.error("Error fetching total stores count:", error);
@@ -80,7 +79,7 @@ const fetchTotalStoresCount = async () => {
 // Hàm gọi API để lấy số lượng người dùng
 const fetchTotalUsersCount = async () => {
   try {
-    const response = await axios.get("http://localhost:8080/total-users");
+    const response = await axios.get("/total-users");
     return response.data[0]?.TotalUsers || 0; // Trả về số lượng người dùng hoặc 0 nếu không có dữ liệu
   } catch (error) {
     console.error("Error fetching total users count:", error);
@@ -178,6 +177,39 @@ const Dashboard = () => {
               Đây là những gì đang xảy ra trên cửa hàng của bạn ngày hôm nay.
               Xem số liệu thống kê cùng một lúc.
             </p>
+            <Button
+              size="small"
+              variant="outlined"
+              LinkComponent={Link}
+              to="/"
+              sx={{
+                textTransform: "inherit",
+              }}
+            >
+              <img
+                src="/images/logoWeb.png"
+                alt=""
+                className="rounded-circle img-fluid"
+                style={{ width: "40px", aspectRatio: "1/1" }}
+              />
+              &nbsp;
+              <Typography className="mx-2" sx={{ fontSize: "15px" }}>
+                Trang chủ PerWatt
+              </Typography>
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              LinkComponent={Link}
+              to="/admin/voucher/website"
+              sx={{
+                textTransform: "inherit",
+              }}
+            >
+              <Typography className="mx-2" sx={{ fontSize: "15px" }}>
+                Chương trình khuyến mãi
+              </Typography>
+            </Button>
           </div>
           <img
             className="img-header"

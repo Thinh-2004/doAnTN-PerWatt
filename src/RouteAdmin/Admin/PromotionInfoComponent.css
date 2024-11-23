@@ -1,0 +1,15 @@
+.ant-table {
+  table-layout: fixed; /* Giúp định dạng bảng không bị méo */
+  width: 100%; /* Đảm bảo bảng chiếm hết chiều rộng của container */
+}
+
+.ant-table th,
+.ant-table td {
+  overflow: hidden; /* Ẩn nội dung tràn */
+  text-overflow: ellipsis; /* Hiển thị dấu ba chấm khi nội dung bị tràn */
+  white-space: nowrap; /* Không cho nội dung xuống dòng */
+}
+
+.ant-table td {
+  padding: 10px; /* Thêm khoảng cách cho các ô */
+}

@@ -315,7 +315,7 @@ const BannerTable = () => {
   return (
     <div className="UserBanner">
       <Header></Header>
-      <div className="container mt-5">
+      <div className="container-lg mt-5">
         <h2 className="mb-4">Quản Lý Banner</h2>
         {error && <Alert severity="error">{error}</Alert>}
 

@@ -16,9 +16,6 @@ import InfoDetailProduct from "./ChildrenForm/InfoDetailProduct";
 
 const EditProduct = () => {
   const slug = useParams();
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
   const idStore = localStorage.getItem("idStore");
   const [images, setImages] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(null);
@@ -343,7 +340,7 @@ const EditProduct = () => {
                       formEditProduct.images.map((image, index) => (
                         <img
                           key={index}
-                          src={geturlIMG(formEditProduct.id, image.imagename)}
+                          src={image.imagename}
                           alt={`Current ${index}`}
                           className="img-fluid"
                           id="img-fill-product"

@@ -5,6 +5,7 @@ import ApexCharts from "react-apexcharts";
 import "./StoresChart.css"; // Import the CSS file
 import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
 import { FormControl, MenuItem, Select } from "@mui/material";
+import axios from "../../Localhost/Custumize-axios";
 
 const StoresChart = () => {
   const currentYear = new Date().getFullYear();
@@ -103,21 +104,21 @@ const StoresChart = () => {
     let url;
     switch (period) {
       case "year":
-        url = "http://localhost:8080/stores-by-year";
+        url = "/stores-by-year";
         break;
       case "month":
-        url = "http://localhost:8080/stores-by-month";
+        url = "/stores-by-month";
         break;
       case "day":
-        url = "http://localhost:8080/stores-by-day";
+        url = "/stores-by-day";
         break;
       default:
         return;
     }
 
     try {
-      const response = await fetch(url);
-      const data = await response.json();
+      const response = await axios.get(url);
+      const data = await response.data;
 
       if (period === "year") {
         const yearData = {};

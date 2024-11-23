@@ -396,12 +396,14 @@ const Store = () => {
             <div className="border-bottom mb-5 ">
               <h4 className="mt-3">Mã khuyến mãi</h4>
               <div className="overflow-auto" style={{ height: "400px" }}>
-                {uniqueVouchers.map((voucher) => {
-                  const isVoucherReceived = voucherDetail.some(
-                    (voucherItem) => voucherItem?.voucher?.id === voucher.id
-                  );
-                  return (
-                    voucher.status === "Hoạt động" && (
+                {uniqueVouchers.some(
+                  (voucher) => voucher.status === "Hoạt động"
+                ) ? (
+                  uniqueVouchers.map((voucher) => {
+                    const isVoucherReceived = voucherDetail.some(
+                      (voucherItem) => voucherItem?.voucher?.id === voucher.id
+                    );
+                    return voucher.status === "Hoạt động" ? (
                       <CardContent
                         key={voucher.id}
                         className={`mt-2 ${
@@ -451,9 +453,11 @@ const Store = () => {
                           )}
                         </div>
                       </CardContent>
-                    )
-                  );
-                })}
+                    ) : null;
+                  })
+                ) : (
+                  <Typography>Shop chưa có voucher nào.</Typography>
+                )}
               </div>
             </div>
           </Box>

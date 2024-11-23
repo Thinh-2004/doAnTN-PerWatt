@@ -80,8 +80,10 @@ const ToolBarFindMore = ({
     (value) => {
       text(value);
 
-      // Lưu giá trị tìm kiếm vào localStorage
-      localStorage.setItem("searchText", value);
+      setTimeout(() => {
+        // Lưu giá trị tìm kiếm vào localStorage
+        localStorage.setItem("searchText", value);
+      }, 1000);
     },
     [text]
   );
@@ -132,7 +134,10 @@ const ToolBarFindMore = ({
   );
 
   return (
-    <Box sx={{backgroundColor : "backgroundElement.children"}} className="rounded-2">
+    <Box
+      sx={{ backgroundColor: "backgroundElement.children" }}
+      className="rounded-2"
+    >
       <div className="m-3">
         <div>
           <Search valueText={handleTextSearch} />

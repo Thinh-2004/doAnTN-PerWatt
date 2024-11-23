@@ -3,6 +3,7 @@ import ApexCharts from "react-apexcharts";
 import "./RevenueChart.css"; // Import the CSS file
 import { FormControl, MenuItem, Select } from "@mui/material";
 import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
+import axios from "../../Localhost/Custumize-axios";
 
 const RevenueChart = () => {
   const currentYear = new Date().getFullYear();
@@ -119,21 +120,21 @@ const RevenueChart = () => {
     let url;
     switch (period) {
       case "year":
-        url = "http://localhost:8080/revenue-by-year";
+        url = "/revenue-by-year";
         break;
       case "month":
-        url = "http://localhost:8080/revenue-by-month";
+        url = "/revenue-by-month";
         break;
       case "day":
-        url = "http://localhost:8080/revenue-by-day";
+        url = "/revenue-by-day";
         break;
       default:
         return;
     }
 
     try {
-      const response = await fetch(url);
-      const data = await response.json();
+      const response = await axios.get(url);
+      const data = await response.data;
 
       if (period === "year") {
         const yearData = {};
