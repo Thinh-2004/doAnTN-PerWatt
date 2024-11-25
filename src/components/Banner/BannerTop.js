@@ -53,7 +53,7 @@ const Banner = () => {
           className="rounded-4 w-100 h-100"
         >
           <img
-            src={`http://localhost:8080/files/banner/${topBanners[topIndex].user.id}/${topBanners[topIndex].img}`}
+            src={topBanners[topIndex].img}
             alt={topBanners[topIndex].bannername}
             className="bannerr-image rounded-4 "
             style={{

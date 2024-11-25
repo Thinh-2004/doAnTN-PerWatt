@@ -8,9 +8,9 @@ const ListProductStore = ({ data }) => {
   //Tạo state nhận api voucher theo id product
   //Sử dụng đối tượng để lưu voucher theo từng idProduct
   const [voucher, setVoucher] = useState({});
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
+  // const geturlIMG = (productId, filename) => {
+  //   return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
+  // };
 
   const formatPrice = (value) => {
     if (!value) return "";
@@ -128,7 +128,7 @@ const ListProductStore = ({ data }) => {
                 <img
                   src={
                     firstIMG
-                      ? geturlIMG(fill.product.id, firstIMG.imagename)
+                      ? firstIMG.imagename
                       : "/images/no_img.png"
                   }
                   className="img-fluid rounded-3"

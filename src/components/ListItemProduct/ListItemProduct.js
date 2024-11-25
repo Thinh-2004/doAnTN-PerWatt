@@ -9,9 +9,9 @@ const ListItemProduct = ({ data, classNameCol }) => {
   //Sử dụng đối tượng để lưu voucher theo từng idProduct
   const [voucher, setVoucher] = useState({});
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
+  // const geturlIMG = (productId, filename) => {
+  //   return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
+  // };
 
   const formatPrice = (value) => {
     return value ? Number(value).toLocaleString("vi-VN") : "";
@@ -126,7 +126,7 @@ const ListItemProduct = ({ data, classNameCol }) => {
               <img
                 src={
                   firstIMG
-                    ? geturlIMG(fill.product.id, firstIMG.imagename)
+                    ?  firstIMG.imagename
                     : "/images/no_img.png"
                 }
                 className="img-fluid rounded-3"

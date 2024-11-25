@@ -45,17 +45,6 @@ const Order = () => {
   const [orderDetails, setOrderDetails] = useState({});
   tailspin.register();
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-
-  const getAvtUser = (idUser, filename) =>
-    `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-
-  const geturlIMGDetail = (productDetailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
-  };
-
   const [products, setProducts] = useState([]);
   const location = useLocation();
   const query = new URLSearchParams(location.search);
@@ -295,11 +284,7 @@ const Order = () => {
           <div className="d-flex align-items-center mb-1">
             <Link to={`/pageStore/${order.store.slug}`}>
               <img
-                src={getAvtUser(
-                  order.store.user.id,
-                  order.store.user.avatar,
-                  order.store.id
-                )}
+                src={order.store.user.avatar}
                 id="imgShop"
                 className="mx-2 object-fit-cover"
                 style={{
@@ -345,14 +330,8 @@ const Order = () => {
                     <img
                       src={
                         orderDetail.productDetail.imagedetail
-                          ? geturlIMGDetail(
-                              orderDetail.productDetail.id,
-                              orderDetail.productDetail.imagedetail
-                            )
-                          : geturlIMG(
-                              orderDetail.productDetail.product.id,
-                              firstIMG?.imagename
-                            )
+                          ? orderDetail.productDetail.imagedetail
+                          : firstIMG?.imagename
                       }
                       alt=""
                       style={{

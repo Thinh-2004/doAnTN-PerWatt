@@ -9,6 +9,7 @@ import {
   CardContent,
   styled,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditDetailProduct from "../DetailProduct/EditDetailProduct";
@@ -53,6 +54,7 @@ const EditProduct = () => {
         store: idStore,
       });
       console.log(res.data);
+      // setImages(res.data.images)
 
       const resDetail = await axios.get(`/detailProduct/${res.data.id}`);
 
@@ -71,7 +73,6 @@ const EditProduct = () => {
       console.error(error);
     }
   };
-
   useEffect(() => {
     // Fill dữ liệu
     fillData();
@@ -287,7 +288,7 @@ const EditProduct = () => {
   useEffect(() => {
     if (updateChangeForm !== null && updateChangeForm === true) {
       setIsHiddenDetailPro(true);
-    } else if(updateChangeForm !== null && updateChangeForm === false) {
+    } else if (updateChangeForm !== null && updateChangeForm === false) {
       setIsHiddenDetailPro(false);
     }
   }, [updateChangeForm, isHiddenDetailPro]);
@@ -338,25 +339,29 @@ const EditProduct = () => {
                   <div className="mb-3 border" id="bg-upload-img">
                     {formEditProduct.images &&
                       formEditProduct.images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image.imagename}
-                          alt={`Current ${index}`}
-                          className="img-fluid"
-                          id="img-fill-product"
-                          style={{ cursor: "pointer" }}
-                          onClick={() => handleDeleteImageClick(image.id)}
-                        />
+                        <Tooltip title="Double click để xóa hình">
+                          <img
+                            key={index}
+                            src={image.imagename}
+                            alt={`Current ${index}`}
+                            className="img-fluid"
+                            id="img-fill-product"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => handleDeleteImageClick(image.id)}
+                          />
+                        </Tooltip>
                       ))}
                     {images.map((image, index) => (
-                      <img
-                        key={`new-${index}`}
-                        src={URL.createObjectURL(image)}
-                        alt={`Preview ${index}`}
-                        className="img-fluid"
-                        id="img-fill-product"
-                        onClick={() => handleImageClick(index)}
-                      />
+                      <Tooltip title="Double click để xóa hình">
+                        <img
+                          key={`new-${index}`}
+                          src={URL.createObjectURL(image)}
+                          alt={`Preview ${index}`}
+                          className="img-fluid"
+                          id="img-fill-product"
+                          onClick={() => handleImageClick(index)}
+                        />
+                      </Tooltip>
                     ))}
                   </div>
                   <div className="mb-3">

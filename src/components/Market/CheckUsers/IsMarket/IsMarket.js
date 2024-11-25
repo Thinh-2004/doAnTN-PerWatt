@@ -20,6 +20,7 @@ import EditVoucher from "./Voucher/UpdateVoucher";
 import Wallet from "../../../Wallet/Wallet";
 import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
 import PromotionalCard from "./StatisticalOrders/PromotionalCard";
+import Widget from "./StatisticalOrders/Widget";
 
 const IsMarket = () => {
   const user = localStorage.getItem("user")
@@ -109,7 +110,6 @@ const IsMarket = () => {
                       Đơn hàng
                     </Link>
                   </li>
-                 
                 </ul>
               </Typography>
             </AccordionDetails>
@@ -133,7 +133,10 @@ const IsMarket = () => {
                   className="p-0 m-0"
                 >
                   <li>
-                    <Link style={{ textDecoration: "none" }} to="/profileMarket">
+                    <Link
+                      style={{ textDecoration: "none" }}
+                      to="/profileMarket"
+                    >
                       Doanh thu
                     </Link>
                   </li>
@@ -228,7 +231,7 @@ const IsMarket = () => {
         </div>
         <div className="col-lg-9">
           <Routes>
-            <Route path="/" element={<SellerDashboard/>} />
+            <Route path="/" element={<SellerDashboard />} />
             <Route path="/listStoreProduct" element={<ListProduct />} />
             <Route path="/FormStoreProduct" element={<FormProduct />} />
             <Route path="updateProduct/:slug" element={<EditProduct />} />
@@ -246,6 +249,8 @@ const IsMarket = () => {
             />
             <Route path="/wallet/:status" element={<Wallet />} />
             <Route path="/voucher/webite" element={<PromotionalCard />} />
+            <Route path="/Widget/:id" element={<Widget />} />
+            {/* <Route path="/" element={<ChooseProduct />} /> */}
           </Routes>
         </div>
       </div>

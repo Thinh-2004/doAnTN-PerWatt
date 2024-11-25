@@ -26,9 +26,9 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
     setOpen(false);
   };
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
+  // const geturlIMG = (productId, filename) => {
+  //   return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
+  // };
 
   const handleNextImage = () => {
     if (isDisabled) return; // Nếu đang trong thời gian chờ, không làm gì cả
@@ -114,7 +114,7 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
                   <img
                     src={
                       dataImage
-                        ? geturlIMG(dataImage.id, image.imagename)
+                        ?  image.imagename
                         : "/images/no_img.png"
                     }
                     className="d-block object-fit-cover rounded-5"
@@ -135,7 +135,7 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
                     <img
                       src={
                         popUpImage
-                          ? geturlIMG(dataImage.id, popUpImage.imagename)
+                          ? popUpImage.imagename
                           : ""
                       }
                       className="d-block"
@@ -211,7 +211,7 @@ const ListImageDetailProduct = ({ dataImage, totalQuantity }) => {
                 <img
                   src={
                     dataImage
-                      ? geturlIMG(dataImage.id, image.imagename)
+                      ?  image.imagename
                       : "/images/no_img.png"
                   }
                   className=" rounded-3 border"

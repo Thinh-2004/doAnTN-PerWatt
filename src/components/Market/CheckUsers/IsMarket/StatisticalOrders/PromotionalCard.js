@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Pagination, Input } from "antd"; // Import Ant Design Pagination và Input
 import "./PromotionalCard.css"; // Import CSS file
 import axios from "../../../../../Localhost/Custumize-axios";
 import { Card, CardContent } from "@mui/material";
+import { ThemeModeContext } from "../../../../ThemeMode/ThemeModeProvider";
+import { Link } from "react-router-dom";
 
 const { Search } = Input; // Sử dụng thành phần Search của Ant Design
 
@@ -12,6 +14,7 @@ const PromotionalCard = () => {
   const [pageSize, setPageSize] = useState(5);
   const [searchTerm, setSearchTerm] = useState("");
   const currentDate = new Date();
+  const { mode } = useContext(ThemeModeContext);
 
   useEffect(() => {
     const fetchPromotions = async () => {
@@ -131,10 +134,10 @@ const PromotionalCard = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm">
                     {currentDate < startDate
-                      ? "ĐĂNG KÝ ĐANG CHUẨN BỊ"
-                      : currentDate >= startDate && currentDate <= endDate
                       ? "ĐĂNG KÝ ĐÃ MỞ"
-                      : "ĐĂNG KÝ ĐÃ ĐÓNG"}
+                      : currentDate >= startDate && currentDate <= endDate
+                      ? "ĐĂNG KÝ ĐÃ ĐÓNG"
+                      : "KHÔNG HOẠT ĐỘNG"}
                   </span>
                   <span>Kết thúc lúc: {endDate.toLocaleString("vi-VN")}</span>
                 </div>
@@ -147,9 +150,11 @@ const PromotionalCard = () => {
 
                 {/* Hiển thị thời gian còn lại theo ngày, giờ, phút */}
                 <p>
-                  {isAfterStartDate
-                    ? "Chương trình đã bắt đầu"
-                    : `Thời gian còn lại: ${daysLeft} ngày ${hoursLeft} giờ ${minutesLeft} phút`}
+                  {currentDate < startDate
+                    ? `Thời gian còn lại: ${daysLeft} ngày ${hoursLeft} giờ ${minutesLeft} phút`
+                    : currentDate > endDate
+                    ? "Chương trình đã kết thúc"
+                    : "Chương trình đã bắt đầu"}
                 </p>
 
                 <div className="flex justify-between mt-4">
@@ -157,16 +162,22 @@ const PromotionalCard = () => {
                     Mã giảm giá: {promotion.vouchername}
                   </p>
 
-                  {/* Kiểm tra nếu ngày hiện tại đã lớn hơn ngày bắt đầu */}
-                  {isAfterStartDate ? (
-                    <a href={`/Widget?idVoucherAdmin=${promotion.id}`}>
-                      <button className="btn-voucher-webite btn-primary">
+                  {/* Điều kiện để hiển thị nút đăng ký */}
+                  {currentDate < startDate ? (
+                    <Link
+                      to={`/profileMarket/Widget/${promotion.id}`}
+                    >
+                      <button className="btn btn-primary">
                         Đăng ký sản phẩm
                       </button>
-                    </a>
+                    </Link>
+                  ) : currentDate >= startDate && currentDate <= endDate ? (
+                    <button className="btn btn-primary" disabled>
+                      Đã đóng
+                    </button>
                   ) : (
-                    <button className="btn-voucher-webite btn-primary" disabled>
-                      Đang chuẩn bị đăng ký
+                    <button className="btn btn-primary" disabled>
+                      Đã kết thúc
                     </button>
                   )}
                 </div>

@@ -1,0 +1,275 @@
+Widget.css
+
+/* Layout padding and spacing */
+/* .p-6 {
+  padding: 1.5rem;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.p-2 {
+  padding: 0.5rem;
+}
+
+.mt-1 {
+  margin-top: 0.25rem;
+}
+
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mr-2 {
+  margin-right: 0.5rem;
+}
+
+.space-x-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+  margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-x-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(1rem * var(--tw-space-x-reverse));
+  margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
+} */
+
+/* Background colors */
+/* .bg-card {
+  background-color: #f9fafb;
+}
+
+.bg-primary {
+  background-color: rgba(220, 38, 38, 0.8);
+}
+
+.bg-secondary {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.bg-muted {
+  background-color: #9ca3af;
+}
+
+.bg-destructive {
+  background-color: #dc2626;
+} */
+
+/* Text colors */
+/* .text-lg {
+  font-size: 1.125rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.text-muted-foreground {
+  color: #6b7280;
+}
+
+.text-secondary-foreground {
+  color: #fff;
+}
+
+.text-destructive-foreground {
+  color: #fff;
+} */
+
+/* Font weights */
+/* .font-semibold {
+  font-weight: 600;
+}
+
+.font-medium {
+  font-weight: 500;
+} */
+
+/* Borders */
+/* .border {
+  border-width: 1px;
+}
+
+.border-border {
+  border-color: #d1d5db;
+} */
+
+/* Flexbox and layout */
+/* .flex {
+  display: flex;
+}
+
+.flex.justify-end {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 1rem;
+  margin: 0.5rem;
+}
+
+.block {
+  display: block;
+}
+
+.w-full {
+  width: 100%;
+} */
+
+/* Shadows and rounded corners */
+/* .rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.rounded-md {
+  border-radius: 0.375rem;
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+} */
+
+/* Buttons */
+/* button {
+  background-color: #3b82f6;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background-color 0.3s ease;
+  height: 2.5rem;
+}
+
+button:hover {
+  background-color: #2563eb;
+}
+
+button.bg-secondary {
+  background-color: #3f4ed4;
+  margin: 0.5rem;
+}
+
+button.bg-secondary:hover {
+  background-color: #ef4444;
+} */
+
+/* Inputs */
+/* input[type="number"] {
+  width: 100px;
+  padding: 0.375rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+}
+
+input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+} */
+
+/* Tables */
+/* table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+td {
+  background-color: #fff;
+}
+
+td:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+table img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 0.375rem;
+} */
+
+/* Info text */
+/* span {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 1px;
+  display: inline-block;
+} */
+
+/* Responsive design */
+/* @media (max-width: 768px) {
+  td, th {
+    font-size: 0.875rem;
+  }
+
+  button {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  input[type="number"] {
+    width: 80px;
+  }
+} */
+
+/* Widget.css */
+/* .checkbox {
+  display: flex;
+  align-items: center;
+} */
+
+.checkbox input[type="checkbox"] {
+  appearance: none; 
+  width: 20px;
+  height: 20px;
+  border: 2px solid #007bff;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.checkbox input[type="checkbox"]:checked {
+  background-color: #007bff;
+  border-color: #0056b3; 
+}
+
+.checkbox input[type="checkbox"]:checked::after {
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+  background: white; 
+  border-radius: 2px;
+  margin: auto;
+}
+

@@ -26,12 +26,6 @@ const VoucherTable = ({
   isSortDisCountPrice,
   valueSort,
 }) => {
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-  const geturlImgDetailProduct = (detailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
-  };
   const formatPrice = (value) => {
     return value ? Number(value).toLocaleString("vi-VN") : "";
   };
@@ -173,10 +167,7 @@ const VoucherTable = ({
                       }}
                     >
                       <img
-                        src={geturlIMG(
-                          voucher.productDetail?.product.id,
-                          voucher.productDetail?.product.images[0].imagename
-                        )}
+                        src={voucher.productDetail?.product.images[0].imagename}
                         style={{ width: "40px", aspectRatio: "1/1" }}
                         alt=""
                       />
@@ -187,10 +178,7 @@ const VoucherTable = ({
                         <>
                           <img
                             style={{ width: "40px", aspectRatio: "1/1" }}
-                            src={geturlImgDetailProduct(
-                              voucher.productDetail?.id,
-                              voucher.productDetail?.imagedetail
-                            )}
+                            src={voucher.productDetail?.imagedetail}
                             alt=""
                           />
                           &nbsp; {voucher.productDetail?.namedetail}

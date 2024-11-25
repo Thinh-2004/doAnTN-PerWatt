@@ -6,6 +6,7 @@ import UserBanner from "./Banner/UserBanner";
 import Wallet from "../components/Wallet/Wallet";
 import SecurityRoutes from "../components/SecurityRoutes/SecurityRoutes";
 import PromotionInfoComponent from "./Admin/PromotionInfoComponent";
+import ProductCategoryForm from "./Admin/ProductCategoryForm";
 
 const RouteAdmin = (props) => {
   return (
@@ -42,7 +43,7 @@ const RouteAdmin = (props) => {
           </SecurityRoutes>
         }
       />
-       <Route
+      <Route
         path="/admin/voucher/website"
         element={
           <SecurityRoutes allowedRoles={["Admin"]}>
@@ -50,8 +51,15 @@ const RouteAdmin = (props) => {
           </SecurityRoutes>
         }
       />
+      <Route
+        path="/admin/category"
+        element={
+          <SecurityRoutes allowedRoles={["Admin"]}>
+            <ProductCategoryForm />
+          </SecurityRoutes>
+        }
+      />
     </Routes>
-    
   );
 };
 

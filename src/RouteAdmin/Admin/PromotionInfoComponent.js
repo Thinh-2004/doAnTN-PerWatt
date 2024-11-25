@@ -1,8 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { notification, Table, Switch, Button, Input, Empty } from "antd";
+import React, { useContext, useEffect, useState } from "react";
+import { notification, Table, Switch, Input, Empty } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import axios from "../../Localhost/Custumize-axios";
 import Header from "../../components/Header/Header";
+import {
+  Box,
+  Button,
+  FormControl,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
+import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
 
 const PromotionInfoComponent = () => {
   const [promotionName, setPromotionName] = useState("");
@@ -15,6 +24,7 @@ const PromotionInfoComponent = () => {
   const [status] = useState("đang hoạt động");
   const [searchTerm, setSearchTerm] = useState("");
   const [paginationPageSize, setPaginationPageSize] = useState(5); // Default page size
+  const { mode } = useContext(ThemeModeContext);
 
   // Fetch categories
   useEffect(() => {
@@ -318,7 +328,10 @@ const PromotionInfoComponent = () => {
   return (
     <>
       <Header />
-      <div className="p-6 bg-card rounded-lg shadow-md">
+      <Box
+        sx={{ backgroundColor: "backgroundElement.children" }}
+        className="p-6 bg-card rounded-lg shadow-md"
+      >
         <h2 className="text-lg font-semibold mb-4">Thông tin khuyến mãi</h2>
 
         <div className="mb-4">
@@ -328,10 +341,12 @@ const PromotionInfoComponent = () => {
           >
             Tên khuyến mãi
           </label>
-          <input
+          <TextField
+            fullWidth
+            size="small"
             type="text"
             id="promotion-name"
-            className="mt-1 block w-full border rounded-md p-2"
+            className="mt-1 p-2"
             placeholder="Tên khuyến mãi"
             value={promotionName}
             onChange={(e) => setPromotionName(e.target.value)}
@@ -344,19 +359,23 @@ const PromotionInfoComponent = () => {
           >
             Chọn danh mục
           </label>
-          <select
-            id="promotion-category"
-            className="mt-1 block w-full border rounded-md p-2"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            <option value={null}>Chọn danh mục</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.namecategory}
-              </option>
-            ))}
-          </select>
+          <FormControl fullWidth size="small">
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              <MenuItem value={null}>Chọn danh mục</MenuItem>
+
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {" "}
+                  {category.namecategory}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </div>
         <div className="mb-4">
           <label
@@ -368,9 +387,13 @@ const PromotionInfoComponent = () => {
           <input
             type="datetime-local"
             id="promotion-start"
-            className="mt-1 block w-full border rounded-md p-2"
+            className="mt-1 block w-full border rounded-2 p-2"
             value={promotionStart}
             onChange={(e) => setPromotionStart(e.target.value)}
+            style={{
+              backgroundColor: mode === "light" ? "white" : "#363535",
+              color: mode === "light" ? "black" : "white",
+            }}
           />
         </div>
         <div className="mb-4">
@@ -380,14 +403,18 @@ const PromotionInfoComponent = () => {
           <input
             type="datetime-local"
             id="promotion-end"
-            className="mt-1 block w-full border rounded-md p-2"
+            className="mt-1 block w-full border rounded-2 p-2"
             value={promotionEnd}
             onChange={(e) => setPromotionEnd(e.target.value)}
+            style={{
+              backgroundColor: mode === "light" ? "white" : "#363535",
+              color: mode === "light" ? "black" : "white",
+            }}
           />
         </div>
 
         <div className="mb-4">
-          <Button type="primary" onClick={handleSubmit}>
+          <Button variant="contained" disableElevation onClick={handleSubmit}>
             {editingPromotionId ? "Cập nhật khuyến mãi" : "Lưu khuyến mãi"}
           </Button>
         </div>
@@ -401,7 +428,7 @@ const PromotionInfoComponent = () => {
           />
         </div>
 
-        <div>
+        <div className={mode === "light" ? "table-light-mode" : "table-dark-mode"}>
           {filteredPromotions.length > 0 ? (
             <Table
               dataSource={filteredPromotions}
@@ -416,7 +443,7 @@ const PromotionInfoComponent = () => {
             <Empty description="Không có khuyến mãi nào" />
           )}
         </div>
-      </div>
+      </Box>
     </>
   );
 };

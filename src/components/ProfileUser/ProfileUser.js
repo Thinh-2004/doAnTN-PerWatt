@@ -37,9 +37,7 @@ const ProfileUser = () => {
 
   const theme = useTheme();
 
-  const geturlIMG = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -122,9 +120,9 @@ const ProfileUser = () => {
             >
               <div className="d-flex justify-content-center align-items-center mt-2">
                 <img
-                  src={geturlIMG(fill.id, fill.avatar)}
+                  src={ fill.avatar}
                   alt=""
-                  style={{ width: "70px", height: "70px", borderRadius: "50%" }}
+                  style={{ width: "70px", aspectRatio : "1/1", borderRadius: "50%", objectFit : "cover" }}
                 />
                 <label htmlFor="" className="mt-3 mx-3">
                   {fill.fullname}

@@ -22,9 +22,9 @@ const DetailProduct = () => {
   const [quantity, setQuantity] = useState(1); //trạng thái cho số lượng trước khi thêm giỏ hàng
   const [productDetailIds, setproductDetailIds] = useState(null);
 
-  const geturlImgDetailProduct = (detailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
-  };
+  // const geturlImgDetailProduct = (detailId, filename) => {
+  //   return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
+  // };
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
@@ -587,10 +587,7 @@ const DetailProduct = () => {
                         }}
                       >
                         <img
-                          src={geturlImgDetailProduct(
-                            fillDetail.id,
-                            fillDetail.imagedetail
-                          )}
+                          src={fillDetail.imagedetail}
                           alt="Ảnh phân loại sản phẩm"
                           className="img-fluid"
                           style={{ maxWidth: "50px", maxHeight: "50px" }}
