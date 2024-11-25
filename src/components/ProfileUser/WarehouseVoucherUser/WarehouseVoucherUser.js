@@ -11,9 +11,7 @@ const WarehouseVoucherUser = () => {
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
-  const getUrlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -95,11 +93,10 @@ const WarehouseVoucherUser = () => {
                           {fill.vouchername}
                         </Typography>
                         <img
-                          src={getUrlIMG(
-                            fill.vouchers[0].voucher.productDetail.product.id,
+                          src={
                             fill.vouchers[0].voucher.productDetail.product
                               .images[0].imagename
-                          )}
+                          }
                           alt=""
                           id="img-product-voucher"
                           className="mb-2 mt-2"

@@ -49,17 +49,6 @@ const Order = () => {
 
   tailspin.register();
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-
-  const getAvtUser = (idUser, filename) =>
-    `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-
-  const geturlIMGDetail = (productDetailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
-  };
-
   useEffect(() => {
     const load = async () => {
       try {
@@ -97,7 +86,7 @@ const Order = () => {
     if (inputReason) {
       try {
         await axios.put(`/order/${orderId}/status`, {
-status: "Hủy",
+          status: "Hủy",
           note: `Đơn hàng được huỷ bởi chủ cửa hàng, lý do: ${inputReason}`,
         });
         // Cập nhật trạng thái
@@ -199,7 +188,7 @@ status: "Hủy",
               });
               // Cập nhật trạng thái
               setFill((prevFill) =>
-prevFill.map((order) =>
+                prevFill.map((order) =>
                   order.id === orderId
                     ? { ...order, orderstatus: "Chờ nhận hàng" }
                     : order
@@ -266,7 +255,7 @@ prevFill.map((order) =>
         <CardContent className="">
           <div className="d-flex align-items-center mb-1">
             <img
-              src={getAvtUser(order.user.id, order.user.avatar, order.id)}
+              src={order.user.avatar}
               id="imgShop"
               className="mx-2 object-fit-cover"
               style={{
@@ -304,21 +293,15 @@ prevFill.map((order) =>
 
           {orderDetails[order.id] &&
             orderDetails[order.id].slice(0, 2).map((orderDetail) => {
-const firstIMG = orderDetail.productDetail.product.images?.[0];
+              const firstIMG = orderDetail.productDetail.product.images?.[0];
               return (
                 <div key={orderDetail.id}>
                   <div className="d-flex align-items-start">
                     <img
                       src={
                         orderDetail.productDetail.imagedetail
-                          ? geturlIMGDetail(
-                              orderDetail.productDetail.id,
-                              orderDetail.productDetail.imagedetail
-                            )
-                          : geturlIMG(
-                              orderDetail.productDetail.product.id,
-                              firstIMG?.imagename
-                            )
+                          ? orderDetail.productDetail.imagedetail
+                          : firstIMG?.imagename
                       }
                       alt=""
                       style={{
@@ -452,7 +435,7 @@ onClick={() => handleCancelOrder(order.id)}
                       <h1 className="modal-title fs-5" id="exampleModalLabel">
                         Nhập lý do huỷ hàng
                       </h1>
-<button
+                      <button
                         type="button"
                         className="btn-close"
                         data-bs-dismiss="modal"
@@ -538,7 +521,7 @@ onClick={() => handleCancelOrder(order.id)}
               borderRadius: "10px",
               overflow: "hidden",
             }}
-className="rounded-3"
+            className="rounded-3"
           >
             <Tabs
               value={value}

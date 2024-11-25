@@ -30,9 +30,6 @@ const Profile = () => {
     avatar: "",
   });
 
-  const geturlIMG = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
 
   const [previewAvatar, setPreviewAvatar] = useState(""); // State for image preview
 
@@ -47,7 +44,7 @@ const Profile = () => {
       // console.log(res.data);
       // Set the preview URL if there is an avatar
       setPreviewAvatar(
-        res.data.avatar ? geturlIMG(user.id, res.data.avatar) : ""
+        res.data.avatar ?  res.data.avatar : ""
       );
       // console.log(res.data);
     } catch (error) {
@@ -405,7 +402,7 @@ const Profile = () => {
             <div className="row">
               <div className="col-lg-12 d-flex justify-content-center mb-3">
                 <img
-                  src={previewAvatar || geturlIMG(user.id, fill.avatar)}
+                  src={previewAvatar ||  fill.avatar}
                   alt="Avatar"
                   className="img-fluid"
                   id="img-change-avatar"

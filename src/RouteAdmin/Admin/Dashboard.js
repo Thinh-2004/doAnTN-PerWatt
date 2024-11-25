@@ -185,6 +185,7 @@ const Dashboard = () => {
               sx={{
                 textTransform: "inherit",
               }}
+              className="me-2"
             >
               <img
                 src="/images/logoWeb.png"
@@ -205,9 +206,29 @@ const Dashboard = () => {
               sx={{
                 textTransform: "inherit",
               }}
+              className="mx-2 me-2"
             >
-              <Typography className="mx-2" sx={{ fontSize: "15px" }}>
+              <Typography
+                className="align-content-center"
+                sx={{ fontSize: "15px", height: "40px" }}
+              >
                 Chương trình khuyến mãi
+              </Typography>
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              LinkComponent={Link}
+              to="/admin/category"
+              sx={{
+                textTransform: "inherit",
+              }}
+            >
+              <Typography
+                className="align-content-center"
+                sx={{ fontSize: "15px", height: "40px" }}
+              >
+                Quản lí danh mục sản phẩm
               </Typography>
             </Button>
           </div>

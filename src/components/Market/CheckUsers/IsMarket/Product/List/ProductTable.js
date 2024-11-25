@@ -18,9 +18,6 @@ const ProductTable = ({
   isSortPrice,
   isSortQuantity,
 }) => {
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
 
   const formatPrice = (value) => {
     if (!value) return "";
@@ -122,7 +119,7 @@ const ProductTable = ({
                 >
                   {firstIMG ? (
                     <img
-                      src={geturlIMG(fill.product.id, firstIMG.imagename)}
+                      src={firstIMG.imagename}
                       alt=""
                       className="img-fluid"
                       id="img-product-item"

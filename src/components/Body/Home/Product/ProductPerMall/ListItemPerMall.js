@@ -8,9 +8,9 @@ const ListItemPerMall = ({ data }) => {
   //Tạo state nhận api voucher theo id product
   //Sử dụng đối tượng để lưu voucher theo từng idProduct
   const [voucher, setVoucher] = useState({});
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
+  // const geturlIMG = (productId, filename) => {
+  //   return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
+  // };
 
   const formatPrice = (value) => {
     return value ? Number(value).toLocaleString("vi-VN") : "";
@@ -123,7 +123,7 @@ const ListItemPerMall = ({ data }) => {
               <img
                 src={
                   firstIMG
-                    ? geturlIMG(fill.product.id, firstIMG.imagename)
+                    ?  firstIMG.imagename
                     : "/images/no_img.png"
                 }
                 style={{ width: "100%", height: "150px" }}

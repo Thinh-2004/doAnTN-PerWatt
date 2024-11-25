@@ -18,17 +18,6 @@ const OrderDetail = () => {
 
   tailspin.register();
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-  const getAvtUser = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
-
-  const geturlIMGDetail = (productDetailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
-  };
-
   const load = async () => {
     try {
       const res = await axios.get(`/orderDetail/${id}`);
@@ -199,11 +188,7 @@ const OrderDetail = () => {
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">
                       <img
-                        src={getAvtUser(
-                          store.user.id,
-                          store.user.avatar,
-                          store.id
-                        )}
+                        src={store.user.avatar}
                         id="imgShop"
                         className="mx-2 object-fit-cover"
                         style={{
@@ -242,14 +227,8 @@ const OrderDetail = () => {
                               orderDetail &&
                               orderDetail.productDetail &&
                               orderDetail.productDetail.imagedetail
-                                ? geturlIMGDetail(
-                                    orderDetail.productDetail.id,
-                                    orderDetail.productDetail.imagedetail
-                                  )
-                                : geturlIMG(
-                                    orderDetail.productDetail.product.id,
-                                    firstIMG.imagename
-                                  )
+                                ? orderDetail.productDetail.imagedetail
+                                : firstIMG.imagename
                             }
                             alt="Product"
                             style={{

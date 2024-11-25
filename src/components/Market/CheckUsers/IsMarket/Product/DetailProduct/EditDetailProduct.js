@@ -250,11 +250,21 @@ const EditDetailProduct = ({
 
       try {
         if (editingIndex !== null) {
+          const idToast = toast.loading("Vui lòng chờ");
           await axios.put(`/detailProduct/${editingIndex}`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
+          setTimeout(() => {
+            toast.update(idToast, {
+              render: "Cập nhật phân loại thành công",
+              type: "success",
+              isLoading: false,
+              closeButton: true,
+              autoClose: 5000,
+            });
+          }, 500);
           loadData();
-          setImageEdit("");
+          // setImageEdit("");
           setEditingIndex(null);
           if (isHiddenDetailPro) {
             setIsHiddenDetailPro(true);
@@ -265,12 +275,21 @@ const EditDetailProduct = ({
           }
           toast.success("Cập nhật dữ liệu thành công");
         } else {
+          const idToast = toast.loading("Vui lòng chờ");
           const res = await axios.post("/detailProduct", formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
+          setTimeout(() => {
+            toast.update(idToast, {
+              render: "Thêm phân loại thành công",
+              type: "success",
+              isLoading: false,
+              closeButton: true,
+              autoClose: 5000,
+            });
+          }, 500);
           setFillData((prevData) => [...prevData, res.data]);
           loadData();
-          toast.success("Lưu dữ liệu thành công");
         }
         // Reset form
         setNewTemporaryData({
@@ -364,9 +383,18 @@ const EditDetailProduct = ({
 
   const handleDelete = async (id) => {
     try {
+      const idToast = toast.loading("Vui lòng chờ");
       await axios.delete(`/detailProduct/${id}`);
       setFillData((prevData) => prevData.filter((item) => item.id !== id));
-      toast.success("Xóa dữ liệu thành công");
+      setTimeout(() => {
+        toast.update(idToast, {
+          render: "Xóa phân loại thành công",
+          type: "success",
+          isLoading: false,
+          closeButton: true,
+          autoClose: 5000,
+        });
+      }, 500);
       loadData();
     } catch (error) {
       console.error(error);
@@ -388,7 +416,10 @@ const EditDetailProduct = ({
 
   useEffect(() => {
     // Chỉ cập nhật state nếu giá trị thay đổi
-    if (fillData.length > 1 || (fillData[0]?.namedetail !== null && fillData[0]?.imagedetail !== null) ) {
+    if (
+      fillData.length > 1 ||
+      (fillData[0]?.namedetail !== null && fillData[0]?.imagedetail !== null)
+    ) {
       setIsHiddenDetailPro(true);
       CountData(2);
     } else {
@@ -469,7 +500,7 @@ const EditDetailProduct = ({
                   <div>
                     <div htmlFor="">Ảnh được chỉnh sửa</div>
                     <img
-                      src={geturlIMG(editingIndex, imageEdit)}
+                      src={imageEdit}
                       alt="Ảnh xem edit"
                       style={{ width: "100px", height: "100px" }}
                       className="img-fluid rounded-3"
@@ -505,7 +536,7 @@ const EditDetailProduct = ({
                           <TableRow key={fill.id}>
                             <TableCell align="center">
                               <img
-                                src={geturlIMG(fill.id, fill.imagedetail)}
+                                src={fill.imagedetail}
                                 alt="Hình ảnh"
                                 style={{ width: "100px", height: "100px" }}
                                 className="img-fluid rounded-3"

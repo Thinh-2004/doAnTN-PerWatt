@@ -36,9 +36,6 @@ const ProfileShop = () => {
   });
   const [previewAvatar, setPreviewAvatar] = useState("");
 
-  const geturlIMG = (storeId, filename) => {
-    return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
-  };
 
   //Satet lữu dữ liệu của formSelectAddress
   const [dataAddress, setDataAddress] = useState("");
@@ -337,7 +334,7 @@ const ProfileShop = () => {
                   <img
                     src={
                       previewAvatar ||
-                      geturlIMG(idStore, dataStore.imgbackgound)
+                      dataStore.imgbackgound
                     }
                     alt="Logo shop"
                     id="img-background"

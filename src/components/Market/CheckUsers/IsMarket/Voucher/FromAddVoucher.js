@@ -40,12 +40,7 @@ function AddVoucherForm() {
   };
   //checkcombobox null
   const [checkName, setCheckName] = useState("");
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-  const geturlImgDetailProduct = (detailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
-  };
+
   ///
   const dateNow = dayjs();
   const validate = () => {
@@ -364,7 +359,7 @@ function AddVoucherForm() {
                   <MenuItem key={product.id} value={product.id}>
                     <Box display="flex" alignItems="center">
                       <img
-                        src={geturlIMG(product.id, images.imagename)}
+                        src={images.imagename}
                         style={{ width: "40px", aspectRatio: "1/1" }}
                         alt=""
                       />
@@ -466,10 +461,7 @@ function AddVoucherForm() {
                       />
                       <img
                         style={{ width: "40px", aspectRatio: "1/1" }}
-                        src={geturlImgDetailProduct(
-                          option.id,
-                          option.imagedetail
-                        )}
+                        src={option.imagedetail}
                         alt=""
                       />
                       &nbsp;

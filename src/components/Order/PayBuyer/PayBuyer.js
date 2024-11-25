@@ -46,16 +46,6 @@ const PayBuyer = () => {
     ? JSON.parse(localStorage.getItem("user"))
     : null;
 
-  const geturlIMG = (productId, filename) =>
-    `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-
-  const getAvtUser = (idUser, filename) =>
-    `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-
-  const geturlIMGDetail = (productDetailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
-  };
-
   const fetchWallet = async () => {
     try {
       const resUser = await axios.get(`wallet/${user.id}`);
@@ -693,11 +683,7 @@ const PayBuyer = () => {
                 >
                   <div className="d-flex align-items-center">
                     <img
-                      src={getAvtUser(
-                        store.user.id,
-                        store.user.avatar,
-                        store.id
-                      )}
+                      src={store.user.avatar}
                       id="imgShop"
                       className="mx-2 object-fit-cover"
                       style={{
@@ -726,14 +712,8 @@ const PayBuyer = () => {
                               cart &&
                               cart.productDetail &&
                               cart.productDetail.imagedetail
-                                ? geturlIMGDetail(
-                                    cart.productDetail.id,
-                                    cart.productDetail.imagedetail
-                                  )
-                                : geturlIMG(
-                                    cart.productDetail.product.id,
-                                    firstIMG.imagename
-                                  )
+                                ? cart.productDetail.imagedetail
+                                : firstIMG.imagename
                             }
                             alt="Product"
                             style={{
@@ -885,7 +865,7 @@ const PayBuyer = () => {
 
                   <div className="col-lg-11 col-md-12">
                     <div className="d-flex justify-content-between mt-3">
-                      <FormControl size="small" sx={{width : "30%"}}>
+                      <FormControl size="small" sx={{ width: "30%" }}>
                         <InputLabel id="address-select-label">
                           Voucher
                         </InputLabel>
@@ -904,10 +884,10 @@ const PayBuyer = () => {
                             </MenuItem>
                           ) : (
                             voucher.map((shipping) => (
-                            <MenuItem key={shipping.id} value={shipping.id}>
-                              {shipping.voucher.vouchername}
-                            </MenuItem>
-                          ))
+                              <MenuItem key={shipping.id} value={shipping.id}>
+                                {shipping.voucher.vouchername}
+                              </MenuItem>
+                            ))
                           )}
                         </Select>
                       </FormControl>

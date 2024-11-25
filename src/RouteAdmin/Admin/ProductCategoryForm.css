@@ -1,0 +1,124 @@
+/* General container styling */
+.product-category-form {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  /* background-color: #ffffff; */
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading styling */
+.product-category-form h2 {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  /* color: #333333; */
+}
+
+/* Button styling */
+.product-category-form button {
+  margin-bottom: 10px;
+}
+
+.product-category-form .ant-btn-primary {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
+
+.product-category-form .ant-btn-primary:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
+}
+
+/* Search input styling */
+.product-category-form .ant-input-search {
+  margin: 20px 0;
+  width: 100%;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+/* Table styling */
+.product-category-form .ant-table {
+  background-color: #f9f9f9;
+}
+
+.product-category-form .ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: bold;
+  text-align: center;
+}
+
+.product-category-form .ant-table-tbody > tr > td {
+  text-align: center;
+}
+
+.product-category-form .ant-table img {
+  border-radius: 4px;
+}
+
+/* Modal form styling */
+.product-category-form .ant-modal-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.product-category-form .ant-modal-footer {
+  text-align: center;
+}
+
+.product-category-form .ant-modal .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.product-category-form .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.product-category-form .ant-upload-list-picture .ant-upload-list-item {
+  max-height: 60px;
+}
+
+.product-category-form .ant-input-number {
+  width: 100%;
+}
+
+/* Image preview styling */
+.product-category-form img {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.product-category-form img:hover {
+  transform: scale(1.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .product-category-form {
+    padding: 15px;
+  }
+
+  .product-category-form h2 {
+    font-size: 20px;
+  }
+
+  .product-category-form .ant-input-search {
+    max-width: 100%;
+  }
+
+  .product-category-form .ant-table-thead > tr > th,
+  .product-category-form .ant-table-tbody > tr > td {
+    font-size: 12px;
+  }
+
+  .product-category-form .ant-modal .ant-form-item {
+    margin-bottom: 12px;
+  }
+}

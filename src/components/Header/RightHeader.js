@@ -30,9 +30,7 @@ import RoofingIcon from "@mui/icons-material/Roofing";
 
 const RightHeader = ({ reloadCartItems }) => {
   const changeLink = useNavigate();
-  const getUrlIMG = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
+
 
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
@@ -588,7 +586,7 @@ const RightHeader = ({ reloadCartItems }) => {
         matchAdmin ? (
           <div className="align-content-center">
             <img
-              src={getUrlIMG(user.id, user.avatar)}
+              src={user.avatar}
               alt=""
               className="rounded-circle img-fluid"
               style={{ width: "30px", aspectRatio: "1/1" }}
@@ -616,7 +614,7 @@ const RightHeader = ({ reloadCartItems }) => {
               }}
             >
               <img
-                src={getUrlIMG(user.id, user.avatar)}
+                src={ user.avatar}
                 alt=""
                 className="rounded-circle img-fluid"
                 style={{ width: "30px", height: "30px" }}
@@ -668,7 +666,7 @@ const RightHeader = ({ reloadCartItems }) => {
               <MenuItem onClick={handleCloseMenuUser}>
                 <Link className="text-dark " to={"/user"}>
                   <img
-                    src={getUrlIMG(user.id, user.avatar)}
+                    src={ user.avatar}
                     alt=""
                     className="rounded-circle img-fluid"
                     style={{ width: "20px", height: "20px" }}

@@ -32,13 +32,25 @@ const Login = () => {
     }
   };
 
-  const saveTimeNow = () => {
-    const loginTime = new Date().getTime(); //Lấy time hiện tại đăng nhập
-    localStorage.setItem("loginTime", loginTime); // lưu vào localStorage
-  };
+  // const detectDevTools = () => {
+  //   const threshold = 160;
+  //   const isDevToolsOpen =
+  //     window.outerWidth - window.innerWidth > threshold ||
+  //     window.outerHeight - window.innerHeight > threshold;
+  //   return isDevToolsOpen;
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Kiểm tra nếu Developer Tools đang mở
+    // if (detectDevTools()) {
+    //   toast.error("Vui lòng tắt Developer Tools để tiếp tục.", {
+    //     autoClose: 3000,
+    //     closeButton: true,
+    //   });
+    //   return; // Không cho phép tiếp tục gọi API
+    // }
 
     if (validate()) {
       const idToast = toast.loading("Vui lòng chờ...");
@@ -58,9 +70,7 @@ const Login = () => {
           avatar: resUserInfo.data.avatar,
         };
         localStorage.setItem("user", JSON.stringify(userInfo));
-        searchStoreByidUser(userInfo.id)
-        //Lưu time khi login
-        saveTimeNow();
+        searchStoreByidUser(userInfo.id);
         setTimeout(() => {
           toast.update(idToast, {
             render: "Đăng nhập thành công",
@@ -79,8 +89,7 @@ const Login = () => {
       } catch (error) {
         if (error.status === 401) {
           toast.update(idToast, {
-            render:
-              "Thông tin tài khoản hoặc mật khẩu không chính xác" ,
+            render: "Thông tin tài khoản hoặc mật khẩu không chính xác",
             type: "error",
             isLoading: false,
             autoClose: 5000,
@@ -144,9 +153,7 @@ const Login = () => {
         avatar: resUserInfo.data.avatar,
       };
       localStorage.setItem("user", JSON.stringify(userInfo));
-      searchStoreByidUser(userInfo.id)
-      //Lưu time khi login
-      saveTimeNow();
+      searchStoreByidUser(userInfo.id);
       setTimeout(() => {
         toast.update(idToast, {
           render: "Đăng nhập thành công",

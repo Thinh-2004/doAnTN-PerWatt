@@ -33,9 +33,7 @@ const Store = () => {
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
-  const getUrlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
+
   // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
   const updateItemsPerPage = () => {
     const width = window.innerWidth;
@@ -78,13 +76,6 @@ const Store = () => {
       window.removeEventListener("resize", updateItemsPerPage);
     };
   }, []);
-
-  const geturlBgStore = (storeId, filename) => {
-    return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
-  };
-  const geturlAvtUser = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
 
   const loadData = async () => {
     try {
@@ -194,8 +185,10 @@ const Store = () => {
   };
 
   useEffect(() => {
-    check();
-  }, [user.id]);
+    if (user) {
+      check();
+    }
+  }, [user]);
 
   useEffect(() => {
     // Hàm để lấy danh sách vouchers từ cửa hàng
@@ -246,13 +239,13 @@ const Store = () => {
       >
         <div className="position-relative">
           <img
-            src={geturlBgStore(fill.id, fill.imgbackgound)}
+            src={fill.imgbackgound}
             alt=""
             id="background-img-filter"
           />
           <div className="container-lg position-absolute top-50 start-50 translate-middle">
             <img
-              src={geturlBgStore(fill.id, fill.imgbackgound)}
+              src={fill.imgbackgound}
               alt=""
               className="rounded-4"
               id="background-img"
@@ -266,7 +259,7 @@ const Store = () => {
                 <img
                   src={
                     fill && fill.user && fill.user.avatar
-                      ? geturlAvtUser(fill.user.id, fill.user.avatar)
+                      ?  fill.user.avatar
                       : null
                   }
                   alt=""
@@ -421,10 +414,9 @@ const Store = () => {
                           {voucher.vouchername}
                         </Typography>
                         <img
-                          src={getUrlIMG(
-                            voucher.productDetail.product.id,
+                          src={
                             voucher.productDetail.product.images[0].imagename
-                          )}
+                          }
                           alt=""
                           id="img-product-voucher"
                           className="mb-2 mt-2"

@@ -45,16 +45,6 @@ const Cart = () => {
 
   tailspin.register();
 
-  const geturlIMG = (productId, filename) =>
-    `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-
-  const getAvtUser = (idUser, filename) =>
-    `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-
-  const geturlIMGDetail = (productDetailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
-  };
-
   const groupByStore = (products) => {
     return products.reduce((groups, product) => {
       const store = product?.productDetail?.product?.store;
@@ -466,11 +456,7 @@ const Cart = () => {
 
                             <Link to={`/pageStore/${store.slug}`}>
                               <img
-                                src={getAvtUser(
-                                  store.user.id,
-                                  store.user.avatar,
-                                  store.id
-                                )}
+                                src={store.user.avatar}
                                 id="imgShop"
                                 className="mx-2 object-fit-cover"
                                 style={{
@@ -555,14 +541,8 @@ const Cart = () => {
                                       cart &&
                                       cart.productDetail &&
                                       cart.productDetail.imagedetail
-                                        ? geturlIMGDetail(
-                                            cart.productDetail.id,
-                                            cart.productDetail.imagedetail
-                                          )
-                                        : geturlIMG(
-                                            cart.productDetail.product.id,
-                                            firstIMG.imagename
-                                          )
+                                        ? cart.productDetail.imagedetail
+                                        : firstIMG.imagename
                                     }
                                     alt="Product"
                                     style={{
@@ -703,10 +683,9 @@ const Cart = () => {
                                                           >
                                                             <img
                                                               className="rounded-3"
-                                                              src={geturlIMGDetail(
-                                                                detail.id,
+                                                              src={
                                                                 detail.imagedetail
-                                                              )}
+                                                              }
                                                               alt={
                                                                 detail.namedetail
                                                               }

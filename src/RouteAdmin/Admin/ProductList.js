@@ -111,8 +111,8 @@ const ProductList = () => {
         const productData = response.data.map((product) => {
           const productName = product.ProductName;
           const imageUrl = product.ImageNameDetail
-            ? `http://localhost:8080/files/detailProduct/${product.ProductDetailID}/${product.ImageNameDetail}`
-            : `http://localhost:8080/files/product-images/${product.ProductID}/${product.ProductImage}`;
+            ? product.ImageNameDetail
+            : product.ProductImage;
 
           return {
             imageUrl: imageUrl,

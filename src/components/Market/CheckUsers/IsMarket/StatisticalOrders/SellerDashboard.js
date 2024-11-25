@@ -7,6 +7,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./SellerDashboard.css";
 import { ThemeModeContext } from "../../../../ThemeMode/ThemeModeProvider";
+import { Box, Card, CardContent } from "@mui/material";
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
@@ -70,10 +71,10 @@ const fetchProductData = async (
         return "";
       };
 
-      const productName = product.nameDetail || product.productName;
+      const productName = product.productName;
       const productImage = product.imageNameDetail
-        ? `http://localhost:8080/files/detailProduct/${product.productDetailId}/${product.imageNameDetail}`
-        : `http://localhost:8080/files/product-images/${product.productId}/${product.productImage}`;
+        ? product.imageNameDetail
+        : product.productImage;
 
       return {
         id: product.productId,
@@ -124,7 +125,7 @@ const fetchChartData = async (
 
     // Gọi API để lấy dữ liệu biểu đồ doanh thu theo năm (hoặc theo ngày/quý nếu có lọc)
     const revenueResponse = await axios.get(
-      `/revenue/${idStore}?period=year${dateQuery}`
+      `http://localhost:8080/revenue/${idStore}?period=year${dateQuery}`
     );
     setRevenueData(
       revenueResponse.data.map((item) => ({
@@ -135,12 +136,15 @@ const fetchChartData = async (
 
     // Gọi API để lấy dữ liệu biểu đồ dạng bánh (pie chart)
     const pieChartResponse = await axios.get(
-      `/pie-chart/${idStore}${dateQuery}`
+      `http://localhost:8080/pie-chart/${idStore}${dateQuery}`
     );
     setPieChartData(pieChartResponse.data);
 
     // Gọi API để lấy dữ liệu biểu đồ kết hợp (mixed chart)
-    const response = await axios.get(`/mixed-chart/${idStore}${dateQuery}`);
+    const response = await axios.get(
+      `http://localhost:8080/mixed-chart/${idStore}${dateQuery}`
+    );
+
     // Nhóm dữ liệu theo tháng với định dạng MM-yyyy
     const groupedData = response.data.reduce((acc, item) => {
       const {
@@ -156,7 +160,9 @@ const fetchChartData = async (
       // Chuyển đổi tháng sang định dạng MM-yyyy
       const formattedMonth =
         month.substring(5, 7) + "-" + month.substring(0, 4); // Lấy MM-yyyy từ yyyy-MM-dd
-
+      //
+      const fullDate = new Date(month);
+      //
       // Kiểm tra và lưu lại nhóm dữ liệu cho mỗi tháng
       if (!acc[formattedMonth]) {
         acc[formattedMonth] = {
@@ -166,8 +172,10 @@ const fetchChartData = async (
           totalQuantity: 0,
           totalProductRevenue: 0,
           details: [],
+          orderDate: fullDate, // Lưu lại ngày đặt
         };
       }
+      //
 
       // Cộng dồn dữ liệu cho mỗi tháng
       acc[formattedMonth].revenue += revenue;
@@ -175,7 +183,7 @@ const fetchChartData = async (
       acc[formattedMonth].totalQuantity += totalQuantity;
       acc[formattedMonth].totalProductRevenue += totalProductRevenue;
 
-      // Thêm chi tiết sản phẩm vào danh sách của tháng
+      // Thêm thông tin chi tiết sản phẩm vào mảng details của tháng tương ứng
       acc[formattedMonth].details.push({
         productDetailName: productDetailName || productName, // Dùng productName nếu productDetailName không có
         productName,
@@ -186,10 +194,12 @@ const fetchChartData = async (
         productDetailId: item.productDetailId,
         productId: item.productId,
         orderDetailId: item.orderDetailId,
+        orderDate: fullDate, // Lưu lại ngày đặt cho mỗi chi tiết sản phẩm
       });
 
       return acc;
     }, {});
+    //
 
     // Chuyển đổi dữ liệu từ object sang mảng
     const chartData = Object.values(groupedData);
@@ -541,7 +551,10 @@ const SellerDashboard = () => {
   };
 
   return (
-    <div className="sellerDashboardClass">
+    <Box
+      sx={{ backgroundColor: "backgroundElement.children" }}
+      className="sellerDashboardClass"
+    >
       <div className="header">
         <div className="mb-6">
           <h2 className="text-xl font-semibold">
@@ -684,17 +697,21 @@ const SellerDashboard = () => {
         ) : (
           <Slider {...sliderSettings}>
             {topProducts.map((product) => (
-              <div key={product.id} className="productCardClass">
-                <img
-                  src={product.imgSrc}
-                  alt={product.name}
-                  className="productImageClass"
-                />
-                <h3 className="productNameClass">{product.name}</h3>
-                <p className="productPriceClass">{product.price}</p>
-                <p className="productSoldClass">Đã bán: {product.sold}</p>
-                <p className="productRatingClass">{product.rating}</p>
-              </div>
+              <Card>
+                <CardContent key={product.id} className="">
+                  <img
+                    src={product.imgSrc}
+                    alt={product.name}
+                    className="productImageClass"
+                  />
+                  <h3 className="productNameClass">{product.name}</h3>
+                  <p className="productPriceClass text-danger">
+                    {product.price}
+                  </p>
+                  <p className="productSoldClass">Đã bán: {product.sold}</p>
+                  <p className="productRatingClass">{product.rating}</p>
+                </CardContent>
+              </Card>
             ))}
           </Slider>
         )}
@@ -742,7 +759,7 @@ const SellerDashboard = () => {
           rowKey="orderDetailId"
         />
       </Modal>
-    </div>
+    </Box>
   );
 };
 
