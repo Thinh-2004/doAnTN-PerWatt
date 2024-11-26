@@ -41,7 +41,7 @@ const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
               : "https://via.placeholder.com/100"; // Fallback image if both are missing
 
             acc.push({
-              id: product.productId,
+              id: product.productDetailId,
               name: product.nameDetail || product.productName, // Use nameDetail or fallback to productName
               imgSrc, // Image based on imageDetail or imageName
               sales: product.soldDetail,
@@ -74,14 +74,13 @@ const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
     fetchProducts();
   }, [idStore]);
 
-  const handleSelectProduct = (id) => {
+  const handleSelectProduct = (productDetailId) => {
     setSelectedProducts((prevSelected) =>
-      prevSelected.includes(id)
-        ? prevSelected.filter((productId) => productId !== id)
-        : [...prevSelected, id]
+      prevSelected.includes(productDetailId)  // Cập nhật từ 'id' thành 'productDetailId'
+        ? prevSelected.filter((productId) => productId !== productDetailId) // Cập nhật từ 'id' thành 'productDetailId'
+        : [...prevSelected, productDetailId] // Cập nhật từ 'id' thành 'productDetailId'
     );
   };
-
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
