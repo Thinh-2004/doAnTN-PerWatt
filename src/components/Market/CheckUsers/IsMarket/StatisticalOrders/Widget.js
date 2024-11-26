@@ -154,7 +154,7 @@ const Widget = () => {
 
     try {
       const response = await axios.post(
-        "/api/voucherAdminDetails/create",
+        "api/voucherAdminDetails/create",
         dataToSave,
         {
           headers: {
@@ -305,12 +305,7 @@ const Widget = () => {
         </button>
       </div>
 
-      {savedProducts.length > 0 && (
-        <BasicInfoComponent
-          savedProducts={savedProducts}
-          idVoucherAdmin={idVoucherAdmin.id}
-        />
-      )}
+      <BasicInfoComponent />
 
       {showChooseProduct && (
         <div className="chart-container mt-6 bg-secondary p-4 rounded-lg">
