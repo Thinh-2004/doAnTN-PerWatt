@@ -73,11 +73,7 @@ const Order = () => {
     if (cartIds) {
       (async () => {
         try {
-          const response = await axios.get(`/cart?id=${cartIds}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
-            },
-          });
+          const response = await axios.get(`/cart?id=${cartIds}`);
           setProducts(response.data);
         } catch (error) {
           console.log(error);
@@ -108,19 +104,10 @@ const Order = () => {
         }));
         //00 = thành công
         if (resultCode === "0") {
-          console.log("Calling API...");
-          const res = await axios.post(
-            "/createMoMoOrder",
-            {
-              order,
-              orderDetails,
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
-              },
-            }
-          );
+          const res = await axios.post("/createMoMoOrder", {
+            order,
+            orderDetails,
+          });
           console.log(res.data);
         } else {
           return;
@@ -138,11 +125,7 @@ const Order = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get(`orderFill/${user.id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
-          },
-        });
+        const res = await axios.get(`orderFill/${user.id}`);
         setFill(res.data);
 
         res.data.forEach((order) => {
@@ -173,20 +156,10 @@ const Order = () => {
           label: "Có",
           onClick: async () => {
             try {
-              await axios.put(
-                `/order/${orderId}/status`,
-                {
-                  status: "Hủy",
-                  note: "Đơn hàng được huỷ bởi người dùng",
-                },
-                {
-                  headers: {
-                    Authorization: `Bearer ${localStorage.getItem(
-                      "hadfjkdshf"
-                    )}`,
-                  },
-                }
-              );
+              await axios.put(`/order/${orderId}/status`, {
+                status: "Hủy",
+                note: "Đơn hàng được huỷ bởi người dùng",
+              });
               setFill((prevFill) =>
                 prevFill.map((order) =>
                   order.id === orderId
@@ -208,40 +181,42 @@ const Order = () => {
     });
   };
 
-  const handleMarkAsReceived = async (orderId) => {
-    const now = new Date().toISOString();
-    try {
-      await axios.put(
-        `/order/${orderId}/status`,
+  const handleMarkAsReceived = (orderId) => {
+    confirmAlert({
+      title: "Xác nhận nhận hàng",
+      message: "Bạn có chắc chắn muốn xác nhận đã nhận được hàng?",
+      buttons: [
         {
-          status: "Hoàn thành",
-          receivedate: now,
+          label: "Có",
+          onClick: async () => {
+            const now = new Date().toISOString();
+            try {
+              await axios.put(`/order/${orderId}/status`, {
+                status: "Hoàn thành",
+                receivedate: now,
+              });
+              setFill((prevFill) =>
+                prevFill.map((order) =>
+                  order.id === orderId
+                    ? { ...order, orderstatus: "Hoàn thành", receivedate: now }
+                    : order
+                )
+              );
+            } catch (error) {
+              console.log(error);
+            }
+          },
         },
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
-          },
-        }
-      );
-      setFill((prevFill) =>
-        prevFill.map((order) =>
-          order.id === orderId
-            ? { ...order, orderstatus: "Hoàn thành", receivedate: now }
-            : order
-        )
-      );
-    } catch (error) {
-      console.log(error);
-    }
+          label: "Không",
+        },
+      ],
+    });
   };
 
   const fillOrderDetailbyOrderID = async (orderId) => {
     try {
-      const res = await axios.get(`/orderDetail/${orderId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
-        },
-      });
+      const res = await axios.get(`/orderDetail/${orderId}`);
       setOrderDetails((prevOrderDetails) => ({
         ...prevOrderDetails,
         [orderId]: res.data,
@@ -281,10 +256,12 @@ const Order = () => {
         sx={{ backgroundColor: "backgroundElement.children" }}
       >
         <CardContent className="">
-          <div className="d-flex align-items-center mb-1">
+          <div className="d-flex align-items-center mb-3">
             <Link to={`/pageStore/${order.store.slug}`}>
               <img
-                src={order.store.user.avatar}
+                src={
+                  order.store.user.avatar
+                }
                 id="imgShop"
                 className="mx-2 object-fit-cover"
                 style={{
@@ -297,7 +274,7 @@ const Order = () => {
                 alt=""
               />
             </Link>
-            <h5 id="nameShop" className="mt-1">
+            <h5 id="nameShop" className="mt-3">
               <Link
                 className="inherit-text"
                 to={`/pageStore/${order.store.slug}`}
@@ -320,7 +297,6 @@ const Order = () => {
               {order.paymentmethod.type}
             </div>
           </div>
-
           {orderDetails[order.id] &&
             orderDetails[order.id].slice(0, 2).map((orderDetail) => {
               const firstIMG = orderDetail.productDetail.product.images?.[0];
@@ -330,8 +306,12 @@ const Order = () => {
                     <img
                       src={
                         orderDetail.productDetail.imagedetail
-                          ? orderDetail.productDetail.imagedetail
-                          : firstIMG?.imagename
+                          ? 
+                              orderDetail.productDetail.imagedetail
+                            
+                          :
+                              firstIMG?.imagename
+                            
                       }
                       alt=""
                       style={{
@@ -363,14 +343,34 @@ const Order = () => {
                 </div>
               );
             })}
-          {orderDetails[order.id] && orderDetails[order.id].length > 3 && (
+          <div className="d-flex justify-content-end">
+            <div className="al end">
+              Thành tiền: {formatPrice(order.totalamount) + " VNĐ"}
+            </div>
+          </div>
+          {orderDetails[order.id] && orderDetails[order.id].length > 2 && (
             <Button href={`/orderDetail/${order.id}`}>
               + {orderDetails[order.id].length - 2} sản phẩm
             </Button>
           )}
           <hr />
           <div className="d-flex justify-content-between align-items-center">
-            <div>{order.note}</div>
+            {order.note ? (
+              <div
+                style={{
+                  padding: "5px",
+                  backgroundColor: "rgb(255, 184, 184)",
+                  color: "rgb(198, 0, 0)",
+                  borderRadius: "10px",
+                  display: "inline-block",
+                }}
+              >
+                {order.note}
+              </div>
+            ) : (
+              <div></div>
+            )}
+
             <div className="d-flex align-items-center">
               <div className="me-3">
                 {order.orderstatus === "Chờ nhận hàng" ? (
@@ -398,24 +398,9 @@ const Order = () => {
                           )
                         )
                       ).map((productId) => {
-                        const orderDetail = orderDetails[order.id].find(
+                        orderDetails[order.id].find(
                           (detail) =>
                             detail.productDetail.product.id === productId
-                        );
-                        return (
-                          <Button
-                            className="ms-3"
-                            key={orderDetail?.productDetail?.product?.slug}
-                            href={`/detailProduct/${orderDetail?.productDetail?.product?.slug}`}
-                            style={{
-                              width: "auto",
-                              backgroundColor: "rgb(255, 184, 184)",
-                              color: "rgb(198, 0, 0)",
-                            }}
-                            disableElevation
-                          >
-                            Mua lại
-                          </Button>
                         );
                       })
                     ) : (
@@ -472,20 +457,6 @@ const Order = () => {
         className="col-12 col-md-12 col-lg-10 offset-lg-1"
         style={{ transition: "0.5s" }}
       >
-        {/* <Button
-          variant="contained"
-          component={Link}
-          to="/wallet/buyer"
-          style={{
-            width: "auto",
-            backgroundColor: "rgb(218, 255, 180)",
-            color: "rgb(45, 91, 0)",
-          }}
-          disableElevation
-        >
-          <i class="bi bi-wallet2"></i>
-        </Button> */}
-
         <Box
           sx={{ width: "100%", backgroundColor: "backgroundElement.children" }}
           className="rounded-3"

@@ -15,8 +15,7 @@ import Store from "../components/Body/Store/NavStore";
 import Order from "../components/Order/OrderBuyer/OrderBuyer";
 import OrderDetail from "../components/Order/OrderDetail/OrderDetail";
 import PayBuyer from "../components/Order/PayBuyer/PayBuyer";
-import ShippingCreate from "../components/Shipping/ShippingCreate";
-import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification";
+
 import Successful from "../components/Order/Successful/Successful";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import FindMoreProduct from "../components/Body/Home/FindMoreProduct/FindMoreProduct";
@@ -25,6 +24,10 @@ import Wallet from "../components/Wallet/Wallet";
 import Transaction from "../components/Wallet/Transaction";
 import NotFound from "../NotFound";
 import SecurityRoutes from "../components/SecurityRoutes/SecurityRoutes";
+import PinCode from "../components/Wallet/PinCode";
+import ChangePinCode from "../components/Wallet/ChangePinCode";
+import BuyerNotification from "../components/Notification&Message&Comment/Notification/BuyerNotification";
+import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification";
 
 const RouteUsers = (props) => {
   return (
@@ -97,14 +100,6 @@ const RouteUsers = (props) => {
         }
       />
       <Route
-        path="/shippingCreate"
-        element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
-            <ShippingCreate />
-          </SecurityRoutes>
-        }
-      />
-      <Route
         path="/orderCreateVnPay"
         element={
           <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
@@ -118,6 +113,22 @@ const RouteUsers = (props) => {
         element={
           <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
             <NotificationCard />
+          </SecurityRoutes>
+        }
+      ></Route>
+      <Route
+        path="/profileMarket/notifications"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <NotificationCard />
+          </SecurityRoutes>
+        }
+      ></Route>
+      <Route
+        path="/buyerNotification"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <BuyerNotification />
           </SecurityRoutes>
         }
       ></Route>
@@ -135,6 +146,23 @@ const RouteUsers = (props) => {
         element={
           <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
             <Transaction />
+          </SecurityRoutes>
+        }
+      />
+
+      <Route
+        path="/pinCode"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <PinCode />
+          </SecurityRoutes>
+        }
+      />
+      <Route
+        path="/changePinCode"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <ChangePinCode />
           </SecurityRoutes>
         }
       />

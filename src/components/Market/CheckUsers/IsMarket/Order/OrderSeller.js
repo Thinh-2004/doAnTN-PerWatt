@@ -253,7 +253,7 @@ const Order = () => {
         sx={{ backgroundColor: "backgroundElement.children" }}
       >
         <CardContent className="">
-          <div className="d-flex align-items-center mb-1">
+          <div className="d-flex align-items-center mb-3">
             <img
               src={order.user.avatar}
               id="imgShop"
@@ -297,19 +297,42 @@ const Order = () => {
               return (
                 <div key={orderDetail.id}>
                   <div className="d-flex align-items-start">
-                    <img
-                      src={
-                        orderDetail.productDetail.imagedetail
-                          ? orderDetail.productDetail.imagedetail
-                          : firstIMG?.imagename
-                      }
-                      alt=""
-                      style={{
-                        width: "100px",
-                        height: "100px",
-                      }}
-                      className="rounded-3 mb-3 me-3"
-                    />
+                    <div
+                      style={{ position: "relative", display: "inline-block" }}
+                    >
+                      <img
+                        src={
+                          orderDetail.productDetail.imagedetail
+                            ? orderDetail.productDetail.imagedetail
+                            : firstIMG?.imagename
+                        }
+                        alt=""
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                        }}
+                        className="rounded-3 mb-3 me-3"
+                      />
+                      {orderDetail.status?.includes(
+                        "Đang gửi yêu cầu hoàn tiền"
+                      ) && (
+                        <span
+                          style={{
+                            position: "absolute",
+                            top: "5px",
+                            left: "5px",
+                            backgroundColor: "red",
+                            borderRadius: "50%",
+                            width: "10px",
+                            height: "10px",
+                            boxShadow: "0 0 10px 5px rgba(255, 0, 0, 0.6)", // Hiệu ứng bloom
+                            filter: "blur(1px)", // Làm mờ nhẹ để tạo cảm giác phát sáng
+                            animation: "pulse 2s infinite", // Hiệu ứng chuyển động
+                          }}
+                        ></span>
+                      )}
+                    </div>
+
                     <div className="d-flex flex-column">
                       <div>{orderDetail.productDetail.product.name}</div>
                       {orderDetail.productDetail.namedetail && (
@@ -318,7 +341,6 @@ const Order = () => {
                         </label>
                       )}
                       <div>x {orderDetail.quantity}</div>
-
                       <div>
                         Tổng:{" "}
                         <span className="text-danger">
@@ -330,11 +352,34 @@ const Order = () => {
                 </div>
               );
             })}
-          {orderDetails[order.id] && orderDetails[order.id].length > 3 && (
-            <Button href={`/profileMarket/OrderDetailSeller/${order.id}`}>
-              + {orderDetails[order.id].length - 2} sản phẩm
-            </Button>
+          <div className="d-flex justify-content-end">
+            <div className="al end">
+              Thành tiền: {formatPrice(order.totalamount) + " VNĐ"}
+            </div>
+          </div>
+          {orderDetails[order.id] && orderDetails[order.id].length > 2 && (
+            <>
+              <Button href={`/profileMarket/OrderDetailSeller/${order.id}`}>
+                + {orderDetails[order.id].length - 2} sản phẩm
+              </Button>
+              {orderDetails[order.id]
+                .slice(2) // Lấy danh sách sản phẩm từ phần tử thứ 3 trở đi
+                .some(
+                  (item) => item.status === "Đang gửi yêu cầu hoàn tiền"
+                ) && (
+                <span
+                  style={{
+                    backgroundColor: "red",
+                    borderRadius: "50%",
+                    width: "10px",
+                    height: "10px",
+                    display: "inline-block",
+                  }}
+                ></span>
+              )}
+            </>
           )}
+
           <hr />
           <div className="d-flex justify-content-between align-items-center">
             <div>Mã đơn hàng: {order.id}</div>
@@ -357,7 +402,7 @@ const Order = () => {
                       <i className="bi bi-cart-check-fill"></i>
                     </Button>
                     {/* <Button
-onClick={() => handleCancelOrder(order.id)}
+                      onClick={() => handleCancelOrder(order.id)}
                       style={{
                         width: "auto",
                         backgroundColor: "rgb(255, 184, 184)",
@@ -388,7 +433,7 @@ onClick={() => handleCancelOrder(order.id)}
                     style={{
                       width: "auto",
                       backgroundColor: "rgb(204,244,255)",
-                      color: "rgb(0,70,89)",
+color: "rgb(0,70,89)",
                     }}
                     disableElevation
                   >
@@ -462,7 +507,6 @@ onClick={() => handleCancelOrder(order.id)}
                       <Button
                         onClick={() => handleConfirmCancel(selectedOrderId)} // Xác nhận hủy đơn hàng
                         style={{
-                          height: "40px",
                           width: "auto",
                           backgroundColor: "rgb(204,244,255)",
                           color: "rgb(0,70,89)",

@@ -110,7 +110,7 @@ const Home = () => {
       try {
         const res = await axios.get(`/banners/checkShowBannerMid`);
         setCheckShowBannerMid(res.data);
-        console.log(res.data);
+        // console.log(res.data);
       } catch (error) {
         console.log(error);
       }

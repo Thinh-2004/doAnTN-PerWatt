@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import axios from "../../../../Localhost/Custumize-axios";
 import { Box } from "@mui/material";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 

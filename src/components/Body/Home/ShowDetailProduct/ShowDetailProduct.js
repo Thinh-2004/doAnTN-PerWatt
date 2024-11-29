@@ -10,6 +10,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ListImageDetailProduct from "./ListImageDetailProduct";
 import NavStore from "./NavStore";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
+import Comments from "../Comments/Comments";
 
 const DetailProduct = () => {
   const { slug } = useParams();
@@ -34,6 +35,8 @@ const DetailProduct = () => {
   //Tạo state nhận api voucher theo id product
   const [voucher, setVoucher] = useState([]);
   const [result, setResult] = useState(""); // Giá sau khi giảm
+  const [commentCount, setCommentCount] = useState([]);
+  const [ratingAvage, setRatingAvage] = useState(0);
 
   const loadProductDetail = async () => {
     try {
@@ -194,6 +197,7 @@ const DetailProduct = () => {
     setproductDetailIds(idDetail);
   };
 
+  //Render số lượng chi tiết sản phẩm khi click chọn
   useEffect(() => {
     //số lượng của sản phẩm chi tiết
     if (fillDetail.length === 1) {
@@ -208,7 +212,6 @@ const DetailProduct = () => {
     try {
       const res = await axios.get(`fillVoucherPrice/${key}`);
       setVoucher(res.data);
-      console.log(res.data);
     } catch (error) {
       console.log(error);
     }
@@ -218,6 +221,37 @@ const DetailProduct = () => {
     if (FillDetailPr) {
       loadData(FillDetailPr.id);
     }
+
+    const loadCountEvaluate = async () => {
+      try {
+        const res = await axios.get(
+          `/comment/count/evaluate/${FillDetailPr.id}`
+        );
+        setCommentCount(res.data);
+
+        // Tính số sao
+        const countRating = res.data.reduce(
+          (start, rating) => start + rating.rating,
+          0
+        );
+
+        // Tính số lượng bình luận
+        const totalComment = res.data.length;
+
+        // Kết quả trung bình số sao
+        const result = countRating / totalComment;
+
+        // Làm tròn xuống và chỉ lấy 1 chữ số sau dấu chấm
+        const finalRating = Math.floor(result * 10) / 10;
+
+        // Cập nhật giá trị vào state
+        if (finalRating > 5) setRatingAvage(5.0);
+        else setRatingAvage(finalRating);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    if (FillDetailPr) loadCountEvaluate();
   }, [FillDetailPr]);
 
   //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
@@ -361,7 +395,7 @@ const DetailProduct = () => {
                   <span htmlFor="">
                     <i className="bi bi-star-fill text-warning">
                       <label htmlFor="" className="fs-6">
-                        5.0
+                        {ratingAvage || 0}
                       </label>
                     </i>
                   </span>
@@ -370,7 +404,7 @@ const DetailProduct = () => {
                 <div className="mx-2 mt-1">
                   <span htmlFor="">
                     <strong htmlFor="">Số lượng đánh giá: </strong>
-                    <label htmlFor="">999</label>
+                    <label htmlFor="">{formatCount(commentCount.length)}</label>
                   </span>
                 </div>
                 <span className="border-end"></span>
@@ -644,17 +678,8 @@ const DetailProduct = () => {
             </span>
           </div>
         </Box>
-        <Box
-          className="row rounded-4 mt-3"
-          sx={{ backgroundColor: "backgroundElement.children" }}
-        >
-          <div className="p-3">
-            <h4>Đánh giá sản phẩm</h4>
-            <span className="p-0 m-0">
-              <hr />
-            </span>
-          </div>
-        </Box>
+        {/* Phần Comments */}
+        <Comments FillDetailPr={FillDetailPr} />
       </Container>
     </>
   );

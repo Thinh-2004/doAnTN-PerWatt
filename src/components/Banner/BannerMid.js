@@ -72,6 +72,7 @@ const Banner = () => {
                 src={midBanners[midIndex].img}
                 alt={midBanners[midIndex].bannername}
                 className="rounded-4"
+                style={{with : "100%", height : "700px"}}
                 
               />
             </Link>

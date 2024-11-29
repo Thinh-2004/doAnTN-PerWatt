@@ -28,7 +28,9 @@ const Transaction = () => {
   const walletLink =
     statusWallet === "seller"
       ? "/profileMarket/wallet/seller"
-      : user.id === 1 ? "/admin/wallet" :"/wallet/buyer";
+      : user.id === 1
+      ? "/admin/wallet"
+      : "/wallet/buyer";
 
   //Nạp
   const handlePerPay = async () => {
@@ -71,8 +73,6 @@ const Transaction = () => {
       closeModalButton.click();
     }
   };
-
-
 
   const handleDepositAmountChange = (e) => {
     const value = e.target.value.replace(/[^0-9]/g, "");
@@ -132,7 +132,6 @@ const Transaction = () => {
                       placeholder="Nhập số tiền để nạp"
                       fullWidth
                       size="small"
-
                     />
                   </div>
                 </div>
@@ -142,14 +141,14 @@ const Transaction = () => {
                 <Box sx={{ minWidth: 120 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label">
-                      Chọn ngân hàng
+                      Chọn ví
                     </InputLabel>
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       value={selectedValue}
                       onChange={handleRadioChange}
-                      label="Chọn ngân hàng"
+                      label="Chọn ví"
                     >
                       <MenuItem value="vnPay">
                         <img

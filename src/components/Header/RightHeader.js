@@ -31,15 +31,16 @@ import RoofingIcon from "@mui/icons-material/Roofing";
 const RightHeader = ({ reloadCartItems }) => {
   const changeLink = useNavigate();
 
-
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
 
   const idStore = localStorage.getItem("idStore");
+  const token = localStorage.getItem("hadfjkdshf");
 
   const [count, setCount] = useState(0);
-  const [countOrder, setCountOrder] = useState(0);
+  const [countOrderBuyer, setCountOrderBuyer] = useState(0);
+  const [countOrderSeller, setCountOrderSeller] = useState(0);
   const matchSeller = useMatch("/profileMarket/*"); //Kiểm tra đường dẫn có chứa tham số động
   const matchAdmin = useMatch("/admin/*"); //Kiểm tra đường dẫn có chứa tham số động
 
@@ -243,17 +244,55 @@ const RightHeader = ({ reloadCartItems }) => {
         console.log(error);
       }
     };
-    //Đếm thông báo
-    const countOrders = async () => {
+    //Đếm thông báo buyer
+    const fetchOrderNotificationsBuyer = async (userId) => {
       try {
-        const res = await axios.get(`checkOrder/${idStore}`);
-        setCountOrder(res.data.length);
-        // console.log(res.data.length);
+        const response = await axios.get(`/checkOrderBuyer/${userId}`);
+        const inTransitOrders =
+          response.data &&
+          response.data.filter(
+            (order) => order.orderstatus === "Đang vận chuyển"
+          );
+        const canceledOrders =
+          response.data &&
+          response.data.filter((order) => order.orderstatus === "Hủy");
+
+        const inTransitOrderCount = inTransitOrders.length;
+        const canceledOrderCount = canceledOrders.length;
+
+        setCountOrderBuyer(inTransitOrderCount + canceledOrderCount); // Total orders
       } catch (error) {
-        console.log("Error fetching new orders:", error);
+        console.log("Error fetching order notifications:", error);
       }
     };
-    countOrders(idStore);
+    //Đếm thông báo seller
+    const fetchOrderNotificationsSeller = async (idStore) => {
+      try {
+        // Gọi API lấy đơn hàng mới, đơn hàng đã giao và đơn hàng đã hủy song song
+        const [newOrdersRes, deliveredOrdersRes, canceledOrdersRes] =
+          await Promise.all([
+            axios.get(`/checkOrderSeller/${idStore}`),
+            axios.get(`/deliveredOrders/${idStore}`),
+            axios.get(`/canceledOrders/${idStore}`), // Thêm API lấy đơn hàng đã hủy
+          ]);
+
+        // Tính tổng số đơn hàng
+        const newOrderCount = newOrdersRes.data.length;
+        const deliveredOrderCount = deliveredOrdersRes.data.length;
+        const canceledOrderCount = canceledOrdersRes.data.length;
+
+        // Cập nhật tổng số đơn hàng vào state
+        setCountOrderSeller(
+          newOrderCount + deliveredOrderCount + canceledOrderCount
+        );
+      } catch (error) {
+        console.log("Lỗi khi lấy dữ liệu đơn hàng:", error);
+      }
+    };
+    if (token) {
+      if (idStore !== "undefined") fetchOrderNotificationsSeller(idStore);
+      fetchOrderNotificationsBuyer(user?.id);
+    }
     count();
   }, [user, idStore]);
 
@@ -378,13 +417,13 @@ const RightHeader = ({ reloadCartItems }) => {
               <Link
                 type="button"
                 className="btn btn-icon btn-sm  position-relative rounded-3 me-3"
-                to={"/notifications"}
+                to={"/profileMarket/notifications"}
               >
                 <Typography sx={{ color: "text.primary" }}>
                   <i className="bi bi-bell fs-4"></i>
                 </Typography>
                 <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                  {countOrder}
+                  {countOrderSeller}
                 </span>
               </Link>
             </Tooltip>
@@ -571,12 +610,15 @@ const RightHeader = ({ reloadCartItems }) => {
             <Tooltip title="Thông báo">
               <Link
                 type="button"
-                className="btn btn-icon btn-sm rounded-3 me-3"
+                className="btn btn-icon btn-sm  position-relative rounded-3 me-3"
+                to={"/buyerNotification"}
               >
                 <Typography sx={{ color: "text.primary" }}>
-                  {" "}
                   <i className="bi bi-bell fs-4"></i>
                 </Typography>
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {countOrderBuyer}
+                </span>
               </Link>
             </Tooltip>
           </>
@@ -589,7 +631,7 @@ const RightHeader = ({ reloadCartItems }) => {
               src={user.avatar}
               alt=""
               className="rounded-circle img-fluid"
-              style={{ width: "30px", aspectRatio: "1/1" }}
+              style={{ width: "30px", aspectRatio: "1/1", objectFit: "cover" }}
             />{" "}
             &nbsp;
             <span className="" style={{ fontSize: "12px" }}>
@@ -614,10 +656,10 @@ const RightHeader = ({ reloadCartItems }) => {
               }}
             >
               <img
-                src={ user.avatar}
+                src={user.avatar}
                 alt=""
                 className="rounded-circle img-fluid"
-                style={{ width: "30px", height: "30px" }}
+                style={{ width: "30px", height: "30px", objectFit: "cover" }}
               />
               &nbsp;
               <Typography variant="span" style={{ fontSize: "15px" }}>
@@ -666,10 +708,14 @@ const RightHeader = ({ reloadCartItems }) => {
               <MenuItem onClick={handleCloseMenuUser}>
                 <Link className="text-dark " to={"/user"}>
                   <img
-                    src={ user.avatar}
+                    src={user.avatar}
                     alt=""
                     className="rounded-circle img-fluid"
-                    style={{ width: "20px", height: "20px" }}
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      objectFit: "cover",
+                    }}
                   />
                   &nbsp;
                   <Typography variant="span" sx={{ color: "text.primary" }}>

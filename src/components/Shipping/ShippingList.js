@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "../../Localhost/Custumize-axios";
 import { toast } from "react-toastify";
-import { Box, Button, Card, CardContent } from "@mui/material";
+import { Button, Card, CardContent } from "@mui/material";
 import { confirmAlert } from "react-confirm-alert";
 import FormSelectAdress from "../APIAddressVN/FormSelectAdress.js";
 import TextField from "@mui/material/TextField";
+import { ThemeModeContext } from "../ThemeMode/ThemeModeProvider.js";
 
 const ShippingList = () => {
   const [shippingInfo, setShippingInfo] = useState([]);
@@ -15,14 +16,14 @@ const ShippingList = () => {
   const [newAddress, setNewAddress] = useState("");
   const [addingAddress, setAddingAddress] = useState("");
   const [resetForm, setResetForm] = useState(false);
+  const [newHomeUpdate, setNewHomeUpdate] = useState("");
+  const [newHomeAdd, setNewHomeAdd] = useState("");
+  const { mode } = useContext(ThemeModeContext);
 
   const fetchShippingInfo = async () => {
     try {
       const response = await axios.get(`/shippingInfo`, {
         params: { userId: user.id },
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
-        },
       });
       setShippingInfo(response.data);
     } catch (error) {
@@ -32,6 +33,12 @@ const ShippingList = () => {
 
   const handleReset = () => {
     setResetForm(true);
+    setNewHomeAdd("");
+    setNewHomeUpdate("");
+    setTimeout(() => {
+      setResetForm(false);
+      console.log("Reset hoàn tất!");
+    }, 1000);
   };
 
   useEffect(() => {
@@ -46,28 +53,14 @@ const ShippingList = () => {
       return;
     }
     try {
-      await axios.post(
-        `/shippingInfoCreate`,
-        {
-          address: addingAddress,
-          user: { id: user.id },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
-          },
-        }
-      );
+      await axios.post(`/shippingInfoCreate`, {
+        address: addingAddress,
+        user: { id: user.id },
+      });
 
-      handleReset();
       toast.success("Thêm địa chỉ thành công!");
       fetchShippingInfo();
-      const closeModalButton = document.querySelector(
-        '[data-bs-dismiss="modal"]'
-      );
-      if (closeModalButton) {
-        closeModalButton.click();
-      }
+      handleReset();
     } catch (error) {
       console.error("Error adding shipping information:", error);
       toast.error("Lỗi thêm địa chỉ!");
@@ -81,24 +74,18 @@ const ShippingList = () => {
     }
 
     try {
-      await axios.put(
-        `/shippingInfoUpdate/${selectedShipping.id}`,
-        {
-          ...selectedShipping,
-          address: newAddress,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
-          },
-        }
-      );
-      handleReset();
+      await axios.put(`/shippingInfoUpdate/${selectedShipping.id}`, {
+        ...selectedShipping,
+        address: newAddress,
+      });
       toast.success("Cập nhật địa chỉ thành công!");
       fetchShippingInfo();
+      handleReset();
+
       const closeModalButton = document.querySelector(
         '[data-bs-dismiss="modal"]'
       );
+
       if (closeModalButton) {
         closeModalButton.click();
       }
@@ -117,11 +104,7 @@ const ShippingList = () => {
           label: "Có",
           onClick: async () => {
             try {
-              await axios.delete(`/shippingInfoDelete/${id}`, {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
-                },
-              });
+              await axios.delete(`/shippingInfoDelete/${id}`);
               toast.success("Xóa địa chỉ thành công!");
               fetchShippingInfo();
             } catch (error) {
@@ -139,19 +122,11 @@ const ShippingList = () => {
 
   return (
     <>
-      <Box
+      <div
         className="col-12 col-md-12 col-lg-12 offset-lg-0"
-        sx={{
-          transition: "0.5s",
-        }}
+        style={{ transition: "0.5s" }}
       >
-        <Card
-          className=" rounded-4"
-          sx={{
-            backgroundColor: "backgroundElement.children",
-            transition: "0.5s",
-          }}
-        >
+        <Card className=" rounded-4" sx={{ boxShadow: "none", backgroundColor : "backgroundElement.children"}}>
           <CardContent className="">
             <h3 className="d-flex justify-content-between align-items-center">
               Danh sách địa chỉ nhận hàng
@@ -169,52 +144,52 @@ const ShippingList = () => {
               </Button>
             </h3>
             <hr />
-            <Box className="">
-              {shippingInfo.length > 0 ? (
-                shippingInfo.map((info) => (
-                  <Card className="mb-3" id="cartItem" key={info.id}>
-                    <CardContent
-                      className="d-flex justify-content-between align-items-center"
-                      sx={{ backgroundColor: "background.default" }}
-                    >
-                      <h5 className="mb-1">{info.address}</h5>
-                      <div className="button-group">
-                        <Button
-                          className="me-2"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal3"
-                          onClick={() => setSelectedShipping(info)}
-                          style={{
-                            width: "auto",
-                            backgroundColor: "rgb(255, 255, 157)",
-                            color: "rgb(100, 107, 0)",
-                          }}
-                          disableElevation
-                        >
-                          Sửa
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(info.id)}
-                          style={{
-                            width: "auto",
-                            backgroundColor: "rgb(255, 184, 184)",
-                            color: "rgb(198, 0, 0)",
-                          }}
-                          disableElevation
-                        >
-                          Xóa
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <h1>Chưa có địa chỉ nhận hàng nào.</h1>
-              )}
-            </Box>
+            {shippingInfo.length > 0 ? (
+              shippingInfo.map((info) => (
+                <Card
+                  className="mb-3"
+                  id=""
+                  // sx={{ backgroundColor: "backgroundElement.children" }}
+                  key={info.id}
+                >
+                  <CardContent className=" d-flex justify-content-between align-items-center">
+                    <h5 className="mb-1">{info.address}</h5>
+                    <div className="button-group">
+                      <Button
+                        className="me-2"
+                        data-bs-toggle="modal"
+                        data-bs-target="#exampleModal3"
+                        onClick={() => setSelectedShipping(info)}
+                        style={{
+                          width: "auto",
+                          backgroundColor: "rgb(255, 255, 157)",
+                          color: "rgb(100, 107, 0)",
+                        }}
+                        disableElevation
+                      >
+                        Sửa
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(info.id)}
+                        style={{
+                          width: "auto",
+                          backgroundColor: "rgb(255, 184, 184)",
+                          color: "rgb(198, 0, 0)",
+                        }}
+                        disableElevation
+                      >
+                        Xóa
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <h1>Chưa có địa chỉ nhận hàng nào.</h1>
+            )}
           </CardContent>
         </Card>
-      </Box>
+      </div>
 
       <div
         className="modal fade"
@@ -224,7 +199,10 @@ const ShippingList = () => {
         aria-hidden="true"
       >
         <div className="modal-dialog">
-          <div className="modal-content">
+          <div
+            className="modal-content"
+            style={{ backgroundColor: mode === "light" ? "white" : "#363535" }}
+          >
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="exampleModalLabel3">
                 Cập nhật địa chỉ nhận hàng
@@ -255,10 +233,8 @@ const ShippingList = () => {
                 label="Địa chỉ nhận hàng cũ"
                 variant="outlined"
                 value={selectedShipping ? selectedShipping.address : ""}
-                slotProps={{
-                  input: {
-                    readOnly: true,
-                  },
+                inputProps={{
+                  readOnly: true,
                 }}
               />
 
@@ -279,17 +255,41 @@ const ShippingList = () => {
                 variant="outlined"
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
-                slotProps={{
-                  input: {
-                    readOnly: true,
-                  },
+                inputProps={{
+                  readOnly: true,
                 }}
               />
 
-              <FormSelectAdress
+              {/* <FormSelectAdress
                 apiAddress={(fullAddress) => setNewAddress(fullAddress)}
                 resetForm={resetForm}
                 editFormAddress={selectedShipping.address}
+              /> */}
+
+              <FormSelectAdress
+                apiAddress={(fullAddressUpdate) => {
+                  setNewAddress(`${newHomeUpdate} ${fullAddressUpdate}`);
+                }}
+                resetForm={resetForm}
+                setNewAddress=""
+                editFormAddress={newAddress}
+              />
+
+              <TextField
+                className="mt-3"
+                size="small"
+                fullWidth
+                id="outlined-basic"
+                label="Số nhà"
+                variant="outlined"
+                value={newHomeUpdate}
+                onChange={(e) => setNewHomeUpdate(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setNewAddress(`${newHomeUpdate}, ${newAddress}`);
+                    setNewHomeUpdate(""); // Xoá input sau khi nhấn Enter
+                  }
+                }}
               />
 
               <Button
@@ -308,6 +308,7 @@ const ShippingList = () => {
             <div className="modal-footer">
               <Button
                 onClick={handleUpdate}
+                data-bs-dismiss="modal"
                 style={{
                   width: "auto",
                   backgroundColor: "rgb(204,244,255)",
@@ -330,7 +331,10 @@ const ShippingList = () => {
         aria-hidden="true"
       >
         <div className="modal-dialog">
-          <div className="modal-content">
+          <div
+            className="modal-content"
+            style={{ backgroundColor: mode === "light" ? "white" : "#363535" }}
+          >
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="exampleModalLabel2">
                 Thêm địa chỉ nhận hàng
@@ -356,21 +360,62 @@ const ShippingList = () => {
                 size="small"
                 fullWidth
                 id="outlined-basic"
-                label="Nhập địa chỉ nhận hàng"
+                label="Địa chỉ nhận hàng"
                 variant="outlined"
                 value={addingAddress}
                 onChange={(e) => setAddingAddress(e.target.value)}
-                slotProps={{
-                  input: {
-                    readOnly: true,
-                  },
+                inputProps={{
+                  readOnly: true,
                 }}
               />
 
-              <FormSelectAdress
+              {/* <FormSelectAdress
                 apiAddress={(fullAddress) => setAddingAddress(fullAddress)}
                 resetForm={resetForm}
                 editFormAddress={addingAddress}
+              /> */}
+
+              <FormSelectAdress
+                apiAddress={(fullAddressAdd) => {
+                  setAddingAddress(`${newHomeAdd} ${fullAddressAdd}`);
+                }}
+                resetForm={resetForm}
+                setAddingAddress=""
+                editFormAddress={addingAddress}
+              />
+
+              {/* <TextField
+                className="mt-3"
+                size="small"
+                fullWidth
+                id="outlined-basic"
+                label="Số nhà"
+                variant="outlined"
+                value={newHomeAdd}
+                onChange={(e) => setNewHomeAdd(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setNewAddress(`${newHomeAdd} ${addingAddress}`);
+                    setNewHomeAdd(""); // Xoá input sau khi nhấn Enter
+                  }
+                }}
+              /> */}
+
+              <TextField
+                className="mt-3"
+                size="small"
+                fullWidth
+                id="outlined-basic"
+                label="Số nhà"
+                variant="outlined"
+                value={newHomeAdd}
+                onChange={(e) => setNewHomeAdd(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setAddingAddress(`${newHomeAdd}, ${addingAddress}`); // Đúng state cần cập nhật
+                    setNewHomeAdd(""); // Xóa input sau khi nhập
+                  }
+                }}
               />
 
               <Button

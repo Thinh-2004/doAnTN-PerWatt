@@ -5,13 +5,11 @@ import { Card, Chip } from "@mui/material";
 import LoyaltyIcon from "@mui/icons-material/Loyalty";
 
 const ListItemProduct = ({ data, classNameCol }) => {
-  //Tạo state nhận api voucher theo id product
   //Sử dụng đối tượng để lưu voucher theo từng idProduct
   const [voucher, setVoucher] = useState({});
+  //Tạo state để nhận số sao theo idProduct
+  const [productRating, setProductRating] = useState({});
 
-  // const geturlIMG = (productId, filename) => {
-  //   return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  // };
 
   const formatPrice = (value) => {
     return value ? Number(value).toLocaleString("vi-VN") : "";
@@ -37,9 +35,24 @@ const ListItemProduct = ({ data, classNameCol }) => {
     }
   };
 
+  //Hàm xử lí số sao
+  const loadCountEvaluate = async (idProduct) => {
+    try {
+      const res = await axios.get(`/comment/count/evaluate/${idProduct}`);
+      //Lưu product rating theo idProduct
+      setProductRating((pre) => ({
+        ...pre,
+        [idProduct]: res.data,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     data.forEach((fill) => {
       loadData(fill.product.id);
+      loadCountEvaluate(fill.product.id);
     });
   }, [data]);
 
@@ -71,8 +84,8 @@ const ListItemProduct = ({ data, classNameCol }) => {
           (check) => check.productDetail.product.id === fill.product.id
         );
 
-         //Kiểm tra status voucher
-         const isStatusVoucher = productVoucher.some(
+        //Kiểm tra status voucher
+        const isStatusVoucher = productVoucher.some(
           (check) => check.status === "Hoạt động"
         );
 
@@ -99,16 +112,35 @@ const ListItemProduct = ({ data, classNameCol }) => {
             );
             // Tính giá giảm First và Last
             const priceDownFirst =
-            minPriceProductDetail * (productVoucher[0].discountprice / 100);
+              minPriceProductDetail * (productVoucher[0].discountprice / 100);
             const priceDownLast =
-            maxPriceProductDetail *
+              maxPriceProductDetail *
               (productVoucher[productVoucher.length - 1].discountprice / 100);
-              //Kết quả
-              const resultFirst = minPriceProductDetail - priceDownFirst;
+            //Kết quả
+            const resultFirst = minPriceProductDetail - priceDownFirst;
             const resultLast = maxPriceProductDetail - priceDownLast;
             result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
           }
         }
+
+        //Lấy rating tương ứng từng product
+        const productRatings = productRating[fill.product.id] || [];
+
+        // Tính số sao
+        const countRating = productRatings.reduce(
+          (start, rating) => start + rating.rating,
+          0
+        );
+
+        // Tính số lượng bình luận
+        const totalComment = productRatings.length;
+
+        // Kết quả trung bình số sao
+        const resultRating = countRating / totalComment;
+
+        // Làm tròn xuống và chỉ lấy 1 chữ số sau dấu chấm
+        const finalRating = Math.floor(resultRating * 10) / 10;
+
         return (
           <Card
             className={`${classNameCol} mb-3 mt-2 shadow rounded-3 p-2 d-flex flex-column`}
@@ -124,11 +156,7 @@ const ListItemProduct = ({ data, classNameCol }) => {
               // style={{ height: "50%" }}
             >
               <img
-                src={
-                  firstIMG
-                    ?  firstIMG.imagename
-                    : "/images/no_img.png"
-                }
+                src={firstIMG ? firstIMG.imagename : "/images/no_img.png"}
                 className="img-fluid rounded-3"
                 alt="Product"
                 style={{ width: "100%", height: "200px" }}
@@ -142,7 +170,7 @@ const ListItemProduct = ({ data, classNameCol }) => {
                   <span className="text-white text-center">Hết hàng</span>
                 </div>
               )}
-              {isVoucherPrice && isStatusVoucher ?  (
+              {isVoucherPrice && isStatusVoucher ? (
                 <div className="position-absolute bottom-0 end-0">
                   <Chip
                     icon={<LoyaltyIcon />}
@@ -170,7 +198,7 @@ const ListItemProduct = ({ data, classNameCol }) => {
                 {fill.product.name}
               </span>
               <h5 id="price-product">
-                {isVoucherPrice  && isStatusVoucher ? (
+                {isVoucherPrice && isStatusVoucher ? (
                   <>
                     <del className="text-secondary me-1">
                       {minPrice === maxPrice
@@ -202,7 +230,12 @@ const ListItemProduct = ({ data, classNameCol }) => {
             <div className="d-flex justify-content-between align-items-end">
               <div>
                 <span style={{ fontSize: "12px" }}>
-                  <i className="bi bi-star-fill text-warning"></i> 3.3
+                  <i className="bi bi-star-fill text-warning"></i>{" "}
+                  {finalRating > 5
+                    ? "5.0"
+                    : finalRating < 0 || isNaN(finalRating)
+                    ? "0"
+                    : finalRating}
                 </span>
               </div>
               <div>
