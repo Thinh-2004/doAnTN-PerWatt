@@ -33,6 +33,7 @@ const Store = () => {
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
+
   // Hàm để xác định số lượng mục hiển thị dựa trên kích thước màn hình
   const updateItemsPerPage = () => {
     const width = window.innerWidth;
@@ -75,13 +76,6 @@ const Store = () => {
       window.removeEventListener("resize", updateItemsPerPage);
     };
   }, []);
-
-  const geturlBgStore = (storeId, filename) => {
-    return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
-  };
-  const geturlAvtUser = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
 
   const loadData = async () => {
     try {
@@ -168,11 +162,9 @@ const Store = () => {
     try {
       const voucherDetailRequest = {
         user: { id: user.id },
-        voucher: { id: id ,
-          vouchername : vouchername
-        },
+        voucher: { id: id, vouchername: vouchername },
       };
-console.log(voucherDetailRequest);
+      console.log(voucherDetailRequest);
       await axios.post(`addVoucherDetails`, voucherDetailRequest);
       toast.success("Nhận voucher thành công");
       setIsAddVoucherDetail(true);
@@ -193,8 +185,10 @@ console.log(voucherDetailRequest);
   };
 
   useEffect(() => {
-    check();
-  }, [user.id]);
+    if (user) {
+      check();
+    }
+  }, [user]);
 
   useEffect(() => {
     // Hàm để lấy danh sách vouchers từ cửa hàng
@@ -245,27 +239,27 @@ console.log(voucherDetailRequest);
       >
         <div className="position-relative">
           <img
-            src={geturlBgStore(fill.id, fill.imgbackgound)}
+            src={fill.imgbackgound}
             alt=""
             id="background-img-filter"
           />
-          <div className="container position-absolute top-50 start-50 translate-middle">
+          <div className="container-lg position-absolute top-50 start-50 translate-middle">
             <img
-              src={geturlBgStore(fill.id, fill.imgbackgound)}
+              src={fill.imgbackgound}
               alt=""
               className="rounded-4"
               id="background-img"
             />
           </div>
         </div>
-        <div className="container position-absolute start-50 translate-middle mt-3">
+        <div className="container-lg position-absolute start-50 translate-middle mt-3">
           <div className="row">
             <div className="col-lg-8 col-md-8 col-sm-8">
               <div className=" d-flex justify-content-start">
                 <img
                   src={
                     fill && fill.user && fill.user.avatar
-                      ? geturlAvtUser(fill.user.id, fill.user.avatar)
+                      ?  fill.user.avatar
                       : null
                   }
                   alt=""
@@ -298,7 +292,7 @@ console.log(voucherDetailRequest);
           </div>
         </div>
         <div
-          className="container border rounded-3"
+          className="container-lg border rounded-3"
           style={{ marginTop: valueMT + "%" }}
         >
           <div className="row d-flex justify-content-between p-3">
@@ -341,7 +335,7 @@ console.log(voucherDetailRequest);
           </div>
         </div>
       </div>
-      <div className="container mt-5">
+      <div className="container-lg mt-5">
         <div className="row">
           <Box
             className="col-lg-3 col-md-3 col-sm-3 border-end  rounded-3"
@@ -395,12 +389,14 @@ console.log(voucherDetailRequest);
             <div className="border-bottom mb-5 ">
               <h4 className="mt-3">Mã khuyến mãi</h4>
               <div className="overflow-auto" style={{ height: "400px" }}>
-                {uniqueVouchers.map((voucher) => {
-                  const isVoucherReceived = voucherDetail.some(
-                    (voucherItem) => voucherItem?.voucher?.id === voucher.id
-                  );
-                  return (
-                    voucher.status === "Hoạt động" && (
+                {uniqueVouchers.some(
+                  (voucher) => voucher.status === "Hoạt động"
+                ) ? (
+                  uniqueVouchers.map((voucher) => {
+                    const isVoucherReceived = voucherDetail.some(
+                      (voucherItem) => voucherItem?.voucher?.id === voucher.id
+                    );
+                    return voucher.status === "Hoạt động" ? (
                       <CardContent
                         key={voucher.id}
                         className={`mt-2 ${
@@ -417,6 +413,14 @@ console.log(voucherDetailRequest);
                         <Typography variant="h5" component="div">
                           {voucher.vouchername}
                         </Typography>
+                        <img
+                          src={
+                            voucher.productDetail.product.images[0].imagename
+                          }
+                          alt=""
+                          id="img-product-voucher"
+                          className="mb-2 mt-2"
+                        />
                         <Typography sx={{ mb: 1.5 }} color="text.secondary">
                           Ngày kết thúc:{" "}
                           {dayjs(voucher.endday).format("DD-MM-YYYY")}
@@ -429,16 +433,23 @@ console.log(voucherDetailRequest);
                           ) : (
                             <button
                               className="btn btn-danger"
-                              onClick={() => addVoucherDetails(voucher.id, voucher.vouchername)}
+                              onClick={() =>
+                                addVoucherDetails(
+                                  voucher.id,
+                                  voucher.vouchername
+                                )
+                              }
                             >
                               Nhận mã
                             </button>
                           )}
                         </div>
                       </CardContent>
-                    )
-                  );
-                })}
+                    ) : null;
+                  })
+                ) : (
+                  <Typography>Shop chưa có voucher nào.</Typography>
+                )}
               </div>
             </div>
           </Box>

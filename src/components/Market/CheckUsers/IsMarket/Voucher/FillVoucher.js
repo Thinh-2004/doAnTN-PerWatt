@@ -164,7 +164,7 @@ function VoucherList() {
     //   setIsSortQuantity(false);
     // }
 
-    // console.log(property);
+    console.log(property);
   }, []);
 
   return (
@@ -190,6 +190,12 @@ function VoucherList() {
               color={mode === "light" ? "black" : "white"}
             ></l-ring>
           </div>
+        ) : vouchers.length === 0 && useDebounceSearch !== null ? (
+          <>
+            <h1 className="text-center p-2">
+             Bạn chưa đăng voucher nào.
+            </h1>
+          </>
         ) : vouchers.length === 0 ? (
           <>
             <h1 className="text-center p-2">

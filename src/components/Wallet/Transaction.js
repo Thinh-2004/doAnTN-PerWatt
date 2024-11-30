@@ -141,14 +141,14 @@ const Transaction = () => {
                 <Box sx={{ minWidth: 120 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label">
-                      Chọn ngân hàng
+                      Chọn ví
                     </InputLabel>
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       value={selectedValue}
                       onChange={handleRadioChange}
-                      label="Chọn ngân hàng"
+                      label="Chọn ví"
                     >
                       <MenuItem value="vnPay">
                         <img

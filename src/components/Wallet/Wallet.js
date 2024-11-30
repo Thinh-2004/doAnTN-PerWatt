@@ -114,7 +114,7 @@ const Wallet = () => {
 
       await axios.post(`wallettransaction/create/${resWallet.data.id}`, {
         amount: -withdrawAmount,
-        transactiontype: "Nạp tiền thông qua VN Pay",
+        transactiontype: "Rút tiền qua ngân hàng",
         transactiondate: new Date(),
         user: { id: user.id },
       });
@@ -193,7 +193,6 @@ const Wallet = () => {
   //     inputRefs.current[index + 1].focus();
   //   }
   // };
-
   const handleKeyDown = (e, index) => {
     if (e.key === "Backspace" && !value[index] && index > 0) {
       document.getElementById(`pin-${index - 1}`).focus();

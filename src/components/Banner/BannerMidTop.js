@@ -6,9 +6,7 @@ import { Link } from "react-router-dom";
 const Banner = () => {
   const [banners, setBanners] = useState([]);
   const [midTopIndex, setMidTopIndex] = useState(0);
-  const getUrlImgBanner = (bannerId, filename) => {
-    return `${axios.defaults.baseURL}files/banner/${bannerId}/${filename}`;
-  };
+
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -57,10 +55,9 @@ const Banner = () => {
           className="banner" // Thêm class nếu cần
         >
           <img
-            src={getUrlImgBanner(
-              midTopBanners[midTopIndex].user.id,
+            src={
               midTopBanners[midTopIndex].img
-            )}
+            }
             alt={midTopBanners[midTopIndex].bannername}
             style={{height : "335px"}}
           />

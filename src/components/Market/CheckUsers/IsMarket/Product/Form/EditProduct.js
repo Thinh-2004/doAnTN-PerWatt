@@ -9,6 +9,7 @@ import {
   CardContent,
   styled,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditDetailProduct from "../DetailProduct/EditDetailProduct";
@@ -16,9 +17,6 @@ import InfoDetailProduct from "./ChildrenForm/InfoDetailProduct";
 
 const EditProduct = () => {
   const slug = useParams();
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
   const idStore = localStorage.getItem("idStore");
   const [images, setImages] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(null);
@@ -41,6 +39,7 @@ const EditProduct = () => {
   const [charCount, setCharCount] = useState(0); // State để lưu số từ
   const [charCountDesception, setCharCountDesception] = useState(0); // State để lưu số từ
   const maxCharLimitName = 150; // Giới hạn ký tự
+  const [updateChangeForm, setUpdateChangeForm] = useState("");
 
   // Fill dữ liệu edit
   const fillData = async () => {
@@ -55,6 +54,7 @@ const EditProduct = () => {
         store: idStore,
       });
       console.log(res.data);
+      // setImages(res.data.images)
 
       const resDetail = await axios.get(`/detailProduct/${res.data.id}`);
 
@@ -73,17 +73,16 @@ const EditProduct = () => {
       console.error(error);
     }
   };
-
   useEffect(() => {
     // Fill dữ liệu
     fillData();
   }, []);
 
   useEffect(() => {
-     //Truyền dữ liệu vào state đếm kí tự
+    //Truyền dữ liệu vào state đếm kí tự
     setCharCount(formEditProduct.name.length);
     setCharCountDesception(formEditProduct.description.length);
-  },[formEditProduct.name.length, formEditProduct.description.length])
+  }, [formEditProduct.name.length, formEditProduct.description.length]);
 
   // Hàm xử lí sự kiện thay đổi File
   const handleFileChange = (event) => {
@@ -286,6 +285,14 @@ const EditProduct = () => {
     }
   }, [receiveDataDetail]);
 
+  useEffect(() => {
+    if (updateChangeForm !== null && updateChangeForm === true) {
+      setIsHiddenDetailPro(true);
+    } else if (updateChangeForm !== null && updateChangeForm === false) {
+      setIsHiddenDetailPro(false);
+    }
+  }, [updateChangeForm, isHiddenDetailPro]);
+
   return (
     <div className="row mt-4">
       {/* Product Info */}
@@ -310,9 +317,9 @@ const EditProduct = () => {
                       fullWidth
                       inputProps={{ maxLength: maxCharLimitName }} // Giới hạn trực quan cho người dùng
                     />
-                      <label>
-                        {charCount}/{maxCharLimitName}
-                      </label>
+                    <label>
+                      {charCount}/{maxCharLimitName}
+                    </label>
                   </div>
                   <div className="mb-3">
                     <TextField
@@ -332,25 +339,29 @@ const EditProduct = () => {
                   <div className="mb-3 border" id="bg-upload-img">
                     {formEditProduct.images &&
                       formEditProduct.images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={geturlIMG(formEditProduct.id, image.imagename)}
-                          alt={`Current ${index}`}
-                          className="img-fluid"
-                          id="img-fill-product"
-                          style={{ cursor: "pointer" }}
-                          onClick={() => handleDeleteImageClick(image.id)}
-                        />
+                        <Tooltip title="Double click để xóa hình">
+                          <img
+                            key={index}
+                            src={image.imagename}
+                            alt={`Current ${index}`}
+                            className="img-fluid"
+                            id="img-fill-product"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => handleDeleteImageClick(image.id)}
+                          />
+                        </Tooltip>
                       ))}
                     {images.map((image, index) => (
-                      <img
-                        key={`new-${index}`}
-                        src={URL.createObjectURL(image)}
-                        alt={`Preview ${index}`}
-                        className="img-fluid"
-                        id="img-fill-product"
-                        onClick={() => handleImageClick(index)}
-                      />
+                      <Tooltip title="Double click để xóa hình">
+                        <img
+                          key={`new-${index}`}
+                          src={URL.createObjectURL(image)}
+                          alt={`Preview ${index}`}
+                          className="img-fluid"
+                          id="img-fill-product"
+                          onClick={() => handleImageClick(index)}
+                        />
+                      </Tooltip>
                     ))}
                   </div>
                   <div className="mb-3">
@@ -427,6 +438,7 @@ const EditProduct = () => {
                 idProduct={formEditProduct}
                 isChangeFormEdit={isHiddenDetailPro}
                 CountData={handleReceiveData}
+                updateChangeForm={setUpdateChangeForm}
               />
             </CardContent>
           </Card>

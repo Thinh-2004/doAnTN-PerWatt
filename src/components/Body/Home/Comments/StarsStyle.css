@@ -1,0 +1,76 @@
+.focus-visible-none,
+.focus-visible-none:focus-visible,
+.focus-visible-none:active {
+  outline: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.total-comment {
+  background-color: #00c7ff;
+  color: white;
+}
+.text-underline-hover:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.starsContainer {
+  display: flex;
+}
+
+.star {
+  cursor: pointer;
+  transition: all 0.1s linear;
+}
+
+.star-hover:hover {
+  transform: scale(1.1);
+}
+
+/* bộ lọc */
+select {
+  margin: 0 10px;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+select:focus {
+  border-color: #007bff;
+}
+/* phân trang */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination-btn {
+  margin: 5px;
+  padding: 8px 12px;
+  border: 1px solid #007bff;
+  border-radius: 5px;
+  background-color: white;
+  color: #007bff;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination-btn:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.pagination-btn:disabled {
+  background-color: #ccc;
+  color: white;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+.active-page {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}

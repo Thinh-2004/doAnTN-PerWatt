@@ -4,7 +4,7 @@ import Footer from "../Footer/Footer";
 import { toast } from "react-toastify";
 import axios from "../../Localhost/Custumize-axios";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@mui/material";
+import { Button, Card, CardContent } from "@mui/material";
 
 const ChangePinCode = () => {
   const [value, setValue] = useState(["", "", "", "", "", ""]);
@@ -130,9 +130,12 @@ const ChangePinCode = () => {
           id="smooth"
           className="col-12 col-sm-10 col-md-8 col-lg-4 col-xl-3"
         >
-          <div className="card">
+          <Card
+            className=""
+            sx={{ backgroundColor: "backgroundElement.children" }}
+          >
             <h3 className="text-center mt-3">{status}</h3>
-            <div className="card-body">
+            <CardContent className="">
               <div
                 className="d-flex justify-content-between"
                 style={{ maxWidth: "300px", margin: "0 auto" }}
@@ -290,8 +293,8 @@ const ChangePinCode = () => {
                   </>
                 )}
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
       <Footer />

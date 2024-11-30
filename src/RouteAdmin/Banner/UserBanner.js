@@ -55,9 +55,7 @@ const BannerTable = () => {
   ); // Months are 0-based
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
 
-  const geturlIMG = (userId, filename) => {
-    return `http://localhost:8080/files/banner/${userId}/${filename}`;
-  };
+
 
   useEffect(() => {
     if (user) {
@@ -144,6 +142,7 @@ const BannerTable = () => {
     }
 
     try {
+      setSuccessMessage("Vui lòng chờ...");
       if (editingBanner) {
         await axios.put(`/banners/${formData.id}`, form, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -315,7 +314,7 @@ const BannerTable = () => {
   return (
     <div className="UserBanner">
       <Header></Header>
-      <div className="container mt-5">
+      <div className="container-lg mt-5">
         <h2 className="mb-4">Quản Lý Banner</h2>
         {error && <Alert severity="error">{error}</Alert>}
 
@@ -412,7 +411,7 @@ const BannerTable = () => {
                         </TableCell>
                         <TableCell align="center">
                           <img
-                            src={geturlIMG(banner.user.id, banner.img)}
+                            src={ banner.img}
                             alt={banner.bannername}
                             width="100"
                           />
@@ -513,7 +512,7 @@ const BannerTable = () => {
                         selectedFile
                           ? URL.createObjectURL(selectedFile)
                           : editingBanner
-                          ? geturlIMG(formData.userId, formData.img)
+                          ? formData.img
                           : "placeholder-image-url.png"
                       }
                       alt="Chọn Ảnh Cho Banner Ở Đây!"

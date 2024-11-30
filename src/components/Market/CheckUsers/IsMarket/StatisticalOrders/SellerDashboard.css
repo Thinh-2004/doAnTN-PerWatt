@@ -1,0 +1,246 @@
+/* SellerDashboard.css */
+.sellerDashboardClass {
+  padding: 1rem;
+  font-family: Arial, sans-serif;
+  /* background-color: white; */
+}
+
+/* Header */
+.headerClass {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.titleClass {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.notificationWrapperClass {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.buttonClass {
+  background-color: var(--bg-primary);
+  color: var(--text-primary-foreground);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+/* Grid Container */
+.gridContainerClass {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Card Styles */
+.orderCardClass,
+.pendingCardClass,
+.processedCardClass,
+.completedCardClass,
+.pendingApprovalCardClass {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.orderCardClass {
+  background-color: #ffe57b; /* orange-200 */
+}
+
+.pendingCardClass {
+  background-color: #bfdbfe; /* blue-200 */
+}
+
+.processedCardClass {
+  background-color: #fecaca; /* red-200 */
+}
+
+.completedCardClass {
+  background-color: blueviolet; /* purple-500 */
+}
+
+.pendingApprovalCardClass {
+  background-color: cadetblue;
+}
+
+.orderNumberClass {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+/* Sales Statistics */
+.salesStatisticsClass {
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitleClass {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+}
+
+.timePeriodSelectorClass {
+  margin-bottom: 1rem;
+}
+
+.timePeriodSelectorClass select {
+  background-color: var(--bg-card);
+  color: var(--text-primary-foreground);
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  font-size: 1rem;
+  font-weight: 400;
+  cursor: pointer;
+  width: 100%; /* Full width for select */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.timePeriodSelectorClass select option {
+  background-color: var(--bg-card);
+  color: var(--text-primary-foreground);
+}
+
+.timePeriodSelectorClass select:hover {
+  border-color: var(--bg-primary);
+  background-color: var(--bg-primary-light);
+}
+
+.timePeriodSelectorClass select:focus {
+  outline: none;
+  border-color: var(--bg-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4);
+}
+
+/* Container cho Top Products Slider */
+.topProductsSlider {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem;
+  margin-bottom: 2rem;
+}
+
+.productCardClass {
+  /* background-color: white; */
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease-in-out;
+  text-align: center;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: calc(25% - 1rem); /* Chia đều các sản phẩm thành 4 cột */
+  max-width: 250px;
+
+  min-height: 350px; /* Chiều cao tối thiểu để các thẻ không bị lệch nhau */
+  overflow: hidden; /* Ẩn nội dung bị tràn */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Giữ khoảng cách đều giữa các phần */
+}
+
+.productCardClass:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Shadow đậm hơn khi hover */
+}
+
+.productImageClass {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%; /* Giảm một chút để đảm bảo không bị chật */
+  height: 150px; /* Đặt chiều cao cố định */
+  object-fit: cover; /* Cắt hình ảnh để phù hợp với kích thước */
+  border-radius: 0.5rem; /* Thêm bo góc cho hình ảnh */
+}
+
+/* Đảm bảo nội dung bên trong không bị tràn ra ngoài */
+.productInfoClass {
+  margin-top: 10px; /* Khoảng cách giữa ảnh và thông tin sản phẩm */
+  text-align: center;
+  overflow: hidden; /* Ẩn nội dung bị tràn */
+}
+
+.productNameClass {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Số dòng tối đa */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 15px;
+}
+
+.productPriceClass {
+  font-size: 0.875rem;
+  color: #4b5563; /* màu xám */
+}
+
+.productSoldClass {
+  font-size: 0.75rem;
+  /* color: #71717a; zinc-500 */
+}
+
+.productRatingClass {
+  font-size: 0.75rem;
+  color: #f59e0b; /* vàng */
+}
+
+/* Customer List */
+.customerListClass {
+  /* background-color: white; */
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow);
+}
+
+.customerItemClass {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.customerNameClass {
+  font-weight: 700;
+}
+
+.customerAmountClass {
+  color: #333;
+}
+
+.salesStatisticsClass {
+  margin-bottom: 20px; /* Khoảng cách dưới cùng của thống kê doanh số */
+}
+
+.chartsContainer {
+  display: flex; /* Sử dụng flexbox để chia không gian */
+  justify-content: space-between; /* Tạo khoảng cách giữa các biểu đồ */
+}
+
+.areaChartClass,
+.pieChartClass {
+  flex: 1; /* Mỗi biểu đồ chiếm 1 phần không gian */
+  margin: 0 10px; /* Khoảng cách bên trái và bên phải */
+}
+
+/* Nếu bạn muốn thiết lập kích thước cụ thể cho từng biểu đồ */
+.areaChartClass {
+  max-width: 50%; /* Tối đa chiều rộng là 50% */
+}
+
+.pieChartClass {
+  max-width: 50%; /* Tối đa chiều rộng là 50% */
+}

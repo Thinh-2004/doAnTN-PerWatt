@@ -64,7 +64,7 @@ const Banner = () => {
           botBanners.map((banner, index) => (
             <div key={index} className={`carousel-item ${index === botIndex ? "active" : ""}`}>
               <img
-                src={`http://localhost:8080/files/banner/${banner.user.id}/${banner.img}`}
+                src={banner.img}
                 className="d-block w-100"
                 style={{ height: "610px" }}
                 alt={banner.bannername}

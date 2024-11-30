@@ -6,9 +6,7 @@ import { Link } from "react-router-dom";
 const Banner = () => {
   const [banners, setBanners] = useState([]);
   const [midIndex, setMidIndex] = useState(0);
-  const getUrlImgBanner = (bannerId, filename) => {
-    return `${axios.defaults.baseURL}files/banner/${bannerId}/${filename}`;
-  };
+
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -71,9 +69,10 @@ const Banner = () => {
               className="banner"
             >
               <img
-                src={getUrlImgBanner(midBanners[midIndex].user.id,midBanners[midIndex].img)}
+                src={midBanners[midIndex].img}
                 alt={midBanners[midIndex].bannername}
                 className="rounded-4"
+                style={{with : "100%", height : "700px"}}
                 
               />
             </Link>

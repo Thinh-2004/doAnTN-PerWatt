@@ -46,14 +46,14 @@ const Banner = () => {
   return (
     <>
       {topBanners.length > 0 && (
-        <a
-          href={`http://localhost:3000/findMoreProduct/${encodeURIComponent(
-            topBanners[topIndex].bannername
-          )}`} // Thay đổi href
+        <div
+          // href={`http://localhost:3000/findMoreProduct/${encodeURIComponent(
+          //   topBanners[topIndex].bannername
+          // )}`} // Thay đổi href
           className="rounded-4 w-100 h-100"
         >
           <img
-            src={`http://localhost:8080/files/banner/${topBanners[topIndex].user.id}/${topBanners[topIndex].img}`}
+            src={topBanners[topIndex].img}
             alt={topBanners[topIndex].bannername}
             className="bannerr-image rounded-4 "
             style={{
@@ -61,7 +61,7 @@ const Banner = () => {
               height: "600px",
             }}
           />
-        </a>
+        </div>
       )}
     </>
   );

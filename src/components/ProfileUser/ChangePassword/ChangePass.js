@@ -39,7 +39,12 @@ const ChangePass = ({ checkStatus }) => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await axios.get(`userProFile/${user.id}`);
+        const res = await axios.get(`/userProFile/myInfo`,{
+          headers : {
+            Authorization : `Bearer ${localStorage.getItem("hadfjkdshf")}`
+          }
+        });
+        // console.log(res.data);
         setFormPass(res.data);
       } catch (error) {
         console.log(error);
@@ -103,6 +108,7 @@ const ChangePass = ({ checkStatus }) => {
         const res = await axios.put(`/user/${user.id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
           },
         });
         setTimeout(() => {

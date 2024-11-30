@@ -27,16 +27,18 @@ const OrderDetailSeller = () => {
     ? JSON.parse(localStorage.getItem("user"))
     : null;
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-  const getAvtUser = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
+  // const load = async () => {
+  //   try {
+  //     const res = await axios.get(`/orderDetailSeller/${id}`);
 
-  const geturlIMGDetail = (productDetailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
-  };
+  //     const grouped = groupByStore(res.data);
+  //     setGroupedByStore(grouped);
+  //   } catch (error) {
+  //     console.error(error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const load = async () => {
     try {
       const res = await axios.get(`/orderDetailSeller/${id}`);
@@ -110,7 +112,6 @@ const OrderDetailSeller = () => {
       ],
     });
   };
-
   const refundReturn = async (
     storeId,
     userId,
@@ -283,11 +284,7 @@ const OrderDetailSeller = () => {
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">
                       <img
-                        src={getAvtUser(
-                          order.user.id,
-                          order.user.avatar,
-                          order.id
-                        )}
+                        src={order.user.avatar}
                         id="imgShop"
                         className="mx-2 object-fit-cover"
                         style={{
@@ -330,14 +327,8 @@ const OrderDetailSeller = () => {
                               orderDetail &&
                               orderDetail.productDetail &&
                               orderDetail.productDetail.imagedetail
-                                ? geturlIMGDetail(
-                                    orderDetail.productDetail.id,
-                                    orderDetail.productDetail.imagedetail
-                                  )
-                                : geturlIMG(
-                                    orderDetail.productDetail.product.id,
-                                    firstIMG.imagename
-                                  )
+                                ? orderDetail.productDetail.imagedetail
+                                : firstIMG.imagename
                             }
                             alt="Product"
                             style={{
@@ -441,7 +432,7 @@ const OrderDetailSeller = () => {
                             <div className="col-3 d-flex justify-content-center align-items-center">
                               {orderDetail.status === "" ? (
                                 ""
-                              ) : orderDetail.status.includes(
+                              ) : orderDetail.status?.includes(
                                   "Đang gửi yêu cầu hoàn tiền"
                                 ) ? (
                                 <Button
@@ -499,6 +490,7 @@ const OrderDetailSeller = () => {
                       </div>
                     );
                   })}
+
                   <hr />
                   <div className="d-flex">
                     <div className="col-6">
@@ -522,7 +514,7 @@ const OrderDetailSeller = () => {
                     </div>
                     <div className="col-6 text-end">
                       <Typography variant="span">
-                        Tổng cộng: {formatPrice(order.totalAmount) + " VNĐ"}
+                        Tổng cộng: {formatPrice(order.totalamount) + " VNĐ"}
                       </Typography>
                     </div>
                   </div>

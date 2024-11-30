@@ -38,12 +38,20 @@ const PayBuyer = () => {
   const [shippingFee, setShippingFee] = useState(0);
   const [voucher, setVoucher] = useState(null);
   const [open, setOpen] = React.useState(false);
+<<<<<<< HEAD
   const [voucherS, setVoucherS] = React.useState(false);
   const [finalAmout, setFinalAmout] = React.useState(false);
 
   const [voucherData, setVoucherData] = useState({
     id: "", // Khởi tạo id rỗng
     discountprice: "", // Khởi tạo discountprice rỗng
+=======
+  const [voucherS, setVoucherS] = React.useState(0);
+  const [finalAmout, setFinalAmout] = React.useState(0);
+  const [voucherData, setVoucherData] = useState({
+    id: [], // Khởi tạo id là mảng rỗng
+    discountprice: [], // Khởi tạo discountprice là mảng rỗng
+>>>>>>> 2d7a3e5d5dc69f5627647c3da84322811c8aafc4
   });
 
   const hehe = (hha) => {
@@ -64,16 +72,6 @@ const PayBuyer = () => {
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
-
-  const geturlIMG = (productId, filename) =>
-    `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-
-  const getAvtUser = (idUser, filename) =>
-    `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-
-  const geturlIMGDetail = (productDetailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
-  };
 
   const fetchWallet = async () => {
     try {
@@ -308,11 +306,18 @@ const PayBuyer = () => {
           feeShip: feeShip, // Thêm phí ship vào đây
         };
       }
-
+      fetchVouchers(product.productDetail.product.store.slug);
       groups[storeId].products.push(product);
       return groups;
     }, {});
     return groupedProducts;
+  };
+  const fetchVouchers = async (slugStore) => {
+    try {
+      const response = await axios.get(`fillVoucherShop/${slugStore}`);
+    } catch (error) {
+      console.error("Error fetching vouchers:", error);
+    }
   };
 
   // useEffect(() => {
@@ -410,12 +415,6 @@ const PayBuyer = () => {
 
           return sum + productPrice;
         }, 0);
-
-        // const totalAmount = storeProducts.reduce(
-        //   (sum, product) =>
-        //     sum + product.productDetail.price * product.quantity,
-        //   0
-        // );
 
         const feeShip = listFee[feeIndex]; // Lấy phí ship tương ứng
         const totalAmountOrder = totalAmount + (feeShip || 0);
@@ -547,22 +546,6 @@ const PayBuyer = () => {
     return Number(value).toLocaleString("vi-VN");
   };
 
-  // useEffect(() => {
-  //   const calculatedTotalAmount = Object.values(groupedProducts).reduce(
-  //     (sum, { products }) => {
-  //       return (
-  //         sum +
-  //         products.reduce((productSum, product) => {
-  //           return productSum + product.productDetail.price * product.quantity;
-  //         }, 0)
-  //       );
-  //     },
-  //     0
-  //   );
-
-  //   setTotalAmountProduct(calculatedTotalAmount + shippingFee);
-  // }, [groupedProducts]);
-
   useEffect(() => {
     const calculatedTotalAmountBeforeDiscount = Object.values(
       groupedProducts
@@ -581,6 +564,28 @@ const PayBuyer = () => {
 
     // Lưu tổng tiền chưa giảm giá vào state
 
+    // const calculatedTotalAmountAfterDiscount = Object.values(
+    //   groupedProducts
+    // ).reduce((sum, { products }) => {
+    //   return (
+    //     sum +
+    //     products.reduce((productSum, product) => {
+    //       const productPrice = product.productDetail.price;
+    //       const productQuantity = product.quantity;
+
+    //       // Kiểm tra voucher và áp dụng giảm giá
+    //       const priceAfterDiscount =
+    //         voucherData.id === product.productDetail.id
+    //           ? productPrice *
+    //             productQuantity *
+    //             (1 - voucherData.discountprice / 100)
+    //           : productPrice * productQuantity;
+
+    //       return productSum + priceAfterDiscount;
+    //     }, 0)
+    //   );
+    // }, 0);
+
     const calculatedTotalAmountAfterDiscount = Object.values(
       groupedProducts
     ).reduce((sum, { products }) => {
@@ -590,13 +595,17 @@ const PayBuyer = () => {
           const productPrice = product.productDetail.price;
           const productQuantity = product.quantity;
 
-          // Kiểm tra voucher và áp dụng giảm giá
-          const priceAfterDiscount =
-            voucherData.id === product.productDetail.id
-              ? productPrice *
-                productQuantity *
-                (1 - voucherData.discountprice / 100)
-              : productPrice * productQuantity;
+          // Kiểm tra tất cả các voucher và áp dụng giảm giá
+          let priceAfterDiscount = productPrice * productQuantity;
+
+          // Duyệt qua tất cả các voucher đã chọn và áp dụng giảm giá
+          voucherData.id.forEach((voucherId, index) => {
+            // Kiểm tra xem sản phẩm có thể áp dụng voucher này không
+            if (voucherId === product.productDetail.id) {
+              const discount = voucherData.discountprice[index]; // Lấy discountprice tương ứng
+              priceAfterDiscount *= 1 - discount / 100; // Áp dụng giảm giá
+            }
+          });
 
           return productSum + priceAfterDiscount;
         }, 0)
@@ -790,11 +799,7 @@ const PayBuyer = () => {
                 >
                   <div className="d-flex align-items-center">
                     <img
-                      src={getAvtUser(
-                        store.user.id,
-                        store.user.avatar,
-                        store.id
-                      )}
+                      src={store.user.avatar}
                       id="imgShop"
                       className="mx-2 object-fit-cover"
                       style={{
@@ -823,14 +828,8 @@ const PayBuyer = () => {
                               cart &&
                               cart.productDetail &&
                               cart.productDetail.imagedetail
-                                ? geturlIMGDetail(
-                                    cart.productDetail.id,
-                                    cart.productDetail.imagedetail
-                                  )
-                                : geturlIMG(
-                                    cart.productDetail.product.id,
-                                    firstIMG.imagename
-                                  )
+                                ? cart.productDetail.imagedetail
+                                : firstIMG.imagename
                             }
                             alt="Product"
                             style={{
@@ -966,7 +965,7 @@ const PayBuyer = () => {
                               <div className="col-2">
                                 Số lượng: {cart.quantity}
                               </div>
-                              <div className="col-7">
+                              {/* <div className="col-7">
                                 Thành tiền:{" "}
                                 {voucherData.id === cart.productDetail.id ? (
                                   <>
@@ -990,6 +989,52 @@ const PayBuyer = () => {
                                     ) + " VNĐ"}
                                   </>
                                 )}
+                              </div> */}
+
+                              <div className="col-7">
+                                Thành tiền:{" "}
+                                {voucherData.id.length > 0 &&
+                                voucherData.id.includes(
+                                  cart.productDetail.id
+                                ) ? (
+                                  <>
+                                    <del style={{ fontSize: "14px" }}>
+                                      {formatPrice(
+                                        cart.productDetail.price * cart.quantity
+                                      )}{" "}
+                                      VNĐ
+                                    </del>{" "}
+                                    {voucherData.id.reduce(
+                                      (
+                                        priceAfterDiscount,
+                                        voucherId,
+                                        index
+                                      ) => {
+                                        // Kiểm tra xem sản phẩm có thể áp dụng voucher này không
+                                        if (
+                                          voucherId === cart.productDetail.id
+                                        ) {
+                                          const discount =
+                                            voucherData.discountprice[index]; // Lấy discountprice tương ứng
+                                          return (
+                                            priceAfterDiscount *
+                                            (1 - discount / 100)
+                                          ); // Áp dụng giảm giá
+                                        }
+                                        return priceAfterDiscount;
+                                      },
+                                      cart.productDetail.price * cart.quantity
+                                    )}
+                                    VNĐ
+                                  </>
+                                ) : (
+                                  <>
+                                    {formatPrice(
+                                      cart.productDetail.price * cart.quantity
+                                    )}{" "}
+                                    VNĐ
+                                  </>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1009,24 +1054,47 @@ const PayBuyer = () => {
                   </Backdrop>
                   <div className="col-lg-11 col-md-12">
                     <div className="d-flex justify-content-between mt-3">
-                      <FormControl size="small" sx={{ width: "30%" }}>
+                      {/* <FormControl size="small" sx={{ width: "30%" }}>
                         <InputLabel id="address-select-label">
                           Voucher
                         </InputLabel>
                         <Select
                           labelId="address-select-label"
                           id="address-select"
-                          value={voucherData.id} // Lưu id của voucher vào value
+                          value={voucherData.id} // Giá trị là mảng của các id đã chọn
                           label="Voucher"
+                          multiple
                           onChange={(e) => {
-                            const selectedVoucher = voucher.find(
-                              (v) =>
-                                v.voucher.productDetail.id === e.target.value
+                            const selectedVoucherIds = e.target.value; // Lấy danh sách các id voucher đã chọn
+                            const selectedVouchers = voucher.filter((v) =>
+                              selectedVoucherIds.includes(
+                                v.voucher.productDetail.id
+                              )
                             );
+
+                            // Tìm tất cả các voucher có cùng vouchername với những voucher đã chọn
+                            const selectedVoucherNames = selectedVouchers.map(
+                              (selectedVoucher) =>
+                                selectedVoucher.voucher.vouchername
+                            );
+
+                            // Lọc ra tất cả các voucher có vouchername trùng với những voucher đã chọn
+                            const allSelectedVouchers = voucher.filter(
+                              (voucherItem) =>
+                                selectedVoucherNames.includes(
+                                  voucherItem.voucher.vouchername
+                                )
+                            );
+
+                            // Lưu mảng các id và discountprice của các voucher đã chọn
                             setVoucherData({
-                              id: selectedVoucher.voucher.productDetail.id,
-                              discountprice:
-                                selectedVoucher.voucher.discountprice,
+                              id: allSelectedVouchers.map(
+                                (v) => v.voucher.productDetail.id
+                              ), // Lưu mảng các id voucher
+                              discountprice: allSelectedVouchers.map(
+                                (selectedVoucher) =>
+                                  selectedVoucher.voucher.discountprice
+                              ), // Lưu mảng discountprice của các voucher đã chọn
                             });
                           }}
                         >
@@ -1035,21 +1103,107 @@ const PayBuyer = () => {
                               Hiện tại bạn chưa có voucher nào
                             </MenuItem>
                           ) : (
-                            voucher.map((voucher) => (
+                            voucher.map((voucherItem) => (
                               <MenuItem
-                                key={voucher.id}
-                                value={voucher.voucher.productDetail.id}
+                                key={voucherItem.id}
+                                value={voucherItem.voucher.productDetail.id}
                               >
-                                {voucher.voucher.vouchername}
+                                {voucherItem.voucher.vouchername}
                               </MenuItem>
                             ))
                           )}
                         </Select>
+                      </FormControl> */}
+                      <FormControl size="small" sx={{ width: "30%" }}>
+                        <InputLabel id="address-select-label">
+                          Voucher
+                        </InputLabel>
+                        <Select
+                          labelId="address-select-label"
+                          id="address-select"
+                          value={voucherData.id} // Giá trị là mảng của các id đã chọn
+                          label="Voucher"
+                          multiple
+                          onChange={(e) => {
+                            const selectedVoucherIds = e.target.value; // Lấy danh sách các id voucher đã chọn
+                            const selectedVouchers = voucher.filter((v) =>
+                              selectedVoucherIds.includes(
+                                v.voucher.productDetail.id
+                              )
+                            );
+
+                            // Tìm tất cả các voucher có cùng vouchername với những voucher đã chọn
+                            const selectedVoucherNames = selectedVouchers.map(
+                              (selectedVoucher) =>
+                                selectedVoucher.voucher.vouchername
+                            );
+
+                            // Lọc ra tất cả các voucher có vouchername trùng với những voucher đã chọn
+                            const allSelectedVouchers = voucher.filter(
+                              (voucherItem) =>
+                                selectedVoucherNames.includes(
+                                  voucherItem.voucher.vouchername
+                                )
+                            );
+
+                            // Lưu mảng các id và discountprice của các voucher đã chọn
+                            setVoucherData({
+                              id: allSelectedVouchers.map(
+                                (v) => v.voucher.productDetail.id
+                              ), // Lưu mảng các id voucher
+                              discountprice: allSelectedVouchers.map(
+                                (selectedVoucher) =>
+                                  selectedVoucher.voucher.discountprice
+                              ), // Lưu mảng discountprice của các voucher đã chọn
+                            });
+                          }}
+                        >
+                          {voucher.length === 0 ? (
+                            <MenuItem disabled>
+                              Hiện tại bạn chưa có voucher nào
+                            </MenuItem>
+                          ) : (
+                            // Sử dụng Set để loại bỏ các voucher trùng lặp theo vouchername
+                            Array.from(
+                              new Set(
+                                voucher.map(
+                                  (voucherItem) =>
+                                    voucherItem.voucher.vouchername
+                                )
+                              )
+                            ).map((voucherName) => {
+                              // Lọc ra tất cả các voucher có vouchername tương ứng
+                              const vouchersWithSameName = voucher.filter(
+                                (voucherItem) =>
+                                  voucherItem.voucher.vouchername ===
+                                  voucherName
+                              );
+
+                              return (
+                                <MenuItem
+                                  key={voucherName}
+                                  value={
+                                    vouchersWithSameName[0].voucher
+                                      .productDetail.id
+                                  } // Chỉ lấy id của voucher đầu tiên
+                                >
+                                  {voucherName} {" giám giá "}
+                                  {
+                                    vouchersWithSameName[0].voucher
+                                      .discountprice
+                                  }{" "}
+                                  %
+                                </MenuItem>
+                              );
+                            })
+                          )}
+                        </Select>
                       </FormControl>
+
                       <div>
                         <div className="d-flex justify-content-end">
                           Tổng tiền:{" "}
-                          {formatPrice(
+                          {/* {formatPrice(
                             storeProducts.reduce((total, cart) => {
                               return (
                                 total +
@@ -1059,6 +1213,27 @@ const PayBuyer = () => {
                                     (1 - voucherData.discountprice / 100)
                                   : cart.productDetail.price * cart.quantity)
                               );
+                            }, 0)
+                          )} */}
+                          {formatPrice(
+                            storeProducts.reduce((total, cart) => {
+                              const productPrice = cart.productDetail.price;
+                              const productQuantity = cart.quantity;
+
+                              // Kiểm tra và áp dụng tất cả các voucher đã chọn
+                              let priceAfterDiscount =
+                                productPrice * productQuantity;
+
+                              // Duyệt qua tất cả các voucher đã chọn và áp dụng giảm giá
+                              voucherData.id.forEach((voucherId, index) => {
+                                if (voucherId === cart.productDetail.id) {
+                                  const discount =
+                                    voucherData.discountprice[index]; // Lấy discountprice tương ứng
+                                  priceAfterDiscount *= 1 - discount / 100; // Áp dụng giảm giá cho giá sản phẩm
+                                }
+                              });
+
+                              return total + priceAfterDiscount;
                             }, 0)
                           )}
                           {" VNĐ"}
@@ -1071,7 +1246,7 @@ const PayBuyer = () => {
                         </div>
                         <div className="d-flex justify-content-end">
                           Tổng thanh toán:{" "}
-                          {formatPrice(
+                          {/* {formatPrice(
                             storeProducts.reduce((total, cart) => {
                               return (
                                 total +
@@ -1082,6 +1257,28 @@ const PayBuyer = () => {
                                   : cart.productDetail.price * cart.quantity)
                               );
                             }, 0) + Number(feeShip)
+                          )}{" "} */}
+                          {formatPrice(
+                            storeProducts.reduce((total, cart) => {
+                              const productPrice = cart.productDetail.price;
+                              const productQuantity = cart.quantity;
+
+                              // Tính toán giá trị sau khi áp dụng tất cả các voucher đã chọn
+                              let priceAfterDiscount =
+                                productPrice * productQuantity;
+
+                              // Duyệt qua tất cả các voucher đã chọn và áp dụng giảm giá
+                              voucherData.id.forEach((voucherId, index) => {
+                                if (voucherId === cart.productDetail.id) {
+                                  const discount =
+                                    voucherData.discountprice[index]; // Lấy discountprice tương ứng
+                                  priceAfterDiscount *= 1 - discount / 100; // Áp dụng giảm giá cho sản phẩm
+                                }
+                              });
+
+                              // Cộng dồn giá trị sau giảm giá vào tổng
+                              return total + priceAfterDiscount;
+                            }, 0) + Number(feeShip) // Cộng phí ship vào tổng
                           )}{" "}
                           VNĐ
                         </div>

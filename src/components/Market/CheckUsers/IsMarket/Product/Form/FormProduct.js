@@ -10,6 +10,7 @@ import {
   CardContent,
   styled,
   TextField,
+  Tooltip,
   Typography,
   useTheme,
 } from "@mui/material";
@@ -168,6 +169,11 @@ const FormProduct = () => {
         return false;
       }
 
+      if ((images.length === 0) | (images === null)) {
+        toast.warning("Cần nhập chọn hình sản phẩm.");
+        return false;
+      }
+
       return true;
     }
   };
@@ -191,7 +197,7 @@ const FormProduct = () => {
         "product",
         new Blob([JSON.stringify(productToSend)], { type: "application/json" })
       );
-      console.log(productToSend);
+      // console.log(productToSend);
 
       formData.append(
         "productDetails",
@@ -199,7 +205,7 @@ const FormProduct = () => {
           type: "application/json",
         })
       );
-      console.log(detailProduct);
+      // console.log(detailProduct);
       //Kiểm tra detailProduct có phải là mảng
       if (Array.isArray(detailProduct)) {
         detailProduct.forEach((fileDetail) => {
@@ -337,15 +343,17 @@ const FormProduct = () => {
                   <div className="col-lg-6 col-md-6 col-sm-6 ">
                     <div className="mb-3 border" id="bg-upload-img">
                       {images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={URL.createObjectURL(image)}
-                          alt={`Preview ${index}`}
-                          className="img-fluid"
-                          id="img-fill-product"
-                          onClick={() => handleImageClick(index)}
-                          style={{ cursor: "pointer" }}
-                        />
+                        <Tooltip title="Double click để xóa">
+                          <img
+                            key={index}
+                            src={URL.createObjectURL(image)}
+                            alt={`Preview ${index}`}
+                            className="img-fluid"
+                            id="img-fill-product"
+                            onClick={() => handleImageClick(index)}
+                            style={{ cursor: "pointer" }}
+                          />
+                        </Tooltip>
                       ))}
                     </div>
                     <div className="mb-3">
@@ -387,7 +395,7 @@ const FormProduct = () => {
         {/* Detail product */}
         <div className="col-lg-12 col-md-12 col-sm-12">
           <Box className="rounded-4 mt-3">
-            <Card sx={{backgroundColor : "backgroundElement.children"}}>
+            <Card sx={{ backgroundColor: "backgroundElement.children" }}>
               <div className="row align-items-center p-3">
                 <h3 className="col-lg-6 col-md-6 col-sm-6 w-25">
                   Thông tin bán hàng
@@ -395,7 +403,7 @@ const FormProduct = () => {
                 <div className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-end w-75">
                   {isHiddenDetailPro ? (
                     <Button
-                      sx={{color : "text.primary"}}
+                      sx={{ color: "text.primary" }}
                       type="button"
                       onClick={() => setIsHiddenDetailPro(false)}
                     >

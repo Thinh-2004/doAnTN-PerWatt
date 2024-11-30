@@ -49,17 +49,6 @@ const Order = () => {
 
   tailspin.register();
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-
-  const getAvtUser = (idUser, filename) =>
-    `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-
-  const geturlIMGDetail = (productDetailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
-  };
-
   useEffect(() => {
     const load = async () => {
       try {
@@ -266,7 +255,7 @@ const Order = () => {
         <CardContent className="">
           <div className="d-flex align-items-center mb-3">
             <img
-              src={getAvtUser(order.user.id, order.user.avatar, order.id)}
+              src={order.user.avatar}
               id="imgShop"
               className="mx-2 object-fit-cover"
               style={{
@@ -314,14 +303,8 @@ const Order = () => {
                       <img
                         src={
                           orderDetail.productDetail.imagedetail
-                            ? geturlIMGDetail(
-                                orderDetail.productDetail.id,
-                                orderDetail.productDetail.imagedetail
-                              )
-                            : geturlIMG(
-                                orderDetail.productDetail.product.id,
-                                firstIMG?.imagename
-                              )
+                            ? orderDetail.productDetail.imagedetail
+                            : firstIMG?.imagename
                         }
                         alt=""
                         style={{
@@ -369,6 +352,11 @@ const Order = () => {
                 </div>
               );
             })}
+          <div className="d-flex justify-content-end">
+            <div className="al end">
+              Thành tiền: {formatPrice(order.totalamount) + " VNĐ"}
+            </div>
+          </div>
           {orderDetails[order.id] && orderDetails[order.id].length > 2 && (
             <>
               <Button href={`/profileMarket/OrderDetailSeller/${order.id}`}>
@@ -438,6 +426,20 @@ const Order = () => {
                     >
                       <i className="bi bi-cart-x-fill"></i>
                     </Button>
+
+                    <Button
+                      onClick={() => handleCancelOrder(order.id)}
+                      style={{
+                        width: "auto",
+                        backgroundColor: "rgb(255, 184, 184)",
+                        color: "rgb(198, 0, 0)",
+                      }}
+                      disableElevation
+                      data-bs-toggle="modal"
+                      data-bs-target="#exampleModal"
+                    >
+                      <i className="bi bi-cart-x-fill"></i>
+                    </Button>
                   </>
                 ) : order.orderstatus === "Đang vận chuyển" ? (
                   /* <Button
@@ -445,7 +447,7 @@ const Order = () => {
                     style={{
                       width: "auto",
                       backgroundColor: "rgb(204,244,255)",
-                      color: "rgb(0,70,89)",
+color: "rgb(0,70,89)",
                     }}
                     disableElevation
                   >

@@ -251,7 +251,7 @@ const Register = ({ onRegisterSuccess }) => {
         backgroundColor: theme.palette.mode === "light" ? " #fff" : "#363535",
       }}
     >
-      <h2 className="title">Đăng Ký</h2>
+      <h2 className="titleLogin_Register">Đăng Ký</h2>
       <p className="subject">
         Đăng ký tài khoản để được trải nghiệm hết các tính năng của chúng tôi!!!
       </p>

@@ -10,6 +10,7 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
+  Tooltip,
 } from "@mui/material";
 import { Typography } from "antd";
 import dayjs from "dayjs";
@@ -25,12 +26,6 @@ const VoucherTable = ({
   isSortDisCountPrice,
   valueSort,
 }) => {
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-  const geturlImgDetailProduct = (detailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
-  };
   const formatPrice = (value) => {
     return value ? Number(value).toLocaleString("vi-VN") : "";
   };
@@ -172,10 +167,7 @@ const VoucherTable = ({
                       }}
                     >
                       <img
-                        src={geturlIMG(
-                          voucher.productDetail?.product.id,
-                          voucher.productDetail?.product.images[0].imagename
-                        )}
+                        src={voucher.productDetail?.product.images[0].imagename}
                         style={{ width: "40px", aspectRatio: "1/1" }}
                         alt=""
                       />
@@ -186,10 +178,7 @@ const VoucherTable = ({
                         <>
                           <img
                             style={{ width: "40px", aspectRatio: "1/1" }}
-                            src={geturlImgDetailProduct(
-                              voucher.productDetail?.id,
-                              voucher.productDetail?.imagedetail
-                            )}
+                            src={voucher.productDetail?.imagedetail}
                             alt=""
                           />
                           &nbsp; {voucher.productDetail?.namedetail}
@@ -225,47 +214,87 @@ const VoucherTable = ({
 
                     {/* Nút hành động - chỉ hiển thị cho dòng đầu tiên của nhóm voucher */}
                     <TableCell align="center">
-                      {index === 0 && (
-                        <div>
-                          <Button
-                            variant="contained"
-                            color="warning"
-                            sx={{
-                              color: "rgb(100, 107, 0)",
-                              backgroundColor: "rgb(255, 255, 157)",
-                              "&:hover": {
-                                backgroundColor: "rgb(255, 255, 157)",
+                      {index === 0 &&
+                        (voucher.status === "Hoạt động" ? (
+                          <Tooltip title="Voucher đang hoạt động bạn không thể thao tác">
+                            <Button
+                              variant="contained"
+                              color="warning"
+                              sx={{
                                 color: "rgb(100, 107, 0)",
-                                transform: "scale(1.08)",
-                              },
-                              transition: "0.5s",
-                            }}
-                            component={Link}
-                            to={`/profileMarket/editVoucher/${voucher.slug}`}
-                          >
-                            <i className="bi bi-pencil-square"></i>
-                          </Button>
+                                backgroundColor: "rgb(255, 255, 157)",
+                                "&:hover": {
+                                  backgroundColor: "rgb(255, 255, 157)",
+                                  color: "rgb(100, 107, 0)",
+                                  transform: "scale(1.08)",
+                                },
+                                transition: "0.5s",
+                              }}
+                              disabled
+                            >
+                              <i className="bi bi-pencil-square"></i>
+                            </Button>
 
-                          <Button
-                            variant="contained"
-                            color="error"
-                            sx={{
-                              backgroundColor: "rgb(255, 184, 184)",
-                              color: "rgb(198, 0, 0)",
-                              "&:hover": {
+                            <Button
+                              variant="contained"
+                              color="error"
+                              sx={{
                                 backgroundColor: "rgb(255, 184, 184)",
                                 color: "rgb(198, 0, 0)",
-                                transform: "scale(1.08)",
-                              },
-                              transition: "0.5s",
-                              ml: 2,
-                            }}
-                            onClick={() => handleDelete(voucher.slug)}
-                          >
-                            <i className="bi bi-trash"></i>
-                          </Button>
-                        </div>
-                      )}
+                                "&:hover": {
+                                  backgroundColor: "rgb(255, 184, 184)",
+                                  color: "rgb(198, 0, 0)",
+                                  transform: "scale(1.08)",
+                                },
+                                transition: "0.5s",
+                                ml: 2,
+                              }}
+                              disabled
+                            >
+                              <i className="bi bi-trash"></i>
+                            </Button>
+                          </Tooltip>
+                        ) : (
+                          <div>
+                            <Button
+                              variant="contained"
+                              color="warning"
+                              sx={{
+                                color: "rgb(100, 107, 0)",
+                                backgroundColor: "rgb(255, 255, 157)",
+                                "&:hover": {
+                                  backgroundColor: "rgb(255, 255, 157)",
+                                  color: "rgb(100, 107, 0)",
+                                  transform: "scale(1.08)",
+                                },
+                                transition: "0.5s",
+                              }}
+                              component={Link}
+                              to={`/profileMarket/editVoucher/${voucher.slug}`}
+                            >
+                              <i className="bi bi-pencil-square"></i>
+                            </Button>
+
+                            <Button
+                              variant="contained"
+                              color="error"
+                              sx={{
+                                backgroundColor: "rgb(255, 184, 184)",
+                                color: "rgb(198, 0, 0)",
+                                "&:hover": {
+                                  backgroundColor: "rgb(255, 184, 184)",
+                                  color: "rgb(198, 0, 0)",
+                                  transform: "scale(1.08)",
+                                },
+                                transition: "0.5s",
+                                ml: 2,
+                              }}
+                              onClick={() => handleDelete(voucher.slug)}
+                            >
+                              <i className="bi bi-trash"></i>
+                            </Button>
+                          </div>
+                        ))}
                     </TableCell>
                   </TableRow>
                 );

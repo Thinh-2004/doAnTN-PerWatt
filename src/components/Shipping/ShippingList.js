@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "../../Localhost/Custumize-axios";
 import { toast } from "react-toastify";
-import { Button } from "@mui/material";
+import { Button, Card, CardContent } from "@mui/material";
 import { confirmAlert } from "react-confirm-alert";
 import FormSelectAdress from "../APIAddressVN/FormSelectAdress.js";
 import TextField from "@mui/material/TextField";
+import { ThemeModeContext } from "../ThemeMode/ThemeModeProvider.js";
 
 const ShippingList = () => {
   const [shippingInfo, setShippingInfo] = useState([]);
@@ -17,6 +18,7 @@ const ShippingList = () => {
   const [resetForm, setResetForm] = useState(false);
   const [newHomeUpdate, setNewHomeUpdate] = useState("");
   const [newHomeAdd, setNewHomeAdd] = useState("");
+  const { mode } = useContext(ThemeModeContext);
 
   const fetchShippingInfo = async () => {
     try {
@@ -124,8 +126,8 @@ const ShippingList = () => {
         className="col-12 col-md-12 col-lg-12 offset-lg-0"
         style={{ transition: "0.5s" }}
       >
-        <div className="card rounded-4">
-          <div className="card-body">
+        <Card className=" rounded-4" sx={{ boxShadow: "none", backgroundColor : "backgroundElement.children"}}>
+          <CardContent className="">
             <h3 className="d-flex justify-content-between align-items-center">
               Danh sách địa chỉ nhận hàng
               <Button
@@ -142,48 +144,51 @@ const ShippingList = () => {
               </Button>
             </h3>
             <hr />
-            <div className="card">
-              {shippingInfo.length > 0 ? (
-                shippingInfo.map((info) => (
-                  <div className="card mb-3" id="cartItem" key={info.id}>
-                    <div className="card-body d-flex justify-content-between align-items-center">
-                      <h5 className="mb-1">{info.address}</h5>
-                      <div className="button-group">
-                        <Button
-                          className="me-2"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal3"
-                          onClick={() => setSelectedShipping(info)}
-                          style={{
-                            width: "auto",
-                            backgroundColor: "rgb(255, 255, 157)",
-                            color: "rgb(100, 107, 0)",
-                          }}
-                          disableElevation
-                        >
-                          Sửa
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(info.id)}
-                          style={{
-                            width: "auto",
-                            backgroundColor: "rgb(255, 184, 184)",
-                            color: "rgb(198, 0, 0)",
-                          }}
-                          disableElevation
-                        >
-                          Xóa
-                        </Button>
-                      </div>
+            {shippingInfo.length > 0 ? (
+              shippingInfo.map((info) => (
+                <Card
+                  className="mb-3"
+                  id=""
+                  // sx={{ backgroundColor: "backgroundElement.children" }}
+                  key={info.id}
+                >
+                  <CardContent className=" d-flex justify-content-between align-items-center">
+                    <h5 className="mb-1">{info.address}</h5>
+                    <div className="button-group">
+                      <Button
+                        className="me-2"
+                        data-bs-toggle="modal"
+                        data-bs-target="#exampleModal3"
+                        onClick={() => setSelectedShipping(info)}
+                        style={{
+                          width: "auto",
+                          backgroundColor: "rgb(255, 255, 157)",
+                          color: "rgb(100, 107, 0)",
+                        }}
+                        disableElevation
+                      >
+                        Sửa
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(info.id)}
+                        style={{
+                          width: "auto",
+                          backgroundColor: "rgb(255, 184, 184)",
+                          color: "rgb(198, 0, 0)",
+                        }}
+                        disableElevation
+                      >
+                        Xóa
+                      </Button>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <h1>Chưa có địa chỉ nhận hàng nào.</h1>
-              )}
-            </div>
-          </div>
-        </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <h1>Chưa có địa chỉ nhận hàng nào.</h1>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div
@@ -194,7 +199,10 @@ const ShippingList = () => {
         aria-hidden="true"
       >
         <div className="modal-dialog">
-          <div className="modal-content">
+          <div
+            className="modal-content"
+            style={{ backgroundColor: mode === "light" ? "white" : "#363535" }}
+          >
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="exampleModalLabel3">
                 Cập nhật địa chỉ nhận hàng
@@ -323,7 +331,10 @@ const ShippingList = () => {
         aria-hidden="true"
       >
         <div className="modal-dialog">
-          <div className="modal-content">
+          <div
+            className="modal-content"
+            style={{ backgroundColor: mode === "light" ? "white" : "#363535" }}
+          >
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="exampleModalLabel2">
                 Thêm địa chỉ nhận hàng

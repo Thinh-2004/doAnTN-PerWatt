@@ -1,0 +1,43 @@
+
+
+/* Light Mode Styles */
+.table-light-mode .ant-table {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.table-light-mode .ant-table-thead > tr > th {
+  background-color: #f0f0f0;
+  color: #000000;
+}
+
+.table-light-mode .ant-table-tbody > tr:hover {
+  background-color: #e6f7ff;
+}
+
+.table-light-mode .ant-empty {
+  background-color: #ffffff;
+  color: #000000;
+  padding: 20px;
+}
+
+/* Dark Mode Styles */
+.table-dark-mode .ant-table {
+  background-color: #1f1f1f;
+  color: #ffffff;
+}
+
+.table-dark-mode .ant-table-thead > tr > th {
+  background-color: #2b2b2b;
+  color: #ffffff;
+}
+
+.table-dark-mode .ant-table-tbody > tr:hover {
+  background-color: #3a3a3a;
+}
+
+.table-dark-mode .ant-empty {
+  background-color: #1f1f1f;
+  color: #ffffff;
+  padding: 20px;
+}

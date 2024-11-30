@@ -8,9 +8,8 @@ const ListProductStore = ({ data }) => {
   //Tạo state nhận api voucher theo id product
   //Sử dụng đối tượng để lưu voucher theo từng idProduct
   const [voucher, setVoucher] = useState({});
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
+  //Tạo state để nhận số sao theo idProduct
+  const [productRating, setProductRating] = useState({});
 
   const formatPrice = (value) => {
     if (!value) return "";
@@ -37,9 +36,24 @@ const ListProductStore = ({ data }) => {
     }
   };
 
+  //Hàm xử lí số sao
+  const loadCountEvaluate = async (idProduct) => {
+    try {
+      const res = await axios.get(`/comment/count/evaluate/${idProduct}`);
+      //Lưu product rating theo idProduct
+      setProductRating((pre) => ({
+        ...pre,
+        [idProduct]: res.data,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     data.forEach((fill) => {
       loadData(fill.product.id);
+      loadCountEvaluate(fill.product.id);
     });
   }, [data]);
 
@@ -109,6 +123,24 @@ const ListProductStore = ({ data }) => {
           }
         }
 
+        //Lấy rating tương ứng từng product
+        const productRatings = productRating[fill.product.id] || [];
+
+        // Tính số sao
+        const countRating = productRatings.reduce(
+          (start, rating) => start + rating.rating,
+          0
+        );
+
+        // Tính số lượng bình luận
+        const totalComment = productRatings.length;
+
+        // Kết quả trung bình số sao
+        const resultRating = countRating / totalComment;
+
+        // Làm tròn xuống và chỉ lấy 1 chữ số sau dấu chấm
+        const finalRating = Math.floor(resultRating * 10) / 10;
+
         return (
           <div
             className="col-lg-3 col-md-3 col-sm-3 mb-3 mt-2"
@@ -126,11 +158,7 @@ const ListProductStore = ({ data }) => {
                 className="position-relative d-flex justify-content-center"
               >
                 <img
-                  src={
-                    firstIMG
-                      ? geturlIMG(fill.product.id, firstIMG.imagename)
-                      : "/images/no_img.png"
-                  }
+                  src={firstIMG ? firstIMG.imagename : "/images/no_img.png"}
                   className="img-fluid rounded-3"
                   alt="..."
                   style={{ width: "200px", height: "200px" }}
@@ -154,7 +182,7 @@ const ListProductStore = ({ data }) => {
                       className="rounded-3"
                     />
                   </div>
-                ): null}
+                ) : null}
                 {fill?.product?.store?.taxcode && (
                   <div className="position-absolute bottom-0 end-0">
                     <img
@@ -208,7 +236,12 @@ const ListProductStore = ({ data }) => {
                 <div className="d-flex justify-content-between">
                   <div>
                     <span style={{ fontSize: "12px" }}>
-                      <i className="bi bi-star-fill text-warning"></i> 3.3
+                      <i className="bi bi-star-fill text-warning"></i>{" "}
+                      {finalRating > 5
+                        ? "5.0"
+                        : finalRating < 0 || isNaN(finalRating)
+                        ? "0"
+                        : finalRating}
                     </span>
                   </div>
                   <div>

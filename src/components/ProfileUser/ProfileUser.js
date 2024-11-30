@@ -19,6 +19,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import WarehouseVoucherUser from "./WarehouseVoucherUser/WarehouseVoucherUser";
 
 const ProfileUser = () => {
   const [fill, setFill] = useState([]);
@@ -36,17 +37,23 @@ const ProfileUser = () => {
 
   const theme = useTheme();
 
-  const geturlIMG = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
+
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await axios.get(`userProFile/${id}`);
+        const res = await axios.get(`/userProFile/myInfo`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        });
         setFill(res.data);
 
-        const resUser = await axios.get(`userProFile/${id}`);
+        const resUser = await axios.get(`/userProFile/myInfo`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        });
         setCheckPsasword(resUser.data.password);
         // console.log(checkPassword);
       } catch (error) {
@@ -67,7 +74,15 @@ const ProfileUser = () => {
     }
     try {
       // Gọi API xác thực mật khẩu (nếu có)
-      const res = await axios.post("checkPass", { password, id });
+      const res = await axios.post(
+        "checkPass",
+        { password, id },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        }
+      );
       toast.success("Truy cập thành công");
       setIsChangePassClicked(true);
       changeLink("changePass");
@@ -96,7 +111,7 @@ const ProfileUser = () => {
   return (
     <div>
       <Header />
-      <div className="container">
+      <div className="container-lg">
         <div className="row">
           <div className="col-lg-3 mt-4">
             <Box
@@ -105,9 +120,9 @@ const ProfileUser = () => {
             >
               <div className="d-flex justify-content-center align-items-center mt-2">
                 <img
-                  src={geturlIMG(fill.id, fill.avatar)}
+                  src={ fill.avatar}
                   alt=""
-                  style={{ width: "70px", height: "70px", borderRadius: "50%" }}
+                  style={{ width: "70px", aspectRatio : "1/1", borderRadius: "50%", objectFit : "cover" }}
                 />
                 <label htmlFor="" className="mt-3 mx-3">
                   {fill.fullname}
@@ -273,6 +288,7 @@ const ProfileUser = () => {
                 <Link
                   className="mx-2 text-decoration-none"
                   onClick={() => setIsChangePassClicked(false)}
+                  to={`warehouse/voucher`}
                 >
                   <i className="bi bi-ticket-perforated fs-3 text-danger me-2"></i>
                   <span
@@ -282,7 +298,7 @@ const ProfileUser = () => {
                         : "text-white"
                     }`}
                   >
-                    Kho Voucher
+                    Kho Voucher của tôi
                   </span>
                 </Link>
               </div>
@@ -300,6 +316,10 @@ const ProfileUser = () => {
                 }
               />
               <Route path="/shippingInfo" element={<ShippingList />} />
+              <Route
+                path="/warehouse/voucher"
+                element={<WarehouseVoucherUser />}
+              />
             </Routes>
           </div>
         </div>

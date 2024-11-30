@@ -9,7 +9,7 @@ import { ThemeModeContext } from "./components/ThemeMode/ThemeModeProvider";
 import { useContext, useEffect } from "react";
 
 function App() {
-  CheckTimeLogOut();
+  // CheckTimeLogOut();
   const { mode } = useContext(ThemeModeContext);
 
   // const detectDevTools = () => {
@@ -22,24 +22,38 @@ function App() {
   //       window.outerHeight - window.innerHeight > threshold
   //     ) {
   //       isDevToolsOpen = true;
-  //       window.location.href = "/404/NotFound";
+  //       handleDevToolsOpen();
   //     }
   //   };
 
-  //   // const checkExecutionDelay = () => {
-  //   //   const start = performance.now();
-  //   //   setTimeout(() => {
-  //   //     const end = performance.now();
-  //   //     if (end - start > 100) {
-  //   //       // độ trễ cao, giả định DevTools mở
-  //   //       isDevToolsOpen = true;
-  //   //       window.location.href = "/404/NotFound";
-  //   //     }
-  //   //   }, 100);
-  //   // };
+  //   const checkExecutionTime = () => {
+  //     const start = performance.now();
+  //     // debugger; // Lệnh này sẽ chậm hơn khi DevTools đang mở
+  //     const end = performance.now();
 
+  //     if (end - start > 100) {
+  //       // Nếu thời gian thực thi vượt quá 100ms, DevTools có khả năng đang mở
+  //       isDevToolsOpen = true;
+  //       handleDevToolsOpen();
+  //     }
+  //   };
+
+  //   const handleDevToolsOpen = () => {
+  //     if (isDevToolsOpen) {
+  //       window.location.href = "/"; // Điều hướng về trang đăng nhập
+  //       localStorage.clear(); // Xóa dữ liệu người dùng
+  //       console.log(
+  //         "%cVui lòng tắt developer tool để tiếp tục trải nghiệm website",
+  //         "color: red; font-size: 16px; font-weight: bold;"
+  //       );
+  //     }
+  //   };
+
+  //   // Lắng nghe sự kiện thay đổi kích thước cửa sổ
   //   window.addEventListener("resize", checkSizeDifference);
-  //   // setInterval(checkExecutionDelay, 1000);
+
+  //   // Kiểm tra thời gian thực thi
+  //   setInterval(checkExecutionTime, 1000); // Kiểm tra định kỳ mỗi giây
   // };
 
   // useEffect(() => {

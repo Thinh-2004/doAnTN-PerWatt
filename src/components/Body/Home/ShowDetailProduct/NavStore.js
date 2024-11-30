@@ -1,15 +1,11 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import axios from "../../../../Localhost/Custumize-axios";
 import { Box } from "@mui/material";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 
 const NavStore = ({ FillDetailPr, countProductStore }) => {
   const {mode} = useContext(ThemeModeContext);
-  const geturlIMGStore = (userId, filename) => {
-    return `${axios.defaults.baseURL}files/user/${userId}/${filename}`;
-  };
-  
+ 
   //Hàm cắt chuỗi địa chỉ
   const splitByAddress = (address) => {
     const parts = address?.split(",");
@@ -62,10 +58,9 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
               <img
                 src={
                   FillDetailPr && FillDetailPr.store
-                    ? geturlIMGStore(
-                        FillDetailPr.store.user.id,
+                    ? 
                         FillDetailPr.store.user.avatar
-                      )
+                      
                     : "/images/no_img.png"
                 }
                 alt=""

@@ -5,11 +5,12 @@ import axios from "../../../../Localhost/Custumize-axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../Header/Header";
 import "./ShowDetailProduct.css";
-import { Box, Button, TextField, useTheme } from "@mui/material";
+import { Box, Button, Container, TextField, useTheme } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ListImageDetailProduct from "./ListImageDetailProduct";
 import NavStore from "./NavStore";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
+import Comments from "../Comments/Comments";
 
 const DetailProduct = () => {
   const { slug } = useParams();
@@ -22,9 +23,9 @@ const DetailProduct = () => {
   const [quantity, setQuantity] = useState(1); //trạng thái cho số lượng trước khi thêm giỏ hàng
   const [productDetailIds, setproductDetailIds] = useState(null);
 
-  const geturlImgDetailProduct = (detailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
-  };
+  // const geturlImgDetailProduct = (detailId, filename) => {
+  //   return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
+  // };
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
@@ -34,7 +35,8 @@ const DetailProduct = () => {
   //Tạo state nhận api voucher theo id product
   const [voucher, setVoucher] = useState([]);
   const [result, setResult] = useState(""); // Giá sau khi giảm
-  const navigate = useNavigate();
+  const [commentCount, setCommentCount] = useState([]);
+  const [ratingAvage, setRatingAvage] = useState(0);
 
   const loadProductDetail = async () => {
     try {
@@ -212,7 +214,7 @@ const DetailProduct = () => {
       await axios.post("/cart/add", cartItem);
       setIsCountAddCart(true);
       toast.success("Thêm sản phẩm thành công!");
-      navigate("/cart");
+      changeLink("/cart");
     } catch (error) {
       toast.error("Thêm sản phẩm thất bại!" + error);
       console.error("Error adding to cart:", error);
@@ -248,6 +250,7 @@ const DetailProduct = () => {
     setproductDetailIds(idDetail);
   };
 
+  //Render số lượng chi tiết sản phẩm khi click chọn
   useEffect(() => {
     //số lượng của sản phẩm chi tiết
     if (fillDetail.length === 1) {
@@ -262,7 +265,6 @@ const DetailProduct = () => {
     try {
       const res = await axios.get(`fillVoucherPrice/${key}`);
       setVoucher(res.data);
-      console.log(res.data);
     } catch (error) {
       console.log(error);
     }
@@ -272,6 +274,37 @@ const DetailProduct = () => {
     if (FillDetailPr) {
       loadData(FillDetailPr.id);
     }
+
+    const loadCountEvaluate = async () => {
+      try {
+        const res = await axios.get(
+          `/comment/count/evaluate/${FillDetailPr.id}`
+        );
+        setCommentCount(res.data);
+
+        // Tính số sao
+        const countRating = res.data.reduce(
+          (start, rating) => start + rating.rating,
+          0
+        );
+
+        // Tính số lượng bình luận
+        const totalComment = res.data.length;
+
+        // Kết quả trung bình số sao
+        const result = countRating / totalComment;
+
+        // Làm tròn xuống và chỉ lấy 1 chữ số sau dấu chấm
+        const finalRating = Math.floor(result * 10) / 10;
+
+        // Cập nhật giá trị vào state
+        if (finalRating > 5) setRatingAvage(5.0);
+        else setRatingAvage(finalRating);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    if (FillDetailPr) loadCountEvaluate();
   }, [FillDetailPr]);
 
   //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
@@ -327,10 +360,63 @@ const DetailProduct = () => {
     }
   }, [voucher]);
 
+  // const addToCartNow = async (productId) => {
+  //   const user = localStorage.getItem("user")
+  //     ? JSON.parse(localStorage.getItem("user"))
+  //     : null; // Thay thế bằng ID người dùng thực tế
+  //   if (user == null || user === "") {
+  //     confirmAlert({
+  //       title: "Bạn chưa đăng nhập",
+  //       message:
+  //         "Hãy đăng nhập để có thể thêm hoặc mua sản phẩm yêu thích của bạn",
+  //       buttons: [
+  //         {
+  //           label: "Đi tới đăng nhập",
+  //           onClick: () => {
+  //             const toastId = toast.loading("Vui lòng chờ...");
+  //             setTimeout(() => {
+  //               toast.update(toastId, {
+  //                 render: "Chuyển tới form đăng nhập thành công",
+  //                 type: "message",
+  //                 isLoading: false,
+  //                 autoClose: 5000,
+  //                 closeButton: true,
+  //               });
+  //               changeLink("/login");
+  //             }, 500);
+  //           },
+  //         },
+  //         {
+  //           label: "Hủy",
+  //         },
+  //       ],
+  //     });
+  //     return;
+  //   }
+
+  //   const cartItem = {
+  //     quantity: quantity,
+  //     user: { id: user.id },
+  //     productDetail: { id: productDetailIds },
+  //   };
+  //   // console.log("ở đây nè id product " + productDetailIds);
+  //   // console.log("ở đây nè số lượng " + quantity);
+
+  //   try {
+  //     await axios.post("/cart/add", cartItem);
+  //     setIsCountAddCart(true);
+  //     toast.success("Thêm sản phẩm thành công!");
+  //     changeLink("/cart");
+  //   } catch (error) {
+  //     toast.error("Thêm sản phẩm thất bại!" + error);
+  //     console.error("Error adding to cart:", error);
+  //   }
+  // };
+
   return (
     <>
       <Header reloadCartItems={isCountCart} />
-      <div className="container mt-4">
+      <Container className="mt-4" maxWidth="xl">
         <Box
           className="row rounded-4 shadow"
           sx={{ backgroundColor: "backgroundElement.children" }}
@@ -362,7 +448,7 @@ const DetailProduct = () => {
                   <span htmlFor="">
                     <i className="bi bi-star-fill text-warning">
                       <label htmlFor="" className="fs-6">
-                        5.0
+                        {ratingAvage || 0}
                       </label>
                     </i>
                   </span>
@@ -371,7 +457,7 @@ const DetailProduct = () => {
                 <div className="mx-2 mt-1">
                   <span htmlFor="">
                     <strong htmlFor="">Số lượng đánh giá: </strong>
-                    <label htmlFor="">999</label>
+                    <label htmlFor="">{formatCount(commentCount.length)}</label>
                   </span>
                 </div>
                 <span className="border-end"></span>
@@ -513,6 +599,7 @@ const DetailProduct = () => {
               </div>
               <div className="col-lg-6 col-md-6 col-sm-6 align-content-end ">
                 <div className="d-flex">
+                  {/* Mua ngay */}
                   <Button
                     className="btn w-75 h-75 rounded-3"
                     id="btn-buy-now"
@@ -528,6 +615,7 @@ const DetailProduct = () => {
                   >
                     <i className="bi bi-cash fs-5"></i>
                   </Button>
+
                   <Button
                     className="btn mx-2 w-75 h-25 rounded-3"
                     disableElevation
@@ -586,10 +674,7 @@ const DetailProduct = () => {
                         }}
                       >
                         <img
-                          src={geturlImgDetailProduct(
-                            fillDetail.id,
-                            fillDetail.imagedetail
-                          )}
+                          src={fillDetail.imagedetail}
                           alt="Ảnh phân loại sản phẩm"
                           className="img-fluid"
                           style={{ maxWidth: "50px", maxHeight: "50px" }}
@@ -646,18 +731,9 @@ const DetailProduct = () => {
             </span>
           </div>
         </Box>
-        <Box
-          className="row rounded-4 mt-3"
-          sx={{ backgroundColor: "backgroundElement.children" }}
-        >
-          <div className="p-3">
-            <h4>Đánh giá sản phẩm</h4>
-            <span className="p-0 m-0">
-              <hr />
-            </span>
-          </div>
-        </Box>
-      </div>
+        {/* Phần Comments */}
+        <Comments FillDetailPr={FillDetailPr} />
+      </Container>
     </>
   );
 };
