@@ -15,6 +15,8 @@ const ShippingList = () => {
   const [newAddress, setNewAddress] = useState("");
   const [addingAddress, setAddingAddress] = useState("");
   const [resetForm, setResetForm] = useState(false);
+  const [newHomeUpdate, setNewHomeUpdate] = useState("");
+  const [newHomeAdd, setNewHomeAdd] = useState("");
 
   const fetchShippingInfo = async () => {
     try {
@@ -29,6 +31,12 @@ const ShippingList = () => {
 
   const handleReset = () => {
     setResetForm(true);
+    setNewHomeAdd("");
+    setNewHomeUpdate("");
+    setTimeout(() => {
+      setResetForm(false);
+      console.log("Reset hoàn tất!");
+    }, 1000);
   };
 
   useEffect(() => {
@@ -48,15 +56,9 @@ const ShippingList = () => {
         user: { id: user.id },
       });
 
-      handleReset();
       toast.success("Thêm địa chỉ thành công!");
       fetchShippingInfo();
-      const closeModalButton = document.querySelector(
-        '[data-bs-dismiss="modal"]'
-      );
-      if (closeModalButton) {
-        closeModalButton.click();
-      }
+      handleReset();
     } catch (error) {
       console.error("Error adding shipping information:", error);
       toast.error("Lỗi thêm địa chỉ!");
@@ -74,12 +76,14 @@ const ShippingList = () => {
         ...selectedShipping,
         address: newAddress,
       });
-      handleReset();
       toast.success("Cập nhật địa chỉ thành công!");
       fetchShippingInfo();
+      handleReset();
+
       const closeModalButton = document.querySelector(
         '[data-bs-dismiss="modal"]'
       );
+
       if (closeModalButton) {
         closeModalButton.click();
       }
@@ -221,10 +225,8 @@ const ShippingList = () => {
                 label="Địa chỉ nhận hàng cũ"
                 variant="outlined"
                 value={selectedShipping ? selectedShipping.address : ""}
-                slotProps={{
-                  input: {
-                    readOnly: true,
-                  },
+                inputProps={{
+                  readOnly: true,
                 }}
               />
 
@@ -245,17 +247,41 @@ const ShippingList = () => {
                 variant="outlined"
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
-                slotProps={{
-                  input: {
-                    readOnly: true,
-                  },
+                inputProps={{
+                  readOnly: true,
                 }}
               />
 
-              <FormSelectAdress
+              {/* <FormSelectAdress
                 apiAddress={(fullAddress) => setNewAddress(fullAddress)}
                 resetForm={resetForm}
                 editFormAddress={selectedShipping.address}
+              /> */}
+
+              <FormSelectAdress
+                apiAddress={(fullAddressUpdate) => {
+                  setNewAddress(`${newHomeUpdate} ${fullAddressUpdate}`);
+                }}
+                resetForm={resetForm}
+                setNewAddress=""
+                editFormAddress={newAddress}
+              />
+
+              <TextField
+                className="mt-3"
+                size="small"
+                fullWidth
+                id="outlined-basic"
+                label="Số nhà"
+                variant="outlined"
+                value={newHomeUpdate}
+                onChange={(e) => setNewHomeUpdate(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setNewAddress(`${newHomeUpdate}, ${newAddress}`);
+                    setNewHomeUpdate(""); // Xoá input sau khi nhấn Enter
+                  }
+                }}
               />
 
               <Button
@@ -274,6 +300,7 @@ const ShippingList = () => {
             <div className="modal-footer">
               <Button
                 onClick={handleUpdate}
+                data-bs-dismiss="modal"
                 style={{
                   width: "auto",
                   backgroundColor: "rgb(204,244,255)",
@@ -322,21 +349,62 @@ const ShippingList = () => {
                 size="small"
                 fullWidth
                 id="outlined-basic"
-                label="Nhập địa chỉ nhận hàng"
+                label="Địa chỉ nhận hàng"
                 variant="outlined"
                 value={addingAddress}
                 onChange={(e) => setAddingAddress(e.target.value)}
-                slotProps={{
-                  input: {
-                    readOnly: true,
-                  },
+                inputProps={{
+                  readOnly: true,
                 }}
               />
 
-              <FormSelectAdress
+              {/* <FormSelectAdress
                 apiAddress={(fullAddress) => setAddingAddress(fullAddress)}
                 resetForm={resetForm}
                 editFormAddress={addingAddress}
+              /> */}
+
+              <FormSelectAdress
+                apiAddress={(fullAddressAdd) => {
+                  setAddingAddress(`${newHomeAdd} ${fullAddressAdd}`);
+                }}
+                resetForm={resetForm}
+                setAddingAddress=""
+                editFormAddress={addingAddress}
+              />
+
+              {/* <TextField
+                className="mt-3"
+                size="small"
+                fullWidth
+                id="outlined-basic"
+                label="Số nhà"
+                variant="outlined"
+                value={newHomeAdd}
+                onChange={(e) => setNewHomeAdd(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setNewAddress(`${newHomeAdd} ${addingAddress}`);
+                    setNewHomeAdd(""); // Xoá input sau khi nhấn Enter
+                  }
+                }}
+              /> */}
+
+              <TextField
+                className="mt-3"
+                size="small"
+                fullWidth
+                id="outlined-basic"
+                label="Số nhà"
+                variant="outlined"
+                value={newHomeAdd}
+                onChange={(e) => setNewHomeAdd(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setAddingAddress(`${newHomeAdd}, ${addingAddress}`); // Đúng state cần cập nhật
+                    setNewHomeAdd(""); // Xóa input sau khi nhập
+                  }
+                }}
               />
 
               <Button

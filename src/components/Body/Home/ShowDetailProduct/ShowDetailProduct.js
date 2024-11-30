@@ -34,6 +34,7 @@ const DetailProduct = () => {
   //Tạo state nhận api voucher theo id product
   const [voucher, setVoucher] = useState([]);
   const [result, setResult] = useState(""); // Giá sau khi giảm
+  const navigate = useNavigate();
 
   const loadProductDetail = async () => {
     try {
@@ -156,10 +157,62 @@ const DetailProduct = () => {
     // console.log("ở đây nè số lượng " + quantity);
 
     try {
-      const response = await axios.post("/cart/add", cartItem);
-      // console.log("Added to cart:", response.data);
+      await axios.post("/cart/add", cartItem);
       setIsCountAddCart(true);
       toast.success("Thêm sản phẩm thành công!");
+    } catch (error) {
+      toast.error("Thêm sản phẩm thất bại!" + error);
+      console.error("Error adding to cart:", error);
+    }
+  };
+
+  const addToCartNow = async (productId) => {
+    const user = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : null; // Thay thế bằng ID người dùng thực tế
+    if (user == null || user === "") {
+      confirmAlert({
+        title: "Bạn chưa đăng nhập",
+        message:
+          "Hãy đăng nhập để có thể thêm hoặc mua sản phẩm yêu thích của bạn",
+        buttons: [
+          {
+            label: "Đi tới đăng nhập",
+            onClick: () => {
+              const toastId = toast.loading("Vui lòng chờ...");
+              setTimeout(() => {
+                toast.update(toastId, {
+                  render: "Chuyển tới form đăng nhập thành công",
+                  type: "message",
+                  isLoading: false,
+                  autoClose: 5000,
+                  closeButton: true,
+                });
+                changeLink("/login");
+              }, 500);
+            },
+          },
+          {
+            label: "Hủy",
+          },
+        ],
+      });
+      return;
+    }
+
+    const cartItem = {
+      quantity: quantity,
+      user: { id: user.id },
+      productDetail: { id: productDetailIds },
+    };
+    // console.log("ở đây nè id product " + productDetailIds);
+    // console.log("ở đây nè số lượng " + quantity);
+
+    try {
+      await axios.post("/cart/add", cartItem);
+      setIsCountAddCart(true);
+      toast.success("Thêm sản phẩm thành công!");
+      navigate("/cart");
     } catch (error) {
       toast.error("Thêm sản phẩm thất bại!" + error);
       console.error("Error adding to cart:", error);
@@ -185,7 +238,7 @@ const DetailProduct = () => {
 
       // Tính giá giảm
       const priceDown =
-        selectedProduct.price * (voucher[0].discountprice / 100);
+        selectedProduct.price * (voucher[0]?.discountprice / 100);
       const result = selectedProduct.price - priceDown;
       if (result) {
         setResult(formatPrice(result));
@@ -463,6 +516,13 @@ const DetailProduct = () => {
                   <Button
                     className="btn w-75 h-75 rounded-3"
                     id="btn-buy-now"
+                    onClick={() => {
+                      if (!productDetailIds || productDetailIds.length > 1) {
+                        toast.warning("Bạn chưa chọn loại sản phẩm");
+                      } else {
+                        addToCartNow(FillDetailPr ? FillDetailPr.id : null);
+                      }
+                    }}
                     disabled={totalQuantity === 0}
                     disableElevation
                   >

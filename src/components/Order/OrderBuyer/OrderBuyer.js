@@ -10,14 +10,8 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-<<<<<<< HEAD
-import { Button } from "@mui/material";
-import { Link } from "react-router-dom";
-import useSession from "../../../Session/useSession";
-=======
 import { Button, Card, CardContent } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -62,8 +56,6 @@ const Order = () => {
     return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
   };
 
-<<<<<<< HEAD
-=======
   const [products, setProducts] = useState([]);
   const location = useLocation();
   const query = new URLSearchParams(location.search);
@@ -123,7 +115,6 @@ const Order = () => {
         }));
         //00 = thành công
         if (resultCode === "0") {
-          console.log("Calling API...");
           const res = await axios.post("/createMoMoOrder", {
             order,
             orderDetails,
@@ -142,7 +133,6 @@ const Order = () => {
     createMethodMoMo();
   }, [fill]);
 
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
   useEffect(() => {
     const load = async () => {
       try {
@@ -202,23 +192,37 @@ const Order = () => {
     });
   };
 
-  const handleMarkAsReceived = async (orderId) => {
-    const now = new Date().toISOString();
-    try {
-      await axios.put(`/order/${orderId}/status`, {
-        status: "Hoàn thành",
-        receivedate: now,
-      });
-      setFill((prevFill) =>
-        prevFill.map((order) =>
-          order.id === orderId
-            ? { ...order, orderstatus: "Hoàn thành", receivedate: now }
-            : order
-        )
-      );
-    } catch (error) {
-      console.log(error);
-    }
+  const handleMarkAsReceived = (orderId) => {
+    confirmAlert({
+      title: "Xác nhận nhận hàng",
+      message: "Bạn có chắc chắn muốn xác nhận đã nhận được hàng?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            const now = new Date().toISOString();
+            try {
+              await axios.put(`/order/${orderId}/status`, {
+                status: "Hoàn thành",
+                receivedate: now,
+              });
+              setFill((prevFill) =>
+                prevFill.map((order) =>
+                  order.id === orderId
+                    ? { ...order, orderstatus: "Hoàn thành", receivedate: now }
+                    : order
+                )
+              );
+            } catch (error) {
+              console.log(error);
+            }
+          },
+        },
+        {
+          label: "Không",
+        },
+      ],
+    });
   };
 
   const fillOrderDetailbyOrderID = async (orderId) => {
@@ -257,14 +261,13 @@ const Order = () => {
     }
 
     return filteredOrders.map((order) => (
-<<<<<<< HEAD
-      <div className="card rounded-3 mt-3" id="cartItem" key={order.id}>
-        <div className="card-body">
-=======
-      <Card className="rounded-3 mt-3" key={order.id} sx={{backgroundColor : "backgroundElement.children"}}>
+      <Card
+        className="rounded-3 mt-3"
+        key={order.id}
+        sx={{ backgroundColor: "backgroundElement.children" }}
+      >
         <CardContent className="">
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
-          <div className="d-flex align-items-center mb-1">
+          <div className="d-flex align-items-center mb-3">
             <Link to={`/pageStore/${order.store.slug}`}>
               <img
                 src={getAvtUser(
@@ -284,7 +287,7 @@ const Order = () => {
                 alt=""
               />
             </Link>
-            <h5 id="nameShop" className="mt-1">
+            <h5 id="nameShop" className="mt-3">
               <Link
                 className="inherit-text"
                 to={`/pageStore/${order.store.slug}`}
@@ -307,7 +310,6 @@ const Order = () => {
               {order.paymentmethod.type}
             </div>
           </div>
-
           {orderDetails[order.id] &&
             orderDetails[order.id].slice(0, 2).map((orderDetail) => {
               const firstIMG = orderDetail.productDetail.product.images?.[0];
@@ -340,22 +342,15 @@ const Order = () => {
                           Phân loại: {orderDetail.productDetail.namedetail}
                         </label>
                       )}
-<<<<<<< HEAD
-=======
                       <div>Giá: {formatPrice(orderDetail.price) + " VNĐ"}</div>
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                       <div>x {orderDetail.quantity}</div>
 
                       <div>
                         Tổng:{" "}
                         <span className="text-danger">
-<<<<<<< HEAD
-                          {formatPrice(orderDetail.price) + " VNĐ"}
-=======
                           {formatPrice(
                             orderDetail.price * orderDetail.quantity
                           ) + " VNĐ"}
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                         </span>
                       </div>
                     </div>
@@ -363,14 +358,34 @@ const Order = () => {
                 </div>
               );
             })}
-          {orderDetails[order.id] && orderDetails[order.id].length > 3 && (
+          <div className="d-flex justify-content-end">
+            <div className="al end">
+              Thành tiền: {formatPrice(order.totalamount) + " VNĐ"}
+            </div>
+          </div>
+          {orderDetails[order.id] && orderDetails[order.id].length > 2 && (
             <Button href={`/orderDetail/${order.id}`}>
               + {orderDetails[order.id].length - 2} sản phẩm
             </Button>
           )}
           <hr />
           <div className="d-flex justify-content-between align-items-center">
-            <div>{order.note}</div>
+            {order.note ? (
+              <div
+                style={{
+                  padding: "5px",
+                  backgroundColor: "rgb(255, 184, 184)",
+                  color: "rgb(198, 0, 0)",
+                  borderRadius: "10px",
+                  display: "inline-block",
+                }}
+              >
+                {order.note}
+              </div>
+            ) : (
+              <div></div>
+            )}
+
             <div className="d-flex align-items-center">
               <div className="me-3">
                 {order.orderstatus === "Chờ nhận hàng" ? (
@@ -398,24 +413,9 @@ const Order = () => {
                           )
                         )
                       ).map((productId) => {
-                        const orderDetail = orderDetails[order.id].find(
+                        orderDetails[order.id].find(
                           (detail) =>
                             detail.productDetail.product.id === productId
-                        );
-                        return (
-                          <Button
-                            className="ms-3"
-                            key={orderDetail?.productDetail?.product?.slug}
-                            href={`/detailProduct/${orderDetail?.productDetail?.product?.slug}`}
-                            style={{
-                              width: "auto",
-                              backgroundColor: "rgb(255, 184, 184)",
-                              color: "rgb(198, 0, 0)",
-                            }}
-                            disableElevation
-                          >
-                            Mua lại
-                          </Button>
                         );
                       })
                     ) : (
@@ -468,20 +468,14 @@ const Order = () => {
     <div>
       <Header />
       <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
-<<<<<<< HEAD
-      
-=======
-
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       <div
         className="col-12 col-md-12 col-lg-10 offset-lg-1"
         style={{ transition: "0.5s" }}
       >
-<<<<<<< HEAD
-        <Box sx={{ width: "100%", background: "white" }} className="rounded-3">
-=======
-        <Box sx={{ width: "100%", backgroundColor: "backgroundElement.children" }} className="rounded-3">
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
+        <Box
+          sx={{ width: "100%", backgroundColor: "backgroundElement.children" }}
+          className="rounded-3"
+        >
           <Box
             sx={{
               borderBottom: 1,
@@ -495,18 +489,15 @@ const Order = () => {
               value={value}
               onChange={handleChange}
               aria-label="basic tabs example"
-<<<<<<< HEAD
-              sx={{ backgroundColor: "white" }}
-=======
               sx={{ backgroundColor: "backgroundElement.children" }}
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
             >
               {[
                 "Tất cả",
                 "Đang chờ duyệt",
-                "Chờ giao hàng",
+                "Đang vận chuyển",
                 "Hoàn thành",
                 "Hủy",
+                "Trả hàng",
               ].map((tab, index) => (
                 <Tab label={tab} key={index} />
               ))}
@@ -515,9 +506,10 @@ const Order = () => {
           {[
             "Tất cả",
             "Đang chờ duyệt",
-            "Chờ giao hàng",
+            "Đang vận chuyển",
             "Hoàn thành",
             "Hủy",
+            "Trả hàng",
           ].map((tab, index) => (
             <CustomTabPanel value={value} index={index} key={index}>
               <div>
@@ -527,12 +519,14 @@ const Order = () => {
                       return true;
                     case "Đang chờ duyệt":
                       return order.orderstatus === "Đang chờ duyệt";
-                    case "Chờ giao hàng":
-                      return order.orderstatus === "Chờ giao hàng";
+                    case "Đang vận chuyển":
+                      return order.orderstatus === "Đang vận chuyển";
                     case "Hoàn thành":
                       return order.orderstatus === "Hoàn thành";
                     case "Hủy":
                       return order.orderstatus === "Hủy";
+                    case "Trả hàng":
+                      return order.orderstatus === "Trả hàng";
                     default:
                       return false;
                   }

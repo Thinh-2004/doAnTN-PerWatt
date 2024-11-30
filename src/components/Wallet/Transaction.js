@@ -1,35 +1,20 @@
-<<<<<<< HEAD
-import React, { useEffect, useRef, useState } from "react";
-=======
 import React, { useState } from "react";
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 import axios from "../../Localhost/Custumize-axios";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import { toast } from "react-toastify";
 import FormControl from "@mui/material/FormControl";
 import { useParams, Link } from "react-router-dom";
-<<<<<<< HEAD
-import { Button } from "@mui/material";
-=======
 import { Button, Card, CardContent, TextField } from "@mui/material";
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 
 const Transaction = () => {
-<<<<<<< HEAD
-  const [depositAmount, setDepositAmount] = useState("");
-  const [formattedDepositAmount, setFormattedDepositAmount] = useState("");
-
-  const [wallet, setWallet] = useState("");
-=======
   const [depositAmount, setDepositAmount] = useState(0);
   const [formattedDepositAmount, setFormattedDepositAmount] = useState("");
 
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
   const { status } = useParams();
   const [selectedValue, setSelectedValue] = useState("");
 
@@ -43,24 +28,16 @@ const Transaction = () => {
   const walletLink =
     statusWallet === "seller"
       ? "/profileMarket/wallet/seller"
-<<<<<<< HEAD
+      : user.id === 1
+      ? "/admin/wallet"
       : "/wallet/buyer";
-=======
-      : user.id === 1 ? "/admin/wallet" :"/wallet/buyer";
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
   //Nạp
   const handlePerPay = async () => {
     try {
-<<<<<<< HEAD
-      if (depositAmount < 1000 || depositAmount > 10000000) {
-        toast.warning(
-          "Vui lòng nhập số tiền tối thiểu 1000 VNĐ và tối đa 10.000.000 VNĐ!"
-=======
       if (depositAmount < 10000 || depositAmount > 10000000) {
         toast.warning(
           "Vui lòng nhập số tiền tối thiểu 10.000 VNĐ và tối đa 10.000.000 VNĐ!"
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
         );
         return;
       }
@@ -70,16 +47,6 @@ const Transaction = () => {
         return;
       }
 
-<<<<<<< HEAD
-      // const res = await axios.put(`wallet/update/${user.id}`, {
-      //   balance: newBalance,
-      // });
-
-      // setWallet(res.data);
-      // setDepositAmount("");
-      // addTransaction(depositAmount, "Nạp tiền");
-=======
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       sessionStorage.setItem("depositAmount", "Nạp tiền");
 
       const vnPay = await axios.post("/api/payment/create_payment", {
@@ -87,18 +54,6 @@ const Transaction = () => {
       });
 
       window.location.href = vnPay.data.url;
-<<<<<<< HEAD
-
-      toast.success("Nạp tiền thành công");
-      // const closeModalButton = document.querySelector(
-      //   '[data-bs-dismiss="modal"]'
-      // );
-      // if (closeModalButton) {
-      //   closeModalButton.click();
-      // }
-      // navigate(walletLink);
-=======
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
     } catch (error) {
       console.error(
         "Error depositing money:",
@@ -119,55 +74,9 @@ const Transaction = () => {
     }
   };
 
-<<<<<<< HEAD
-  const addTransaction = async (amount, transactionType) => {
-    const now = new Date();
-    const adjustedAmount = transactionType === "Rút tiền" ? -amount : amount;
-
-    try {
-      const response = await axios.post(
-        `wallettransaction/create/${wallet.id}`,
-        {
-          amount: adjustedAmount,
-          transactiontype: transactionType,
-          transactiondate: now,
-          user: { id: user.id },
-        }
-      );
-      console.log(response.data);
-    } catch (error) {
-      console.error(
-        "Đã có lỗi xảy ra:",
-        error.response ? error.response.data : error.message
-      );
-    }
-  };
-
-  const fetchWallet = async () => {
-    try {
-      const res = await axios.get(`wallet/${user.id}`);
-      setWallet(res.data);
-    } catch (error) {
-      console.error(
-        "Error fetching wallet data:",
-        error.response ? error.response.data : error.message
-      );
-    }
-  };
-
-  useEffect(() => {
-    fetchWallet();
-  }, [user.id]);
-
-  const handleDepositAmountChange = (e) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-=======
-
-
   const handleDepositAmountChange = (e) => {
     const value = e.target.value.replace(/[^0-9]/g, "");
     console.log(value);
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
     setDepositAmount(value);
     setFormattedDepositAmount(formatPrice(value));
   };
@@ -183,26 +92,17 @@ const Transaction = () => {
 
   return (
     <div>
-<<<<<<< HEAD
-      {status === "seller" ? null : <Header />}
-=======
       {status === "seller" || user.id === 1 ? null : <Header />}
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       <h1 className="text-center mt-4 mb-4">Nạp tiền</h1>
       <div
         className="col-12 col-md-12 col-lg-10 offset-lg-1 mt-3"
         style={{ transition: "0.5s" }}
       >
-<<<<<<< HEAD
-        <div className="card">
-          <div className="card-body">
-=======
         <Card
           className="rounded-3"
           sx={{ backgroundColor: "backgroundElement.children" }}
         >
           <CardContent className="">
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
             <Button
               variant="contained"
               component={Link}
@@ -223,14 +123,6 @@ const Transaction = () => {
                 <div>
                   <div>
                     <h4>Nạp tiền</h4>
-<<<<<<< HEAD
-                    <input
-                      className="form-control"
-                      type="text"
-                      value={formattedDepositAmount}
-                      onChange={handleDepositAmountChange}
-                      placeholder="Nhập số tiền để nạp"
-=======
                     <TextField
                       id="outlined-basic"
                       // label="Nạp tiền"
@@ -240,8 +132,6 @@ const Transaction = () => {
                       placeholder="Nhập số tiền để nạp"
                       fullWidth
                       size="small"
-
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                     />
                   </div>
                 </div>
@@ -288,13 +178,8 @@ const Transaction = () => {
                 </div>
               </div>
             </div>
-<<<<<<< HEAD
-          </div>
-        </div>
-=======
           </CardContent>
         </Card>
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       </div>
       {status === "seller" ? null : <Footer />}
     </div>

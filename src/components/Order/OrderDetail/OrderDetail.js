@@ -3,15 +3,16 @@ import Header from "../../Header/Header";
 import Footer from "../../Footer/Footer";
 import axios from "../../../Localhost/Custumize-axios";
 import { tailspin } from "ldrs";
-<<<<<<< HEAD
-import { Button } from "@mui/material";
-import { format } from "date-fns";
-=======
-import { Button, Card, CardContent, Typography } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { format } from "date-fns";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
 const OrderDetail = () => {
   const [groupedByStore, setGroupedByStore] = useState({});
@@ -20,6 +21,8 @@ const OrderDetail = () => {
     ? JSON.parse(localStorage.getItem("user"))
     : null;
   const { id } = useParams();
+  const [inputReason, setInputReason] = useState("");
+  const [cancelProductDetail, setCancelProductDetail] = useState("");
 
   tailspin.register();
 
@@ -33,18 +36,19 @@ const OrderDetail = () => {
   const geturlIMGDetail = (productDetailId, filename) => {
     return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
   };
+
+  const load = async () => {
+    try {
+      const res = await axios.get(`/orderDetail/${id}`);
+      const grouped = groupByStore(res.data);
+      setGroupedByStore(grouped);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await axios.get(`/orderDetail/${id}`);
-        const grouped = groupByStore(res.data);
-        setGroupedByStore(grouped);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
   }, [user.id]);
 
@@ -69,39 +73,59 @@ const OrderDetail = () => {
     return format(date, "HH:mm:ss dd/MM/yyyy");
   };
 
-<<<<<<< HEAD
-=======
-  const refundReturn = async (store, totalAmount, productDetailId) => {
-    const resWalletShop = await axios.get(`wallet/${store.user.id}`);
-    if (resWalletShop.data.balance >= totalAmount) {
-      const newBalanceShop = resWalletShop.data.balance - totalAmount * 0.9;
+  // const refundReturn = async (orderDetailId) => {
+  //   try {
+  //     await axios.put(`/orderDetail/update/${orderDetailId}`);
 
-      await axios.put(`wallet/update/${store.user.id}`, {
-        balance: newBalanceShop,
-      });
+  //     toast.success("Gữi yêu cầu thành công!");
+  //     load();
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error("Đã xảy ra lỗi trong quá gữi yêu cầu hoàn tiền!");
+  //   }
+  // };
 
-      const resWalletAdmin = await axios.get(`wallet/${1}`);
-      const newBalanceAdmin = resWalletAdmin.data.balance - totalAmount * 0.1;
+  // const handleConfirmCancel = async (orderDetailId) => {
+  //   if (inputReason) {
+  //     try {
+  //       await axios.put(`/orderDetail/update/${orderDetailId}`, {
+  //         status: `Đang gửi yêu cầu hoàn tiền, lý do: ${inputReason}`,
+  //       });
 
-      await axios.put(`wallet/update/${1}`, {
-        balance: newBalanceAdmin,
-      });
+  //       const closeModalButton = document.querySelector(
+  //         '[data-bs-dismiss="modal"]'
+  //       );
+  //       if (closeModalButton) {
+  //         closeModalButton.click();
+  //       }
+  //       refundReturn(orderDetailId);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  // };
 
-      const resWalletUser = await axios.get(`wallet/${user.id}`);
-      const newBalanceUser = resWalletUser.data.balance + totalAmount;
+  const handleConfirmCancel = async () => {
+    if (inputReason) {
+      try {
+        await axios.post(`/orderDetail/update/${cancelProductDetail}`, {
+          status: `Đang gửi yêu cầu hoàn tiền, lý do: ${inputReason}`,
+        });
 
-      await axios.put(`wallet/update/${user.id}`, {
-        balance: newBalanceUser,
-      });
-
-      toast.success("Hoàn tiền thành công");
-    } else {
-      toast.warning("Tài khoản cửa hàng không đủ để hoàn tiền");
-      return;
+        const closeModalButton = document.querySelector(
+          '[data-bs-dismiss="modal"]'
+        );
+        if (closeModalButton) {
+          closeModalButton.click();
+        }
+        toast.success("Gữi yêu cầu thành công!");
+        load();
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
   return (
     <div>
       <Header />
@@ -135,15 +159,9 @@ const OrderDetail = () => {
                   backgroundColor: "backgroundElement.children",
                 }}
               >
-<<<<<<< HEAD
-                <div className="card-body">
-                  <Button
-                  className="mb-3"
-=======
-                <CardContent className="">
+                <CardContent>
                   <Button
                     className="mb-3"
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                     variant="contained"
                     style={{
                       width: "auto",
@@ -187,7 +205,10 @@ const OrderDetail = () => {
                     const firstIMG =
                       orderDetail.productDetail.product.images?.[0];
                     return (
-                      <div className="d-flex mb-3" key={index}>
+                      <div
+                        className="d-flex mb-3 align-items-center"
+                        key={index}
+                      >
                         <div
                           className="col-1"
                           style={{
@@ -222,7 +243,7 @@ const OrderDetail = () => {
                             className="rounded-3"
                           />
                         </div>
-                        <div className="col-5 mt-3 mx-2">
+                        <div className="col-3 mt-3 mx-2">
                           <div id="fontSizeTitle">
                             {orderDetail.productDetail.product.name}
                           </div>
@@ -244,44 +265,127 @@ const OrderDetail = () => {
                             }
                           </div>
                         </div>
-                        <div className="col-8 mx-3 mt-5">
-                          <div className="d-flex">
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          data-bs-toggle="modal"
+                          data-bs-target="#exampleModal"
+                          hidden
+                        ></button>
+                        <div
+                          className="modal fade"
+                          id="exampleModal"
+                          tabindex="-1"
+                          aria-labelledby="exampleModalLabel"
+                          aria-hidden="true"
+                        >
+                          <div className="modal-dialog">
+                            <div className="modal-content">
+                              <div className="modal-header">
+                                <h1
+                                  className="modal-title fs-5"
+                                  id="exampleModalLabel"
+                                >
+                                  Nhập lý do bạn muốn hoàn tiền
+                                </h1>
+                                <button
+                                  type="button"
+                                  className="btn-close"
+                                  data-bs-dismiss="modal"
+                                  aria-label="Close"
+                                ></button>
+                              </div>
+                              <div className="modal-body">
+                                <TextField
+                                  fullWidth
+                                  size="small"
+                                  id="outlined-basic"
+                                  label="Nhập lý do bạn muốn hoàn tiền"
+                                  variant="outlined"
+                                  value={inputReason}
+                                  onChange={(e) =>
+                                    setInputReason(e.target.value)
+                                  }
+                                />
+                              </div>
+                              <div className="modal-footer">
+                                <Button
+                                  onClick={() => handleConfirmCancel()}
+                                  style={{
+                                    width: "auto",
+                                    backgroundColor: "rgb(204,244,255)",
+                                    color: "rgb(0,70,89)",
+                                  }}
+                                  disableElevation
+                                >
+                                  Xác nhận
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-10 mx-3 mt-5">
+                          <div className="d-flex align-items-center">
                             <div className="col-2">
                               Giá: {formatPrice(orderDetail.price) + " VNĐ"}
                             </div>
-                            <div className="col-4 d-flex justify-content-between">
-                              <Typography>
-                                {" "}
-                                Số lượng: {orderDetail.quantity}
-                              </Typography>
-                              <Typography>
-                                {" "}
-                                Thành tiền:{" "}
-                                {formatPrice(
-                                  orderDetail.price * orderDetail.quantity
-                                ) + " VNĐ"}
-                              </Typography>
+                            <div className="col-1 me-5">
+                              Số lượng: {orderDetail.quantity}
                             </div>
-                            <div className="ms-5 ">
-                              <Button
-                                variant="contained"
-                                style={{
-                                  width: "auto",
-                                  backgroundColor: "rgb(255, 184, 184)",
-                                  color: "rgb(198, 0, 0)",
-                                }}
-                                onClick={() =>
-                                  refundReturn(
-                                    store,
-                                    orderDetail.productDetail.price *
-                                      orderDetail.quantity,
-                                    orderDetail.productDetail.id
-                                  )
-                                }
-                                disableElevation
-                              >
-                                Trả hàng/Hoàn tiền
-                              </Button>
+                            <div className="col-2">
+                              Thành tiền:{" "}
+                              {formatPrice(
+                                orderDetail.price * orderDetail.quantity
+                              ) + " VNĐ"}
+                            </div>
+                            <div className="col-5 d-flex justify-content-center align-items-center">
+                              {order.orderstatus === "Hoàn thành" ? (
+                                orderDetail.status === "" ? (
+                                  <Button
+                                    variant="contained"
+                                    style={{
+                                      backgroundColor: "rgb(255, 184, 184)",
+                                      color: "rgb(198, 0, 0)",
+                                      display: "inline-block",
+                                    }}
+                                    onClick={() =>
+                                      setCancelProductDetail(orderDetail.id)
+                                    }
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#exampleModal"
+                                    disableElevation
+                                  >
+                                    Trả hàng/Hoàn tiền
+                                  </Button>
+                                ) : orderDetail.status ===
+                                  "Đã xác nhận hoàn tiền" ? (
+                                  <div
+                                    style={{
+                                      padding: "5px",
+                                      backgroundColor: "rgb(218, 255, 180)",
+                                      color: "rgb(45, 91, 0)",
+                                      borderRadius: "10px",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    Cửa hàng đã hoàn tiền cho bạn
+                                  </div>
+                                ) : (
+                                  <div
+                                    style={{
+                                      padding: "5px",
+                                      backgroundColor: "rgb(255, 184, 184)",
+                                      color: "rgb(198, 0, 0)",
+                                      borderRadius: "10px",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    {orderDetail.status}
+                                  </div>
+                                )
+                              ) : (
+                                ""
+                              )}
                             </div>
                           </div>
                         </div>
@@ -289,10 +393,15 @@ const OrderDetail = () => {
                     );
                   })}
                   <hr />
+
                   <div className="d-flex">
                     <div className="col-6">
                       <div>Họ và tên người nhận: {order.user.fullname}</div>
-                      <div>Số điện thoại: {order.user.phone}</div>
+                      {order.receivedate ? (
+                        <div>Số điện thoại: {order.user.phone}</div>
+                      ) : (
+                        ""
+                      )}
                       <div>
                         Địa chỉ nhận hàng: {order.shippinginfor.address}
                       </div>
@@ -300,23 +409,6 @@ const OrderDetail = () => {
                         Thời gian đặt hàng: {formatDate(order.paymentdate)}
                       </div>
                       <div>
-<<<<<<< HEAD
-                        Thời gian nhận hàng: {formatDate(order.receivedate)}
-                      </div>
-                    </div>
-                    <div className="col-6 text-end">
-                      <div className="card mt-3">
-                        <div className="card-body">
-                          Tổng cộng:{" "}
-                          {formatPrice(
-                            storeProducts.reduce(
-                              (sum, detail) =>
-                                sum + detail.price * detail.quantity,
-                              0
-                            )
-                          ) + " VNĐ"}
-                        </div>
-=======
                         {order.receivedate ? (
                           <>
                             Thời gian nhận hàng: {formatDate(order.receivedate)}
@@ -324,20 +416,11 @@ const OrderDetail = () => {
                         ) : (
                           <>Thời gian nhận hàng: chưa nhận</>
                         )}
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                       </div>
                     </div>
                     <div className="col-6 text-end">
                       <Typography variant="span">
-
-                        Tổng cộng:{" "}
-                        {formatPrice(
-                          storeProducts.reduce(
-                            (sum, detail) =>
-                              sum + detail.price * detail.quantity,
-                            0
-                          )
-                        ) + " VNĐ"}
+                        Tổng cộng: {formatPrice(order.totalamount) + " VNĐ"}
                       </Typography>
                     </div>
                   </div>

@@ -6,3 +6,27 @@
   margin: -16px;
   margin-bottom: -40px;
 }
+
+@keyframes moveTruck {
+  0% {
+    transform: translateX(-20px);
+  }
+  100% {
+    transform: translateX(20px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 10px 5px rgba(255, 0, 0, 0.6);
+  }
+  50% {
+    transform: scale(1); /* Phóng to */
+    box-shadow: 0 0 15px 10px rgba(255, 0, 0, 0.8); 
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 10px 5px rgba(255, 0, 0, 0.6);
+  }
+}

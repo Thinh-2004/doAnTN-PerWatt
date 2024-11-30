@@ -8,12 +8,9 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-<<<<<<< HEAD
-import { Button } from "@mui/material";
-=======
-import { Button, Card, CardContent } from "@mui/material";
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
+import { Button, Card, CardContent, TextField } from "@mui/material";
 import useSession from "../../../../../Session/useSession";
+import { toast } from "react-toastify";
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -47,6 +44,8 @@ const Order = () => {
   const [orderDetails, setOrderDetails] = useState({});
   const [idStore] = useSession(`idStore`);
   const timeoutRef = useRef(null);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [inputReason, setInputReason] = useState("");
 
   tailspin.register();
 
@@ -91,36 +90,78 @@ const Order = () => {
   };
 
   const handleCancelOrder = (orderId) => {
+    setSelectedOrderId(orderId); // Lưu orderId để dùng khi gửi yêu cầu hủy
+  };
+
+  const handleConfirmCancel = async (orderId) => {
+    if (inputReason) {
+      try {
+        await axios.put(`/order/${orderId}/status`, {
+          status: "Hủy",
+          note: `Đơn hàng được huỷ bởi chủ cửa hàng, lý do: ${inputReason}`,
+        });
+        // Cập nhật trạng thái
+        setFill((prevFill) =>
+          prevFill.map((order) =>
+            order.id === orderId
+              ? {
+                  ...order,
+                  orderstatus: "Hủy",
+                  note: `Được huỷ bởi chủ cửa hàng, lý do: ${inputReason}`,
+                }
+              : order
+          )
+        );
+        const closeModalButton = document.querySelector(
+          '[data-bs-dismiss="modal"]'
+        );
+        if (closeModalButton) {
+          closeModalButton.click();
+        }
+        toast.success("Huỷ hàng thành công với lý do: " + inputReason);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
+  // const handleMarkAsReceived = async (orderId) => {
+  //   try {
+  //     await axios.put(`/order/${orderId}/status`, { status: "Đang vận chuyển" });
+  //     setFill((prevFill) =>
+  //       prevFill.map((order) =>
+  //         order.id === orderId
+  //           ? { ...order, orderstatus: "Đang vận chuyển" }
+  //           : order
+  //       )
+  //     );
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  const handleMarkAsReceived = (orderId) => {
     confirmAlert({
-      title: "Hủy đơn hàng",
-      message: "Bạn có muốn hủy đơn không? Nhập lý do ở dưới.",
+      title: "Xác nhận đã gửi hàng",
+      message: "Bạn có chắc chắn đã gửi hàng?",
       buttons: [
         {
           label: "Có",
           onClick: async () => {
-            // Tạo một prompt để nhập lý do
-            const inputReason = window.prompt("Nhập lý do hủy:");
-            if (inputReason) {
-              try {
-                await axios.put(`/order/${orderId}/status`, {
-                  status: "Hủy",
-                  note: `Đơn hàng được huỷ bởi chủ cửa hàng, lý do: ${inputReason}`,
-                });
-                // Cập nhật trạng thái
-                setFill((prevFill) =>
-                  prevFill.map((order) =>
-                    order.id === orderId
-                      ? {
-                          ...order,
-                          orderstatus: "Hủy",
-                          note: `Được huỷ bởi chủ cửa hàng, lý do: ${inputReason}`,
-                        }
-                      : order
-                  )
-                );
-              } catch (error) {
-                console.log(error);
-              }
+            try {
+              await axios.put(`/order/${orderId}/status`, {
+                status: "Đang vận chuyển",
+              });
+              // Cập nhật trạng thái
+              setFill((prevFill) =>
+                prevFill.map((order) =>
+                  order.id === orderId
+                    ? { ...order, orderstatus: "Đang vận chuyển" }
+                    : order
+                )
+              );
+            } catch (error) {
+              console.log(error);
             }
           },
         },
@@ -129,34 +170,49 @@ const Order = () => {
     });
   };
 
-  const handleMarkAsReceived = async (orderId) => {
-    try {
-      await axios.put(`/order/${orderId}/status`, { status: "Chờ giao hàng" });
-      setFill((prevFill) =>
-        prevFill.map((order) =>
-          order.id === orderId
-            ? { ...order, orderstatus: "Chờ giao hàng" }
-            : order
-        )
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const handleMarkAsReceived2 = async (orderId) => {
+  //   try {
+  //     await axios.put(`/order/${orderId}/status`, { status: "Chờ nhận hàng" });
+  //     setFill((prevFill) =>
+  //       prevFill.map((order) =>
+  //         order.id === orderId
+  //           ? { ...order, orderstatus: "Chờ nhận hàng" }
+  //           : order
+  //       )
+  //     );
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
-  const handleMarkAsReceived2 = async (orderId) => {
-    try {
-      await axios.put(`/order/${orderId}/status`, { status: "Chờ nhận hàng" });
-      setFill((prevFill) =>
-        prevFill.map((order) =>
-          order.id === orderId
-            ? { ...order, orderstatus: "Chờ nhận hàng" }
-            : order
-        )
-      );
-    } catch (error) {
-      console.log(error);
-    }
+  const handleOrderOnTheWay = (orderId) => {
+    confirmAlert({
+      title: "Xác nhận chuyển trạng thái",
+      message: "Bạn có chắc chắn đơn hàng sắp vấn chuyển đến người dùng?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            try {
+              await axios.put(`/order/${orderId}/status`, {
+                status: "Chờ nhận hàng",
+              });
+              // Cập nhật trạng thái
+              setFill((prevFill) =>
+                prevFill.map((order) =>
+                  order.id === orderId
+                    ? { ...order, orderstatus: "Chờ nhận hàng" }
+                    : order
+                )
+              );
+            } catch (error) {
+              console.log(error);
+            }
+          },
+        },
+        { label: "Không" },
+      ],
+    });
   };
 
   const fillOrderDetailbyOrderID = async (orderId) => {
@@ -202,18 +258,13 @@ const Order = () => {
       return <div className="text-center">Chưa có sản phẩm</div>;
     }
     return filteredOrders.map((order) => (
-<<<<<<< HEAD
-      <div className="card rounded-3 mt-3" id="cartItem" key={order.id}>
-        <div className="card-body">
-=======
       <Card
         className=" rounded-3 mt-3"
         key={order.id}
         sx={{ backgroundColor: "backgroundElement.children" }}
       >
         <CardContent className="">
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
-          <div className="d-flex align-items-center mb-1">
+          <div className="d-flex align-items-center mb-3">
             <img
               src={getAvtUser(order.user.id, order.user.avatar, order.id)}
               id="imgShop"
@@ -257,25 +308,48 @@ const Order = () => {
               return (
                 <div key={orderDetail.id}>
                   <div className="d-flex align-items-start">
-                    <img
-                      src={
-                        orderDetail.productDetail.imagedetail
-                          ? geturlIMGDetail(
-                              orderDetail.productDetail.id,
-                              orderDetail.productDetail.imagedetail
-                            )
-                          : geturlIMG(
-                              orderDetail.productDetail.product.id,
-                              firstIMG?.imagename
-                            )
-                      }
-                      alt=""
-                      style={{
-                        width: "100px",
-                        height: "100px",
-                      }}
-                      className="rounded-3 mb-3 me-3"
-                    />
+                    <div
+                      style={{ position: "relative", display: "inline-block" }}
+                    >
+                      <img
+                        src={
+                          orderDetail.productDetail.imagedetail
+                            ? geturlIMGDetail(
+                                orderDetail.productDetail.id,
+                                orderDetail.productDetail.imagedetail
+                              )
+                            : geturlIMG(
+                                orderDetail.productDetail.product.id,
+                                firstIMG?.imagename
+                              )
+                        }
+                        alt=""
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                        }}
+                        className="rounded-3 mb-3 me-3"
+                      />
+                      {orderDetail.status?.includes(
+                        "Đang gửi yêu cầu hoàn tiền"
+                      ) && (
+                        <span
+                          style={{
+                            position: "absolute",
+                            top: "5px",
+                            left: "5px",
+                            backgroundColor: "red",
+                            borderRadius: "50%",
+                            width: "10px",
+                            height: "10px",
+                            boxShadow: "0 0 10px 5px rgba(255, 0, 0, 0.6)", // Hiệu ứng bloom
+                            filter: "blur(1px)", // Làm mờ nhẹ để tạo cảm giác phát sáng
+                            animation: "pulse 2s infinite", // Hiệu ứng chuyển động
+                          }}
+                        ></span>
+                      )}
+                    </div>
+
                     <div className="d-flex flex-column">
                       <div>{orderDetail.productDetail.product.name}</div>
                       {orderDetail.productDetail.namedetail && (
@@ -284,7 +358,6 @@ const Order = () => {
                         </label>
                       )}
                       <div>x {orderDetail.quantity}</div>
-
                       <div>
                         Tổng:{" "}
                         <span className="text-danger">
@@ -296,11 +369,29 @@ const Order = () => {
                 </div>
               );
             })}
-          {orderDetails[order.id] && orderDetails[order.id].length > 3 && (
-            <Button href={`/profileMarket/OrderDetailSeller/${order.id}`}>
-              + {orderDetails[order.id].length - 2} sản phẩm
-            </Button>
+          {orderDetails[order.id] && orderDetails[order.id].length > 2 && (
+            <>
+              <Button href={`/profileMarket/OrderDetailSeller/${order.id}`}>
+                + {orderDetails[order.id].length - 2} sản phẩm
+              </Button>
+              {orderDetails[order.id]
+                .slice(2) // Lấy danh sách sản phẩm từ phần tử thứ 3 trở đi
+                .some(
+                  (item) => item.status === "Đang gửi yêu cầu hoàn tiền"
+                ) && (
+                <span
+                  style={{
+                    backgroundColor: "red",
+                    borderRadius: "50%",
+                    width: "10px",
+                    height: "10px",
+                    display: "inline-block",
+                  }}
+                ></span>
+              )}
+            </>
           )}
+
           <hr />
           <div className="d-flex justify-content-between align-items-center">
             <div>Mã đơn hàng: {order.id}</div>
@@ -322,7 +413,7 @@ const Order = () => {
                     >
                       <i className="bi bi-cart-check-fill"></i>
                     </Button>
-                    <Button
+                    {/* <Button
                       onClick={() => handleCancelOrder(order.id)}
                       style={{
                         width: "auto",
@@ -332,11 +423,25 @@ const Order = () => {
                       disableElevation
                     >
                       <i className="bi bi-cart-x-fill"></i>
+                    </Button> */}
+
+                    <Button
+                      onClick={() => handleCancelOrder(order.id)}
+                      style={{
+                        width: "auto",
+                        backgroundColor: "rgb(255, 184, 184)",
+                        color: "rgb(198, 0, 0)",
+                      }}
+                      disableElevation
+                      data-bs-toggle="modal"
+                      data-bs-target="#exampleModal"
+                    >
+                      <i className="bi bi-cart-x-fill"></i>
                     </Button>
                   </>
-                ) : order.orderstatus === "Chờ giao hàng" ? (
-                  <Button
-                    onClick={() => handleMarkAsReceived2(order.id)}
+                ) : order.orderstatus === "Đang vận chuyển" ? (
+                  /* <Button
+                    onClick={() => handleOrderOnTheWay(order.id)}
                     style={{
                       width: "auto",
                       backgroundColor: "rgb(204,244,255)",
@@ -344,23 +449,87 @@ const Order = () => {
                     }}
                     disableElevation
                   >
-                    <i className="bi bi-box-arrow-in-down"></i>
+                    <i className="bi bi-truck"></i>
+                  </Button> */
+
+                  <Button
+                    onClick={() => handleOrderOnTheWay(order.id)}
+                    style={{
+                      width: "auto",
+                      backgroundColor: "rgb(204,244,255)",
+                      color: "rgb(0,70,89)",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                    disableElevation
+                  >
+                    <i
+                      className="bi bi-truck"
+                      style={{ animation: "moveTruck 1s linear infinite" }}
+                    ></i>
                   </Button>
                 ) : (
-                  order.orderstatus !== "Hủy" && (
-                    <Button
-                      onClick={() => handleCancelOrder(order.id)}
-                      style={{
-                        width: "auto",
-                        backgroundColor: "rgb(255, 184, 184)",
-                        color: "rgb(198, 0, 0)",
-                      }}
-                      disableElevation
-                    >
-                      <i className="bi bi-cart-x-fill"></i>
-                    </Button>
-                  )
+                  ""
                 )}
+              </div>
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#exampleModal"
+                hidden
+              ></button>
+              <div
+                className="modal fade"
+                id="exampleModal"
+                tabindex="-1"
+                aria-labelledby="exampleModalLabel"
+                aria-hidden="true"
+              >
+                <div className="modal-dialog">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h1 className="modal-title fs-5" id="exampleModalLabel">
+                        Nhập lý do huỷ hàng
+                      </h1>
+                      <button
+                        type="button"
+                        className="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div className="modal-body">
+                      <TextField
+                        fullWidth
+                        size="small"
+                        id="outlined-basic"
+                        label="Nhập lý do hủy đơn hàng"
+                        variant="outlined"
+                        value={inputReason}
+                        onChange={(e) => setInputReason(e.target.value)} // Cập nhật lý do vào inputReason
+                      />
+
+                      {/* <input
+                        type="text"
+                        placeholder="Nhập lý do hủy đơn hàng"
+                      /> */}
+                    </div>
+                    <div className="modal-footer">
+                      <Button
+                        onClick={() => handleConfirmCancel(selectedOrderId)} // Xác nhận hủy đơn hàng
+                        style={{
+                          width: "auto",
+                          backgroundColor: "rgb(204,244,255)",
+                          color: "rgb(0,70,89)",
+                        }}
+                        disableElevation
+                      >
+                        Xác nhận
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -384,13 +553,8 @@ const Order = () => {
               </div>
             </div>
           </div>
-<<<<<<< HEAD
-        </div>
-      </div>
-=======
         </CardContent>
       </Card>
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
     ));
   };
 
@@ -401,19 +565,11 @@ const Order = () => {
   return (
     <div>
       <h1 className="text-center mt-4 mb-4">Đơn hàng của bạn</h1>
-<<<<<<< HEAD
-      <div
-        className="col-12 col-12"
-        style={{ transition: "0.5s" }}
-      >
-        <Box sx={{ width: "100%", background: "white" }} className="rounded-3">
-=======
       <div className="col-12 col-12" style={{ transition: "0.5s" }}>
         <Box
           sx={{ width: "100%", backgroundColor: "backgroundElement.children" }}
           className="rounded-3"
         >
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
           <Box
             sx={{
               borderBottom: 1,
@@ -427,19 +583,16 @@ const Order = () => {
               value={value}
               onChange={handleChange}
               aria-label="basic tabs example"
-<<<<<<< HEAD
-              sx={{ backgroundColor: "white" }}
-=======
               sx={{ backgroundColor: "backgroundElement.children" }}
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
             >
               {[
                 "Tất cả",
                 "Đang chờ duyệt",
-                "Chờ giao hàng",
+                "Đang vận chuyển",
                 "Chờ nhận hàng",
                 "Hoàn thành",
                 "Hủy",
+                "Trả hàng",
               ].map((tab, index) => (
                 <Tab label={tab} key={index} />
               ))}
@@ -448,10 +601,11 @@ const Order = () => {
           {[
             "Tất cả",
             "Đang chờ duyệt",
-            "Chờ giao hàng",
+            "Đang vận chuyển",
             "Chờ nhận hàng",
             "Hoàn thành",
             "Hủy",
+            "Trả hàng",
           ].map((tab, index) => (
             <CustomTabPanel value={value} index={index} key={index}>
               <div>
@@ -461,14 +615,16 @@ const Order = () => {
                       return true;
                     case "Đang chờ duyệt":
                       return order.orderstatus === "Đang chờ duyệt";
-                    case "Chờ giao hàng":
-                      return order.orderstatus === "Chờ giao hàng";
+                    case "Đang vận chuyển":
+                      return order.orderstatus === "Đang vận chuyển";
                     case "Chờ nhận hàng":
                       return order.orderstatus === "Chờ nhận hàng";
                     case "Hoàn thành":
                       return order.orderstatus === "Hoàn thành";
                     case "Hủy":
                       return order.orderstatus === "Hủy";
+                    case "Trả hàng":
+                      return order.orderstatus === "Trả hàng";
                     default:
                       return false;
                   }

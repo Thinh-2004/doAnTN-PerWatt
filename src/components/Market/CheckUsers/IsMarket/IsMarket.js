@@ -5,7 +5,7 @@ import ListProduct from "./Product/List/ListProduct";
 import FormProduct from "./Product/Form/FormProduct";
 import axios from "../../../../Localhost/Custumize-axios";
 import EditProduct from "./Product/Form/EditProduct";
-import MainUserSeller from "./StatisticalOrders/MainUserSeller";
+// import MainUserSeller from "./StatisticalOrders/MainUserSeller";
 import ProfileShop from "./ProfileShop/ProfileShop";
 import OrderSeller from "./Order/OrderSeller";
 import Accordion from "@mui/material/Accordion";
@@ -13,17 +13,12 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-<<<<<<< HEAD
-import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
-import Wallet from "../../../Wallet/Wallet";
-=======
 import Header from "../../../Header/Header";
 import FormAddVoucher from "./Voucher/FromAddVoucher";
 import FillVoucher from "./Voucher/FillVoucher";
 import EditVoucher from "./Voucher/UpdateVoucher";
 import Wallet from "../../../Wallet/Wallet";
 import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
 const IsMarket = () => {
   const user = localStorage.getItem("user")
@@ -49,153 +44,6 @@ const IsMarket = () => {
     <>
       <Header />
       <div className="row container-fluid ">
-<<<<<<< HEAD
-        <div
-          className="col-lg-3 p-0 m-0 overflow-y-scroll"
-          style={{ height: "800px" }}
-        >
-          <div className="">
-            <Accordion defaultExpanded>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1-content"
-                id="panel1-header"
-              >
-                <Typography>
-                  <i className="bi bi-box fs-4"></i>
-                  <span className="mx-3">Quản lý sản phẩm</span>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography>
-                  <ul
-                    style={{ listStyleType: "none", textDecoration: "none" }}
-                    className="p-0 m-0"
-                  >
-                    <li>
-                      <Link
-                        style={{ textDecoration: "none" }}
-                        to="/profileMarket/listStoreProduct"
-                      >
-                        Danh sách sản phẩm
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        style={{ textDecoration: "none" }}
-                        to="/profileMarket/FormStoreProduct"
-                      >
-                        Thêm sản phẩm
-                      </Link>
-                    </li>
-                  </ul>
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel2-content"
-                id="panel2-header"
-              >
-                <Typography>
-                  <i className="bi bi-clipboard fs-4"></i>
-                  <span className="mx-3">Quản lý đơn hàng</span>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography>
-                  <ul
-                    style={{ listStyleType: "none", textDecoration: "none" }}
-                    className="p-0 m-0"
-                  >
-                    <li>
-                      <Link
-                        style={{ textDecoration: "none" }}
-                        to={`/profileMarket/orderSeller/${user.id}`}
-                      >
-                        Tất cả
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        style={{ textDecoration: "none" }}
-                        to="/cancelledOrders"
-                      >
-                        Đang chờ duyệt
-                      </Link>
-                    </li>
-
-                    <li>
-                      <Link
-                        style={{ textDecoration: "none" }}
-                        to="/deliveredOrders"
-                      >
-                        Chờ giao hàng
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        style={{ textDecoration: "none" }}
-                        to="/pendingOrders"
-                      >
-                        Hoàn thành
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        style={{ textDecoration: "none" }}
-                        to="/readyForPickup"
-                      >
-                        Huỷ
-                      </Link>
-                    </li>
-                  </ul>
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel2-content"
-                id="panel2-header"
-              >
-                <Typography>
-                  <i className="bi bi-wallet2 fs-4"></i>
-                  <span className="mx-3">Tài chính</span>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography>
-                  <ul
-                    style={{ listStyleType: "none", textDecoration: "none" }}
-                    className="p-0 m-0"
-                  >
-                    <li>
-                      <Link style={{ textDecoration: "none" }} to="/revenue">
-                        Doanh thu
-                      </Link>
-                    </li>
-                    <li>
-                      <Link style={{ textDecoration: "none" }} to="/profileMarket/wallet/seller">
-                        Số dư TK của tôi
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        style={{ textDecoration: "none" }}
-                        to="/bankAccounts"
-                      >
-                        Tài khoản ngân hàng
-                      </Link>
-                    </li>
-                  </ul>
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-=======
         <div className="col-lg-3 p-0 m-0 ">
           <Accordion defaultExpanded>
             <AccordionSummary
@@ -336,7 +184,6 @@ const IsMarket = () => {
               </Typography>
             </AccordionDetails>
           </Accordion>
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
 
           <Accordion>
             <AccordionSummary
@@ -418,7 +265,7 @@ const IsMarket = () => {
         </div>
         <div className="col-lg-9">
           <Routes>
-            <Route path="/" element={<MainUserSeller />} />
+            {/* <Route path="/" element={<MainUserSeller />} /> */}
             <Route path="/listStoreProduct" element={<ListProduct />} />
             <Route path="/FormStoreProduct" element={<FormProduct />} />
             <Route path="updateProduct/:slug" element={<EditProduct />} />
@@ -434,14 +281,7 @@ const IsMarket = () => {
               path="/orderSeller/:id"
               element={<OrderSeller></OrderSeller>}
             />
-<<<<<<< HEAD
-            <Route
-              path="/wallet/:status"
-              element={<Wallet/>}
-            />
-=======
             <Route path="/wallet/:status" element={<Wallet />} />
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
           </Routes>
         </div>
       </div>

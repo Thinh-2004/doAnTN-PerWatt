@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./CartStyle.css";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
@@ -36,15 +36,13 @@ const Cart = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [loading, setLoading] = useState(true); // Trạng thái loading
   const [cartId, setCartId] = useState(null);
-<<<<<<< HEAD
-=======
   const { mode } = useContext(ThemeModeContext);
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
+  const [voucher, setVoucher] = useState([]);
+  const lastCalledTime = useRef(null);
 
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
-
   const open = Boolean(anchorEl);
 
   tailspin.register();
@@ -86,43 +84,129 @@ const Cart = () => {
       console.error("Error updating quantity:", error);
     }
   };
+  const loadData = async (idProduct) => {
+    try {
+      const res = await axios.get(`fillVoucherPrice/${idProduct}`);
+
+      // Log dữ liệu trả về từ API
+      res.data.map((fill) => {
+        console.log("Dữ liệu từ API:", fill.discountprice);
+      });
+
+      console.log("Dữ liệu từ API:", idProduct);
+
+      // // Lưu voucher theo từng idProduct
+      // setVoucher((pre) => ({
+      //   ...pre,
+      //   [idProduct]: res.data,
+      // }));
+    } catch (error) {
+      // Log lỗi nếu có
+      console.log("Lỗi khi tải dữ liệu:", error);
+    }
+  };
 
   const fetchCart = async () => {
-<<<<<<< HEAD
-    let loadingTimeout;
-
-    loadingTimeout = setTimeout(() => setLoading(true), 500);
+    const loadingTimeout = new Promise((resolve) => setTimeout(resolve, 1000));
 
     try {
-      const res = await axios.get(`/cart/${user.id}`);
-      clearTimeout(loadingTimeout);
-      setLoading(false);
+      const res = await Promise.race([
+        axios.get(`/cart/${user.id}`),
+        loadingTimeout,
+      ]);
 
-=======
-    setLoading(true);
-    setFill([]);
-
-    try {
-      const res = await axios.get(`/cart/${user.id}`);
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
-      setFill(res.data);
-      const grouped = groupByStore(res.data);
-      setGroupSelection(
-        Object.keys(grouped).reduce((acc, storeId) => {
-          acc[storeId] = false;
-          return acc;
-        }, {})
-      );
-      updateTotalPrice(res.data);
+      if (res) {
+        setFill(res.data);
+        const grouped = groupByStore(res.data);
+        setGroupSelection(
+          Object.keys(grouped).reduce((acc, storeId) => {
+            acc[storeId] = false;
+            return acc;
+          }, {})
+        );
+        updateTotalPrice(res.data);
+      } else {
+        setLoading(true);
+      }
     } catch (error) {
       console.error("Error loading cart items:", error);
-<<<<<<< HEAD
-      clearTimeout(loadingTimeout);
-=======
     } finally {
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
       setLoading(false);
     }
+  };
+
+  const loadVoucher = async (idProduct) => {
+    try {
+      const res = await axios.get(`fillVoucherPrice/${idProduct}`);
+      //Lưu voucher theo từng idProduct
+      setVoucher((pre) => ({
+        ...pre,
+        [idProduct]: res.data,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  console.log(voucher);
+
+  useEffect(() => {
+    fill.forEach((voucher) => {
+      loadVoucher(voucher.productDetail.product.id);
+    });
+  }, [fill]);
+
+  // const fetchCart = async () => {
+  //   const loadingTimeout = new Promise((resolve) => setTimeout(resolve, 1000));
+
+  //   try {
+  //     const res = await Promise.race([
+  //       axios.get(`/cart/${user.id}`),
+  //       loadingTimeout,
+  //     ]);
+
+  //     if (res) {
+  //       setFill(res.data);
+  //       const grouped = groupByStore(res.data);
+  //       setGroupSelection(
+  //         Object.keys(grouped).reduce((acc, storeId) => {
+  //           acc[storeId] = false;
+  //           return acc;
+  //         }, {})
+  //       );
+  //       updateTotalPrice(res.data);
+  //     } else {
+  //       setLoading(true);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error loading cart items:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const deleteSelectedProduct = async (cartId) => {
+    confirmAlert({
+      title: "Xóa sản phẩm khỏi giỏ hàng",
+      message: "Bạn có chắc chắn muốn xóa các sản phẩm đã chọn không?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            try {
+              axios.delete(`/cartDelete/${cartId}`);
+              setIsCountAddCart(true);
+              fetchCart();
+            } catch (error) {
+              console.error("Lỗi xóa sản phẩm:", error);
+            }
+            fetchCart();
+          },
+        },
+        {
+          label: "Không",
+        },
+      ],
+    });
   };
 
   const deleteSelectedProducts = async () => {
@@ -245,18 +329,38 @@ const Cart = () => {
     updateTotalPrice();
   };
 
+  // const handleDecrease = async (productId) => {
+  //   const updatedFill = fill.map((item) =>
+  //     item.id === productId && item.quantity > 1
+  //       ? { ...item, quantity: item.quantity - 1 }
+  //       : item
+  //   );
+  //   setFill(updatedFill);
+  //   await updateQuantity(
+  //     productId,
+  //     updatedFill.find((item) => item.id === productId).quantity
+  //   );
+  //   updateTotalPrice();
+  //   deleteSelectedProducts();
+  // };
+
   const handleDecrease = async (productId) => {
-    const updatedFill = fill.map((item) =>
-      item.id === productId && item.quantity > 1
-        ? { ...item, quantity: item.quantity - 1 }
-        : item
-    );
-    setFill(updatedFill);
-    await updateQuantity(
-      productId,
-      updatedFill.find((item) => item.id === productId).quantity
-    );
-    updateTotalPrice();
+    const currentProduct = fill.find((item) => item.id === productId);
+
+    if (currentProduct.quantity === 1) {
+      // Nếu quantity đang là 1, xóa sản phẩm
+      await deleteSelectedProduct(productId);
+    } else {
+      // Nếu quantity lớn hơn 1, giảm số lượng
+      const updatedFill = fill.map((item) =>
+        item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
+      );
+      setFill(updatedFill);
+
+      const updatedQuantity = currentProduct.quantity - 1;
+      await updateQuantity(productId, updatedQuantity);
+      updateTotalPrice();
+    }
   };
 
   const handleQuantityChange = async (productId, newQuantity) => {
@@ -308,12 +412,7 @@ const Cart = () => {
     fetchProductDetails(productId);
   };
 
-  const handleDetailUpdate = (
-    cartId,
-    selectedDetailId,
-
-    quantityDetail
-  ) => {
+  const handleDetailUpdate = (cartId, selectedDetailId, quantityDetail) => {
     if (selectedDetailId) {
       updateCartProductDetail(cartId, selectedDetailId, quantityDetail)
         .then(() => {
@@ -407,9 +506,12 @@ const Cart = () => {
               </div>
             ) : (
               <>
-                <Card className=" rounded-3 mb-3">
+                <Card className=" rounded-3 mb-3" sx={{ boxShadow: "none" }}>
                   <CardContent
-                    sx={{ backgroundColor: "backgroundElement.children" }}
+                    sx={{
+                      backgroundColor: "backgroundElement.children",
+                      boxShadow: "none",
+                    }}
                     className="d-flex justify-content-between align-items-center p-2"
                   >
                     <div className="d-flex align-items-center">
@@ -418,7 +520,9 @@ const Cart = () => {
                         checked={selectAll}
                         onChange={(e) => handleSelectAll(e.target.checked)}
                       />
-                      <label htmlFor="selectAll">Chọn tất cả sản phẩm</label>
+                      <label htmlFor="selectAll" style={{ cursor: "pointer" }}>
+                        Chọn tất cả sản phẩm
+                      </label>
                     </div>
                     <Button
                       variant="contained"
@@ -435,12 +539,14 @@ const Cart = () => {
                   const storeProducts = groupedProducts[storeId];
                   const store = storeProducts[0].productDetail.product.store;
                   const isGroupSelected = groupSelection[storeId] || false;
+
                   return (
                     <Card
                       className="rounded-3 mb-3"
                       id="cartItem"
                       key={storeId}
                       style={{ position: "relative", minHeight: "200px" }}
+                      sx={{ boxShadow: "none" }}
                     >
                       {!isCardLoaded && (
                         <l-tailspin
@@ -477,6 +583,7 @@ const Cart = () => {
                                 )
                               }
                             />
+
                             <Link to={`/pageStore/${store.slug}`}>
                               <img
                                 src={getAvtUser(
@@ -516,10 +623,48 @@ const Cart = () => {
                             </h5>
                           </div>
                         </div>
+
                         <hr id="hr" />
                         {storeProducts.map((cart) => {
                           const firstIMG =
                             cart.productDetail.product.images?.[0];
+
+                          //Lấy voucher tương ứng với idProduct
+                          const productVoucher =
+                            voucher[cart.productDetail.product.id] || [];
+
+                          //Lấy giá của sản phẩm có voucher
+                          const matchingPrices = productVoucher.filter(
+                            (v) => cart.productDetail.id === v.productDetail.id
+                          );
+
+                          //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
+                          const isVoucherPrice = productVoucher.some(
+                            (check) =>
+                              check.productDetail.product.id ===
+                              cart.productDetail.product.id
+                          );
+
+                          //Kiểm tra status voucher
+                          const isStatusVoucher = productVoucher.some(
+                            (check) => check.status === "Hoạt động"
+                          );
+
+                          //Tính giá giảm của voucher
+                          let result;
+
+                          if (matchingPrices.length > 0) {
+                            // Tính giá giảm
+                            const priceDown =
+                              cart.productDetail.price *
+                              cart.quantity *
+                              (matchingPrices[0].discountprice / 100);
+                            result = formatPrice(
+                              cart.productDetail.price * cart.quantity -
+                                priceDown
+                            );
+                            console.log(result);
+                          }
                           return (
                             <div className="d-flex mt-3 mb-3" key={cart.id}>
                               {cart.productDetail.quantity === 0 ? (
@@ -607,28 +752,12 @@ const Cart = () => {
                                   )}
                                 </Link>
                               </div>
-                              <div className="row">
-                                <div className="col-lg-5 col-md-12 mt-3 mx-3 pe-4">
+                              {/* {voucher.map((hehe) => (
+                                <div key={hehe.id}>{hehe.id}</div>
+                              ))} */}
+                              <div className="row ms-2">
+                                <div className="col-lg-6 col-md-12 mt-3 mx-3 pe-4">
                                   <div className="row">
-<<<<<<< HEAD
-                                    <Button
-                                      variant="contained"
-                                      component={Link}
-                                      to="/wallet/buyer"
-                                      style={{
-                                        width: "auto",
-                                        backgroundColor: "rgb(218, 255, 180)",
-                                        color: "rgb(45, 91, 0)",
-                                      }}
-                                      disableElevation
-                                    >
-                                      <i class="bi bi-wallet2"></i>
-                                    </Button>
-                                    <div id="fontSizeTitle">
-                                      {cart.productDetail.product.name}
-                                    </div>
-                                    <div id="fontSize">
-=======
                                     <div id="fontSizeTitle">
                                       <Typography
                                         sx={{ color: "text.default" }}
@@ -642,7 +771,6 @@ const Cart = () => {
                                         backgroundColor: "background.default",
                                       }}
                                     >
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                       <div className="d-flex">
                                         <div key={cart.id}>
                                           <div
@@ -749,10 +877,7 @@ const Cart = () => {
                                                                 marginRight:
                                                                   "10px",
                                                               }}
-<<<<<<< HEAD
-=======
                                                               loading="lazy"
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                                             />
                                                             {detail.namedetail}
                                                           </button>
@@ -794,20 +919,6 @@ const Cart = () => {
                                             </Box>
                                           </Popper>
                                         </div>
-<<<<<<< HEAD
-                                        {[
-                                          cart.productDetail.product
-                                            .productcategory.name,
-                                          cart.productDetail.product.trademark
-                                            .name,
-                                          cart.productDetail.product.warranties
-                                            .name,
-                                        ]
-                                          .filter(Boolean)
-                                          .join(", ")}
-                                      </div>
-                                    </div>
-=======
                                         <Typography
                                           sx={{ color: "text.default" }}
                                           variant="span"
@@ -825,31 +936,14 @@ const Cart = () => {
                                         </Typography>
                                       </div>
                                     </Box>
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                   </div>
                                 </div>
-                                <div className="col-lg-6 col-md-12">
+                                <div className="col-lg-5 col-md-12">
                                   <div
                                     className="d-flex mt-3"
                                     id="spinner"
                                     disabled={cart.productDetail.quantity === 0}
                                   >
-<<<<<<< HEAD
-                                    {/* <button
-=======
-                                    <Button
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
-                                      className="btn border rounded-0 rounded-start"
-                                      id="buttonDown"
-                                      onClick={() => handleDecrease(cart.id)}
-                                      disabled={
-                                        cart.productDetail.quantity === 0
-                                      }
-<<<<<<< HEAD
-                                    >
-                                      <i className="bi bi-dash-lg"></i>
-                                    </button> */}
-
                                     <Button
                                       className="btn border rounded-0 rounded-start"
                                       id="buttonDown"
@@ -857,18 +951,6 @@ const Cart = () => {
                                       disabled={
                                         cart.productDetail.quantity === 0
                                       }
-                                      variant="contained"
-                                      style={{
-                                        width: "auto",
-                                        backgroundColor: "rgb(250, 250, 250)",
-                                        color: "rgb(0, 0, 0)",
-                                      }}
-                                      disableElevation
-                                    >
-                                      <i className="bi bi-dash-lg"></i>
-                                    </Button>
-
-=======
                                       variant="contained"
                                       sx={{
                                         width: "auto",
@@ -882,7 +964,6 @@ const Cart = () => {
                                       <i className="bi bi-dash-lg"></i>
                                     </Button>
 
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                     <input
                                       type="number"
                                       min={0}
@@ -899,8 +980,6 @@ const Cart = () => {
                                       disabled={
                                         cart.productDetail.quantity === 0
                                       }
-<<<<<<< HEAD
-=======
                                       style={{
                                         backgroundColor:
                                           mode === "light"
@@ -909,7 +988,6 @@ const Cart = () => {
                                         color:
                                           mode === "light" ? "black" : "white",
                                       }}
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                     />
                                     <Button
                                       className={`btn border rounded-0 rounded-end ${
@@ -920,9 +998,6 @@ const Cart = () => {
                                           "btn-active"
                                         )
                                       }`}
-<<<<<<< HEAD
-                                      id="buttonUp"
-=======
                                       sx={{
                                         width: "auto",
                                         color:
@@ -930,7 +1005,6 @@ const Cart = () => {
                                         backgroundColor:
                                           "backgroundElement.children",
                                       }}
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                       onClick={() => handleIncrease(cart.id)}
                                       disabled={
                                         cart.quantity >=
@@ -938,64 +1012,51 @@ const Cart = () => {
                                         cart.productDetail.quantity === 0
                                       }
                                       variant="contained"
-<<<<<<< HEAD
-                                      style={{
-                                        width: "auto",
-                                        backgroundColor: "rgb(250, 250, 250)",
-                                        color: "rgb(0, 0, 0)",
-                                      }}
-=======
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                       disableElevation
                                     >
                                       <i className="bi bi-plus-lg"></i>
                                     </Button>
-<<<<<<< HEAD
-
-                                    {/* <button
-                                      className={`btn border rounded-0 rounded-end ${
-                                        cart.quantity >=
-                                        cart.productDetail.quantity ? (
-                                          <FaBan />
-                                        ) : (
-                                          "btn-active"
-                                        )
-                                      }`}
-                                      id="buttonUp"
-                                      onClick={() => handleIncrease(cart.id)}
-                                      disabled={
-                                        cart.quantity >=
-                                          cart.productDetail.quantity ||
-                                        cart.productDetail.quantity === 0
-                                      }
-                                    >
-                                      <i className="bi bi-plus-lg"></i>
-                                    </button> */}
-                                  </div>
-                                  <h5 className="mt-2">
-=======
                                   </div>
                                   <Typography
-                                    variant="h5"
+                                    variant="h6"
                                     className="mt-2"
-                                    sx={{ color: "text.default" }}
+                                    sx={{
+                                      color: "text.default",
+                                      ontSize: "15px",
+                                    }}
                                   >
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
-                                    Tổng cộng:{" "}
-                                    {formatPrice(
-                                      cart.productDetail.price * cart.quantity
-                                    ) + " VNĐ"}
+                                    <div
+                                      className="d-flex align-items-center"
+                                      style={{ fontSize: "18px" }}
+                                    >
+                                      <div className="me-2">Tổng:</div>
+                                      {isVoucherPrice && isStatusVoucher ? (
+                                        <>
+                                          <del className="me-2">
+                                            {formatPrice(
+                                              cart.productDetail.price *
+                                                cart.quantity
+                                            ) + " VNĐ"}
+                                          </del>
+                                          <div>{result + " VNĐ"}</div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          {formatPrice(
+                                            cart.productDetail.price *
+                                              cart.quantity
+                                          ) + " VNĐ"}
+                                        </>
+                                      )}
+                                    </div>
+
                                     {cart.productDetail.quantity <= 10 && (
                                       <div className="text-danger">
                                         Còn lại: {cart.productDetail.quantity}{" "}
                                         sản phẩm
                                       </div>
                                     )}
-<<<<<<< HEAD
-                                  </h5>
-=======
                                   </Typography>
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
                                 </div>
                               </div>
                             </div>
@@ -1009,16 +1070,14 @@ const Cart = () => {
             )}
           </div>
           <div className="col-lg-3 col-md-12">
-<<<<<<< HEAD
-            <div className="card" id="sticky-top">
-=======
-            <Box
-              sx={{ backgroundColor: "backgroundElement.children" }}
-              className="card"
+            <Card
+              sx={{
+                backgroundColor: "backgroundElement.children",
+                boxShadow: "none",
+              }}
               id="sticky-top"
             >
->>>>>>> e73760dd1189295936e71b2db90b88646e0dfd3d
-              <div className="card-body" id="smooth">
+              <CardContent id="smooth">
                 <div className="d-flex justify-content-between">
                   <Typography
                     variant="h5"
@@ -1063,21 +1122,8 @@ const Cart = () => {
                 >
                   Đặt hàng
                 </Button>
-                <Button
-                  variant="contained"
-                  component={Link}
-                  to="/wallet/buyer"
-                  style={{
-                    width: "auto",
-                    backgroundColor: "rgb(218, 255, 180)",
-                    color: "rgb(45, 91, 0)",
-                  }}
-                  disableElevation
-                >
-                  <i class="bi bi-wallet2"></i>
-                </Button>
-              </div>
-            </Box>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
