@@ -55,14 +55,10 @@ const Login = () => {
     if (validate()) {
       const idToast = toast.loading("Vui lòng chờ...");
       try {
-        const res = await axios.post("/login", { email, password });
+        const res = await axios.post("/form/login", { email, password });
         // Lưu token vào sessionStorage
         localStorage.setItem("hadfjkdshf", res.data.result.token);
-        const resUserInfo = await axios.get(`/userProFile/myInfo`, {
-          headers: {
-            Authorization: `Bearer ${res.data.result.token}`,
-          },
-        });
+        const resUserInfo = await axios.get(`/userProFile/myInfo`);
         //Lọc các thông tin cần lưu
         const userInfo = {
           id: resUserInfo.data.id,

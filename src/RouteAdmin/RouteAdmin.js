@@ -7,6 +7,7 @@ import Wallet from "../components/Wallet/Wallet";
 import SecurityRoutes from "../components/SecurityRoutes/SecurityRoutes";
 import PromotionInfoComponent from "./Admin/PromotionInfoComponent";
 import ProductCategoryForm from "./Admin/ProductCategoryForm";
+import ChangePass from "./Info/ChangePassword/ChangePass";
 
 const RouteAdmin = (props) => {
   return (
@@ -56,6 +57,14 @@ const RouteAdmin = (props) => {
         element={
           <SecurityRoutes allowedRoles={["Admin"]}>
             <ProductCategoryForm />
+          </SecurityRoutes>
+        }
+      />
+      <Route
+        path="/admin/info/changePass"
+        element={
+          <SecurityRoutes allowedRoles={["Admin"]}>
+            <ChangePass />
           </SecurityRoutes>
         }
       />

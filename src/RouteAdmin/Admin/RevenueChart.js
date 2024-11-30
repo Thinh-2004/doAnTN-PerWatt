@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import ApexCharts from "react-apexcharts";
 import "./RevenueChart.css"; // Import the CSS file
-import { FormControl, MenuItem, Select } from "@mui/material";
+import { DatePicker, Select } from "antd";
+import moment from "moment";
 import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
 import axios from "../../Localhost/Custumize-axios";
 
+const { RangePicker, MonthPicker } = DatePicker;
+const { Option } = Select;
 const RevenueChart = () => {
   const currentYear = new Date().getFullYear();
   const { mode } = useContext(ThemeModeContext);
@@ -109,201 +112,270 @@ const RevenueChart = () => {
     ],
   });
 
-  const [revenueByYear, setRevenueByYear] = useState({});
-  const [revenueByMonth, setRevenueByMonth] = useState([]);
   const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [yearsList, setYearsList] = useState([]);
-  const [maxYear, setMaxYear] = useState(currentYear);
+  const [selectedDateRange, setSelectedDateRange] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [selectedQuarter, setSelectedQuarter] = useState(null);
+  const [availableMonths, setAvailableMonths] = useState({});
+  const isFetching = useRef(false);
 
+  const handleMonthChange = (date, dateString) => {
+    if (date) {
+      setSelectedMonth(dateString);
+      setSelectedYear(date.year());
+
+      const month = date.month() + 1; // Tháng 0-based
+      const quarter = Math.ceil(month / 3); // Xác định quý
+      setSelectedQuarter(`Q${quarter}`);
+
+      fetchRevenueData("month", null, null, dateString);
+    } else {
+      setSelectedMonth(null);
+      setSelectedQuarter(null);
+      fetchRevenueData("month", null, null, null);
+    }
+  };
+
+  const handleDateRangeChange = (dates) => {
+    if (dates && dates.length === 2) {
+      const [startDate, endDate] = dates;
+      setSelectedDateRange([startDate, endDate]);
+      fetchRevenueData("day", startDate, endDate, null);
+    } else {
+      setSelectedDateRange([]);
+      fetchRevenueData("day", null, null, null);
+    }
+  };
+
+  const handleQuarterChange = (quarter) => {
+    setSelectedQuarter(quarter);
+
+    const year = selectedYear || currentYear;
+    const quarterStartMonth = (parseInt(quarter.replace("Q", "")) - 1) * 3;
+    const quarterEndMonth = quarterStartMonth + 2;
+
+    // Tính toán ngày bắt đầu và ngày kết thúc cho quý
+    const startDate = new Date(year, quarterStartMonth, 1);
+    const endDate = new Date(year, quarterEndMonth + 1, 0);
+
+    // Chuyển đổi thành định dạng ngày cho API
+    const startFormatted = startDate.toISOString().split("T")[0];
+    const endFormatted = endDate.toISOString().split("T")[0];
+
+    // Gọi API để lấy dữ liệu theo quý
+    fetchRevenueData("day", startFormatted, endFormatted, null);
+  };
   // Hàm gọi API để lấy dữ liệu doanh thu
-  const fetchRevenueData = async (period) => {
+  const fetchRevenueData = async (period, startDate, endDate, month) => {
+    if (isFetching.current) return;
+
     let url;
+    let dateQuery = "";
+
+    // Prepare the query string based on the selected period
+    if (period === "day" && startDate && endDate) {
+      // Định dạng lại ngày bắt đầu và kết thúc
+      const startFormatted = new Date(startDate).toISOString().split("T")[0];
+      const endFormatted = new Date(endDate).toISOString().split("T")[0];
+      dateQuery = `?startDate=${startFormatted}&endDate=${endFormatted}`;
+    } else if (period === "month" && month) {
+      // Nếu là tháng, tạo startDate và endDate cho tháng đó
+      const startDate = new Date(month);
+      const endDate = new Date(month);
+      startDate.setDate(1); // Đặt ngày đầu tháng
+      endDate.setMonth(endDate.getMonth() + 1); // Đặt ngày cuối tháng
+      endDate.setDate(0); // Đặt lại ngày cuối tháng
+
+      const startFormatted = startDate.toISOString().split("T")[0];
+      const endFormatted = endDate.toISOString().split("T")[0];
+
+      dateQuery = `?startDate=${startFormatted}&endDate=${endFormatted}`;
+    } else if (period === "year") {
+      // Nếu là năm, sử dụng toàn bộ năm hiện tại
+      const startDate = new Date(`${currentYear}-01-01`);
+      const endDate = new Date(`${currentYear}-12-31`);
+      dateQuery = `?startDate=${
+        startDate.toISOString().split("T")[0]
+      }&endDate=${endDate.toISOString().split("T")[0]}`;
+    }
+
+    // Construct the API URL based on period
     switch (period) {
       case "year":
-        url = "/revenue-by-year";
+        url = `/revenue-by-year${dateQuery}`;
         break;
       case "month":
-        url = "/revenue-by-month";
+        url = `/revenue-by-month${dateQuery}`;
         break;
       case "day":
-        url = "/revenue-by-day";
+        url = `/revenue-by-day${dateQuery}`;
         break;
       default:
         return;
     }
 
+    isFetching.current = true;
+
     try {
-      const response = await axios.get(url);
-      const data = await response.data;
-
-      if (period === "year") {
-        const yearData = {};
-        const years = new Set();
-        data.forEach((item) => {
-          yearData[item.Year] = item.TotalRevenue;
-          years.add(item.Year);
-        });
-        const yearsArray = [...years];
-        setRevenueByYear(yearData);
-        setYearsList(yearsArray); // Cập nhật danh sách năm để chọn
-        const maxYear = Math.max(...yearsArray);
-        setMaxYear(maxYear); // Lưu năm lớn nhất
-        setSelectedYear(maxYear); // Cập nhật năm đã chọn
-
-        // Cập nhật dữ liệu biểu đồ cho tất cả các năm
-        setChartData({
-          options: {
-            ...chartData.options,
-            xaxis: { categories: Object.keys(yearData) },
-            title: { text: "Doanh thu tất cả các năm" }, // Cập nhật tiêu đề
-          },
-          series: [
-            {
-              name: "Doanh thu",
-              data: Object.values(yearData),
-            },
-          ],
-        });
-      } else if (period === "month") {
-        const monthlyRevenue = data.filter(
-          (item) => item.Year === selectedYear
-        );
-        const categories = monthlyRevenue
-          .filter((item) => item.Month && item.TotalVATCollected !== undefined)
-          .map((item) => `${item.Month}/${item.Year}`);
-        const seriesData = monthlyRevenue
-          .filter((item) => item.Month && item.TotalVATCollected !== undefined)
-          .map((item) => item.TotalVATCollected);
-
-        setRevenueByMonth(monthlyRevenue);
-        setChartData({
-          options: {
-            ...chartData.options,
-            xaxis: { categories },
-            title: { text: `Doanh thu theo tháng (${selectedYear})` },
-          },
-          series: [
-            {
-              name: "Doanh thu",
-              data: seriesData,
-            },
-          ],
-        });
-      } else if (period === "day") {
-        setChartData({
-          options: {
-            ...chartData.options,
-            xaxis: {
-              categories: data.map((item) => {
-                // Chuyển đổi OrderDate sang định dạng DD/MM/YYYY
-                const date = new Date(item.OrderDate);
-                const day = String(date.getDate()).padStart(2, "0"); // Đảm bảo ngày luôn có 2 chữ số
-                const month = String(date.getMonth() + 1).padStart(2, "0"); // Tháng bắt đầu từ 0
-                const year = date.getFullYear();
-                return `${day}/${month}/${year}`;
-              }),
-            },
-            title: { text: "Doanh thu theo ngày" },
-          },
-          series: [
-            {
-              name: "Doanh thu",
-              data: data.map((item) => item.TotalRevenue), // Sử dụng TotalRevenue làm dữ liệu
-            },
-          ],
-        });
-      }
+      const response = await axios.get(url); // Changed axios usage to .get
+      const data = response.data;
+      updateChartData(data, period);
     } catch (error) {
       console.error("Error fetching revenue data:", error);
+    } finally {
+      isFetching.current = false;
     }
   };
 
-  // Gọi hàm fetchRevenueData khi component được mount với mặc định là năm hiện tại
+  const updateChartData = (data, period) => {
+    let categories = [];
+    let seriesData = [];
+    let title = "";
+  
+    if (period === "year") {
+      categories = data.map((item) => item.Year);
+      seriesData = data.map((item) => item.TotalRevenue);
+      title = "Doanh thu theo năm";
+    } else if (period === "month") {
+      // Group data by Month/Year
+      const groupedData = data.reduce((acc, item) => {
+        const key = `${item.Month}/${item.Year}`;
+        if (!acc[key]) {
+          acc[key] = 0;
+        }
+        acc[key] += item.TotalVATCollected; // Cộng tổng VATCollected
+        return acc;
+      }, {});
+  
+      // Extract categories and series data
+      categories = Object.keys(groupedData);
+      seriesData = Object.values(groupedData);
+  
+      title = "Doanh thu theo tháng";
+  
+      // Lưu danh sách tháng khả dụng
+      const monthsByYear = {};
+      data.forEach((item) => {
+        const year = item.Year;
+        const month = `${item.Month}`;
+        if (!monthsByYear[year]) {
+          monthsByYear[year] = [];
+        }
+        if (item.TotalVATCollected > 0) {
+          monthsByYear[year].push(month);
+        }
+      });
+      setAvailableMonths(monthsByYear);
+    } else if (period === "day") {
+      categories = data.map((item) => {
+        const date = new Date(item.OrderDate);
+        return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+      });
+      seriesData = data.map((item) => item.TotalRevenue);
+      title = "Doanh thu theo ngày";
+    }
+  
+    setChartData({
+      options: {
+        ...chartData.options,
+        xaxis: { categories },
+        title: { text: title },
+      },
+      series: [{ name: "Doanh thu", data: seriesData }],
+    });
+  };
+  
   useEffect(() => {
-    fetchRevenueData("year");
-  }, []);
+    if (selectedMonth) {
+      fetchRevenueData("month", null, null, selectedMonth);
+    } else if (selectedDateRange.length === 2) {
+      fetchRevenueData("day", selectedDateRange[0], selectedDateRange[1], null);
+    } else {
+      fetchRevenueData("year");
+    }
+  }, [selectedMonth, selectedDateRange]);
 
-  // Cập nhật dữ liệu biểu đồ khi chọn khoảng thời gian
   const handlePeriodChange = (event) => {
     const period = event.target.value;
-    fetchRevenueData(period);
+    setSelectedMonth(null);
+    setSelectedDateRange([]);
+    setSelectedYear(currentYear);
+    fetchRevenueData(period, null, null, null);
   };
-
-  // Cập nhật năm đã chọn và dữ liệu doanh thu theo tháng cho năm đó
-  const handleYearChange = (event) => {
-    const year = parseInt(event.target.value, 10);
-    setSelectedYear(year);
-  };
-
-  // Theo dõi sự thay đổi của selectedYear và cập nhật dữ liệu doanh thu theo tháng cho năm được chọn
-  useEffect(() => {
-    if (chartData.options.title.text.includes("tháng")) {
-      fetchRevenueData("month");
-    }
-  }, [selectedYear]);
 
   return (
     <div className="revenue-chart-container">
       <div className="toolbar">
         <label htmlFor="period-select">Chọn khoảng thời gian:</label>
-        <FormControl size="small">
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            onChange={handlePeriodChange}
-            defaultValue="year"
-          >
-            <MenuItem value="year">Theo năm</MenuItem>
-            <MenuItem value="month">Theo tháng</MenuItem>
-            <MenuItem value="day">Theo ngày</MenuItem>
-          </Select>
-        </FormControl>
-        {/* <select
+        <select
           id="period-select"
-          onChange={handlePeriodChange}
+          onChange={(e) => fetchRevenueData(e.target.value, null, null, null)}
           defaultValue="year"
         >
           <option value="year">Theo năm</option>
           <option value="month">Theo tháng</option>
           <option value="day">Theo ngày</option>
-        </select> */}
+        </select>
+
+        {chartData.options.title.text.includes("ngày") && (
+          <div>
+            <label>Chọn khoảng ngày:</label>
+            <RangePicker
+              onChange={handleDateRangeChange}
+              format="DD/MM/YYYY"
+              value={selectedDateRange}
+            />
+          </div>
+        )}
+
         {chartData.options.title.text.includes("tháng") && (
-          <div className="ms-2">
-            <label htmlFor="year-select">Chọn năm:</label>
-            <FormControl size="small">
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                onChange={handleYearChange}
-                value={selectedYear}
-              >
-                {yearsList.map((year) => (
-                  <MenuItem value={year} key={year}>
-                    {year}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            {/* <select
-              id="year-select"
-              onChange={handleYearChange}
-              value={selectedYear}
+          <div>
+            <label>Chọn tháng:</label>
+            <MonthPicker
+              onChange={handleMonthChange}
+              format="YYYY-MM"
+              value={selectedMonth ? moment(selectedMonth, "YYYY-MM") : null}
+              disabledDate={(current) => {
+                const year = current.year();
+                const month = `${current.month() + 1}`;
+                // Vô hiệu hóa nếu năm không tồn tại hoặc tháng không có trong danh sách
+                return !(
+                  availableMonths[year] && availableMonths[year].includes(month)
+                );
+              }}
+              placeholder="Tháng"
+            />
+          </div>
+        )}
+
+        {/* Hiển thị chọn quý ngay cả khi không chọn tháng */}
+        {chartData.options.title.text.includes("tháng") && (
+          <div className="mx-1">
+            <label>Chọn quý:</label>
+            <Select
+              id="quarter-select"
+              onChange={handleQuarterChange}
+              value={selectedQuarter}
+              placeholder="Chọn quý"
+              style={{ width: 120 }}
             >
-              {yearsList.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select> */}
+              <Option value="Q1">Quý 1</Option>
+              <Option value="Q2">Quý 2</Option>
+              <Option value="Q3">Quý 3</Option>
+              <Option value="Q4">Quý 4</Option>
+            </Select>
           </div>
         )}
       </div>
-      <ApexCharts
-        options={chartData.options}
-        series={chartData.series}
-        type="area" // Đổi kiểu biểu đồ thành 'area'
-        height={350}
-      />
+
+      <div className="chart">
+        <ApexCharts
+          options={chartData.options}
+          series={chartData.series}
+          type="area"
+          height={350}
+        />
+      </div>
     </div>
   );
 };

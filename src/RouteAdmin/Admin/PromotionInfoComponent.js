@@ -1,11 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
-import { notification, Table, Switch, Input, Empty } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
+import { notification, Table, Switch, Input, Empty,Button} from "antd";
+import {
+  UploadOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  PercentageOutlined,
+} from "@ant-design/icons"; // Importing icons
 import axios from "../../Localhost/Custumize-axios";
 import Header from "../../components/Header/Header";
 import {
   Box,
-  Button,
   FormControl,
   MenuItem,
   Select,

@@ -8,11 +8,10 @@ import "slick-carousel/slick/slick-theme.css";
 import "./SellerDashboard.css";
 import { ThemeModeContext } from "../../../../ThemeMode/ThemeModeProvider";
 import { Box, Card, CardContent } from "@mui/material";
+import { Link } from "react-router-dom";
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
-    .format(price)
-    .replace("₫", "đ");
+const formatPrice = (value) => {
+  return value ? Number(value).toLocaleString("vi-VN") : "";
 };
 
 const fetchOrderData = async (
@@ -83,6 +82,7 @@ const fetchProductData = async (
         sold: product.sold,
         rating: calculateRating(product.sold),
         imgSrc: productImage || "https://via.placeholder.com/100",
+        slugProduct : product.slugProduct
       };
     });
 
@@ -144,7 +144,6 @@ const fetchChartData = async (
     const response = await axios.get(
       `http://localhost:8080/mixed-chart/${idStore}${dateQuery}`
     );
-
     // Nhóm dữ liệu theo tháng với định dạng MM-yyyy
     const groupedData = response.data.reduce((acc, item) => {
       const {
@@ -332,13 +331,15 @@ const SellerDashboard = () => {
     dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 5,
+    slidesToShow: 6,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 2000,
     arrows: true,
     centerMode: true,
     centerPadding: "10px",
+    focusOnSelect: true,
+    adaptiveHeight: true
   };
 
   const defaultChartData = {
@@ -358,6 +359,17 @@ const SellerDashboard = () => {
           formatter: function (value) {
             return formatPrice(value); // Format revenue values as currency
           },
+        },
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function (val) {
+          return new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          })
+            .format(val)
+            .replace("₫", "đ");
         },
       },
       tooltip: {
@@ -504,8 +516,10 @@ const SellerDashboard = () => {
               color: mode === "light" ? "#333" : "#fff", // Màu chữ trục Y thứ hai
             },
           },
-
           labels: {
+            formatter: function (value) {
+              return value; // Chắc chắn giá trị được hiển thị đúng
+            },
             style: {
               colors: mode === "light" ? "black" : "white", // Màu chữ nhãn trục Y thứ hai
             },
@@ -527,11 +541,6 @@ const SellerDashboard = () => {
           },
           style: {
             color: mode === "light" ? "#333" : "#fff", // Màu chữ tooltip giá trị Y
-          },
-        },
-        legend: {
-          labels: {
-            colors: mode === "light" ? "#333" : "#fff", // Màu chữ cho nhãn series trong legend
           },
         },
       },
@@ -697,21 +706,23 @@ const SellerDashboard = () => {
         ) : (
           <Slider {...sliderSettings}>
             {topProducts.map((product) => (
-              <Card>
-                <CardContent key={product.id} className="">
-                  <img
-                    src={product.imgSrc}
-                    alt={product.name}
-                    className="productImageClass"
-                  />
-                  <h3 className="productNameClass">{product.name}</h3>
-                  <p className="productPriceClass text-danger">
-                    {product.price}
-                  </p>
-                  <p className="productSoldClass">Đã bán: {product.sold}</p>
-                  <p className="productRatingClass">{product.rating}</p>
-                </CardContent>
-              </Card>
+              <Link to={`/detailProduct/${product.slugProduct}`}>
+                <Card>
+                  <CardContent key={product.id} className="">
+                    <img
+                      src={product.imgSrc}
+                      alt={product.name}
+                      className="productImageClass"
+                    />
+                    <h3 className="productNameClass">{product.name}</h3>
+                    <p className="productPriceClass text-danger">
+                      {product.price}
+                    </p>
+                    <p className="productSoldClass">Đã bán: {product.sold}</p>
+                    <p className="productRatingClass">{product.rating}</p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </Slider>
         )}

@@ -71,17 +71,12 @@ const RightHeader = ({ reloadCartItems }) => {
           onClick: async () => {
             const toastId = toast.loading("Vui lòng chờ...");
 
-            // Xóa localStorage ngay khi người dùng nhấn "Đăng xuất"
-            localStorage.clear();
-            sessionStorage.clear();
-
             try {
               // Gửi yêu cầu logout
               const token = localStorage.getItem("hadfjkdshf");
               await axios.post(
-                `/logout`,
-                { token: token }, // Gửi qua body
-                { headers: { "Content-Type": "application/json" } }
+                `form/logout`,
+                { token: token } // Gửi qua body
               );
 
               // Hiển thị thông báo thành công
@@ -92,6 +87,9 @@ const RightHeader = ({ reloadCartItems }) => {
                 autoClose: 5000,
                 closeButton: true,
               });
+              // Xóa localStorage ngay khi người dùng nhấn "Đăng xuất"
+              localStorage.clear();
+              sessionStorage.clear();
 
               // Chuyển hướng về trang chủ
               changeLink("/");
@@ -99,24 +97,17 @@ const RightHeader = ({ reloadCartItems }) => {
               console.error("Logout error:", error);
 
               // Hiển thị thông báo lỗi
-              // toast.update(toastId, {
-              //   render: "Đăng xuất thất bại",
-              //   type: "error",
-              //   isLoading: false,
-              //   autoClose: 5000,
-              //   closeButton: true,
-              // });
-              // Hiển thị thông báo thành công
               toast.update(toastId, {
-                render: "Đăng xuất thành công",
-                type: "success",
+                render: "Đăng xuất thất bại",
+                type: "error",
                 isLoading: false,
                 autoClose: 5000,
                 closeButton: true,
               });
+              // Hiển thị thông báo thành công
+             
 
               // Chuyển hướng về trang chủ
-              changeLink("/");
             }
           },
         },

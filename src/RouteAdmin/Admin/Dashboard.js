@@ -45,25 +45,23 @@ const fetchRevenueOfMaxMonth = async () => {
     // Tìm tháng lớn nhất trong năm lớn nhất
     const maxMonth = Math.max(...filteredData.map((item) => item.Month));
 
-    // Lọc dữ liệu của tháng lớn nhất
+    // Lọc dữ liệu của tháng lớn nhất trong năm lớn nhất
     const maxMonthData = filteredData.filter((item) => item.Month === maxMonth);
 
-    // Lấy dữ liệu của tháng gần nhất trong năm đó
-    const latestMonthData = maxMonthData.reduce(
-      (latest, item) =>
-        new Date(item.Year, item.Month - 1) >
-        new Date(latest.Year, latest.Month - 1)
-          ? item
-          : latest,
-      maxMonthData[0]
+    // Tính tổng `TotalVATCollected` của tất cả các mục trong tháng đó
+    const totalVAT = maxMonthData.reduce(
+      (sum, item) => sum + (item.TotalVATCollected || 0),
+      0
     );
 
-    return latestMonthData.TotalVATCollected; // Trả về tổng VAT đã thu
+    return totalVAT; // Trả về tổng VAT đã thu
   } catch (error) {
     console.error("Error fetching revenue:", error);
     return 0; // Trả về 0 nếu có lỗi
   }
 };
+
+
 
 // Hàm gọi API để lấy số lượng cửa hàng
 const fetchTotalStoresCount = async () => {
@@ -281,7 +279,7 @@ const Dashboard = () => {
           >
             <UilTimes />
           </button>
-          <h2 className="chart-title">Biểu đồ Doanh thu</h2>
+          <h2 className="chart-title">Biểu đồ doanh thu</h2>
           <RevenueChart onClose={() => setShowRevenueChart(false)} />
         </Box>
       )}

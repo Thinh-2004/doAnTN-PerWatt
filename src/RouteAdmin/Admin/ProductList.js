@@ -52,6 +52,8 @@ const ProductList = () => {
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
+    focusOnSelect: true,
+    adaptiveHeight: true,
     responsive: [
       {
         breakpoint: 768,
@@ -76,8 +78,9 @@ const ProductList = () => {
       dataIndex: "StoreName",
       key: "storeName",
       render: (StoreName, record) => (
-        <Link to={`/pageStore/${record.slugStore}`}
-          style={{color : mode === "light" ? "black" : "white"}}
+        <Link
+          to={`/pageStore/${record.slugStore}`}
+          style={{ color: mode === "light" ? "black" : "white" }}
         >
           {StoreName}
         </Link>
@@ -139,9 +142,7 @@ const ProductList = () => {
 
     const fetchRevenueData = async () => {
       try {
-        const response = await axios.get(
-          "/revenue/net-store-revenue"
-        );
+        const response = await axios.get("/revenue/net-store-revenue");
         setRevenueData(response.data);
         // console.log(response.data);
       } catch (error) {
@@ -168,6 +169,7 @@ const ProductList = () => {
       className="rounded-3 mt-3"
       sx={{ backgroundColor: "backgroundElement.children" }}
     >
+    
       <h3 className="header p-2">Sản phẩm bán chạy</h3>
       {loading ? (
         <div className="loading-container">
@@ -189,8 +191,7 @@ const ProductList = () => {
           ))}
         </Slider>
       )}
-
-      <h3 className="header">Doanh Thu Cửa Hàng</h3>
+      <h3 className="header p-4">Doanh thu Cửa Hàng</h3>
       <Table
         dataSource={revenueData}
         columns={columns}

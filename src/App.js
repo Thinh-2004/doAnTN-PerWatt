@@ -40,7 +40,7 @@ function App() {
 
   //   const handleDevToolsOpen = () => {
   //     if (isDevToolsOpen) {
-  //       window.location.href = "/login"; // Điều hướng về trang đăng nhập
+  //       window.location.href = "/"; // Điều hướng về trang đăng nhập
   //       localStorage.clear(); // Xóa dữ liệu người dùng
   //       console.log(
   //         "%cVui lòng tắt developer tool để tiếp tục trải nghiệm website",
