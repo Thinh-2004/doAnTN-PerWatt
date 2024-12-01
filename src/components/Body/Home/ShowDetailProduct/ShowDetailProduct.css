@@ -1,10 +1,10 @@
 #btn-children-img {
   border: none;
-  background-color: white;
+  /* background-color: white; */
 }
 #btn-children-img:hover {
   border: none;
-  background-color: white;
+  /* background-color: white; */
 }
 #avt-store {
   width: 70px; /* hoặc bất kỳ kích thước nào bạn muốn */
@@ -72,7 +72,7 @@
 
 #hover-idDetailProduct {
   border: none;
-  background: white;
+  /* background: white; */
   transition: 0.5s;
 }
 
@@ -80,8 +80,8 @@
   cursor: pointer;
   outline: 1px solid #00c7ff;
   color: #00c7ff;
-   transform: scale(1.05); 
-   transition: 0.5s; 
+  transform: scale(1.05);
+  transition: 0.5s;
 }
 
 #hover-idDetailProduct:hover label {
@@ -98,3 +98,4 @@
 #active-selected-detailProduct label {
   color: #00c7ff;
 }
+

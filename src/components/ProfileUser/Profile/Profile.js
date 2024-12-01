@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import useSession from "../../../Session/useSession";
 import axios from "../../../Localhost/Custumize-axios";
 import "./ProfileStyle.css";
 import { toast } from "react-toastify";
@@ -12,6 +11,9 @@ import {
   LocalPhone,
 } from "@mui/icons-material";
 import { Email } from "@mui/icons-material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 
 const Profile = () => {
   const sesion = localStorage.getItem("user");
@@ -28,19 +30,21 @@ const Profile = () => {
     avatar: "",
   });
 
-  const geturlIMG = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
 
   const [previewAvatar, setPreviewAvatar] = useState(""); // State for image preview
 
   const loadData = async () => {
     try {
-      const res = await axios.get(`userProFile/${user.id}`);
+      const res = await axios.get(`/userProFile/myInfo`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+        },
+      });
       setFill(res.data);
+      // console.log(res.data);
       // Set the preview URL if there is an avatar
       setPreviewAvatar(
-        res.data.avatar ? geturlIMG(user.id, res.data.avatar) : ""
+        res.data.avatar ?  res.data.avatar : ""
       );
       // console.log(res.data);
     } catch (error) {
@@ -53,11 +57,20 @@ const Profile = () => {
   }, []);
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    setFill({
-      ...fill,
-      [name]: type === "radio" ? JSON.parse(value) : value,
-    });
+    //Kiểm tra nếu `e` là một sự kiện (từ các input khác), xử lý bình thường
+    if (e?.target) {
+      const { name, value, type } = e.target;
+      setFill({
+        ...fill,
+        [name]: type === "radio" ? JSON.parse(value) : value,
+      });
+    } else {
+      //Nếu e là giá trị ngày từ DatePicker
+      setFill((pre) => ({
+        ...pre,
+        birthdate: e, //Cập nhật giá trị ngày từ DatePicker
+      }));
+    }
   };
 
   const handleFileChange = (e) => {
@@ -138,21 +151,20 @@ const Profile = () => {
     e.preventDefault();
     if (validate()) {
       const formData = new FormData();
-      formData.append(
-        "user",
-        JSON.stringify({
-          fullname: fill.fullname,
-          email: fill.email,
-          birthdate: fill.birthdate,
-          phone: fill.phone,
-          gender: fill.gender,
-          password: fill.password || null,
-          role: {
-            id: fill.role.id,
-          },
-          address: fill.address,
-        })
-      );
+      const userToSend = {
+        fullname: fill.fullname,
+        email: fill.email,
+        birthdate: fill.birthdate,
+        phone: fill.phone,
+        gender: fill.gender,
+        password: fill.password || null,
+        role: {
+          id: fill.role.id,
+        },
+        address: fill.address,
+      };
+      formData.append("user", JSON.stringify(userToSend));
+      console.log(userToSend);
       if (fill.avatar instanceof File) {
         formData.append("avatar", fill.avatar);
       }
@@ -161,8 +173,10 @@ const Profile = () => {
         const res = await axios.put(`/user/${user.id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
           },
         });
+
         setTimeout(() => {
           toast.update(idToast, {
             render: "Cập nhật thông tin thành công",
@@ -208,10 +222,15 @@ const Profile = () => {
   });
 
   return (
-    <div className="bg-white rounded-4">
+    <Box
+      className="rounded-4"
+      sx={{
+        backgroundColor: "backgroundElement.children",
+      }}
+    >
       <h3 className="text-center p-2">Hồ sơ của tôi</h3>
       <hr />
-      <form onSubmit={handleChangeProfile}>
+      <form onSubmit={handleChangeProfile} className="m-3">
         <div className="row d-flex justify-content-center">
           <div className="col-lg-6 col-md-6 col-sm-6 mx-4 border-end">
             <div className="mb-3">
@@ -282,14 +301,28 @@ const Profile = () => {
                     fontSize: "25px",
                   }}
                 />
-                <input
+                {/* <input
                   type="date"
                   name="birthdate"
                   value={fill.birthdate}
                   onChange={handleChange}
                   className="form-control"
                   placeholder="Ngày sinh"
-                />
+                /> */}
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    name="birthdate"
+                    value={fill.birthdate ? dayjs(fill.birthdate) : null} // Chuyển đổi múi giờ về Việt Nam
+                    onChange={handleChange}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        width: "400px",
+                        height: "40px",
+                      },
+                    }}
+                  />
+                </LocalizationProvider>
               </Box>
             </div>
             <div className="mb-3">
@@ -369,7 +402,7 @@ const Profile = () => {
             <div className="row">
               <div className="col-lg-12 d-flex justify-content-center mb-3">
                 <img
-                  src={previewAvatar || geturlIMG(user.id, fill.avatar)}
+                  src={previewAvatar ||  fill.avatar}
                   alt="Avatar"
                   className="img-fluid"
                   id="img-change-avatar"
@@ -397,7 +430,7 @@ const Profile = () => {
           </div>
         </div>
       </form>
-    </div>
+    </Box>
   );
 };
 

@@ -1,7 +1,8 @@
 /* Header-Left */
 #img-logo {
-  width: 60px; /* Adjust the size as needed */
-  height: 60px;
+  max-width: 100%;
+  width: 70px; /* Adjust the size as needed */
+  aspect-ratio: 1/1;
   padding: 10px;
   margin: 10px;
   transition: 0.5s;
@@ -40,32 +41,40 @@
 .btn-icon:hover {
   border: 1px solid;
   color: white;
-  background-color: #00c7ff;
+  background-color: #7ae2ff;
   transform: scale(1.1);
   transition: 0.5s;
 }
-#nav{
-  background-color: rgba(255, 255, 255, 0.8); /* White color with 50% transparency */
-  backdrop-filter: blur(10px); /* Optional: adds a blur effect to the background */
-  border: 1px solid rgba(0, 0, 0, 0.1); /* Optional: adds a subtle border */
-}
-#btn-sessionUser{
+
+#btn-sessionUser {
   border: 1px solid;
   cursor: default;
 }
-#btn-logOut{
+#btn-logOut {
   transition: 0.5s;
 }
-#btn-logOut:hover{
+#btn-logOut:hover {
   border: 1px solid;
   color: white;
-  background-color: red;
+  background-color: rgb(255, 93, 93);
   transform: scale(1.1);
   transition: 0.5s;
 }
-#find-product-bg-img{
+#find-product-bg-img {
   width: 100%;
   height: 370px;
   border: 1px solid;
   object-fit: cover;
 }
+
+#title-web {
+  max-width: 100%;
+  background-image: url("https://hoanghapc.vn/media/news/0510_hinh_nen_phong_canh1-2.jpg");
+  background-size: cover;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 40px #00C7FF, 0 0 40px #00C7FF;
+}
+
+

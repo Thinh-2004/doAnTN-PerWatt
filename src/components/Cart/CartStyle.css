@@ -3,6 +3,10 @@
   width: 100px;
 }
 
+#smooth {
+  transition: 0.5s;
+}
+
 #imgShop {
   height: 30px;
   width: 30px;
@@ -25,14 +29,23 @@
 }
 
 #sticky-top {
-  position: -webkit-sticky; /* Safari */
+  position: -webkit-sticky;
   position: sticky;
-  top: 100px; /* Khoảng cách từ trên cùng của viewport */
+  top: 100px;
   margin-bottom: 16px;
 }
 
 #button {
   transition: 0.5s;
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
+  width: 100%;
+}
+
+#button:disabled {
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
+  opacity: 0.5;
 }
 
 #button:hover {
@@ -41,6 +54,31 @@
 }
 
 #button:active {
+  transform: scale(0.98);
+  transition: 0.1s;
+}
+
+#deleteButton {
+  transition: 0.5s;
+  height: 40px;
+  width: 40px;
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
+  min-width: 0;
+}
+
+#deleteButton:disabled {
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
+  opacity: 0.5;
+}
+
+#deleteButton:hover {
+  transform: scale(1.01);
+  transition: 0.5s;
+}
+
+#deleteButton:active {
   transform: scale(0.98);
   transition: 0.1s;
 }
@@ -60,15 +98,11 @@
 
 #fontSize {
   font-size: 11px;
-  background-color: rgb(245, 245, 245);
+  /* background-color: rgb(245, 245, 245); */
   padding: 5px;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 
-#spinner {
-  margin-top: 30px;
-  margin-left: 150px;
-}
 #price {
   margin-left: 150px;
   font-size: 18px;
@@ -81,4 +115,9 @@
 
 .card {
   border: none;
+}
+
+#buttonDelete {
+  background-color: rgb(255, 184, 184);
+  color: rgb(198, 0, 0);
 }

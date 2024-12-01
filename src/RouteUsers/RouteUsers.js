@@ -11,65 +11,190 @@ import ProfileUser from "../components/ProfileUser/ProfileUser";
 import ForgotPassword from "../components/ForgotPasswordUser/ForgotPassword";
 import OTP from "../components/ForgotPasswordUser/OTP";
 import ResetPassword from "../components/ForgotPasswordUser/ResetPassword";
-import Store from "../components/Body/Store/Store";
+import Store from "../components/Body/Store/NavStore";
 import Order from "../components/Order/OrderBuyer/OrderBuyer";
 import OrderDetail from "../components/Order/OrderDetail/OrderDetail";
 import PayBuyer from "../components/Order/PayBuyer/PayBuyer";
-import ShippingCreate from "../components/Shipping/ShippingCreate";
-import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification";
+
 import Successful from "../components/Order/Successful/Successful";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import FindMoreProduct from "../components/Body/Home/FindMoreProduct/FindMoreProduct";
+import FindMoreProductPerMall from "../components/Body/Home/FindMoreProductPerMall/FindMoreProductPerMall";
+import Wallet from "../components/Wallet/Wallet";
+import Transaction from "../components/Wallet/Transaction";
+import NotFound from "../NotFound";
+import SecurityRoutes from "../components/SecurityRoutes/SecurityRoutes";
+import PinCode from "../components/Wallet/PinCode";
+import ChangePinCode from "../components/Wallet/ChangePinCode";
+import BuyerNotification from "../components/Notification&Message&Comment/Notification/BuyerNotification";
+import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification";
 
 const RouteUsers = (props) => {
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<Home></Home>}></Route>
-        <Route
-          path="login"
-          element={
-            <GoogleOAuthProvider clientId="175283151902-4ncr5sj18h9e9akpj72mmnjbcq1mqdkg.apps.googleusercontent.com">
-              <Form></Form>
-            </GoogleOAuthProvider>
-          }
-        ></Route>
-        <Route path="/cart" element={<Cart></Cart>}></Route>
-        <Route path="/market" element={<Market></Market>}></Route>
-        <Route path="/profileMarket/*" element={<IsMarket></IsMarket>}></Route>
-        <Route
-          path="detailProduct/:slug"
-          element={<DetailProduct></DetailProduct>}
-        ></Route>
-        <Route
-          path="profileMarket/checkItemProduct/:slug"
-          element={<CheckItemProduct></CheckItemProduct>}
-        ></Route>
-        <Route path="/user/*" element={<ProfileUser></ProfileUser>}></Route>
-        <Route
-          path="forgotPass"
-          element={<ForgotPassword></ForgotPassword>}
-        ></Route>
-        <Route path="/otp" element={<OTP />}></Route>
-        <Route path="/resetPassword" element={<ResetPassword />}></Route>
-        <Route path="/pageStore/:slugStore" element={<Store />}></Route>
+    <Routes>
+      {/* Các routes public */}
+      <Route path="/" element={<Home></Home>}></Route>
+      <Route
+        path="login"
+        element={
+          <GoogleOAuthProvider clientId="175283151902-4ncr5sj18h9e9akpj72mmnjbcq1mqdkg.apps.googleusercontent.com">
+            <Form></Form>
+          </GoogleOAuthProvider>
+        }
+      ></Route>
+      <Route path="forgotPass" element={<ForgotPassword />}></Route>
+      <Route path="/otp" element={<OTP />}></Route>
+      <Route path="/resetPassword" element={<ResetPassword />}></Route>
+      <Route path="/pageStore/:slugStore" element={<Store />}></Route>
+      <Route path="/OrderDetail" element={<OrderDetail />}></Route>
+      <Route
+        path="/findMoreProduct/:name"
+        element={<FindMoreProduct />}
+      ></Route>
+      <Route
+        path="/product/PerMall"
+        element={<FindMoreProductPerMall />}
+      ></Route>
+      <Route path="detailProduct/:slug" element={<DetailProduct />}></Route>
+      <Route path="/404/NotFound" element={<NotFound />}></Route>
+      {/* ------------- */}
+      {/* Các route cần security */}
+      <Route
+        path="/cart"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <Cart />
+          </SecurityRoutes>
+        }
+      ></Route>
+      <Route
+        path="/user/*"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <ProfileUser />
+          </SecurityRoutes>
+        }
+      ></Route>
+      <Route
+        path="/order"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <Order />
+          </SecurityRoutes>
+        }
+      ></Route>
+      <Route
+        path="/paybuyer"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <PayBuyer />
+          </SecurityRoutes>
+        }
+      />
+      <Route
+        path="/orderDetail/:id"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <OrderDetail />
+          </SecurityRoutes>
+        }
+      />
+      <Route
+        path="/orderCreateVnPay"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <Successful />
+          </SecurityRoutes>
+        }
+      />
 
-        <Route path="/order" element={<Order></Order>}></Route>
-        <Route
-          path="/OrderDetail"
-          element={<OrderDetail></OrderDetail>}
-        ></Route>
-        <Route path="/paybuyer" element={<PayBuyer />} />
-        <Route path="/orderDetail/:id" element={<OrderDetail />} />
-        <Route path="/shippingCreate" element={<ShippingCreate />} />
-        <Route path="/orderCreateVnPay" element={<Successful />} />
+      <Route
+        path="/notifications"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <NotificationCard />
+          </SecurityRoutes>
+        }
+      ></Route>
+      <Route
+        path="/profileMarket/notifications"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <NotificationCard />
+          </SecurityRoutes>
+        }
+      ></Route>
+      <Route
+        path="/buyerNotification"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <BuyerNotification />
+          </SecurityRoutes>
+        }
+      ></Route>
 
-        <Route
-          path="/notifications"
-          element={<NotificationCard></NotificationCard>}
-        ></Route>
-        <Route path="*">404 Not Found</Route>
-      </Routes>
-    </>
+      <Route
+        path="/wallet/:role"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <Wallet />
+          </SecurityRoutes>
+        }
+      ></Route>
+      <Route
+        path="/transaction"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <Transaction />
+          </SecurityRoutes>
+        }
+      />
+
+      <Route
+        path="/pinCode"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <PinCode />
+          </SecurityRoutes>
+        }
+      />
+      <Route
+        path="/changePinCode"
+        element={
+          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+            <ChangePinCode />
+          </SecurityRoutes>
+        }
+      />
+      {/* ------------- */}
+      {/* Phân quyền Buyer */}
+      <Route
+        path="/market"
+        element={
+          <SecurityRoutes allowedRoles={["Buyer"]}>
+            <Market />
+          </SecurityRoutes>
+        }
+      ></Route>
+      {/* ------------- */}
+      {/* Phân quyền Seller  */}
+      <Route
+        path="/profileMarket/*"
+        element={
+          <SecurityRoutes allowedRoles={["Seller"]}>
+            <IsMarket />
+          </SecurityRoutes>
+        }
+      ></Route>
+      <Route
+        path="profileMarket/checkItemProduct/:slug"
+        element={
+          <SecurityRoutes allowedRoles={["Seller"]}>
+            <CheckItemProduct />
+          </SecurityRoutes>
+        }
+      ></Route>
+    </Routes>
   );
 };
 

@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import "./FormStyle.css";
 import Register from "./Register/Register";
 import Login from "./Login/Login";
+import { Box, useTheme } from "@mui/material";
 
 const Form = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isChangeForm, setChangeForm] = useState(false);
+  const theme = useTheme();
 
   useEffect(() => {
     if (isChangeForm) {
@@ -15,11 +17,12 @@ const Form = () => {
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
-      <div
+      <Box
         id="main"
         className={`container-login ${
           isSignUp ? "right-panel-active" : ""
         } shadow`}
+        sx={{backgroundColor : "backgroundElement.children"}}
       >
         <div className="row">
           <div className="col sign-up">
@@ -30,7 +33,12 @@ const Form = () => {
           </div>
         </div>
         <div className="overlay-container">
-          <div className="overlay">
+          <div className="overlay"  style={{
+            background:
+              theme.palette.mode === "light"
+                ? "linear-gradient(to right, #28ffdb, #228dff)"
+                : "linear-gradient(to right, #1c4a43, #072748)",
+          }}>
             <div className="overlay-left">
               <h2>Bạn chưa có tài khoản?</h2>
               <p>
@@ -61,7 +69,7 @@ const Form = () => {
             </div>
           </div>
         </div>
-      </div>
+      </Box>
     </div>
   );
 };

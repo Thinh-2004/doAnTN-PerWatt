@@ -9,7 +9,7 @@
   background-color: var(--background);
   border-radius: 0.75rem; /* 12px */
   box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.1); /* 2px 10px */
-  background-color: white;
+  /* background-color: white; */
 }
 
 /* Header của card */
@@ -114,7 +114,7 @@
   max-height: 18.75rem; /* 300px */
   overflow-y: auto;
   overflow-x: auto;
-  background-color: white;
+  /* background-color: white; */
 }
 
 .table {
@@ -127,13 +127,18 @@
   font-weight: bold;
 }
 
-.table td,
-.table th {
+.table th,
+.table td {
+  text-align: center; /* Căn giữa theo chiều ngang */
   vertical-align: middle; /* Căn giữa theo chiều dọc */
-  padding: 1rem; /* 16px */
-  text-align: left; /* Căn trái nội dung trong cả hai thẻ th và td */
-  border-bottom: 1px solid var(--muted-foreground);
+  padding: 10px; /* Khoảng cách padding cho nội dung */
 }
+
+.table img {
+  display: block;
+  margin: 0 auto; /* Căn giữa hình ảnh */
+}
+
 
 .table th {
   background-color: var(--background); /* Nền cho tiêu đề bảng */
@@ -166,7 +171,7 @@
   padding: 0.5rem 1rem; /* 8px 16px */
   border-radius: 1rem; /* 16px */
   text-align: center;
-  color: white;
+  /* color: white; */
   min-width: 5rem; /* 80px */
 }
 
@@ -273,7 +278,7 @@
     align-items: center;
     justify-content: center; /* Sử dụng 'center' để căn giữa nội dung */
     padding: 1rem;
-    background-color: white; /* Nền trắng để làm nổi bật card */
+    /* background-color: white; Nền trắng để làm nổi bật card */
     overflow: auto; /* Thêm thanh cuộn nếu nội dung vượt quá kích thước của container */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thêm bóng cho card để tạo chiều sâu */
     margin-top: 3rem;
@@ -322,7 +327,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #333;
+    /* color: #333; */
     transition: color 0.3s;
     display: flex;
     align-items: center;
@@ -340,3 +345,16 @@
     width: 1.5rem; /* Kích thước biểu tượng đóng */
     height: 1.5rem;
   }
+
+  .pagination-container {
+    margin: 20px 0; /* Cách trên và dưới là 20px */
+    text-align: right; /* Căn chỉnh nội dung sang bên phải */
+  }
+
+  
+
+  
+  
+
+  
+  

@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../../../Localhost/Custumize-axios";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
 
-const Warranties = ({name, value, onChange }) => {
-  const [fillwarranties, setFillWarranties] = useState([]);
+const Warranties = ({ name, value, onChange }) => {
+  const [fillWarranties, setFillWarranties] = useState([]);
   useEffect(() => {
     const load = async () => {
       try {
@@ -16,22 +22,23 @@ const Warranties = ({name, value, onChange }) => {
   }, []);
   return (
     <>
-      <select
-        name={name}
-        id=""
-        className="form-select"
-        value={value}
-        onChange={onChange}
-      >
-        <option value="" selected hidden>
-          Vui lòng thời gian bảo hành
-        </option>
-        {fillwarranties.map((fill, index) => (
-          <option value={fill.id} key={fill.id}>
-            {fill.name}
-          </option>
-        ))}
-      </select>
+      <FormControl fullWidth size="small">
+        <InputLabel id="demo-select-small-label">Bảo hành</InputLabel>
+        <Select
+          name={name}
+          labelId="demo-select-small-label"
+          id="demo-select-small"
+          value={value}
+          label="Bảo hành"
+          onChange={onChange}
+        >
+          {fillWarranties.map((fill) => (
+            <MenuItem value={fill.id} key={fill.id}>
+              {fill.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     </>
   );
 };

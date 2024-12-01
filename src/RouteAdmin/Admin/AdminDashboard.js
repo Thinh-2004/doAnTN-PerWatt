@@ -1,16 +1,15 @@
 import React from "react";
-import HeaderAdmin from "../../components/Header/HeaderAdmin";
+import Header from "../../components/Header/Header";
 import Dashboard from "./Dashboard";
-import { Footer } from "antd/es/layout/layout";
 
 const AdminDashboard = () => {
   return (
     <div>
-      <HeaderAdmin></HeaderAdmin>
+      <Header/>
       <div className="mt-2">
         <Dashboard></Dashboard>
       </div>
-      <Footer></Footer>
+
     </div>
   );
 };

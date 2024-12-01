@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../../../Localhost/Custumize-axios";
+import {
+  FormControl,
+  InputLabel,
+  ListSubheader,
+  MenuItem,
+  Select,
+
+} from "@mui/material";
+import { grey } from "@mui/material/colors";
 
 const Brand = ({ name, value, onChange }) => {
   const [fillBrand, setFillBrand] = useState([]);
-  const [idNoBrand, setIdNoBrand] = useState(null);
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -16,47 +25,56 @@ const Brand = ({ name, value, onChange }) => {
     load();
   }, []);
 
-  useEffect(() => {
-    //Tìm id no brand
-    const filterIdNoBrand = fillBrand.find((find) => find.name === "No brand");
-    if (filterIdNoBrand) {
-      setIdNoBrand(filterIdNoBrand.id);
-    }
-  },[fillBrand]);
   // Nhóm các danh mục theo chữ cái đầu tiên của tên
-  const groupedTrade = fillBrand.reduce((acc, brand) => {
-    const firstLetter = brand.name.charAt(0).toUpperCase(); //Lấy chữ cái đầu tiền
-    const checkLetter = /[A-Z]/.test(firstLetter) ? firstLetter : "#"; //kiểm tra chữ cái đầu trong EN
-    if (!acc[checkLetter]) {
-      //Kiểm tra tồn tại của mảng
-      acc[checkLetter] = []; //Tạo mảng rỗng
-    }
-    acc[checkLetter].push(brand);
-    return acc;
-  }, {});
+  const groupedTrade = fillBrand.reduce(
+    (acc, brand) => {
+      if (brand.name === "No brand") {
+        acc.noBrand.push(brand); // Đưa "No brand" vào riêng
+      } else {
+        const firstLetter = brand.name.charAt(0).toUpperCase(); // Lấy chữ cái đầu
+        const checkLetter = /[A-Z]/.test(firstLetter) ? firstLetter : "#"; // Kiểm tra chữ cái đầu
+        if (!acc.grouped[checkLetter]) {
+          acc.grouped[checkLetter] = []; // Tạo mảng rỗng cho từng chữ cái
+        }
+        acc.grouped[checkLetter].push(brand);
+      }
+      return acc;
+    },
+    { noBrand: [], grouped: {} } // Khởi tạo 2 mảng: "No brand" và nhóm chữ cái
+  );
+
   return (
     <>
-      <select
-        name={name}
-        id=""
-        className="form-select"
-        value={value}
-        onChange={onChange}
-      >
-        <option selected hidden>
-          Vui lòng chọn thương hiệu
-        </option>
-        <option value={idNoBrand}>No brand</option>
-        {Object.keys(groupedTrade).map((letter) => (
-          <optgroup label={letter === "#" ? "# -" : letter + " -"} key={letter}>
-            {groupedTrade[letter].map((fill) => (
-              <option value={fill.id} key={fill.id}>
+      <FormControl fullWidth size="small">
+        <InputLabel id="demo-select-small-label">Thương hiệu</InputLabel>
+        <Select
+          name={name}
+          labelId="demo-select-small-label"
+          id="demo-select-small"
+          value={value}
+          label="Thương hiệu"
+          onChange={onChange}
+        >
+          {/* Hiển thị No brand trước */}
+          {groupedTrade.noBrand.map((fill) => (
+            <MenuItem key={fill.id} value={fill.id}>
+              {fill.name}
+            </MenuItem>
+          ))}
+
+          {/* Hiển thị các mục được nhóm theo chữ cái */}
+          {Object.keys(groupedTrade.grouped).map((letter) => [
+            <ListSubheader key={letter}>
+              {letter === "#" ? "Khác" : letter}
+            </ListSubheader>,
+            groupedTrade.grouped[letter].map((fill) => (
+              <MenuItem key={fill.id} value={fill.id}>
                 {fill.name}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
+              </MenuItem>
+            )),
+          ])}
+        </Select>
+      </FormControl>
     </>
   );
 };

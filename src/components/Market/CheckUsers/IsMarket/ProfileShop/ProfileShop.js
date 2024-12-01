@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "../../../../../Localhost/Custumize-axios";
 import "./ProfileShopStyle.css";
-import { Box, Button, styled, TextField } from "@mui/material";
+import { Box, Button, Card, CardContent, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import StoreIcon from "@mui/icons-material/Store";
 import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
@@ -10,6 +10,7 @@ import { BadgeOutlined, PhoneCallback } from "@mui/icons-material";
 import SubtitlesOutlinedIcon from "@mui/icons-material/SubtitlesOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import BusinessIcon from "@mui/icons-material/Business";
+import FormSelectAdress from "../../../../APIAddressVN/FormSelectAdress";
 
 const ProfileShop = () => {
   const user = localStorage.getItem("user")
@@ -18,14 +19,16 @@ const ProfileShop = () => {
   const idStore = localStorage.getItem("idStore");
   const [dataStore, setDataStore] = useState({
     namestore: "",
+    showAddress: "",
     address: "",
     email: "",
     phone: "",
     cccdnumber: "",
+    createdtime : "",
     imgbackgound: "",
     user: user.id,
     taxcode: "",
-    slug : "",
+    slug: "",
   });
   const [dataTaxCode, setDataTaxCode] = useState({
     name: "",
@@ -33,14 +36,23 @@ const ProfileShop = () => {
   });
   const [previewAvatar, setPreviewAvatar] = useState("");
 
-  const geturlIMG = (storeId, filename) => {
-    return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
-  };
+
+  //Satet lữu dữ liệu của formSelectAddress
+  const [dataAddress, setDataAddress] = useState("");
 
   const loadData = async () => {
     try {
       const res = await axios.get(`store/${idStore}`);
-      setDataStore(res.data);
+
+      //Hàm cắt chuỗi địa chỉ để hiển thị
+      const parts = res.data?.address.split(",");
+      if (parts?.length > 0) {
+        setDataStore({
+          ...res.data,
+          address: parts[0] + "," + parts[1],
+          showAddress: res.data.address,
+        });
+      }
 
       const apiCheckTaxCode = await axios.get(`/business/${res.data.taxcode}`);
       setDataTaxCode(apiCheckTaxCode.data.data);
@@ -85,6 +97,14 @@ const ProfileShop = () => {
 
     if (namestore.length < 10) {
       toast.warning("Tên cửa hàng phải tối thiểu 10 kí tự");
+      return false;
+    }
+
+    if (dataAddress === "" || dataAddress === null) {
+      toast.warning("Hãy chọn địa chỉ đầy đủ");
+      return false;
+    } else if (address === "" || address === null) {
+      toast.warning("Đường hoặc số nhà không được để trống");
       return false;
     }
 
@@ -135,22 +155,24 @@ const ProfileShop = () => {
         formData.append(
           "store",
           JSON.stringify({
-            id : idStore,
+            id: idStore,
             namestore: dataStore.namestore,
-            address: dataStore.address,
+            address: dataStore.address + ", " + dataAddress,
             email: dataStore.email,
             phone: dataStore.phone,
             cccdnumber: dataStore.cccdnumber,
+            createdtime : dataStore.createdtime,
             user: {
               id: user.id,
             },
             taxcode: dataStore.taxcode,
-            slug : dataStore.slug,
+            slug: dataStore.slug,
           })
         );
         if (dataStore.imgbackgound instanceof File) {
           formData.append("imgbackgound", dataStore.imgbackgound);
         }
+        console.log(formData);
 
         await axios.put(`/store/${idStore}`, formData, {
           headers: {
@@ -215,9 +237,14 @@ const ProfileShop = () => {
     width: 1,
   });
 
+  const handleDataAddress = (data) => {
+    setDataAddress(data);
+    // console.log(data);
+  };
+
   return (
     <form onSubmit={handleSubmit}>
-      <div className="card mt-4 p-3">
+      <Card className=" mt-4 p-3" sx={{backgroundColor: "backgroundElement.children"}}>
         <div className="row">
           <div className="col-lg-6 col-md-6 col-sm-6 border-end">
             <h3 className="text-center">Thông tin kênh bán hàng của tôi</h3>
@@ -230,12 +257,12 @@ const ProfileShop = () => {
           <hr />
         </span>
 
-        <div className="card-body">
+        <CardContent className="">
           <div className="row">
             <div className="col-lg-6 col-md-6 col-sm-6 border-end">
               <div className="row">
                 <div className="col-lg-12 col-md-12 col-sm-12">
-                  <div className="mb-3">
+                  <div className="mb-4">
                     <Box sx={{ display: "flex", alignItems: "flex-end" }}>
                       <StoreIcon
                         sx={{
@@ -266,24 +293,37 @@ const ProfileShop = () => {
                   </div>
                   <div className="mb-3">
                     <TextField
-                      id="outlined-multiline-static"
+                      id="outlined-read-only-input"
                       label="Địa chỉ cửa hàng"
                       multiline
-                      rows={9}
+                      rows={4}
                       fullWidth
-                      defaultValue="Địa chỉ cửa hàng"
+                      slotProps={{
+                        input: {
+                          readOnly: true,
+                        },
+                      }}
+                      // defaultValue={dataStore.address}
+                      value={dataStore.showAddress}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <FormSelectAdress
+                      editFormAddress={dataStore.showAddress}
+                      apiAddress={handleDataAddress}
+                    />
+                    <TextField
+                      className="mt-3"
+                      id="outlined-multiline-static"
+                      label="Đường/Số nhà"
+                      multiline
+                      placeholder="Ví dụ: Số nhà 123, Đường ABC,"
+                      rows={2}
                       name="address"
                       value={dataStore.address}
                       onChange={handleInputChange}
+                      fullWidth
                     />
-                    {/* <textarea
-                    name="address"
-                    className="form-control"
-                    placeholder="Địa chỉ cửa hàng"
-                    rows={8}
-                    value={dataStore.address}
-                    onChange={handleInputChange}
-                  ></textarea> */}
                   </div>
                 </div>
               </div>
@@ -294,7 +334,7 @@ const ProfileShop = () => {
                   <img
                     src={
                       previewAvatar ||
-                      geturlIMG(idStore, dataStore.imgbackgound)
+                      dataStore.imgbackgound
                     }
                     alt="Logo shop"
                     id="img-background"
@@ -323,15 +363,15 @@ const ProfileShop = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div className="card mt-4 p-3 mb-4">
+        </CardContent>
+      </Card>
+      <Card className=" mt-4 p-3 mb-4" sx={{backgroundColor: "backgroundElement.children"}}>
         <h3 className="text-start">Thông tin chi tiết</h3>
         <span className="p-0 m-0">
           <hr />
         </span>
 
-        <div className="card-body">
+        <CardContent className="">
           <div className="row">
             <div className="col-lg-6 col-md-6 col-sm-6 border-end">
               <div className="mb-3">
@@ -503,7 +543,7 @@ const ProfileShop = () => {
                     value={dataTaxCode?.address}
                     onChange={handleInputChange}
                     id="outlined-multiline-static"
-                    label="Multiline"
+                    label="Địa chỉ"
                     multiline
                     rows={2}
                     InputProps={{
@@ -514,8 +554,8 @@ const ProfileShop = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </form>
   );
 };

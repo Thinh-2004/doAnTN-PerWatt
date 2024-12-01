@@ -1,14 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./CartStyle.css";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "../../Localhost/Custumize-axios";
-import useSession from "../../Session/useSession";
 import { tailspin } from "ldrs";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import { FaBan } from "react-icons/fa";
+import { Button, Card, CardContent, Typography } from "@mui/material";
+import Checkbox from "@mui/material/Checkbox";
+import Box from "@mui/material/Box";
+import Popper from "@mui/material/Popper";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
+import { ThemeModeContext } from "../ThemeMode/ThemeModeProvider";
 
 <FaBan />;
 
@@ -18,28 +24,29 @@ const Cart = () => {
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
+
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [groupSelection, setGroupSelection] = useState({});
   const [selectAll, setSelectAll] = useState(false);
   const [isCardLoaded, setIsCardLoaded] = useState(false);
   const [isCountCart, setIsCountAddCart] = useState(false); //Truyền dữ liệu từ cha đến con
-  const changeLink = useNavigate();
+  const [productDetails, setProductDetails] = useState([]);
+  const [selectedDetail, setSelectedDetail] = useState(null);
+  const [isCheckAll, setIscheckAll] = useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [loading, setLoading] = useState(true); // Trạng thái loading
+  const [cartId, setCartId] = useState(null);
+  const { mode } = useContext(ThemeModeContext);
+  const [voucher, setVoucher] = useState([]);
+  const lastCalledTime = useRef(null);
+
+  const handleClick = (event) => {
+    setAnchorEl(anchorEl ? null : event.currentTarget);
+  };
+  const open = Boolean(anchorEl);
 
   tailspin.register();
 
-  // Hàm để lấy URL ảnh sản phẩm
-  const geturlIMG = (productId, filename) =>
-    `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-
-  // Hàm để lấy URL ảnh đại diện của người dùng
-  const getAvtUser = (idUser, filename) =>
-    `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-
-  const geturlIMGDetail = (productDetailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
-  };
-
-  // Hàm để nhóm sản phẩm theo cửa hàng
   const groupByStore = (products) => {
     return products.reduce((groups, product) => {
       const store = product?.productDetail?.product?.store;
@@ -58,7 +65,6 @@ const Cart = () => {
     }, {});
   };
 
-  // Hàm để cập nhật số lượng sản phẩm trong giỏ hàng
   const updateQuantity = async (id, quantity) => {
     try {
       await axios.put(`/cartUpdate/${id}`, quantity, {
@@ -68,30 +74,131 @@ const Cart = () => {
       console.error("Error updating quantity:", error);
     }
   };
-
-  const fetchCart = async () => {
+  const loadData = async (idProduct) => {
     try {
-      const res = await axios.get(`/cart/${user.id}`);
-      setFill(res.data);
-      const grouped = groupByStore(res.data);
-      setGroupSelection(
-        Object.keys(grouped).reduce((acc, storeId) => {
-          acc[storeId] = false;
-          return acc;
-        }, {})
-      );
-      updateTotalPrice(res.data);
+      const res = await axios.get(`fillVoucherPrice/${idProduct}`);
+
+      // Log dữ liệu trả về từ API
+      res.data.map((fill) => {
+        console.log("Dữ liệu từ API:", fill.discountprice);
+      });
+
+      console.log("Dữ liệu từ API:", idProduct);
+
+      // // Lưu voucher theo từng idProduct
+      // setVoucher((pre) => ({
+      //   ...pre,
+      //   [idProduct]: res.data,
+      // }));
     } catch (error) {
-      console.error("Error loading cart items:", error);
+      // Log lỗi nếu có
+      console.log("Lỗi khi tải dữ liệu:", error);
     }
   };
 
-  // Sử dụng hook để tải giỏ hàng khi ID người dùng thay đổi
-  useEffect(() => {
-    fetchCart();
-  }, []);
+  const fetchCart = async () => {
+    const loadingTimeout = new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Hàm để xóa tất cả các sản phẩm đã chọn
+    try {
+      const res = await Promise.race([
+        axios.get(`/cart/${user.id}`),
+        loadingTimeout,
+      ]);
+
+      if (res) {
+        setFill(res.data);
+        const grouped = groupByStore(res.data);
+        setGroupSelection(
+          Object.keys(grouped).reduce((acc, storeId) => {
+            acc[storeId] = false;
+            return acc;
+          }, {})
+        );
+        updateTotalPrice(res.data);
+      } else {
+        setLoading(true);
+      }
+    } catch (error) {
+      console.error("Error loading cart items:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadVoucher = async (idProduct) => {
+    try {
+      const res = await axios.get(`fillVoucherPrice/${idProduct}`);
+      //Lưu voucher theo từng idProduct
+      setVoucher((pre) => ({
+        ...pre,
+        [idProduct]: res.data,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  console.log(voucher);
+
+  useEffect(() => {
+    fill.forEach((voucher) => {
+      loadVoucher(voucher.productDetail.product.id);
+    });
+  }, [fill]);
+
+  // const fetchCart = async () => {
+  //   const loadingTimeout = new Promise((resolve) => setTimeout(resolve, 1000));
+
+  //   try {
+  //     const res = await Promise.race([
+  //       axios.get(`/cart/${user.id}`),
+  //       loadingTimeout,
+  //     ]);
+
+  //     if (res) {
+  //       setFill(res.data);
+  //       const grouped = groupByStore(res.data);
+  //       setGroupSelection(
+  //         Object.keys(grouped).reduce((acc, storeId) => {
+  //           acc[storeId] = false;
+  //           return acc;
+  //         }, {})
+  //       );
+  //       updateTotalPrice(res.data);
+  //     } else {
+  //       setLoading(true);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error loading cart items:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const deleteSelectedProduct = async (cartId) => {
+    confirmAlert({
+      title: "Xóa sản phẩm khỏi giỏ hàng",
+      message: "Bạn có chắc chắn muốn xóa các sản phẩm đã chọn không?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            try {
+              axios.delete(`/cartDelete/${cartId}`);
+              setIsCountAddCart(true);
+              fetchCart();
+            } catch (error) {
+              console.error("Lỗi xóa sản phẩm:", error);
+            }
+            fetchCart();
+          },
+        },
+        {
+          label: "Không",
+        },
+      ],
+    });
+  };
+
   const deleteSelectedProducts = async () => {
     confirmAlert({
       title: "Xóa sản phẩm khỏi giỏ hàng",
@@ -109,8 +216,8 @@ const Cart = () => {
               );
 
               setIsCountAddCart(true);
-              setSelectedProductIds([]); // Xóa danh sách sản phẩm đã chọn sau khi xóa
-              fetchCart(); // Gọi fetchCart sau khi xóa sản phẩm để cập nhật danh sách
+              setSelectedProductIds([]);
+              fetchCart();
             } catch (error) {
               console.error("Lỗi xóa sản phẩm:", error);
             }
@@ -127,7 +234,7 @@ const Cart = () => {
     confirmAlert({
       title: "Xóa sản phẩm khỏi giỏ hàng",
       message: "Bạn có chắc chắn muốn xóa sản phẩm này không?",
-      buttons: [
+      Button: [
         {
           label: "Có",
           onClick: async () => {
@@ -151,8 +258,6 @@ const Cart = () => {
       ],
     });
   };
-
-  // Hàm để cập nhật tổng giá trị giỏ hàng
   const updateTotalPrice = () => {
     const newTotalPrice = fill.reduce(
       (acc, item) =>
@@ -164,7 +269,6 @@ const Cart = () => {
     setTotalPrice(newTotalPrice);
   };
 
-  // Hàm để xử lý thay đổi checkbox của sản phẩm
   const handleCheckboxChange = (productId, isChecked) => {
     const updatedSelectedProductIds = isChecked
       ? [...selectedProductIds, productId]
@@ -174,7 +278,6 @@ const Cart = () => {
     setSelectAll(updatedSelectedProductIds.length === fill.length);
   };
 
-  // Hàm để xử lý thay đổi checkbox của nhóm cửa hàng
   const handleGroupCheckboxChange = (storeId, isChecked) => {
     const storeProducts = groupedProducts[storeId];
     const updatedSelectedProductIds = isChecked
@@ -187,76 +290,91 @@ const Cart = () => {
     setGroupSelection((prev) => ({ ...prev, [storeId]: isChecked }));
   };
 
-  // Hàm để chọn hoặc bỏ chọn tất cả sản phẩm
   const handleSelectAll = (isChecked) => {
     if (isChecked) {
-      // Chỉ chọn những sản phẩm có số lượng > 0
       const allSelectableProducts = fill
-        .filter((cart) => cart.productDetail.quantity > 0) // Lọc các sản phẩm có quantity > 0
-        .map((cart) => cart.id); // Lấy danh sách các ID sản phẩm có thể chọn
-
+        .filter((cart) => cart.productDetail.quantity > 0)
+        .map((cart) => cart.id);
       setSelectedProductIds(allSelectableProducts);
+      setIscheckAll(true);
       setSelectAll(true);
     } else {
-      // Bỏ chọn tất cả
       setSelectedProductIds([]);
+      setIscheckAll(false);
       setSelectAll(false);
     }
   };
 
-  // Hàm để giảm số lượng sản phẩm
-  const handleDecrease = async (index) => {
-    const newFill = [...fill];
-    const cart = newFill[index];
-    if (cart.quantity > 1) {
-      cart.quantity -= 1;
-      setFill(newFill);
-      await updateQuantity(cart.id, cart.quantity);
-      updateTotalPrice();
-    }
-  };
-
-  // Hàm để tăng số lượng sản phẩm
-  const handleIncrease = async (index) => {
-    const newFill = [...fill];
-    const cart = newFill[index];
-    if (cart.quantity < cart.productDetail.quantity) {
-      cart.quantity += 1;
-      setFill(newFill);
-      await updateQuantity(cart.id, cart.quantity);
-      updateTotalPrice();
-    }
-  };
-
-  // Hàm để xử lý thay đổi số lượng sản phẩm
-  const handleQuantityChange = async (index, newQuantity) => {
-    const newFill = [...fill];
-    const cart = newFill[index];
-
-    // Đảm bảo số lượng mới không vượt quá số lượng sản phẩm có sẵn
-    if (newQuantity >= cart.productDetail.quantity) {
-      cart.quantity = cart.productDetail.quantity;
-    } else if (newQuantity >= 0) {
-      cart.quantity = newQuantity;
-    }
-
-    setFill(newFill);
-    await updateQuantity(cart.id, cart.quantity);
+  const handleIncrease = async (productId) => {
+    const updatedFill = fill.map((item) =>
+      item.id === productId && item.quantity < item.productDetail.quantity
+        ? { ...item, quantity: item.quantity + 1 }
+        : item
+    );
+    setFill(updatedFill);
+    await updateQuantity(
+      productId,
+      updatedFill.find((item) => item.id === productId).quantity
+    );
     updateTotalPrice();
   };
 
-  // Hàm để định dạng giá tiền
+  // const handleDecrease = async (productId) => {
+  //   const updatedFill = fill.map((item) =>
+  //     item.id === productId && item.quantity > 1
+  //       ? { ...item, quantity: item.quantity - 1 }
+  //       : item
+  //   );
+  //   setFill(updatedFill);
+  //   await updateQuantity(
+  //     productId,
+  //     updatedFill.find((item) => item.id === productId).quantity
+  //   );
+  //   updateTotalPrice();
+  //   deleteSelectedProducts();
+  // };
+
+  const handleDecrease = async (productId) => {
+    const currentProduct = fill.find((item) => item.id === productId);
+
+    if (currentProduct.quantity === 1) {
+      // Nếu quantity đang là 1, xóa sản phẩm
+      await deleteSelectedProduct(productId);
+    } else {
+      // Nếu quantity lớn hơn 1, giảm số lượng
+      const updatedFill = fill.map((item) =>
+        item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
+      );
+      setFill(updatedFill);
+
+      const updatedQuantity = currentProduct.quantity - 1;
+      await updateQuantity(productId, updatedQuantity);
+      updateTotalPrice();
+    }
+  };
+
+  const handleQuantityChange = async (productId, newQuantity) => {
+    const updatedFill = fill.map((item) =>
+      item.id === productId
+        ? {
+            ...item,
+            quantity: Math.min(newQuantity, item.productDetail.quantity),
+          }
+        : item
+    );
+    setFill(updatedFill);
+    await updateQuantity(
+      productId,
+      updatedFill.find((item) => item.id === productId).quantity
+    );
+    updateTotalPrice();
+  };
+
   const formatPrice = (value) => {
     if (!value) return "0";
     return Number(value).toLocaleString("vi-VN");
   };
 
-  // Sử dụng hook để cập nhật tổng giá trị giỏ hàng khi các sản phẩm đã chọn hoặc giỏ hàng thay đổi
-  useEffect(() => {
-    updateTotalPrice();
-  }, [selectedProductIds, fill]);
-
-  // Nhóm các sản phẩm theo cửa hàng
   const groupedProducts = groupByStore(fill);
 
   const anySelectedProductOutOfStock = () => {
@@ -267,60 +385,158 @@ const Cart = () => {
     );
   };
 
-  const [showFlyingImage, setShowFlyingImage] = useState(false);
-
-  const handleFlyingImageClick = () => {
-    setShowFlyingImage(true);
-    setTimeout(() => setShowFlyingImage(false), 1000); // Hide the image after 1 second
+  const fetchProductDetails = async (productId) => {
+    if (productId) {
+      try {
+        const response = await axios.get(
+          `/productDetailByProductId/${productId}`
+        );
+        setProductDetails(response.data);
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+      }
+    }
   };
+
+  const handleProductDetailClick = (productId) => {
+    fetchProductDetails(productId);
+  };
+
+  const handleDetailUpdate = (cartId, selectedDetailId, quantityDetail) => {
+    if (selectedDetailId) {
+      updateCartProductDetail(cartId, selectedDetailId, quantityDetail)
+        .then(() => {
+          fetchProductDetails();
+        })
+        .catch((error) => {
+          console.error("Error updating cart product detail:", error);
+        });
+    } else {
+      toast.warning("Vui lòng chọn loại sản phẩm.");
+    }
+  };
+
+  const updateCartProductDetail = async (
+    cartItemId,
+    productDetailId,
+    quantityDetail
+  ) => {
+    try {
+      const userId = user.id;
+      const countResponse = await axios.get(
+        `/cartCount/${userId}/${productDetailId}`
+      );
+      const count = countResponse.data;
+
+      if (!quantityDetail) {
+        toast.warning("Loại sản phẩm hiện tại đã hết hàng");
+        return;
+      } else if (count > 0) {
+        toast.warning("Sản phẩm này đã có trong giỏ hàng");
+        return;
+      }
+
+      const response = await axios.put(
+        `/cartProductDetailUpdate/${cartItemId}`,
+        { productDetailId },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        fetchCart();
+      }
+
+      setAnchorEl(null);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật sản phẩm:", error);
+    }
+  };
+
+  useEffect(() => {
+    updateTotalPrice();
+  }, [selectedProductIds, fill]);
+
+  useEffect(() => {
+    fetchCart();
+  }, [user.id]);
 
   return (
     <div>
       <Header reloadCartItems={isCountCart} />
-      <div className="col-8 offset-2">
+      <div id="smooth" className="col-12 col-md-12 col-lg-10 offset-lg-1">
         <div className="row mt-3">
-          <div className="col-9">
-            {fill.length === 0 ? (
+          <div className="col-lg-9 col-md-12">
+            {loading ? (
+              <div className="d-flex justify-content-center mt-3">
+                <l-tailspin
+                  size="40"
+                  stroke="5"
+                  speed="0.9"
+                  color="black"
+                ></l-tailspin>
+              </div>
+            ) : fill.length === 0 ? (
               <div className="text-center mt-5">
                 <h4>Giỏ hàng trống</h4>
-                <Link to="/" className="btn btn-danger">
+                <Button
+                  id="button"
+                  variant="contained"
+                  color="error"
+                  component={Link}
+                  to="/"
+                  style={{ width: "auto" }}
+                  disableElevation
+                >
                   Mua ngay
-                </Link>
+                </Button>
               </div>
             ) : (
               <>
-                <div className="card mb-3">
-                  <div className="card-body d-flex justify-content-between align-items-center">
+                <Card className=" rounded-3 mb-3" sx={{ boxShadow: "none" }}>
+                  <CardContent
+                    sx={{
+                      backgroundColor: "backgroundElement.children",
+                      boxShadow: "none",
+                    }}
+                    className="d-flex justify-content-between align-items-center p-2"
+                  >
                     <div className="d-flex align-items-center">
-                      <input
-                        className="form-check-input mb-1 me-3"
-                        type="checkbox"
+                      <Checkbox
                         id="selectAll"
                         checked={selectAll}
                         onChange={(e) => handleSelectAll(e.target.checked)}
                       />
-                      <label htmlFor="selectAll">Chọn tất cả sản phẩm</label>
+                      <label htmlFor="selectAll" style={{ cursor: "pointer" }}>
+                        Chọn tất cả sản phẩm
+                      </label>
                     </div>
-                    <button
-                      className="btn btn-danger"
-                      id="xoaNut"
+                    <Button
+                      variant="contained"
+                      id="deleteButton"
                       onClick={deleteSelectedProducts}
-                      disabled={selectedProductIds.length === 0} // Vô hiệu hóa nút khi không có sản phẩm nào được chọn
+                      disableElevation
+                      disabled={selectedProductIds.length === 0}
                     >
                       <i className="bi bi-trash3-fill"></i>
-                    </button>
-                  </div>
-                </div>
+                    </Button>
+                  </CardContent>
+                </Card>
                 {Object.keys(groupedProducts).map((storeId) => {
                   const storeProducts = groupedProducts[storeId];
                   const store = storeProducts[0].productDetail.product.store;
                   const isGroupSelected = groupSelection[storeId] || false;
+
                   return (
-                    <div
-                      className="card mb-3"
+                    <Card
+                      className="rounded-3 mb-3"
                       id="cartItem"
                       key={storeId}
                       style={{ position: "relative", minHeight: "200px" }}
+                      sx={{ boxShadow: "none" }}
                     >
                       {!isCardLoaded && (
                         <l-tailspin
@@ -339,17 +555,17 @@ const Cart = () => {
                           }}
                         ></l-tailspin>
                       )}
-                      <div
+                      <CardContent
                         className="card-body"
                         style={{ display: isCardLoaded ? "block" : "none" }}
+                        sx={{ backgroundColor: "backgroundElement.children" }}
                       >
                         <div className="d-flex justify-content-between">
                           <div className="d-flex">
-                            <input
-                              className="form-check-input mt-2 me-3"
-                              type="checkbox"
+                            <Checkbox
                               id={`groupCheckBox-${storeId}`}
                               checked={isGroupSelected}
+                              disabled={isCheckAll}
                               onChange={(e) =>
                                 handleGroupCheckboxChange(
                                   storeId,
@@ -357,15 +573,10 @@ const Cart = () => {
                                 )
                               }
                             />
-                            <Link
-                              to={`/pageStore/${store.id}`} // Sử dụng dấu ngoặc nhọn để truyền chuỗi động
-                            >
+
+                            <Link to={`/pageStore/${store.slug}`}>
                               <img
-                                src={getAvtUser(
-                                  store.user.id,
-                                  store.user.avatar,
-                                  store.id
-                                )}
+                                src={store.user.avatar}
                                 id="imgShop"
                                 className="mx-2 object-fit-cover"
                                 style={{
@@ -378,15 +589,19 @@ const Cart = () => {
                                   borderRadius: "100%",
                                 }}
                                 alt=""
+                                loading="lazy"
                               />
                             </Link>
                             <h5 id="nameShop" className="mt-1">
                               <Link
                                 className="inherit-text"
-                                to={`/pageStore/${store.id}`}
+                                to={`/pageStore/${store.slug}`}
                                 style={{
                                   textDecoration: "inherit",
-                                  color: "inherit",
+                                  color:
+                                    mode === "light"
+                                      ? "darkslategrey"
+                                      : "white",
                                 }}
                               >
                                 {store.namestore}
@@ -394,17 +609,55 @@ const Cart = () => {
                             </h5>
                           </div>
                         </div>
+
                         <hr id="hr" />
-                        {storeProducts.map((cart, index) => {
+                        {storeProducts.map((cart) => {
                           const firstIMG =
                             cart.productDetail.product.images?.[0];
+
+                          //Lấy voucher tương ứng với idProduct
+                          const productVoucher =
+                            voucher[cart.productDetail.product.id] || [];
+
+                          //Lấy giá của sản phẩm có voucher
+                          const matchingPrices = productVoucher.filter(
+                            (v) => cart.productDetail.id === v.productDetail.id
+                          );
+
+                          //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
+                          const isVoucherPrice = productVoucher.some(
+                            (check) =>
+                              check.productDetail.product.id ===
+                              cart.productDetail.product.id
+                          );
+
+                          //Kiểm tra status voucher
+                          const isStatusVoucher = productVoucher.some(
+                            (check) => check.status === "Hoạt động"
+                          );
+
+                          //Tính giá giảm của voucher
+                          let result;
+
+                          if (matchingPrices.length > 0) {
+                            // Tính giá giảm
+                            const priceDown =
+                              cart.productDetail.price *
+                              cart.quantity *
+                              (matchingPrices[0].discountprice / 100);
+                            result = formatPrice(
+                              cart.productDetail.price * cart.quantity -
+                                priceDown
+                            );
+                            console.log(result);
+                          }
                           return (
-                            <div className="d-flex mt-3 mb-3" key={index}>
+                            <div className="d-flex mt-3 mb-3" key={cart.id}>
                               {cart.productDetail.quantity === 0 ? (
                                 <button
                                   className="btn btn-danger mt-4 me-1"
                                   style={{
-                                    height: "calc(1.5em + 0.75rem + 2px)", // Điều chỉnh chiều cao
+                                    height: "calc(1.5em + 0.75rem + 2px)",
                                   }}
                                   onClick={() => deleteProduct(cart.id)}
                                   title="Xóa sản phẩm"
@@ -412,9 +665,8 @@ const Cart = () => {
                                   <i className="bi bi-trash3-fill"></i>
                                 </button>
                               ) : (
-                                <input
-                                  className="form-check-input mt-4 me-3"
-                                  type="checkbox"
+                                <Checkbox
+                                  className={{ transition: "0.5s" }}
                                   id={`checkBox-${cart.id}`}
                                   checked={selectedProductIds.includes(cart.id)}
                                   onChange={(e) =>
@@ -438,23 +690,17 @@ const Cart = () => {
                                     cart &&
                                     cart.productDetail &&
                                     cart.productDetail.product
-                                      ? `/detailProduct/${cart.productDetail.product.id}`
+                                      ? `/detailProduct/${cart.productDetail.product.slug}`
                                       : "#"
-                                  } // Nếu cart hoặc productDetail chưa có, không điều hướng
+                                  }
                                 >
                                   <img
                                     src={
                                       cart &&
                                       cart.productDetail &&
                                       cart.productDetail.imagedetail
-                                        ? geturlIMGDetail(
-                                            cart.productDetail.id,
-                                            cart.productDetail.imagedetail
-                                          )
-                                        : geturlIMG(
-                                            cart.productDetail.product.id,
-                                            firstIMG.imagename
-                                          )
+                                        ? cart.productDetail.imagedetail
+                                        : firstIMG.imagename
                                     }
                                     alt="Product"
                                     style={{
@@ -469,6 +715,7 @@ const Cart = () => {
                                     onLoad={() => {
                                       setIsCardLoaded(true);
                                     }}
+                                    // loading="lazy"
                                   />
                                   {cart.productDetail.quantity === 0 && (
                                     <div
@@ -485,123 +732,345 @@ const Cart = () => {
                                   )}
                                 </Link>
                               </div>
-                              <div className="col-4 mt-3 mx-1">
-                                <div id="fontSizeTitle">
-                                  {cart.productDetail.product.name}
-                                </div>
-                                <div id="fontSize">
-                                  {storeProducts.every(
-                                    (item) =>
-                                      item.productDetail.namedetail === null
-                                  ) ? null : (
-                                    <select className="form-select">
-                                      {storeProducts.map(
-                                        (item, index) =>
-                                          item.productDetail.namedetail !==
-                                            null && (
-                                            <option
-                                              key={index}
-                                              value={item.productDetail.id}
-                                            >
-                                              {item.productDetail.namedetail}
-                                            </option>
-                                          )
-                                      )}
-                                    </select>
-                                  )}
-
-                                  {
-                                    [
-                                      cart.productDetail.namedetail,
-                                      cart.productDetail.product.productcategory
-                                        .name,
-                                      cart.productDetail.product.trademark.name,
-                                      cart.productDetail.product.warranties
-                                        .name,
-                                    ]
-                                      .filter(Boolean) // Lọc bỏ các giá trị null hoặc rỗng
-                                      .join(", ") // Nối các chuỗi lại với nhau bằng dấu phẩy và khoảng trắng
-                                  }
-                                </div>
-                              </div>
-                              <div className="col-6">
-                                <div
-                                  className="d-flex mt-3"
-                                  id="spinner"
-                                  disabled={cart.productDetail.quantity === 0}
-                                >
-                                  <button
-                                    className="btn border rounded-0 rounded-start"
-                                    id="buttonDown"
-                                    onClick={() => handleDecrease(index)}
-                                    disabled={cart.productDetail.quantity === 0}
-                                  >
-                                    <i className="bi bi-dash-lg"></i>
-                                  </button>
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    className="form-control rounded-0 w-50"
-                                    value={
-                                      cart.quantity !== 0 ? cart.quantity : 0
-                                    }
-                                    onChange={(e) =>
-                                      handleQuantityChange(
-                                        index,
-                                        Number(e.target.value)
-                                      )
-                                    }
-                                    disabled={cart.productDetail.quantity === 0}
-                                  />
-
-                                  <button
-                                    className={`btn border rounded-0 rounded-end ${
-                                      cart.quantity >=
-                                      cart.productDetail.quantity ? (
-                                        <FaBan />
-                                      ) : (
-                                        "btn-active"
-                                      )
-                                    }`}
-                                    id="buttonUp"
-                                    onClick={() => handleIncrease(index)}
-                                    disabled={
-                                      cart.quantity >=
-                                        cart.productDetail.quantity ||
-                                      cart.productDetail.quantity === 0
-                                    }
-                                  >
-                                    <i className="bi bi-plus-lg"></i>
-                                  </button>
-                                </div>
-                                <h5 className="mt-2" id="price">
-                                  Tổng cộng:{" "}
-                                  {formatPrice(
-                                    cart.productDetail.price * cart.quantity
-                                  ) + " VNĐ"}
-                                  {cart.productDetail.quantity <= 10 && (
-                                    <div className="text-danger">
-                                      Còn lại: {cart.productDetail.quantity} sản
-                                      phẩm
+                              {/* {voucher.map((hehe) => (
+                                <div key={hehe.id}>{hehe.id}</div>
+                              ))} */}
+                              <div className="row ms-2">
+                                <div className="col-lg-6 col-md-12 mt-3 mx-3 pe-4">
+                                  <div className="row">
+                                    <div id="fontSizeTitle">
+                                      <Typography
+                                        sx={{ color: "text.default" }}
+                                      >
+                                        {cart.productDetail.product.name}
+                                      </Typography>
                                     </div>
-                                  )}
-                                </h5>
+                                    <Box
+                                      id="fontSize"
+                                      sx={{
+                                        backgroundColor: "background.default",
+                                      }}
+                                    >
+                                      <div className="d-flex">
+                                        <div key={cart.id}>
+                                          <div
+                                            className="Strong"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={(event) => {
+                                              handleProductDetailClick(
+                                                cart.productDetail.product.id
+                                              );
+                                              setSelectedDetail(
+                                                cart.productDetail
+                                              );
+                                              setCartId(cart.id);
+                                              handleClick(event);
+                                            }}
+                                          >
+                                            {cart.productDetail.namedetail ? (
+                                              <strong className="d-flex">
+                                                {cart.productDetail.namedetail}
+                                                {anchorEl ? (
+                                                  <ArrowDropUpIcon className="pb-1" />
+                                                ) : (
+                                                  <ArrowDropDownIcon className="pb-1" />
+                                                )}
+                                              </strong>
+                                            ) : (
+                                              ""
+                                            )}
+                                          </div>
+                                          <Popper
+                                            id={user.id}
+                                            open={open}
+                                            anchorEl={anchorEl}
+                                          >
+                                            <Box
+                                              className="rounded-3"
+                                              sx={{
+                                                boxShadow:
+                                                  "0 0 5px rgba(108, 117, 125, 0.5)",
+                                                margin: "0px",
+                                                padding: "0px",
+                                                bgcolor: "background.paper",
+                                              }}
+                                            >
+                                              {productDetails.length > 0 ? (
+                                                <ul style={{ padding: "10px" }}>
+                                                  <strong>
+                                                    Loại sản phẩm:
+                                                  </strong>
+                                                  {productDetails.map(
+                                                    (detail) => {
+                                                      const isProductInCart =
+                                                        Array.isArray(
+                                                          cart.productDetails
+                                                        ) &&
+                                                        cart.productDetails.some(
+                                                          (cartItem) =>
+                                                            cartItem.productDetailId ===
+                                                            detail.id
+                                                        );
+
+                                                      const isSelected =
+                                                        selectedDetail &&
+                                                        selectedDetail.id ===
+                                                          detail.id;
+
+                                                      return (
+                                                        <div key={detail.id}>
+                                                          <button
+                                                            className="btn mb-2"
+                                                            onClick={() => {
+                                                              setSelectedDetail(
+                                                                detail
+                                                              );
+                                                            }}
+                                                            style={{
+                                                              display: "flex",
+                                                              alignItems:
+                                                                "center",
+                                                              outline:
+                                                                isSelected
+                                                                  ? "1px solid #6c757d"
+                                                                  : "1px solid #ffffff",
+                                                              border: "none",
+                                                              transition:
+                                                                "outline-color 0.5s",
+                                                            }}
+                                                            disabled={
+                                                              isProductInCart
+                                                            }
+                                                          >
+                                                            <img
+                                                              className="rounded-3"
+                                                              src={
+                                                                detail.imagedetail
+                                                              }
+                                                              alt={
+                                                                detail.namedetail
+                                                              }
+                                                              style={{
+                                                                width: "30px",
+                                                                height: "30px",
+                                                                marginRight:
+                                                                  "10px",
+                                                              }}
+                                                              loading="lazy"
+                                                            />
+                                                            {detail.namedetail}{" "}
+                                                            {formatPrice(
+                                                              detail.price
+                                                            ) + " VNĐ"}
+                                                          </button>
+                                                        </div>
+                                                      );
+                                                    }
+                                                  )}
+                                                </ul>
+                                              ) : (
+                                                <p>
+                                                  Không có thông tin sản phẩm.
+                                                </p>
+                                              )}
+
+                                              <div className="p-2 d-flex justify-content-end">
+                                                <Button
+                                                  style={{
+                                                    backgroundColor:
+                                                      "rgb(204,244,255)",
+                                                    color: "rgb(0,70,89)",
+                                                    height: "30px",
+                                                    width: "90px",
+                                                    fontSize: "10px",
+                                                  }}
+                                                  variant="contained"
+                                                  onClick={() => {
+                                                    handleDetailUpdate(
+                                                      cartId,
+                                                      selectedDetail.id,
+                                                      cart.productDetail
+                                                        .quantity
+                                                    );
+                                                  }}
+                                                  disableElevation
+                                                >
+                                                  Xác nhận
+                                                </Button>
+                                              </div>
+                                            </Box>
+                                          </Popper>
+                                        </div>
+                                        <Typography
+                                          sx={{ color: "text.default" }}
+                                          variant="span"
+                                        >
+                                          {[
+                                            cart.productDetail.product
+                                              .productcategory.name,
+                                            cart.productDetail.product.trademark
+                                              .name,
+                                            cart.productDetail.product
+                                              .warranties.name,
+                                          ]
+                                            .filter(Boolean)
+                                            .join(", ")}
+                                        </Typography>
+                                      </div>
+                                    </Box>
+                                  </div>
+                                </div>
+                                <div className="col-lg-5 col-md-12">
+                                  <div
+                                    className="d-flex mt-3"
+                                    id="spinner"
+                                    disabled={cart.productDetail.quantity === 0}
+                                  >
+                                    <Button
+                                      className="btn border rounded-0 rounded-start"
+                                      id="buttonDown"
+                                      onClick={() => handleDecrease(cart.id)}
+                                      disabled={
+                                        cart.productDetail.quantity === 0
+                                      }
+                                      variant="contained"
+                                      sx={{
+                                        width: "auto",
+                                        color:
+                                          mode === "light" ? "black" : "white",
+                                        backgroundColor:
+                                          "backgroundElement.children",
+                                      }}
+                                      disableElevation
+                                    >
+                                      <i className="bi bi-dash-lg"></i>
+                                    </Button>
+
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      className="form-control rounded-0 w-50"
+                                      value={
+                                        cart.quantity !== 0 ? cart.quantity : 0
+                                      }
+                                      onChange={(e) =>
+                                        handleQuantityChange(
+                                          cart.id,
+                                          Number(e.target.value)
+                                        )
+                                      }
+                                      disabled={
+                                        cart.productDetail.quantity === 0
+                                      }
+                                      style={{
+                                        backgroundColor:
+                                          mode === "light"
+                                            ? "white"
+                                            : "#363535",
+                                        color:
+                                          mode === "light" ? "black" : "white",
+                                      }}
+                                    />
+                                    <Button
+                                      className={`btn border rounded-0 rounded-end ${
+                                        cart.quantity >=
+                                        cart.productDetail.quantity ? (
+                                          <FaBan />
+                                        ) : (
+                                          "btn-active"
+                                        )
+                                      }`}
+                                      sx={{
+                                        width: "auto",
+                                        color:
+                                          mode === "light" ? "black" : "white",
+                                        backgroundColor:
+                                          "backgroundElement.children",
+                                      }}
+                                      onClick={() => handleIncrease(cart.id)}
+                                      disabled={
+                                        cart.quantity >=
+                                          cart.productDetail.quantity ||
+                                        cart.productDetail.quantity === 0
+                                      }
+                                      variant="contained"
+                                      disableElevation
+                                    >
+                                      <i className="bi bi-plus-lg"></i>
+                                    </Button>
+                                  </div>
+                                  <Typography
+                                    variant="h6"
+                                    className="mt-2"
+                                    sx={{
+                                      color: "text.default",
+                                      ontSize: "15px",
+                                    }}
+                                  >
+                                    <div
+                                      className="d-flex align-items-center"
+                                      style={{ fontSize: "20px" }}
+                                    >
+                                      <div className="me-2">Tổng:</div>
+                                      {isVoucherPrice && isStatusVoucher ? (
+                                        <>
+                                          <del
+                                            className="me-2"
+                                            style={{ fontSize: "15px" }}
+                                          >
+                                            {formatPrice(
+                                              cart.productDetail.price *
+                                                cart.quantity
+                                            ) + " VNĐ"}
+                                          </del>
+                                          <div>{result + " VNĐ"}</div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          {formatPrice(
+                                            cart.productDetail.price *
+                                              cart.quantity
+                                          ) + " VNĐ"}
+                                        </>
+                                      )}
+                                    </div>
+
+                                    {cart.productDetail.quantity <= 10 && (
+                                      <div className="text-danger">
+                                        Còn lại: {cart.productDetail.quantity}{" "}
+                                        sản phẩm
+                                      </div>
+                                    )}
+                                  </Typography>
+                                </div>
                               </div>
                             </div>
                           );
                         })}
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   );
                 })}
               </>
             )}
           </div>
-          <div className="col-3">
-            <div className="card" id="sticky-top">
-              <div className="card-body">
+          <div className="col-lg-3 col-md-12">
+            <Card
+              sx={{
+                backgroundColor: "backgroundElement.children",
+                boxShadow: "none",
+              }}
+              id="sticky-top"
+            >
+              <CardContent id="smooth">
                 <div className="d-flex justify-content-between">
-                  <h5 className="text-start">Tổng cộng:</h5>
+                  <Typography
+                    variant="h5"
+                    className="text-start"
+                    sx={{ color: "text.default" }}
+                  >
+                    Tổng cộng:
+                  </Typography>
                   <h5 className="text-end text-danger">
                     {formatPrice(totalPrice)} VNĐ
                   </h5>
@@ -609,14 +1078,19 @@ const Cart = () => {
                 <div>
                   {selectedProductIds.length > 0 ? (
                     <div>
-                      Số lượng sản phẩm đã chọn: {selectedProductIds.length}
+                      <Typography sx={{ color: "text.default" }}>
+                        {" "}
+                        Số lượng sản phẩm đã chọn: {selectedProductIds.length}
+                      </Typography>
                     </div>
                   ) : (
-                    <div>Chưa có sản phẩm nào được chọn.</div>
+                    <Typography sx={{ color: "text.default" }}>
+                      Chưa có sản phẩm nào được chọn.
+                    </Typography>
                   )}
                 </div>
-                <button
-                  className="btn btn-danger w-100"
+                <Button
+                  variant="contained"
                   id="button"
                   onClick={() => {
                     if (selectedProductIds.length > 0) {
@@ -625,15 +1099,16 @@ const Cart = () => {
                       )}`;
                     }
                   }}
+                  disableElevation
                   disabled={
                     selectedProductIds.length === 0 ||
                     anySelectedProductOutOfStock()
                   }
                 >
                   Đặt hàng
-                </button>
-              </div>
-            </div>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
