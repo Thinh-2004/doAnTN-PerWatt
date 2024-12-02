@@ -16,7 +16,7 @@ const SecurityRoutes = ({ children, allowedRoles = [] }) => {
         }
 
         const res = await axios.get(`/userProFile/myInfo`);
-        setRole(res.data.role.namerole);
+        setRole(res.data.rolepPermission.role.namerole);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
         setRole(null); // Nếu lỗi, đặt role về null

@@ -71,7 +71,7 @@ const BannerTable = () => {
 
   const fetchBanners = async () => {
     try {
-      const response = await axios.get("/banners");
+      const response = await axios.get("/banners/list");
       setBanners(response.data);
     } catch (error) {
       console.error("Error fetching banners:", error);
