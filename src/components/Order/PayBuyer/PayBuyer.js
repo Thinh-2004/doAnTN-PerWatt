@@ -38,20 +38,11 @@ const PayBuyer = () => {
   const [shippingFee, setShippingFee] = useState(0);
   const [voucher, setVoucher] = useState(null);
   const [open, setOpen] = React.useState(false);
-<<<<<<< HEAD
-  const [voucherS, setVoucherS] = React.useState(false);
-  const [finalAmout, setFinalAmout] = React.useState(false);
-
-  const [voucherData, setVoucherData] = useState({
-    id: "", // Khởi tạo id rỗng
-    discountprice: "", // Khởi tạo discountprice rỗng
-=======
   const [voucherS, setVoucherS] = React.useState(0);
   const [finalAmout, setFinalAmout] = React.useState(0);
   const [voucherData, setVoucherData] = useState({
     id: [], // Khởi tạo id là mảng rỗng
     discountprice: [], // Khởi tạo discountprice là mảng rỗng
->>>>>>> 2d7a3e5d5dc69f5627647c3da84322811c8aafc4
   });
 
   const hehe = (hha) => {

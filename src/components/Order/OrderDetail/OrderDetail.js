@@ -26,17 +26,17 @@ const OrderDetail = () => {
 
   tailspin.register();
 
-  const load = async () => {
-    try {
-      const res = await axios.get(`/orderDetail/${id}`);
-      const grouped = groupByStore(res.data);
-      setGroupedByStore(grouped);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const load = async () => {
+  //   try {
+  //     const res = await axios.get(`/orderDetail/${id}`);
+  //     const grouped = groupByStore(res.data);
+  //     setGroupedByStore(grouped);
+  //   } catch (error) {
+  //     console.error(error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const load = async () => {
     try {
