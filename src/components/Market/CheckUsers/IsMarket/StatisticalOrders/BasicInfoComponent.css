@@ -1,0 +1,117 @@
+.text-muted-foreground {
+  color: #6c757d;
+}
+
+.text-primary {
+  color: #007bff;
+}
+
+.hover\:underline:hover {
+  text-decoration: underline;
+}
+
+.bg-background {
+  background-color: #f8f9fa;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.flex {
+  display: flex;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.block {
+  display: block;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.border {
+  border-width: 1px;
+}
+
+.border-border {
+  border-color: #dee2e6;
+}
+
+.p-2 {
+  padding: 0.5rem;
+}
+
+.mt-1 {
+  margin-top: 0.25rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.min-w-full {
+  min-width: 100%;
+}
+
+.bg-card {
+  background-color: #ffffff;
+}
+
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.border-b {
+  border-bottom-width: 1px;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.text-red-500 {
+  color: #f56565;
+}

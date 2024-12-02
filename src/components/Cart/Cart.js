@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./CartStyle.css";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
@@ -8,19 +8,23 @@ import { tailspin } from "ldrs";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import { FaBan } from "react-icons/fa";
-import { Button } from "@mui/material";
+import { Button, Card, CardContent, Typography } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import Box from "@mui/material/Box";
 import Popper from "@mui/material/Popper";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
+import { ThemeModeContext } from "../ThemeMode/ThemeModeProvider";
 
 <FaBan />;
 
 const Cart = () => {
   const [fill, setFill] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
+
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [groupSelection, setGroupSelection] = useState({});
   const [selectAll, setSelectAll] = useState(false);
@@ -31,25 +35,17 @@ const Cart = () => {
   const [isCheckAll, setIscheckAll] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [loading, setLoading] = useState(true); // Trạng thái loading
+  const [cartId, setCartId] = useState(null);
+  const { mode } = useContext(ThemeModeContext);
+  const [voucher, setVoucher] = useState([]);
+  const lastCalledTime = useRef(null);
 
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
-
   const open = Boolean(anchorEl);
-  // const ids = open ? "simple-popper" : undefined;
 
   tailspin.register();
-
-  const geturlIMG = (productId, filename) =>
-    `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-
-  const getAvtUser = (idUser, filename) =>
-    `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-
-  const geturlIMGDetail = (productDetailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${productDetailId}/${filename}`;
-  };
 
   const groupByStore = (products) => {
     return products.reduce((groups, product) => {
@@ -78,39 +74,130 @@ const Cart = () => {
       console.error("Error updating quantity:", error);
     }
   };
-
-  const fetchCart = async () => {
-    let loadingTimeout;
-
-    // Chỉ hiển thị loading nếu API mất hơn 0.5 giây
-    loadingTimeout = setTimeout(() => setLoading(true), 500);
-
+  const loadData = async (idProduct) => {
     try {
-      const res = await axios.get(`/cart/${user.id}`);
+      const res = await axios.get(`fillVoucherPrice/${idProduct}`);
 
-      // API trả về thành công trước 0.5 giây, hủy hiển thị loading
-      clearTimeout(loadingTimeout);
-      setLoading(false);
+      // Log dữ liệu trả về từ API
+      res.data.map((fill) => {
+        console.log("Dữ liệu từ API:", fill.discountprice);
+      });
 
-      setFill(res.data);
-      const grouped = groupByStore(res.data);
-      setGroupSelection(
-        Object.keys(grouped).reduce((acc, storeId) => {
-          acc[storeId] = false;
-          return acc;
-        }, {})
-      );
-      updateTotalPrice(res.data);
+      console.log("Dữ liệu từ API:", idProduct);
+
+      // // Lưu voucher theo từng idProduct
+      // setVoucher((pre) => ({
+      //   ...pre,
+      //   [idProduct]: res.data,
+      // }));
     } catch (error) {
-      console.error("Error loading cart items:", error);
-      clearTimeout(loadingTimeout);
-      setLoading(false); // Đảm bảo loading bị tắt khi có lỗi
+      // Log lỗi nếu có
+      console.log("Lỗi khi tải dữ liệu:", error);
     }
   };
 
+  const fetchCart = async () => {
+    const loadingTimeout = new Promise((resolve) => setTimeout(resolve, 1000));
+
+    try {
+      const res = await Promise.race([
+        axios.get(`/cart/${user.id}`),
+        loadingTimeout,
+      ]);
+
+      if (res) {
+        setFill(res.data);
+        const grouped = groupByStore(res.data);
+        setGroupSelection(
+          Object.keys(grouped).reduce((acc, storeId) => {
+            acc[storeId] = false;
+            return acc;
+          }, {})
+        );
+        updateTotalPrice(res.data);
+      } else {
+        setLoading(true);
+      }
+    } catch (error) {
+      console.error("Error loading cart items:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadVoucher = async (idProduct) => {
+    try {
+      const res = await axios.get(`fillVoucherPrice/${idProduct}`);
+      //Lưu voucher theo từng idProduct
+      setVoucher((pre) => ({
+        ...pre,
+        [idProduct]: res.data,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  console.log(voucher);
+
   useEffect(() => {
-    fetchCart();
-  }, []);
+    fill.forEach((voucher) => {
+      loadVoucher(voucher.productDetail.product.id);
+    });
+  }, [fill]);
+
+  // const fetchCart = async () => {
+  //   const loadingTimeout = new Promise((resolve) => setTimeout(resolve, 1000));
+
+  //   try {
+  //     const res = await Promise.race([
+  //       axios.get(`/cart/${user.id}`),
+  //       loadingTimeout,
+  //     ]);
+
+  //     if (res) {
+  //       setFill(res.data);
+  //       const grouped = groupByStore(res.data);
+  //       setGroupSelection(
+  //         Object.keys(grouped).reduce((acc, storeId) => {
+  //           acc[storeId] = false;
+  //           return acc;
+  //         }, {})
+  //       );
+  //       updateTotalPrice(res.data);
+  //     } else {
+  //       setLoading(true);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error loading cart items:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const deleteSelectedProduct = async (cartId) => {
+    confirmAlert({
+      title: "Xóa sản phẩm khỏi giỏ hàng",
+      message: "Bạn có chắc chắn muốn xóa các sản phẩm đã chọn không?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            try {
+              axios.delete(`/cartDelete/${cartId}`);
+              setIsCountAddCart(true);
+              fetchCart();
+            } catch (error) {
+              console.error("Lỗi xóa sản phẩm:", error);
+            }
+            fetchCart();
+          },
+        },
+        {
+          label: "Không",
+        },
+      ],
+    });
+  };
 
   const deleteSelectedProducts = async () => {
     confirmAlert({
@@ -219,51 +306,68 @@ const Cart = () => {
   };
 
   const handleIncrease = async (productId) => {
-    // Tìm sản phẩm cần tăng số lượng dựa vào productId
     const updatedFill = fill.map((item) =>
       item.id === productId && item.quantity < item.productDetail.quantity
         ? { ...item, quantity: item.quantity + 1 }
         : item
     );
-    setFill(updatedFill); // Cập nhật lại mảng fill
+    setFill(updatedFill);
     await updateQuantity(
       productId,
       updatedFill.find((item) => item.id === productId).quantity
-    ); // Gọi API để cập nhật số lượng
-    updateTotalPrice(); // Cập nhật lại tổng giá
+    );
+    updateTotalPrice();
   };
 
+  // const handleDecrease = async (productId) => {
+  //   const updatedFill = fill.map((item) =>
+  //     item.id === productId && item.quantity > 1
+  //       ? { ...item, quantity: item.quantity - 1 }
+  //       : item
+  //   );
+  //   setFill(updatedFill);
+  //   await updateQuantity(
+  //     productId,
+  //     updatedFill.find((item) => item.id === productId).quantity
+  //   );
+  //   updateTotalPrice();
+  //   deleteSelectedProducts();
+  // };
+
   const handleDecrease = async (productId) => {
-    // Tìm sản phẩm cần giảm số lượng dựa vào productId
-    const updatedFill = fill.map((item) =>
-      item.id === productId && item.quantity > 1
-        ? { ...item, quantity: item.quantity - 1 }
-        : item
-    );
-    setFill(updatedFill); // Cập nhật lại mảng fill
-    await updateQuantity(
-      productId,
-      updatedFill.find((item) => item.id === productId).quantity
-    ); // Gọi API để cập nhật số lượng
-    updateTotalPrice(); // Cập nhật lại tổng giá
+    const currentProduct = fill.find((item) => item.id === productId);
+
+    if (currentProduct.quantity === 1) {
+      // Nếu quantity đang là 1, xóa sản phẩm
+      await deleteSelectedProduct(productId);
+    } else {
+      // Nếu quantity lớn hơn 1, giảm số lượng
+      const updatedFill = fill.map((item) =>
+        item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
+      );
+      setFill(updatedFill);
+
+      const updatedQuantity = currentProduct.quantity - 1;
+      await updateQuantity(productId, updatedQuantity);
+      updateTotalPrice();
+    }
   };
 
   const handleQuantityChange = async (productId, newQuantity) => {
-    // Tìm sản phẩm cần thay đổi số lượng dựa vào productId
     const updatedFill = fill.map((item) =>
       item.id === productId
         ? {
             ...item,
             quantity: Math.min(newQuantity, item.productDetail.quantity),
-          } // Đảm bảo số lượng không vượt quá tồn kho
+          }
         : item
     );
-    setFill(updatedFill); // Cập nhật lại mảng fill
+    setFill(updatedFill);
     await updateQuantity(
       productId,
       updatedFill.find((item) => item.id === productId).quantity
-    ); // Gọi API để cập nhật số lượng
-    updateTotalPrice(); // Cập nhật lại tổng giá
+    );
+    updateTotalPrice();
   };
 
   const formatPrice = (value) => {
@@ -280,14 +384,6 @@ const Cart = () => {
         item.productDetail.quantity === 0
     );
   };
-
-  useEffect(() => {
-    updateTotalPrice();
-  }, [selectedProductIds, fill]);
-
-  useEffect(() => {
-    fetchCart();
-  }, [user.id]);
 
   const fetchProductDetails = async (productId) => {
     if (productId) {
@@ -306,9 +402,9 @@ const Cart = () => {
     fetchProductDetails(productId);
   };
 
-  const handleDetailUpdate = (cartId, selectedDetailId) => {
+  const handleDetailUpdate = (cartId, selectedDetailId, quantityDetail) => {
     if (selectedDetailId) {
-      updateCartProductDetail(cartId, selectedDetailId)
+      updateCartProductDetail(cartId, selectedDetailId, quantityDetail)
         .then(() => {
           fetchProductDetails();
         })
@@ -320,8 +416,26 @@ const Cart = () => {
     }
   };
 
-  const updateCartProductDetail = async (cartItemId, productDetailId) => {
+  const updateCartProductDetail = async (
+    cartItemId,
+    productDetailId,
+    quantityDetail
+  ) => {
     try {
+      const userId = user.id;
+      const countResponse = await axios.get(
+        `/cartCount/${userId}/${productDetailId}`
+      );
+      const count = countResponse.data;
+
+      if (!quantityDetail) {
+        toast.warning("Loại sản phẩm hiện tại đã hết hàng");
+        return;
+      } else if (count > 0) {
+        toast.warning("Sản phẩm này đã có trong giỏ hàng");
+        return;
+      }
+
       const response = await axios.put(
         `/cartProductDetailUpdate/${cartItemId}`,
         { productDetailId },
@@ -342,12 +456,20 @@ const Cart = () => {
     }
   };
 
+  useEffect(() => {
+    updateTotalPrice();
+  }, [selectedProductIds, fill]);
+
+  useEffect(() => {
+    fetchCart();
+  }, [user.id]);
+
   return (
     <div>
       <Header reloadCartItems={isCountCart} />
-      <div id="smooth" className="col-12 col-md-12 col-lg-8 offset-lg-2">
+      <div id="smooth" className="col-12 col-md-12 col-lg-10 offset-lg-1">
         <div className="row mt-3">
-          <div className="col-9">
+          <div className="col-lg-9 col-md-12">
             {loading ? (
               <div className="d-flex justify-content-center mt-3">
                 <l-tailspin
@@ -360,21 +482,37 @@ const Cart = () => {
             ) : fill.length === 0 ? (
               <div className="text-center mt-5">
                 <h4>Giỏ hàng trống</h4>
-                <Link to="/" className="btn btn-danger">
+                <Button
+                  id="button"
+                  variant="contained"
+                  color="error"
+                  component={Link}
+                  to="/"
+                  style={{ width: "auto" }}
+                  disableElevation
+                >
                   Mua ngay
-                </Link>
+                </Button>
               </div>
             ) : (
               <>
-                <div className="card mb-3">
-                  <div className="card-body d-flex justify-content-between align-items-center">
+                <Card className=" rounded-3 mb-3" sx={{ boxShadow: "none" }}>
+                  <CardContent
+                    sx={{
+                      backgroundColor: "backgroundElement.children",
+                      boxShadow: "none",
+                    }}
+                    className="d-flex justify-content-between align-items-center p-2"
+                  >
                     <div className="d-flex align-items-center">
                       <Checkbox
                         id="selectAll"
                         checked={selectAll}
                         onChange={(e) => handleSelectAll(e.target.checked)}
                       />
-                      <label htmlFor="selectAll">Chọn tất cả sản phẩm</label>
+                      <label htmlFor="selectAll" style={{ cursor: "pointer" }}>
+                        Chọn tất cả sản phẩm
+                      </label>
                     </div>
                     <Button
                       variant="contained"
@@ -385,18 +523,20 @@ const Cart = () => {
                     >
                       <i className="bi bi-trash3-fill"></i>
                     </Button>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
                 {Object.keys(groupedProducts).map((storeId) => {
                   const storeProducts = groupedProducts[storeId];
                   const store = storeProducts[0].productDetail.product.store;
                   const isGroupSelected = groupSelection[storeId] || false;
+
                   return (
-                    <div
-                      className="card mb-3"
+                    <Card
+                      className="rounded-3 mb-3"
                       id="cartItem"
                       key={storeId}
                       style={{ position: "relative", minHeight: "200px" }}
+                      sx={{ boxShadow: "none" }}
                     >
                       {!isCardLoaded && (
                         <l-tailspin
@@ -415,9 +555,10 @@ const Cart = () => {
                           }}
                         ></l-tailspin>
                       )}
-                      <div
+                      <CardContent
                         className="card-body"
                         style={{ display: isCardLoaded ? "block" : "none" }}
+                        sx={{ backgroundColor: "backgroundElement.children" }}
                       >
                         <div className="d-flex justify-content-between">
                           <div className="d-flex">
@@ -432,13 +573,10 @@ const Cart = () => {
                                 )
                               }
                             />
+
                             <Link to={`/pageStore/${store.slug}`}>
                               <img
-                                src={getAvtUser(
-                                  store.user.id,
-                                  store.user.avatar,
-                                  store.id
-                                )}
+                                src={store.user.avatar}
                                 id="imgShop"
                                 className="mx-2 object-fit-cover"
                                 style={{
@@ -451,6 +589,7 @@ const Cart = () => {
                                   borderRadius: "100%",
                                 }}
                                 alt=""
+                                loading="lazy"
                               />
                             </Link>
                             <h5 id="nameShop" className="mt-1">
@@ -459,7 +598,10 @@ const Cart = () => {
                                 to={`/pageStore/${store.slug}`}
                                 style={{
                                   textDecoration: "inherit",
-                                  color: "inherit",
+                                  color:
+                                    mode === "light"
+                                      ? "darkslategrey"
+                                      : "white",
                                 }}
                               >
                                 {store.namestore}
@@ -467,10 +609,48 @@ const Cart = () => {
                             </h5>
                           </div>
                         </div>
+
                         <hr id="hr" />
                         {storeProducts.map((cart) => {
                           const firstIMG =
                             cart.productDetail.product.images?.[0];
+
+                          //Lấy voucher tương ứng với idProduct
+                          const productVoucher =
+                            voucher[cart.productDetail.product.id] || [];
+
+                          //Lấy giá của sản phẩm có voucher
+                          const matchingPrices = productVoucher.filter(
+                            (v) => cart.productDetail.id === v.productDetail.id
+                          );
+
+                          //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
+                          const isVoucherPrice = productVoucher.some(
+                            (check) =>
+                              check.productDetail.product.id ===
+                              cart.productDetail.product.id
+                          );
+
+                          //Kiểm tra status voucher
+                          const isStatusVoucher = productVoucher.some(
+                            (check) => check.status === "Hoạt động"
+                          );
+
+                          //Tính giá giảm của voucher
+                          let result;
+
+                          if (matchingPrices.length > 0) {
+                            // Tính giá giảm
+                            const priceDown =
+                              cart.productDetail.price *
+                              cart.quantity *
+                              (matchingPrices[0].discountprice / 100);
+                            result = formatPrice(
+                              cart.productDetail.price * cart.quantity -
+                                priceDown
+                            );
+                            console.log(result);
+                          }
                           return (
                             <div className="d-flex mt-3 mb-3" key={cart.id}>
                               {cart.productDetail.quantity === 0 ? (
@@ -519,14 +699,8 @@ const Cart = () => {
                                       cart &&
                                       cart.productDetail &&
                                       cart.productDetail.imagedetail
-                                        ? geturlIMGDetail(
-                                            cart.productDetail.id,
-                                            cart.productDetail.imagedetail
-                                          )
-                                        : geturlIMG(
-                                            cart.productDetail.product.id,
-                                            firstIMG.imagename
-                                          )
+                                        ? cart.productDetail.imagedetail
+                                        : firstIMG.imagename
                                     }
                                     alt="Product"
                                     style={{
@@ -541,6 +715,7 @@ const Cart = () => {
                                     onLoad={() => {
                                       setIsCardLoaded(true);
                                     }}
+                                    // loading="lazy"
                                   />
                                   {cart.productDetail.quantity === 0 && (
                                     <div
@@ -557,233 +732,345 @@ const Cart = () => {
                                   )}
                                 </Link>
                               </div>
-                              <div className="col-5 mt-3 mx-1">
-                                <div id="fontSizeTitle">
-                                  {cart.productDetail.product.name}
-                                </div>
-                                <div id="fontSize">
-                                  <div className="d-flex">
-                                    <div>
-                                      <div
-                                        className="Strong"
-                                        style={{ cursor: "pointer" }}
-                                        onClick={(event) => {
-                                          handleProductDetailClick(
-                                            cart.productDetail.product.id
-                                          );
-                                          handleClick(event);
-                                        }}
+                              {/* {voucher.map((hehe) => (
+                                <div key={hehe.id}>{hehe.id}</div>
+                              ))} */}
+                              <div className="row ms-2">
+                                <div className="col-lg-6 col-md-12 mt-3 mx-3 pe-4">
+                                  <div className="row">
+                                    <div id="fontSizeTitle">
+                                      <Typography
+                                        sx={{ color: "text.default" }}
                                       >
-                                        {cart.productDetail.namedetail ? (
-                                          <strong className="d-flex">
-                                            {cart.productDetail.namedetail}
-                                            {anchorEl ? (
-                                              <ArrowDropUpIcon className="pb-1" />
-                                            ) : (
-                                              <ArrowDropDownIcon className="pb-1" />
-                                            )}
-                                          </strong>
-                                        ) : (
-                                          ""
-                                        )}
-                                      </div>
-                                      <Popper
-                                        id={user.id}
-                                        open={open}
-                                        anchorEl={anchorEl}
-                                      >
-                                        <Box
-                                          className="rounded-3"
-                                          sx={{
-                                            boxShadow:
-                                              "0 0 5px rgba(108, 117, 125, 0.5)",
-                                            margin: "0px",
-                                            padding: "0px",
-                                            bgcolor: "background.paper",
-                                          }}
-                                        >
-                                          {productDetails.length > 0 ? (
-                                            <ul style={{ padding: "10px" }}>
-                                              <strong>Loại sản phẩm:</strong>
-                                              {productDetails.map((detail) => {
-                                                const isProductInCart =
-                                                  Array.isArray(
-                                                    cart.productDetails
-                                                  ) &&
-                                                  cart.productDetails.some(
-                                                    (cartItem) =>
-                                                      cartItem.productDetailId ===
-                                                      detail.id
-                                                  );
-
-                                                const isSelected =
-                                                  selectedDetail &&
-                                                  selectedDetail.id ===
-                                                    detail.id;
-
-                                                return (
-                                                  <div key={detail.id}>
-                                                    <button
-                                                      className="btn mb-2"
-                                                      onClick={() => {
-                                                        setSelectedDetail(
-                                                          detail
-                                                        );
-                                                      }}
-                                                      style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        outline: isSelected
-                                                          ? "1px solid #6c757d"
-                                                          : "1px solid #ffffff",
-                                                        border: "none",
-                                                        transition:
-                                                          "outline-color 0.5s",
-                                                      }}
-                                                      disabled={isProductInCart}
-                                                    >
-                                                      <img
-                                                        className="rounded-3"
-                                                        src={geturlIMGDetail(
-                                                          detail.id,
-                                                          detail.imagedetail
-                                                        )}
-                                                        alt={detail.namedetail}
-                                                        style={{
-                                                          width: "30px",
-                                                          height: "30px",
-                                                          marginRight: "10px",
-                                                        }}
-                                                      />
-                                                      {detail.namedetail}
-                                                    </button>
-                                                  </div>
-                                                );
-                                              })}
-                                            </ul>
-                                          ) : (
-                                            <p>Không có thông tin sản phẩm.</p>
-                                          )}
-
-                                          <div className="p-2 d-flex justify-content-end">
-                                            <Button
-                                              style={{
-                                                backgroundColor:
-                                                  "rgb(204,244,255)",
-                                                color: "rgb(0,70,89)",
-                                                height: "30px",
-                                                width: "90px",
-                                                fontSize: "10px",
-                                              }}
-                                              variant="contained"
-                                              onClick={() => {
-                                                handleDetailUpdate(
-                                                  cart.id,
-                                                  selectedDetail.id
-                                                );
-                                              }}
-                                              disableElevation
-                                            >
-                                              Xác nhận
-                                            </Button>
-                                          </div>
-                                        </Box>
-                                      </Popper>
+                                        {cart.productDetail.product.name}
+                                      </Typography>
                                     </div>
-                                    {[
-                                      cart.productDetail.product.productcategory
-                                        .name,
-                                      cart.productDetail.product.trademark
-                                        .name === "No brand"
-                                        ? null
-                                        : cart.productDetail.product.trademark
-                                            .name,
-                                      cart.productDetail.product.warranties
-                                        .name,
-                                    ]
-                                      .filter(Boolean)
-                                      .join(", ")}
+                                    <Box
+                                      id="fontSize"
+                                      sx={{
+                                        backgroundColor: "background.default",
+                                      }}
+                                    >
+                                      <div className="d-flex">
+                                        <div key={cart.id}>
+                                          <div
+                                            className="Strong"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={(event) => {
+                                              handleProductDetailClick(
+                                                cart.productDetail.product.id
+                                              );
+                                              setSelectedDetail(
+                                                cart.productDetail
+                                              );
+                                              setCartId(cart.id);
+                                              handleClick(event);
+                                            }}
+                                          >
+                                            {cart.productDetail.namedetail ? (
+                                              <strong className="d-flex">
+                                                {cart.productDetail.namedetail}
+                                                {anchorEl ? (
+                                                  <ArrowDropUpIcon className="pb-1" />
+                                                ) : (
+                                                  <ArrowDropDownIcon className="pb-1" />
+                                                )}
+                                              </strong>
+                                            ) : (
+                                              ""
+                                            )}
+                                          </div>
+                                          <Popper
+                                            id={user.id}
+                                            open={open}
+                                            anchorEl={anchorEl}
+                                          >
+                                            <Box
+                                              className="rounded-3"
+                                              sx={{
+                                                boxShadow:
+                                                  "0 0 5px rgba(108, 117, 125, 0.5)",
+                                                margin: "0px",
+                                                padding: "0px",
+                                                bgcolor: "background.paper",
+                                              }}
+                                            >
+                                              {productDetails.length > 0 ? (
+                                                <ul style={{ padding: "10px" }}>
+                                                  <strong>
+                                                    Loại sản phẩm:
+                                                  </strong>
+                                                  {productDetails.map(
+                                                    (detail) => {
+                                                      const isProductInCart =
+                                                        Array.isArray(
+                                                          cart.productDetails
+                                                        ) &&
+                                                        cart.productDetails.some(
+                                                          (cartItem) =>
+                                                            cartItem.productDetailId ===
+                                                            detail.id
+                                                        );
+
+                                                      const isSelected =
+                                                        selectedDetail &&
+                                                        selectedDetail.id ===
+                                                          detail.id;
+
+                                                      return (
+                                                        <div key={detail.id}>
+                                                          <button
+                                                            className="btn mb-2"
+                                                            onClick={() => {
+                                                              setSelectedDetail(
+                                                                detail
+                                                              );
+                                                            }}
+                                                            style={{
+                                                              display: "flex",
+                                                              alignItems:
+                                                                "center",
+                                                              outline:
+                                                                isSelected
+                                                                  ? "1px solid #6c757d"
+                                                                  : "1px solid #ffffff",
+                                                              border: "none",
+                                                              transition:
+                                                                "outline-color 0.5s",
+                                                            }}
+                                                            disabled={
+                                                              isProductInCart
+                                                            }
+                                                          >
+                                                            <img
+                                                              className="rounded-3"
+                                                              src={
+                                                                detail.imagedetail
+                                                              }
+                                                              alt={
+                                                                detail.namedetail
+                                                              }
+                                                              style={{
+                                                                width: "30px",
+                                                                height: "30px",
+                                                                marginRight:
+                                                                  "10px",
+                                                              }}
+                                                              loading="lazy"
+                                                            />
+                                                            {detail.namedetail}{" "}
+                                                            {formatPrice(
+                                                              detail.price
+                                                            ) + " VNĐ"}
+                                                          </button>
+                                                        </div>
+                                                      );
+                                                    }
+                                                  )}
+                                                </ul>
+                                              ) : (
+                                                <p>
+                                                  Không có thông tin sản phẩm.
+                                                </p>
+                                              )}
+
+                                              <div className="p-2 d-flex justify-content-end">
+                                                <Button
+                                                  style={{
+                                                    backgroundColor:
+                                                      "rgb(204,244,255)",
+                                                    color: "rgb(0,70,89)",
+                                                    height: "30px",
+                                                    width: "90px",
+                                                    fontSize: "10px",
+                                                  }}
+                                                  variant="contained"
+                                                  onClick={() => {
+                                                    handleDetailUpdate(
+                                                      cartId,
+                                                      selectedDetail.id,
+                                                      cart.productDetail
+                                                        .quantity
+                                                    );
+                                                  }}
+                                                  disableElevation
+                                                >
+                                                  Xác nhận
+                                                </Button>
+                                              </div>
+                                            </Box>
+                                          </Popper>
+                                        </div>
+                                        <Typography
+                                          sx={{ color: "text.default" }}
+                                          variant="span"
+                                        >
+                                          {[
+                                            cart.productDetail.product
+                                              .productcategory.name,
+                                            cart.productDetail.product.trademark
+                                              .name,
+                                            cart.productDetail.product
+                                              .warranties.name,
+                                          ]
+                                            .filter(Boolean)
+                                            .join(", ")}
+                                        </Typography>
+                                      </div>
+                                    </Box>
                                   </div>
                                 </div>
-                              </div>
-                              <div className="col-6">
-                                <div
-                                  className="d-flex mt-3"
-                                  id="spinner"
-                                  disabled={cart.productDetail.quantity === 0}
-                                >
-                                  <button
-                                    className="btn border rounded-0 rounded-start"
-                                    id="buttonDown"
-                                    onClick={() => handleDecrease(cart.id)}
+                                <div className="col-lg-5 col-md-12">
+                                  <div
+                                    className="d-flex mt-3"
+                                    id="spinner"
                                     disabled={cart.productDetail.quantity === 0}
                                   >
-                                    <i className="bi bi-dash-lg"></i>
-                                  </button>
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    className="form-control rounded-0 w-50"
-                                    value={
-                                      cart.quantity !== 0 ? cart.quantity : 0
-                                    }
-                                    onChange={(e) =>
-                                      handleQuantityChange(
-                                        cart.id,
-                                        Number(e.target.value)
-                                      )
-                                    }
-                                    disabled={cart.productDetail.quantity === 0}
-                                  />
+                                    <Button
+                                      className="btn border rounded-0 rounded-start"
+                                      id="buttonDown"
+                                      onClick={() => handleDecrease(cart.id)}
+                                      disabled={
+                                        cart.productDetail.quantity === 0
+                                      }
+                                      variant="contained"
+                                      sx={{
+                                        width: "auto",
+                                        color:
+                                          mode === "light" ? "black" : "white",
+                                        backgroundColor:
+                                          "backgroundElement.children",
+                                      }}
+                                      disableElevation
+                                    >
+                                      <i className="bi bi-dash-lg"></i>
+                                    </Button>
 
-                                  <button
-                                    className={`btn border rounded-0 rounded-end ${
-                                      cart.quantity >=
-                                      cart.productDetail.quantity ? (
-                                        <FaBan />
-                                      ) : (
-                                        "btn-active"
-                                      )
-                                    }`}
-                                    id="buttonUp"
-                                    onClick={() => handleIncrease(cart.id)}
-                                    disabled={
-                                      cart.quantity >=
-                                        cart.productDetail.quantity ||
-                                      cart.productDetail.quantity === 0
-                                    }
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      className="form-control rounded-0 w-50"
+                                      value={
+                                        cart.quantity !== 0 ? cart.quantity : 0
+                                      }
+                                      onChange={(e) =>
+                                        handleQuantityChange(
+                                          cart.id,
+                                          Number(e.target.value)
+                                        )
+                                      }
+                                      disabled={
+                                        cart.productDetail.quantity === 0
+                                      }
+                                      style={{
+                                        backgroundColor:
+                                          mode === "light"
+                                            ? "white"
+                                            : "#363535",
+                                        color:
+                                          mode === "light" ? "black" : "white",
+                                      }}
+                                    />
+                                    <Button
+                                      className={`btn border rounded-0 rounded-end ${
+                                        cart.quantity >=
+                                        cart.productDetail.quantity ? (
+                                          <FaBan />
+                                        ) : (
+                                          "btn-active"
+                                        )
+                                      }`}
+                                      sx={{
+                                        width: "auto",
+                                        color:
+                                          mode === "light" ? "black" : "white",
+                                        backgroundColor:
+                                          "backgroundElement.children",
+                                      }}
+                                      onClick={() => handleIncrease(cart.id)}
+                                      disabled={
+                                        cart.quantity >=
+                                          cart.productDetail.quantity ||
+                                        cart.productDetail.quantity === 0
+                                      }
+                                      variant="contained"
+                                      disableElevation
+                                    >
+                                      <i className="bi bi-plus-lg"></i>
+                                    </Button>
+                                  </div>
+                                  <Typography
+                                    variant="h6"
+                                    className="mt-2"
+                                    sx={{
+                                      color: "text.default",
+                                      ontSize: "15px",
+                                    }}
                                   >
-                                    <i className="bi bi-plus-lg"></i>
-                                  </button>
-                                </div>
-                                <h5 className="mt-2" id="price">
-                                  Tổng cộng:{" "}
-                                  {formatPrice(
-                                    cart.productDetail.price * cart.quantity
-                                  ) + " VNĐ"}
-                                  {cart.productDetail.quantity <= 10 && (
-                                    <div className="text-danger">
-                                      Còn lại: {cart.productDetail.quantity} sản
-                                      phẩm
+                                    <div
+                                      className="d-flex align-items-center"
+                                      style={{ fontSize: "20px" }}
+                                    >
+                                      <div className="me-2">Tổng:</div>
+                                      {isVoucherPrice && isStatusVoucher ? (
+                                        <>
+                                          <del
+                                            className="me-2"
+                                            style={{ fontSize: "15px" }}
+                                          >
+                                            {formatPrice(
+                                              cart.productDetail.price *
+                                                cart.quantity
+                                            ) + " VNĐ"}
+                                          </del>
+                                          <div>{result + " VNĐ"}</div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          {formatPrice(
+                                            cart.productDetail.price *
+                                              cart.quantity
+                                          ) + " VNĐ"}
+                                        </>
+                                      )}
                                     </div>
-                                  )}
-                                </h5>
+
+                                    {cart.productDetail.quantity <= 10 && (
+                                      <div className="text-danger">
+                                        Còn lại: {cart.productDetail.quantity}{" "}
+                                        sản phẩm
+                                      </div>
+                                    )}
+                                  </Typography>
+                                </div>
                               </div>
                             </div>
                           );
                         })}
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   );
                 })}
               </>
             )}
           </div>
-          <div className="col-12 col-md-3 mt-3">
-            <div className="card" id="sticky-top">
-              <div className="card-body" id="smooth">
+          <div className="col-lg-3 col-md-12">
+            <Card
+              sx={{
+                backgroundColor: "backgroundElement.children",
+                boxShadow: "none",
+              }}
+              id="sticky-top"
+            >
+              <CardContent id="smooth">
                 <div className="d-flex justify-content-between">
-                  <h5 className="text-start">Tổng cộng:</h5>
+                  <Typography
+                    variant="h5"
+                    className="text-start"
+                    sx={{ color: "text.default" }}
+                  >
+                    Tổng cộng:
+                  </Typography>
                   <h5 className="text-end text-danger">
                     {formatPrice(totalPrice)} VNĐ
                   </h5>
@@ -791,10 +1078,15 @@ const Cart = () => {
                 <div>
                   {selectedProductIds.length > 0 ? (
                     <div>
-                      Số lượng sản phẩm đã chọn: {selectedProductIds.length}
+                      <Typography sx={{ color: "text.default" }}>
+                        {" "}
+                        Số lượng sản phẩm đã chọn: {selectedProductIds.length}
+                      </Typography>
                     </div>
                   ) : (
-                    <div>Chưa có sản phẩm nào được chọn.</div>
+                    <Typography sx={{ color: "text.default" }}>
+                      Chưa có sản phẩm nào được chọn.
+                    </Typography>
                   )}
                 </div>
                 <Button
@@ -815,8 +1107,8 @@ const Cart = () => {
                 >
                   Đặt hàng
                 </Button>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

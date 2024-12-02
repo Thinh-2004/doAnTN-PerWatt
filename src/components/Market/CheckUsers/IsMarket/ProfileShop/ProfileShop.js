@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "../../../../../Localhost/Custumize-axios";
 import "./ProfileShopStyle.css";
-import { Box, Button, styled, TextField } from "@mui/material";
+import { Box, Button, Card, CardContent, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import StoreIcon from "@mui/icons-material/Store";
 import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
@@ -36,9 +36,6 @@ const ProfileShop = () => {
   });
   const [previewAvatar, setPreviewAvatar] = useState("");
 
-  const geturlIMG = (storeId, filename) => {
-    return `${axios.defaults.baseURL}files/store/${storeId}/${filename}`;
-  };
 
   //Satet lữu dữ liệu của formSelectAddress
   const [dataAddress, setDataAddress] = useState("");
@@ -247,7 +244,7 @@ const ProfileShop = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="card mt-4 p-3">
+      <Card className=" mt-4 p-3" sx={{backgroundColor: "backgroundElement.children"}}>
         <div className="row">
           <div className="col-lg-6 col-md-6 col-sm-6 border-end">
             <h3 className="text-center">Thông tin kênh bán hàng của tôi</h3>
@@ -260,7 +257,7 @@ const ProfileShop = () => {
           <hr />
         </span>
 
-        <div className="card-body">
+        <CardContent className="">
           <div className="row">
             <div className="col-lg-6 col-md-6 col-sm-6 border-end">
               <div className="row">
@@ -337,7 +334,7 @@ const ProfileShop = () => {
                   <img
                     src={
                       previewAvatar ||
-                      geturlIMG(idStore, dataStore.imgbackgound)
+                      dataStore.imgbackgound
                     }
                     alt="Logo shop"
                     id="img-background"
@@ -366,15 +363,15 @@ const ProfileShop = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div className="card mt-4 p-3 mb-4">
+        </CardContent>
+      </Card>
+      <Card className=" mt-4 p-3 mb-4" sx={{backgroundColor: "backgroundElement.children"}}>
         <h3 className="text-start">Thông tin chi tiết</h3>
         <span className="p-0 m-0">
           <hr />
         </span>
 
-        <div className="card-body">
+        <CardContent className="">
           <div className="row">
             <div className="col-lg-6 col-md-6 col-sm-6 border-end">
               <div className="mb-3">
@@ -557,8 +554,8 @@ const ProfileShop = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </form>
   );
 };

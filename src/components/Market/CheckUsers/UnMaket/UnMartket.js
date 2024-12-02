@@ -3,7 +3,7 @@ import "./UnMarketStyle.css";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "../../../../Localhost/Custumize-axios";
-import { Box, TextField } from "@mui/material";
+import { Box, Card, CardContent, TextField } from "@mui/material";
 import StoreIcon from "@mui/icons-material/Store";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
 import AttachEmailIcon from "@mui/icons-material/AttachEmail";
@@ -38,7 +38,7 @@ const UnMatket = () => {
 
   const handleDataApiAddress = (data) => {
     setApiAddress(data);
-    console.log(data);
+    // console.log(data);
   };
 
   const handleChange = (e) => {
@@ -82,10 +82,14 @@ const UnMatket = () => {
 
         // Gửi yêu cầu POST đến backend
         const response = await axios.post("store", storeToSend);
-
+        //lấy lại token mới
+        const resToken = await axios.post("/login", {
+          email: response.data.user.email,
+          isGoogleLogin: true,
+        });
         // Nếu yêu cầu thành công
         toast.update(toastId, {
-          render: "Đăng ký kênh bán thành công",
+          render: "Đăng ký kênh bán thành công, Vui lòng truy cập lại từ trang chủ để vào shop",
           type: "success",
           isLoading: false,
           autoClose: 5000,
@@ -94,10 +98,13 @@ const UnMatket = () => {
 
         // Lưu id store vào localStorage
         localStorage.setItem("idStore", response.data.id);
+        //Lưu tại token
+        localStorage.setItem("hadfjkdshf", resToken.data.result.token);
+        console.log("token mới: " + resToken.data.result.token);
         handleReset();
 
         // Chuyển hướng đến trang profileMarket
-        changeLink("/profileMarket");
+        changeLink("/");
       } catch (error) {
         // Xử lý lỗi từ backend
         if (error.response) {
@@ -214,8 +221,12 @@ const UnMatket = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <div className="card rounded-4 bg-white" style={{ border: "none" }}>
+    <div className="container-lg mt-4">
+      <Card
+        className="rounded-4"
+        style={{ border: "none" }}
+        sx={{ backgroundColor: "backgroundElement.children" }}
+      >
         <div className="row">
           <div className="col-lg-6">
             <img
@@ -230,7 +241,7 @@ const UnMatket = () => {
             <p className="text-center">Hãy tạo kênh bán hàng của riêng bạn</p>
             <div className="row">
               <div className="col-lg-12">
-                <div className="card-body">
+                <CardContent className="">
                   <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                       <Box sx={{ display: "flex", alignItems: "flex-end" }}>
@@ -385,12 +396,12 @@ const UnMatket = () => {
                       Làm mới
                     </button>
                   </form>
-                </div>
+                </CardContent>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

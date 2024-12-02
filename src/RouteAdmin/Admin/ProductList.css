@@ -1,0 +1,148 @@
+.card {
+  background-color: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 0 5px; /* Adjust horizontal margin for tighter spacing */
+  max-width: 200px;
+}
+
+.image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Số dòng tối đa */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 15px;
+}
+
+.price {
+  font-size: 1.125rem;
+  font-weight: bold;
+}
+
+.sold,
+.rating {
+  font-size: 0.75rem;
+  color: var(--text-muted-foreground);
+}
+
+.container {
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  margin-top: 20px;
+  border-radius: 10px;
+}
+
+/* Adjust slider spacing for tighter layout */
+.slick-slide {
+  margin: 0 5px; /* Set to 5px for both sides */
+}
+
+.slick-list {
+  padding: 0 10px;
+}
+
+/* Responsive grid for fallback */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 10px; /* Set small gap for grid layout */
+}
+
+.headerTable {
+  margin-top: 10px;
+}
+
+/* Added margin-bottom to separate card and table */
+.card:last-child {
+  margin-bottom: 20px; /* Add space below the last card */
+}
+
+/* Thêm CSS để căn giữa Spin */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px; /* Hoặc chiều cao tùy chỉnh */
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.blink {
+  animation: blink 1s infinite;
+}
+
+.no-data-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Ensure it takes the full height of the parent container */
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Chế độ sáng */
+.light-mode-table .ant-table {
+  background-color: #f4f6f8; /* Màu nền */
+}
+
+/* Chế độ tối */
+.dark-mode-table .ant-table {
+  background-color: #212121; /* Màu nền */
+  color: #f0f0f0; /* Màu chữ */
+}
+
+/* Hover cho bảng con */
+.light-mode-table .ant-table-tbody > tr:hover td {
+  background-color: #e0f7fa !important;
+}
+.dark-mode-table .ant-table-tbody > tr:hover td {
+  background-color: #424242 !important;
+  color: #fff !important;
+}
+
+/* Đảm bảo không có nền trắng ghi đè */
+.light-mode-table .ant-table-tbody > tr > td,
+.dark-mode-table .ant-table-tbody > tr > td {
+  background-color: inherit;
+}
+
+/* Điều chỉnh header nếu cần */
+.dark-mode-table .ant-table-thead > tr > th {
+  background-color: #333;
+  color: #f0f0f0;
+}

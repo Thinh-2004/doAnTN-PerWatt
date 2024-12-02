@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Header from "../../../Header/Header";
 import ToolBarFindMore from "./ToolBar/ToolBarFindMore";
-import ListFindMore from "./List/ListFindMore";
 import { useParams } from "react-router-dom";
 import axios from "../../../../Localhost/Custumize-axios";
 import { toast } from "react-toastify";
@@ -9,6 +8,9 @@ import SkeletonLoad from "../../../../Skeleton/SkeletonLoad";
 import { Pagination } from "@mui/material";
 import useDebounce from "../../../../CustumHook/useDebounce";
 import ButtonFilter from "./ToolBar/FilterButton/ButtonFilter";
+import "./FindMoreProductStyle.css";
+import DoNotDisturbIcon from "@mui/icons-material/DoNotDisturb";
+import ListItemProduct from "../../../ListItemProduct/ListItemProduct";
 
 const FindMoreProduct = () => {
   const name = useParams();
@@ -17,7 +19,7 @@ const FindMoreProduct = () => {
   const [loading, setLoading] = useState(true); // trạng thái tải dữ liệu
 
   //Dữ liệu từ componets con
-  const [searchMoreProduct, setSearchMoreProduct] = useState();
+  const [searchMoreProduct, setSearchMoreProduct] = useState("");
   const debounceSearch = useDebounce(searchMoreProduct, 500);
   const [nameAddress, setNameAddress] = useState([]); //Mảng tên địa chỉ
   const [nameTradeMark, setNameTradeMark] = useState("");
@@ -62,7 +64,7 @@ const FindMoreProduct = () => {
 
   // //Lọc sản phẩm được chọn
   const filterAddress = fullList.filter((filter) => {
-    const filterProductByAddress = filter.store.address.toLowerCase();
+    const filterProductByAddress = filter.product.store?.address.toLowerCase();
     return nameAddress.some((check) =>
       filterProductByAddress.includes(check.toLowerCase())
     );
@@ -103,34 +105,8 @@ const FindMoreProduct = () => {
       // console.log(res.data);
       setCurrentPage(res.data.currentPage);
       setTotalPage(res.data.totalPage);
-      //Duyệt từng phần tử detail product vào product
-      const dataWithDetails = await Promise.all(
-        res.data.products.map(async (product) => {
-          const resDetail = await axios.get(`/detailProduct/${product.id}`);
 
-          //Đếm số sản phẩm đã bán
-          const countOrderBy = await Promise.all(
-            resDetail.data.map(async (detail) => {
-              const res = await axios.get(`countOrderSuccess/${detail.id}`);
-              return res.data;
-            })
-          );
-
-          //Đếm
-          const countQuantityOrderBy = countOrderBy.reduce(
-            (acc, quantity) => acc + quantity,
-            0
-          );
-
-          return {
-            ...product,
-            productDetails: resDetail.data,
-            countQuantityOrderBy,
-          };
-        })
-      );
-
-      setFill(dataWithDetails);
+      setFill(res.data.products);
     } catch (error) {
       toast.error(error);
       console.log(error);
@@ -168,7 +144,9 @@ const FindMoreProduct = () => {
       //Full list
       const dataWithDetailsFullList = await Promise.all(
         res.data.fullListProduct.map(async (product) => {
-          const resDetail = await axios.get(`/detailProduct/${product.id}`);
+          const resDetail = await axios.get(
+            `/detailProduct/${product.product.id}`
+          );
 
           //Đếm số sản phẩm đã bán
           const countOrderBy = await Promise.all(
@@ -315,12 +293,12 @@ const FindMoreProduct = () => {
   //Hàm xử lí dữ liệu từ components con
   const dataTextSearch = useCallback((text) => {
     setSearchMoreProduct(text);
-    // console.log(text);
   }, []);
 
   //Hàm xử lí dữ liệu từ components con
   const dataNameAddress = useCallback((address) => {
     setNameAddress(address);
+    console.log(address);
   }, []);
 
   const dataNameTradeMark = useCallback((trademark) => {
@@ -382,6 +360,8 @@ const FindMoreProduct = () => {
     }
   };
 
+  const dataProduct = nameAddress.length === 0 ? fill : records;
+
   return (
     <>
       <Header />
@@ -419,10 +399,17 @@ const FindMoreProduct = () => {
             <div className="row d-flex justify-content-center">
               {loading ? (
                 <SkeletonLoad />
+              ) : dataProduct.length === 0 ? (
+                <>
+                  <div className="d-flex justify-content-center">
+                    <DoNotDisturbIcon sx={{ fontSize: "200px" }} />
+                  </div>
+                  <div className="text-center fs-4">
+                    <span> Sản phẩm liên quan không tồn tại</span>
+                  </div>
+                </>
               ) : (
-                <ListFindMore
-                  data={nameAddress.length === 0 ? fill : records}
-                />
+                <ListItemProduct data={dataProduct} classNameCol={"col-lg-2 col-md-3 col-sm-4"}/>
               )}
             </div>
             <div className="mt-3 mb-3 d-flex justify-content-center">

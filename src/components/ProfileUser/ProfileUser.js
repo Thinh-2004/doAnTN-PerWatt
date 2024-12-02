@@ -9,14 +9,17 @@ import { useNavigate } from "react-router-dom";
 import ShippingList from "../Shipping/ShippingList";
 import "./ProfileUserStyle.css";
 import {
+  Box,
   Button,
   FormControl,
   IconButton,
   InputAdornment,
   InputLabel,
   OutlinedInput,
+  useTheme,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import WarehouseVoucherUser from "./WarehouseVoucherUser/WarehouseVoucherUser";
 
 const ProfileUser = () => {
   const [fill, setFill] = useState([]);
@@ -32,19 +35,27 @@ const ProfileUser = () => {
     password: "",
   });
 
-  const geturlIMG = (idUser, filename) => {
-    return `${axios.defaults.baseURL}files/user/${idUser}/${filename}`;
-  };
+  const theme = useTheme();
+
+
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await axios.get(`userProFile/${id}`);
+        const res = await axios.get(`/userProFile/myInfo`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        });
         setFill(res.data);
 
-        const resUser = await axios.get(`userProFile/${id}`);
+        const resUser = await axios.get(`/userProFile/myInfo`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        });
         setCheckPsasword(resUser.data.password);
-        console.log(checkPassword);
+        // console.log(checkPassword);
       } catch (error) {
         console.log(error);
         toast.error(
@@ -63,7 +74,15 @@ const ProfileUser = () => {
     }
     try {
       // Gọi API xác thực mật khẩu (nếu có)
-      const res = await axios.post("checkPass", { password, id });
+      const res = await axios.post(
+        "checkPass",
+        { password, id },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
+          },
+        }
+      );
       toast.success("Truy cập thành công");
       setIsChangePassClicked(true);
       changeLink("changePass");
@@ -92,15 +111,18 @@ const ProfileUser = () => {
   return (
     <div>
       <Header />
-      <div className="container">
+      <div className="container-lg">
         <div className="row">
           <div className="col-lg-3 mt-4">
-            <div className="bg-white rounded-4 p-2">
+            <Box
+              className="rounded-4 p-2"
+              sx={{ backgroundColor: "backgroundElement.children" }}
+            >
               <div className="d-flex justify-content-center align-items-center mt-2">
                 <img
-                  src={geturlIMG(fill.id, fill.avatar)}
+                  src={ fill.avatar}
                   alt=""
-                  style={{ width: "70px", height: "70px", borderRadius: "50%" }}
+                  style={{ width: "70px", aspectRatio : "1/1", borderRadius: "50%", objectFit : "cover" }}
                 />
                 <label htmlFor="" className="mt-3 mx-3">
                   {fill.fullname}
@@ -152,7 +174,13 @@ const ProfileUser = () => {
                           aria-hidden="true"
                         >
                           <div className="modal-dialog modal-dialog-centered">
-                            <div className="modal-content">
+                            <div
+                              className={`modal-content ${
+                                theme.palette.mode === "light"
+                                  ? "bg-white"
+                                  : "bg-dark"
+                              }`}
+                            >
                               <div className="modal-header">
                                 <h1
                                   className="modal-title fs-5"
@@ -224,26 +252,57 @@ const ProfileUser = () => {
                     )}
                   </li>
                   <li className="mb-2">
-                    <Link className="text-decoration-none">Quyền riêng tư</Link>
+                    <Link
+                      className="text-decoration-none"
+                      onClick={() => setIsChangePassClicked(false)}
+                    >
+                      Quyền riêng tư
+                    </Link>
                   </li>
                   <li>
-                    <Link className="text-decoration-none" to={"shippingInfo"}>
+                    <Link
+                      className="text-decoration-none"
+                      to={"shippingInfo"}
+                      onClick={() => setIsChangePassClicked(false)}
+                    >
                       Địa chỉ nhận hàng
                     </Link>
                   </li>
                 </ul>
               </div>
-              <Link className="mx-2 text-decoration-none" to={"/order"}>
-                <i className="bi bi-receipt fs-3 text-primary me-2"></i>
-                <span className="text-dark">Đơn mua</span>
+              <Link
+                className="mx-2 text-decoration-none"
+                to={"/order"}
+                onClick={() => setIsChangePassClicked(false)}
+              >
+                <i className="bi bi-receipt fs-3 text-warning me-2"></i>
+                <span
+                  className={`${
+                    theme.palette.mode === "light" ? "text-dark" : "text-white"
+                  }`}
+                >
+                  Đơn mua
+                </span>
               </Link>
               <div className="">
-                <Link className="mx-2 text-decoration-none">
+                <Link
+                  className="mx-2 text-decoration-none"
+                  onClick={() => setIsChangePassClicked(false)}
+                  to={`warehouse/voucher`}
+                >
                   <i className="bi bi-ticket-perforated fs-3 text-danger me-2"></i>
-                  <span className="text-dark">Kho Voucher</span>
+                  <span
+                    className={`${
+                      theme.palette.mode === "light"
+                        ? "text-dark"
+                        : "text-white"
+                    }`}
+                  >
+                    Kho Voucher của tôi
+                  </span>
                 </Link>
               </div>
-            </div>
+            </Box>
           </div>
           <div className="col-lg-9 mt-4">
             <Routes>
@@ -257,6 +316,10 @@ const ProfileUser = () => {
                 }
               />
               <Route path="/shippingInfo" element={<ShippingList />} />
+              <Route
+                path="/warehouse/voucher"
+                element={<WarehouseVoucherUser />}
+              />
             </Routes>
           </div>
         </div>

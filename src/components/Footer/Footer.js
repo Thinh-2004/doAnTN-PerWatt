@@ -2,21 +2,21 @@ import React from "react";
 import "./FooteStyle.css";
 const Footer = () => {
   return (
-    <div className="bg ">
+    <div className="bg">
       <hr className="mt-4" />
       <div className="row container-fluid p-5">
         <div className="col-lg-3">
           <img src="/images/logoWeb.png" alt="" id="footer-img" />
           <br />
           <p>
-            <label htmlFor="" className="mt-4 text-dark">
+            <label htmlFor="" className="mt-4">
               0845710208
             </label>{" "}
             <br />
             <label htmlFor="">Tổng đài hỗ trợ (Thứ 2 - Thứ 7 8h00 - 21h)</label>
           </p>
           <p className="mt-4">
-            <label htmlFor="" className="text-dark">
+            <label htmlFor="">
               PerWatt@gmail.com.vn
             </label>
             <br />
@@ -24,7 +24,7 @@ const Footer = () => {
           </p>
           <div className="d-flex">
             <a href="https://www.facebook.com/thinh.t.quoc">
-              <i class="bi bi-facebook fs-1"></i>
+              <i className="bi bi-facebook fs-1"></i>
             </a>
             <a href="https://zalo.me/0845710208" className="mx-3 mt-1">
               <img src="/images/icons8-zalo-48.png" alt="" />
@@ -33,7 +33,7 @@ const Footer = () => {
         </div>
         <div className="col-lg-3">
           <p>
-            <label htmlFor="" className="text-dark fs-5">
+            <label htmlFor="" className=" fs-5">
               Chính sách
             </label>
           </p>
@@ -53,7 +53,7 @@ const Footer = () => {
         </div>
         <div className="col-lg-3">
           <p>
-            <label htmlFor="" className="text-dark fs-5">
+            <label htmlFor="" className=" fs-5">
               Về PerWatt
             </label>
           </p>
@@ -70,7 +70,7 @@ const Footer = () => {
         </div>
         <div className="col-lg-3">
           <p>
-            <label htmlFor="" className="text-dark fs-5">
+            <label htmlFor="" className=" fs-5">
               Đối tác
             </label>
           </p>
@@ -79,28 +79,28 @@ const Footer = () => {
               <div className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-center">
                 <div className="">
                   <li className="mb-4">
-                    <label htmlFor="" className="text-dark">
+                    <label htmlFor="" >
                       thinhtran24082004@gmail.com
                     </label>
                     <br />
                     <label htmlFor="">Developer</label>
                   </li>
                   <li className="mb-4">
-                    <label htmlFor="" className="text-dark">
+                    <label htmlFor="" >
                       toanvk@gmail.com
                     </label>
                     <br />
                     <label htmlFor="">Developer</label>
                   </li>
                   <li className="mb-4">
-                    <label htmlFor="" className="text-dark">
+                    <label htmlFor="" >
                       hunghp@gmail.com
                     </label>
                     <br />
                     <label htmlFor="">Developer</label>
                   </li>
                   <li className="mb-4">
-                    <label htmlFor="" className="text-dark">
+                    <label htmlFor="" >
                       nheht@gmail.com
                     </label>
                     <br />
@@ -111,7 +111,7 @@ const Footer = () => {
               <div className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-center">
                 <div>
                   <li className="mb-4">
-                    <label htmlFor="" className="text-dark">
+                    <label htmlFor="">
                       thanhtt@gmail.com
                     </label>
                     <br />
@@ -119,14 +119,14 @@ const Footer = () => {
                   </li>
 
                   <li className="mb-4">
-                    <label htmlFor="" className="text-dark">
+                    <label htmlFor="">
                       thanhvh@gmail.com
                     </label>
                     <br />
                     <label htmlFor="">Developer</label>
                   </li>
                   <li className="mb-4">
-                    <label htmlFor="" className="text-dark">
+                    <label htmlFor="">
                       khaidt@gmail.com
                     </label>
                     <br />

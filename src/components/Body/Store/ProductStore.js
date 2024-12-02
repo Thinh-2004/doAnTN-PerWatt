@@ -3,11 +3,12 @@ import { Link, useParams } from "react-router-dom";
 import axios from "../../../Localhost/Custumize-axios";
 import useDebounce from "../../../CustumHook/useDebounce";
 import "./StoreStyle.css";
-import { Pagination } from "@mui/material";
+import { Box, Pagination, Typography } from "@mui/material";
 
 import SkeletonLoad from "../../../Skeleton/SkeletonLoad";
 import ListProductStore from "./ListProductStore";
 import ToolBarHomeStore from "./ToolBarHomeStore";
+import ListItemProduct from "../../ListItemProduct/ListItemProduct";
 
 const ProductStore = ({ item, idCate, resetSearch }) => {
   const { slugStore } = useParams();
@@ -35,32 +36,8 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
       );
       setCurrentPage(res.data.currentPage);
       setTotalPage(res.data.totalPage);
-      //Duyệt qua từng sản phẩm để lấy chi tiết sản phẩm
-      const dataWithDetails = await Promise.all(
-        res.data.products.map(async (push) => {
-          const resDetail = await axios.get(`/detailProduct/${push.id}`);
-
-          //Duyệt qua từng chi tiết sản phẩm để lấy số lượng đã bán
-          const countOrderBy = await Promise.all(
-            resDetail.data.map(async (detail) => {
-              const res = await axios.get(`countOrderSuccess/${detail.id}`);
-              return res.data;
-            })
-          );
-
-          //Tính tổng số lượng sản phẩm đã bán cho tất cả chi tiết
-          const countQuantityOrderBy = countOrderBy.reduce(
-            (count, quantity) => count + quantity,
-            0
-          );
-          return {
-            ...push,
-            productDetails: resDetail.data,
-            countQuantityOrderBy, //Lưu tổng số lượng đã bán
-          };
-        })
-      );
-      setFill(dataWithDetails);
+    
+      setFill(res.data.products);
       // console.log(dataWithDetails);
       setLoading(false);
     } catch (error) {
@@ -139,19 +116,22 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
         <div className="col-lg-6 col-md-6 col-sm-6">
           <ToolBarHomeStore
             isAscending={isAscending}
-            // handleSortByPrice={handleSortByPrice}
             valueSort={handleSortOption}
-            // handleSortBestSeller={handleSortBestSeller}
             isSortOption={isSortOption}
           />
           {debouncedItem || debouncedIdCate ? (
-            <div
-              className="text-primary mt-3"
-              style={{ cursor: "pointer" }}
-              onClick={handleResetSearch}
-            >
-              <i className="bi bi-box-seam"></i> Hiển thị tất cả sản phẩm của
-              cửa hàng
+            <div className="mt-2">
+              <Box
+                id="default"
+                className="fill-all btn-fill mt-3 text-center"
+                onClick={handleResetSearch}
+                sx={{background : "background.default"}}
+              >
+                <svg>
+                  <rect x="0" y="0" fill="none" width="100%" height="100%" />
+                </svg>
+                <i className="bi bi-box-seam"></i> Hiển thị tất cả
+              </Box>
             </div>
           ) : null}
         </div>
@@ -181,14 +161,14 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
             Shop không có nội dung bạn cần tìm
           </label>
           <div className="d-flex justify-content-center  mb-5">
-            <Link className="btn" id="btn-comback-home" to={"/"}>
-              Quay về trang chủ để tìm kiếm trên sàn PerWatt
+            <Link className="btn border" id="btn-comeback-home" to={"/"}>
+             <Typography variant="span" sx={{color : "text.default"}}> Quay về trang chủ để tìm kiếm trên sàn PerWatt</Typography>
             </Link>
           </div>
         </>
       ) : (
         <div className="row mb-5">
-          <ListProductStore data={fill} />
+        <ListProductStore data={fill} />
         </div>
       )}
       <div className="mt-3 mb-3 d-flex justify-content-center">

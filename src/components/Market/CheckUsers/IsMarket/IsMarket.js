@@ -1,21 +1,26 @@
 import React, { useEffect } from "react";
-import HeaderMarket from "../../../Header/HeaderMarket";
 import { Link, Route, Routes } from "react-router-dom";
 import "./isMarketStyle.css";
 import ListProduct from "./Product/List/ListProduct";
 import FormProduct from "./Product/Form/FormProduct";
-import useSession from "../../../../Session/useSession";
 import axios from "../../../../Localhost/Custumize-axios";
 import EditProduct from "./Product/Form/EditProduct";
-import MainUserSeller from "./StatisticalOrders/MainUserSeller";
+import SellerDashboard from "./StatisticalOrders/SellerDashboard";
 import ProfileShop from "./ProfileShop/ProfileShop";
 import OrderSeller from "./Order/OrderSeller";
-import OrderDetailBuyer from "./OrderDetail/OrderDetailBuyer";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Header from "../../../Header/Header";
+import FormAddVoucher from "./Voucher/FromAddVoucher";
+import FillVoucher from "./Voucher/FillVoucher";
+import EditVoucher from "./Voucher/UpdateVoucher";
+import Wallet from "../../../Wallet/Wallet";
+import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
+import PromotionalCard from "./StatisticalOrders/PromotionalCard";
+import Widget from "./StatisticalOrders/Widget";
 
 const IsMarket = () => {
   const user = localStorage.getItem("user")
@@ -39,7 +44,7 @@ const IsMarket = () => {
   }, [user.id]);
   return (
     <>
-      <HeaderMarket />
+      <Header />
       <div className="row container-fluid ">
         <div className="col-lg-3 p-0 m-0 ">
           <Accordion defaultExpanded>
@@ -102,39 +107,7 @@ const IsMarket = () => {
                       style={{ textDecoration: "none" }}
                       to={`/profileMarket/orderSeller/${user.id}`}
                     >
-                      Tất cả
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      style={{ textDecoration: "none" }}
-                      to="/cancelledOrders"
-                    >
-                      Đơn hủy
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      style={{ textDecoration: "none" }}
-                      to="/deliveredOrders"
-                    >
-                      Đã giao
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      style={{ textDecoration: "none" }}
-                      to="/pendingOrders"
-                    >
-                      Chờ xác nhận
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      style={{ textDecoration: "none" }}
-                      to="/readyForPickup"
-                    >
-                      Chờ lấy hàng
+                      Đơn hàng
                     </Link>
                   </li>
                 </ul>
@@ -160,18 +133,19 @@ const IsMarket = () => {
                   className="p-0 m-0"
                 >
                   <li>
-                    <Link style={{ textDecoration: "none" }} to="/revenue">
+                    <Link
+                      style={{ textDecoration: "none" }}
+                      to="/profileMarket"
+                    >
                       Doanh thu
                     </Link>
                   </li>
                   <li>
-                    <Link style={{ textDecoration: "none" }} to="/myAccount">
+                    <Link
+                      style={{ textDecoration: "none" }}
+                      to="/profileMarket/wallet/seller"
+                    >
                       Số dư TK của tôi
-                    </Link>
-                  </li>
-                  <li>
-                    <Link style={{ textDecoration: "none" }} to="/bankAccounts">
-                      Tài khoản ngân hàng
                     </Link>
                   </li>
                 </ul>
@@ -204,16 +178,6 @@ const IsMarket = () => {
                       Hồ sơ shop
                     </Link>
                   </li>
-                  <li>
-                    <Link style={{ textDecoration: "none" }} to="/shopDecor">
-                      Trang trí shop
-                    </Link>
-                  </li>
-                  <li>
-                    <Link style={{ textDecoration: "none" }} to="/shopSettings">
-                      Thiết lập shop
-                    </Link>
-                  </li>
                 </ul>
               </Typography>
             </AccordionDetails>
@@ -227,7 +191,7 @@ const IsMarket = () => {
             >
               <Typography>
                 <i class="bi bi-tag fs-4"></i>
-                <span className="mx-3">Khuyến mãi của shop</span>
+                <span className="mx-3">Chương trình khuyến mãi</span>
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
@@ -237,8 +201,27 @@ const IsMarket = () => {
                   className="p-0 m-0"
                 >
                   <li>
-                    <Link style={{ textDecoration: "none" }} to="/shopProfile">
+                    <Link
+                      style={{ textDecoration: "none" }}
+                      to="/profileMarket/addVoucher"
+                    >
+                      Thêm khuyến mãi
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      style={{ textDecoration: "none" }}
+                      to="/profileMarket/fillVoucher"
+                    >
                       Quản lý khuyến mãi
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      style={{ textDecoration: "none" }}
+                      to="/profileMarket/voucher/webite"
+                    >
+                      Chương trình PerWatt
                     </Link>
                   </li>
                 </ul>
@@ -248,19 +231,26 @@ const IsMarket = () => {
         </div>
         <div className="col-lg-9">
           <Routes>
-            <Route path="/" element={<MainUserSeller />} />
+            <Route path="/" element={<SellerDashboard />} />
             <Route path="/listStoreProduct" element={<ListProduct />} />
             <Route path="/FormStoreProduct" element={<FormProduct />} />
             <Route path="updateProduct/:slug" element={<EditProduct />} />
             <Route path="/profileShop" element={<ProfileShop />} />
+            <Route path="/addVoucher" element={<FormAddVoucher />} />
+            <Route path="/fillVoucher" element={<FillVoucher />} />
+            <Route path="editVoucher/:slug" element={<EditVoucher />} />​
             <Route
-              path="orderDetailSeller/:id"
-              element={<OrderDetailBuyer />}
+              path="/orderDetailSeller/:id"
+              element={<OrderDetailSeller />}
             />
             <Route
               path="/orderSeller/:id"
               element={<OrderSeller></OrderSeller>}
-            ></Route>
+            />
+            <Route path="/wallet/:status" element={<Wallet />} />
+            <Route path="/voucher/webite" element={<PromotionalCard />} />
+            <Route path="/Widget/:id" element={<Widget />} />
+            {/* <Route path="/" element={<ChooseProduct />} /> */}
           </Routes>
         </div>
       </div>

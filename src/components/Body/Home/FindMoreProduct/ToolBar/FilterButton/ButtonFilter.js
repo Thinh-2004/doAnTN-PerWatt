@@ -23,7 +23,7 @@ const ButtonFilter = ({ isAscending, isSortOption, valueSort }) => {
   };
   return (
     <>
-      <div class="position-relative">
+      <div className="position-relative">
         <Button
           variant="outlined"
           sx={{ margin: "4px" }}

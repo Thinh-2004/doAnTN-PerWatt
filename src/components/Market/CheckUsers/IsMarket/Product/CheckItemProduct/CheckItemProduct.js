@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "../../../../../../Localhost/Custumize-axios";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -10,6 +11,7 @@ import {
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import { ThemeModeContext } from "../../../../../ThemeMode/ThemeModeProvider";
 
 const CheckItemProduct = () => {
   const { slug } = useParams();
@@ -19,6 +21,8 @@ const CheckItemProduct = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [countProductStore, setCountProductStore] = useState(0);
   const itemsPerPage = 4;
+  const [isDisabled, setIsDisabled] = useState(false);
+  const delay = 400; // Độ trễ 3 giây
 
   const [countOrderBuyed, setCountOrderBuyed] = useState(0); // Lưu số lượng đã bán cho mỗi sản phẩm
   const [open, setOpen] = useState(false);
@@ -38,6 +42,8 @@ const CheckItemProduct = () => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [selectedIdDetail, setSelectedIdDetail] = useState(null);
   const [fillDetail, setFilDetail] = useState([]);
+  const { mode } = useContext(ThemeModeContext);
+
   const loadProductDetail = async () => {
     try {
       const res = await axios.get(`product/${slug}`);
@@ -99,6 +105,31 @@ const CheckItemProduct = () => {
     setCurrentPage(Math.floor(index / itemsPerPage));
   };
 
+  const handleNextImage = () => {
+    if (isDisabled) return; // Nếu đang trong thời gian chờ, không làm gì cả
+    setIsDisabled(true); // Vô hiệu hóa nút
+    handleSelectImage(
+      (selectedImage + 1) % (FillDetailPr?.images?.length || 1)
+    );
+
+    setTimeout(() => {
+      setIsDisabled(false); // Bật lại nút sau 3 giây
+    }, delay);
+  };
+
+  const handlePrevImage = () => {
+    if (isDisabled) return; // Nếu đang trong thời gian chờ, không làm gì cả
+    setIsDisabled(true); // Vô hiệu hóa nút
+    handleSelectImage(
+      (selectedImage - 1 + (FillDetailPr?.images?.length || 1)) %
+        (FillDetailPr?.images?.length || 1)
+    );
+
+    setTimeout(() => {
+      setIsDisabled(false); // Bật lại nút sau 3 giây
+    }, delay);
+  };
+
   const formatPrice = (value) => {
     if (!value) return "";
     return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
@@ -128,9 +159,49 @@ const CheckItemProduct = () => {
     setOpen(false);
   };
 
+  //Hàm tính toán ngày giờ
+  const calculateAccountDuration = (accountCreatedDate) => {
+    //Khởi tạo ngày từ CSDL và ngày hiện tại
+    const createdDate = new Date(accountCreatedDate);
+    const now = new Date();
+
+    const diffInMilliseconds = now - createdDate; //Tính khoảng cách (Tính bằng mili)
+    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24)); //Chuyển đổi kết quả mili giây thành ngày
+
+    if (diffInDays <= 7) {
+      //Nhỏ hơn 7 ngày
+      return "Mới tham gia";
+    }
+
+    //Tính tổng số tháng
+    const diffInMonths =
+      (now.getFullYear() - createdDate.getFullYear()) * 12 +
+      (now.getMonth() - createdDate.getMonth());
+
+    if (diffInMonths >= 12) {
+      //Kết quả lớn hơn 12 tháng
+      const years = Math.floor(diffInMonths / 12);
+      return years + (years === 1 ? " năm" : " năm");
+    } else if (diffInMonths > 0) {
+      //Kết quả số tháng lớn hơn 0 nhưng nhỏ hơn 12
+      return diffInMonths + (diffInMonths === 1 ? " tháng" : " tháng");
+    } else {
+      //Ngược lại lấy số ngày
+      return diffInDays + " ngày";
+    }
+  };
+
+  //Hàm cắt chuỗi địa chỉ
+  const splitByAddress = (address) => {
+    const parts = address?.split(",");
+    if (parts?.length > 0) {
+      return parts[4];
+    }
+  };
+
   return (
     <>
-      <div className="container mt-4">
+      <div className="container-lg mt-4">
         <Button
           variant="contained"
           className="mb-4"
@@ -148,11 +219,14 @@ const CheckItemProduct = () => {
           </Link>
         </Button>
 
-        <div className="row bg-white rounded-4">
+        <Box
+          className="row rounded-4 shadow"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
           <div className="col-md-4 col-lg-4 col-sm-4 border-end">
             <div
               id="carouselExampleDark"
-              className="carousel carousel-dark slide position-relative"
+              className="carousel slide position-relative "
             >
               <div
                 className="position-absolute top-50 start-50 translate-middle rounded-3"
@@ -168,6 +242,29 @@ const CheckItemProduct = () => {
                 className="carousel-inner align-content-center"
                 style={{ height: "575px" }}
               >
+                <button
+                  className="carousel-control-prev"
+                  type="button"
+                  data-bs-target="#carouselExampleDark"
+                  data-bs-slide="prev"
+                  onClick={handlePrevImage}
+                  disabled={isDisabled} // Vô hiệu hóa nút nếu isDisabled là true
+                >
+                  <div
+                    style={{
+                      background: "rgba(0,0,0,0.5)",
+                      width: "80%",
+                      aspectRatio: "1/1",
+                    }}
+                    className="rounded-circle"
+                  >
+                    <span
+                      className="carousel-control-prev-icon mt-2"
+                      aria-hidden="true"
+                    ></span>
+                    <span className="visually-hidden">Previous</span>
+                  </div>
+                </button>
                 {FillDetailPr &&
                 FillDetailPr.images &&
                 FillDetailPr.images.length > 0 ? (
@@ -177,6 +274,9 @@ const CheckItemProduct = () => {
                       className={`carousel-item  ${
                         index === selectedImage ? "active" : ""
                       }`}
+                      style={{
+                        transition: "transform 0.3s ease, opacity 0.3s ease",
+                      }}
                     >
                       <div
                         variant="outlined"
@@ -234,43 +334,30 @@ const CheckItemProduct = () => {
                     />
                   </div>
                 )}
+                <button
+                  className="carousel-control-next"
+                  type="button"
+                  data-bs-target="#carouselExampleDark"
+                  data-bs-slide="next"
+                  onClick={handleNextImage}
+                  disabled={isDisabled} // Vô hiệu hóa nút nếu isDisabled là true
+                >
+                  <div
+                    style={{
+                      background: "rgba(0,0,0,0.5)",
+                      width: "80%",
+                      aspectRatio: "1/1",
+                    }}
+                    className="rounded-circle"
+                  >
+                    <span
+                      className="carousel-control-next-icon mt-2"
+                      aria-hidden="true"
+                    ></span>
+                    <span className="visually-hidden">Next</span>
+                  </div>
+                </button>
               </div>
-
-              <button
-                className="carousel-control-prev"
-                type="button"
-                data-bs-target="#carouselExampleDark"
-                data-bs-slide="prev"
-                onClick={() =>
-                  handleSelectImage(
-                    (selectedImage - 1 + (FillDetailPr?.images?.length || 1)) %
-                      (FillDetailPr?.images?.length || 1)
-                  )
-                }
-              >
-                <span
-                  className="carousel-control-prev-icon"
-                  aria-hidden="true"
-                ></span>
-                <span className="visually-hidden">Previous</span>
-              </button>
-              <button
-                className="carousel-control-next"
-                type="button"
-                data-bs-target="#carouselExampleDark"
-                data-bs-slide="next"
-                onClick={() =>
-                  handleSelectImage(
-                    (selectedImage + 1) % (FillDetailPr?.images?.length || 1)
-                  )
-                }
-              >
-                <span
-                  className="carousel-control-next-icon"
-                  aria-hidden="true"
-                ></span>
-                <span className="visually-hidden">Next</span>
-              </button>
             </div>
             <div className="d-flex mt-2">
               {FillDetailPr &&
@@ -282,7 +369,7 @@ const CheckItemProduct = () => {
                     (currentPage + 1) * itemsPerPage
                   )
                   .map((image, index) => (
-                    <button
+                    <Button
                       id="btn-children-img"
                       key={index}
                       type="button"
@@ -307,11 +394,11 @@ const CheckItemProduct = () => {
                             ? geturlIMG(FillDetailPr.id, image.imagename)
                             : "/images/no_img.png"
                         }
-                        className="img-thumbnail rounded-3"
+                        className="rounded-3 border"
                         alt=""
                         style={{ width: "100px", height: "100px" }}
                       />
-                    </button>
+                    </Button>
                   ))}
             </div>
           </div>
@@ -366,7 +453,11 @@ const CheckItemProduct = () => {
                 </span>
               </div>
             </div>
-            <div className="bg-light w-100 h-25 mt-4 rounded-4">
+            <div
+              className={`${
+                mode === "light" ? "bg-light" : "border"
+              } w-100 h-25 mt-4 rounded-4`}
+            >
               <p className="fs-5 p-1 mx-2">Giá:</p>
               <div className="d-flex align-items-center">
                 <del className="text-secondary fs-5 mx-3">
@@ -477,13 +568,15 @@ const CheckItemProduct = () => {
               >
                 <p className="p-3 fst-italic fs-5 m-0">Phân loại sản phẩm</p>
                 <div
-                  className="bg-light rounded-3 p-2 m-2 d-flex flex-wrap overflow-auto"
+                  className={`${
+                    mode === "light" ? "bg-light" : "border"
+                  } rounded-3 p-2 m-2 d-flex flex-wrap overflow-auto`}
                   style={{ height: "70%" }}
                 >
                   {fillDetail &&
                     fillDetail.length > 0 &&
                     fillDetail.map((fillDetail, index) => (
-                      <div
+                      <Box
                         className={`d-flex align-items-center text-nowrap rounded-2 p-2 m-2 position-relative ${
                           selectedIdDetail === fillDetail.id
                             ? "active-selected-detailProduct"
@@ -495,10 +588,11 @@ const CheckItemProduct = () => {
                             ? "active-selected-detailProduct"
                             : "hover-idDetailProduct"
                         }`}
-                        style={{
+                        sx={{
                           opacity: fillDetail.quantity === 0 ? 0.5 : 1,
                           pointerEvents:
                             fillDetail.quantity === 0 ? "none" : "auto",
+                          backgroundColor: "backgroundElement.default",
                         }}
                       >
                         <img
@@ -535,14 +629,17 @@ const CheckItemProduct = () => {
                             style={{ color: "#00C7FF" }}
                           />
                         </div>
-                      </div>
+                      </Box>
                     ))}
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="row bg-white rounded-4 mt-3">
+        </Box>
+        <Box
+          className="row rounded-4 mt-3"
+          sx={{ backgroundColor: "backgroundElement.children" }}
+        >
           <div className="col-lg-4 col-md-4 col-sm-4 border-end">
             <div className="d-flex justify-content-center">
               <div className="p-2 d-flex justify-content-center">
@@ -591,16 +688,52 @@ const CheckItemProduct = () => {
           </div>
           <div className="col-lg-8 col-md-8 col-sm-8">
             <div className="row mt-4">
-              <div className="col-lg-4 col-md-4 col-sm-4">
-                <div className="d-flex justify-content-between">
-                  <label htmlFor="">Sản phẩm đã đăng bán:</label>
-                  <span>{countProductStore}</span>
+              <div className="row">
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3 border-end">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="fst-italic">Sản phẩm đã đăng bán:</label>
+                    <span className="fw-semibold">{countProductStore}</span>
+                  </div>
+                </div>
+
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="fst-italic">Địa chỉ:</label>
+                    <span className="fw-semibold">
+                      {splitByAddress(FillDetailPr?.store.address)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="fst-italic">Người theo dõi:</label>
+                    <span className="fw-semibold">999</span>
+                  </div>
+                </div>
+
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="fst-italic">Đã tham gia:</label>
+                    <span className="fw-semibold">
+                      {calculateAccountDuration(
+                        FillDetailPr?.store.createdtime
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="fst-italic">Đánh giá cửa hàng:</label>
+                    <span className="fw-semibold">100</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="row bg-white rounded-4 mt-3">
+        </Box>
+        <Box sx={{backgroundColor: "backgroundElement.children"}} className="row rounded-4 mt-3">
           <div className="p-3">
             <h4>Thông tin chi tiết sản phẩm</h4>
             <span className="p-0 m-0">
@@ -610,15 +743,18 @@ const CheckItemProduct = () => {
               {FillDetailPr ? FillDetailPr.description : "N/A"}
             </span>
           </div>
-        </div>
-        <div className="row bg-white rounded-4 mt-3">
+        </Box>
+        <Box
+          sx={{ backgroundColor: "backgroundElement.children" }}
+          className="row rounded-4 mt-3"
+        >
           <div className="p-3">
             <h4>Đánh giá sản phẩm</h4>
             <span className="p-0 m-0">
               <hr />
             </span>
           </div>
-        </div>
+        </Box>
       </div>
     </>
   );

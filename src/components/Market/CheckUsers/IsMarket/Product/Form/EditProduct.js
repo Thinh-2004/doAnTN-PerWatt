@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import Category from "../../CategoryProduct/Category";
-import Brand from "../../Brand/Brand";
-import Warranties from "../../Warranties/Warranties";
 import { toast } from "react-toastify";
 import axios from "../../../../../../Localhost/Custumize-axios";
-import { Button, styled, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  styled,
+  TextField,
+  Tooltip,
+} from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditDetailProduct from "../DetailProduct/EditDetailProduct";
 import InfoDetailProduct from "./ChildrenForm/InfoDetailProduct";
 
 const EditProduct = () => {
   const slug = useParams();
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
   const idStore = localStorage.getItem("idStore");
   const [images, setImages] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(null);
@@ -34,6 +36,10 @@ const EditProduct = () => {
   const maxFiles = 9;
   const changeLink = useNavigate();
   const [editDetailProduct, setEditDetailProduct] = useState([]);
+  const [charCount, setCharCount] = useState(0); // State để lưu số từ
+  const [charCountDesception, setCharCountDesception] = useState(0); // State để lưu số từ
+  const maxCharLimitName = 150; // Giới hạn ký tự
+  const [updateChangeForm, setUpdateChangeForm] = useState("");
 
   // Fill dữ liệu edit
   const fillData = async () => {
@@ -48,6 +54,7 @@ const EditProduct = () => {
         store: idStore,
       });
       console.log(res.data);
+      // setImages(res.data.images)
 
       const resDetail = await axios.get(`/detailProduct/${res.data.id}`);
 
@@ -66,11 +73,16 @@ const EditProduct = () => {
       console.error(error);
     }
   };
-
   useEffect(() => {
     // Fill dữ liệu
     fillData();
   }, []);
+
+  useEffect(() => {
+    //Truyền dữ liệu vào state đếm kí tự
+    setCharCount(formEditProduct.name.length);
+    setCharCountDesception(formEditProduct.description.length);
+  }, [formEditProduct.name.length, formEditProduct.description.length]);
 
   // Hàm xử lí sự kiện thay đổi File
   const handleFileChange = (event) => {
@@ -117,6 +129,22 @@ const EditProduct = () => {
       ...prevFormProduct,
       [name]: value,
     }));
+
+    // Kiểm tra số ký tự trước khi cập nhật
+    if (name === "name" && value.length > maxCharLimitName) {
+      return; // Ngăn người dùng nhập nếu vượt quá 100 ký tự
+    }
+
+    // Đếm số từ trong trường 'name'
+    if (name === "name") {
+      const charCount = value.length;
+      setCharCount(charCount);
+    }
+
+    if (name === "description") {
+      const charCountDescription = value.length;
+      setCharCountDesception(charCountDescription);
+    }
   };
 
   // Bắt lỗi
@@ -257,14 +285,25 @@ const EditProduct = () => {
     }
   }, [receiveDataDetail]);
 
+  useEffect(() => {
+    if (updateChangeForm !== null && updateChangeForm === true) {
+      setIsHiddenDetailPro(true);
+    } else if (updateChangeForm !== null && updateChangeForm === false) {
+      setIsHiddenDetailPro(false);
+    }
+  }, [updateChangeForm, isHiddenDetailPro]);
+
   return (
     <div className="row mt-4">
       {/* Product Info */}
       <div className="col-lg-12">
-        <div className="bg-white rounded-4">
-          <div className="card">
+        <div className=" rounded-4">
+          <Card
+            className=""
+            sx={{ backgroundColor: "backgroundElement.children" }}
+          >
             <h3 className="text-center mt-4">Thông tin sản phẩm</h3>
-            <div className="card-body">
+            <CardContent className="">
               <div className="row">
                 <div className="col-lg-6 border-end">
                   <div className="mb-3">
@@ -276,7 +315,11 @@ const EditProduct = () => {
                       value={formEditProduct.name}
                       onChange={handleInputChange}
                       fullWidth
+                      inputProps={{ maxLength: maxCharLimitName }} // Giới hạn trực quan cho người dùng
                     />
+                    <label>
+                      {charCount}/{maxCharLimitName}
+                    </label>
                   </div>
                   <div className="mb-3">
                     <TextField
@@ -289,31 +332,36 @@ const EditProduct = () => {
                       onChange={handleInputChange}
                       fullWidth
                     />
+                    <label htmlFor="">{charCountDesception} kí tự</label>
                   </div>
                 </div>
                 <div className="col-lg-6">
                   <div className="mb-3 border" id="bg-upload-img">
                     {formEditProduct.images &&
                       formEditProduct.images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={geturlIMG(formEditProduct.id, image.imagename)}
-                          alt={`Current ${index}`}
-                          className="img-fluid"
-                          id="img-fill-product"
-                          style={{ cursor: "pointer" }}
-                          onClick={() => handleDeleteImageClick(image.id)}
-                        />
+                        <Tooltip title="Double click để xóa hình">
+                          <img
+                            key={index}
+                            src={image.imagename}
+                            alt={`Current ${index}`}
+                            className="img-fluid"
+                            id="img-fill-product"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => handleDeleteImageClick(image.id)}
+                          />
+                        </Tooltip>
                       ))}
                     {images.map((image, index) => (
-                      <img
-                        key={`new-${index}`}
-                        src={URL.createObjectURL(image)}
-                        alt={`Preview ${index}`}
-                        className="img-fluid"
-                        id="img-fill-product"
-                        onClick={() => handleImageClick(index)}
-                      />
+                      <Tooltip title="Double click để xóa hình">
+                        <img
+                          key={`new-${index}`}
+                          src={URL.createObjectURL(image)}
+                          alt={`Preview ${index}`}
+                          className="img-fluid"
+                          id="img-fill-product"
+                          onClick={() => handleImageClick(index)}
+                        />
+                      </Tooltip>
                     ))}
                   </div>
                   <div className="mb-3">
@@ -348,14 +396,17 @@ const EditProduct = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
       {/* Detail product */}
       <div className="col-lg-12 col-md-12 col-sm-12">
-        <div className="bg-white rounded-4 mt-3">
-          <div className="card">
+        <Box className=" rounded-4 mt-3">
+          <Card
+            className=""
+            sx={{ backgroundColor: "backgroundElement.children" }}
+          >
             <div className="row align-items-center p-3">
               <h3 className="col-lg-6 col-md-6 col-sm-6 w-25">
                 Thông tin bán hàng
@@ -382,19 +433,23 @@ const EditProduct = () => {
               </div>
             </div>
 
-            <div className="card-body">
+            <CardContent className="">
               <EditDetailProduct
                 idProduct={formEditProduct}
                 isChangeFormEdit={isHiddenDetailPro}
                 CountData={handleReceiveData}
+                updateChangeForm={setUpdateChangeForm}
               />
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
+        </Box>
       </div>
       {/* Detailed Info */}
       <div className="col-lg-12">
-      <InfoDetailProduct formProduct={formEditProduct} handleInputChange={handleInputChange}/>
+        <InfoDetailProduct
+          formProduct={formEditProduct}
+          handleInputChange={handleInputChange}
+        />
       </div>
       {/* Form Actions */}
       <div className="mt-4 mb-4">

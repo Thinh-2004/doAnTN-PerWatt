@@ -15,7 +15,7 @@ import axios from "../../../../../../Localhost/Custumize-axios";
 const ToolbarListPorudct = ({
   search,
   setSearch,
-  handleOptionChange,
+  handleOneChangeIdCate,
   idCateOption,
   handleClickFilterSoldOutByQuantity,
   isFilterQuantitySoldOut,
@@ -71,7 +71,7 @@ const ToolbarListPorudct = ({
           size="small"
           fullWidth
           name="searchProduct"
-          onChange={(e) => setSearch(e.target.value)} // Update search state on input change
+          onChange={(e) => setSearch(e.target.value)}
           value={search}
         />
       </div>
@@ -85,7 +85,7 @@ const ToolbarListPorudct = ({
             groupBy={(option) => option.firstLetter}
             getOptionLabel={(option) => option.name}
             isOptionEqualToValue={(option, value) => option.id === value.id} // So sánh dựa trên ID
-            onChange={handleOptionChange}
+            onChange={handleOneChangeIdCate}
             value={
               cateInStore.find((option) => option.id === idCateOption) || null
             } // Đảm bảo giá trị phù hợp
