@@ -76,7 +76,7 @@ const Login = () => {
             closeButton: true,
           });
           // console.log(resUserInfo.data);
-          if (resUserInfo.data.rolepPermission.role.namerole === "Admin") {
+          if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
             navigate("/admin");
           } else {
             navigate("/");
@@ -159,7 +159,7 @@ const Login = () => {
           closeButton: true,
         });
         console.log(resUserInfo.data);
-        if (resUserInfo.data.role.namerole === "Admin") {
+        if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
           navigate("/admin");
         } else {
           navigate("/");

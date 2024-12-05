@@ -23,10 +23,9 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { ThemeModeContext } from "../ThemeMode/ThemeModeProvider";
 import MotionPhotosAutoIcon from "@mui/icons-material/MotionPhotosAuto";
 import AccountBoxIcon from "@mui/icons-material/AccountBox";
-import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
-import WalletIcon from "@mui/icons-material/Wallet";
 import RoofingIcon from "@mui/icons-material/Roofing";
+import OutlinedFlagIcon from "@mui/icons-material/OutlinedFlag";
 
 const RightHeader = ({ reloadCartItems }) => {
   const changeLink = useNavigate();
@@ -90,7 +89,6 @@ const RightHeader = ({ reloadCartItems }) => {
               // Xóa localStorage ngay khi người dùng nhấn "Đăng xuất"
               localStorage.clear();
               sessionStorage.clear();
-
               // Chuyển hướng về trang chủ
               changeLink("/");
             } catch (error) {
@@ -105,7 +103,6 @@ const RightHeader = ({ reloadCartItems }) => {
                 closeButton: true,
               });
               // Hiển thị thông báo thành công
-             
 
               // Chuyển hướng về trang chủ
             }
@@ -217,6 +214,43 @@ const RightHeader = ({ reloadCartItems }) => {
       });
     } else {
       changeLink("/cart");
+    }
+  };
+
+  const checkUserIdOnReport = async (e) => {
+    // Ngăn chặn hành động mặc định của liên kết
+    e.preventDefault();
+
+    // Kiểm tra nếu id là null hoặc undefined
+    if (user === null || user === undefined) {
+      confirmAlert({
+        title: "Bạn đã đăng nhập chưa?",
+        message: "Bạn cần đăng nhập để vào danh sách báo cáo của mình",
+        buttons: [
+          {
+            label: "Có",
+            onClick: () => {
+              // Hiển thị thông báo đang tải
+              const id = toast.loading("Vui lòng chờ...");
+              setTimeout(() => {
+                toast.update(id, {
+                  render: "Chuyển hướng đến trang đăng nhập",
+                  type: "info",
+                  isLoading: false,
+                  autoClose: 2000,
+                  closeButton: true,
+                });
+                changeLink("/login");
+              }, 500);
+            },
+          },
+          {
+            label: "Không",
+          },
+        ],
+      });
+    } else {
+      changeLink("/report");
     }
   };
 
@@ -364,7 +398,7 @@ const RightHeader = ({ reloadCartItems }) => {
 
   return (
     <>
-      <div className="d-flex align-items-center border-end me-3 ">
+      <div className="d-flex align-items-center border-end">
         {matchSeller ? (
           <>
             <Tooltip title="Trang chủ PerWatt">
@@ -392,22 +426,25 @@ const RightHeader = ({ reloadCartItems }) => {
                 </span>
               </Link>
             </Tooltip>
-            <Tooltip title="Cài đặt">
+            <Tooltip title="Lịch sử báo cáo">
               <Link
-                onClick={checkUserId}
+                onClick={checkUserIdOnReport}
                 type="button"
-                className="btn btn-icon btn-sm rounded-3 me-3"
+                className="btn btn-icon position-relative rounded-3 me-3"
                 to={""}
               >
                 <Typography sx={{ color: "text.primary" }}>
-                  <i className="bi bi-gear fs-4"></i>
+                  <OutlinedFlagIcon />
                 </Typography>
+                {/* <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {0}
+                </span> */}
               </Link>
             </Tooltip>
             <Tooltip title="Thông báo">
               <Link
                 type="button"
-                className="btn btn-icon btn-sm  position-relative rounded-3 me-3"
+                className="btn btn-icon btn-sm  position-relative rounded-3 me-2"
                 to={"/profileMarket/notifications"}
               >
                 <Typography sx={{ color: "text.primary" }}>
@@ -421,17 +458,6 @@ const RightHeader = ({ reloadCartItems }) => {
           </>
         ) : matchAdmin ? (
           <>
-            <Tooltip title="Ví của tôi">
-              <Link
-                type="button"
-                className="btn btn-icon position-relative rounded-4 me-2"
-                to={"/admin/wallet"}
-              >
-                <Typography sx={{ color: "text.primary" }}>
-                  <WalletIcon />
-                </Typography>
-              </Link>
-            </Tooltip>
             <Tooltip title="Hồ sơ của tôi">
               <Link
                 type="button"
@@ -440,17 +466,6 @@ const RightHeader = ({ reloadCartItems }) => {
               >
                 <Typography sx={{ color: "text.primary" }}>
                   <AccountBoxIcon />
-                </Typography>
-              </Link>
-            </Tooltip>
-            <Tooltip title="Quản lí banner">
-              <Link
-                type="button"
-                className="btn btn-icon position-relative rounded-4 mx-2 me-2 "
-                to={"/admin/banner"}
-              >
-                <Typography sx={{ color: "text.primary" }}>
-                  <ViewCarouselIcon />
                 </Typography>
               </Link>
             </Tooltip>
@@ -612,6 +627,21 @@ const RightHeader = ({ reloadCartItems }) => {
                 </span>
               </Link>
             </Tooltip>
+            <Tooltip title="Lịch sử báo cáo">
+              <Link
+                onClick={checkUserIdOnReport}
+                type="button"
+                className="btn btn-icon position-relative rounded-3 me-3"
+                to={""}
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <OutlinedFlagIcon />
+                </Typography>
+                {/* <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {0}
+                </span> */}
+              </Link>
+            </Tooltip>
           </>
         )}
       </div>
@@ -721,24 +751,6 @@ const RightHeader = ({ reloadCartItems }) => {
                   &nbsp;
                   <Typography variant="span" sx={{ color: "text.primary" }}>
                     Đơn hàng
-                  </Typography>
-                </Link>
-              </MenuItem>
-              <MenuItem onClick={handleCloseMenuUser}>
-                <Link
-                  className="text-dark"
-                  to={
-                    idStore !== "undefined"
-                      ? "/profileMarket/wallet/seller"
-                      : user?.id === 1
-                      ? "/admin/wallet"
-                      : "/wallet/buyer"
-                  }
-                >
-                  <WalletIcon sx={{ color: "text.primary" }} />
-                  &nbsp;
-                  <Typography variant="span" sx={{ color: "text.primary" }}>
-                    Ví của tủa tôi
                   </Typography>
                 </Link>
               </MenuItem>

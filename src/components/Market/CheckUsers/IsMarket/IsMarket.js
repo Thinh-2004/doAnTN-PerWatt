@@ -17,7 +17,6 @@ import Header from "../../../Header/Header";
 import FormAddVoucher from "./Voucher/FromAddVoucher";
 import FillVoucher from "./Voucher/FillVoucher";
 import EditVoucher from "./Voucher/UpdateVoucher";
-import Wallet from "../../../Wallet/Wallet";
 import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
 import PromotionalCard from "./StatisticalOrders/PromotionalCard";
 import Widget from "./StatisticalOrders/Widget";
@@ -140,14 +139,6 @@ const IsMarket = () => {
                       Doanh thu
                     </Link>
                   </li>
-                  <li>
-                    <Link
-                      style={{ textDecoration: "none" }}
-                      to="/profileMarket/wallet/seller"
-                    >
-                      Số dư TK của tôi
-                    </Link>
-                  </li>
                 </ul>
               </Typography>
             </AccordionDetails>
@@ -247,7 +238,6 @@ const IsMarket = () => {
               path="/orderSeller/:id"
               element={<OrderSeller></OrderSeller>}
             />
-            <Route path="/wallet/:status" element={<Wallet />} />
             <Route path="/voucher/webite" element={<PromotionalCard />} />
             <Route path="/Widget/:id" element={<Widget />} />
             {/* <Route path="/" element={<ChooseProduct />} /> */}

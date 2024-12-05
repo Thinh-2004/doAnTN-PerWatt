@@ -2,10 +2,11 @@ import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { Box } from "@mui/material";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
+import FormReport from "../../../Report/FormReport";
 
 const NavStore = ({ FillDetailPr, countProductStore }) => {
-  const {mode} = useContext(ThemeModeContext);
- 
+  const { mode } = useContext(ThemeModeContext);
+
   //Hàm cắt chuỗi địa chỉ
   const splitByAddress = (address) => {
     const parts = address?.split(",");
@@ -53,14 +54,12 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
     >
       <div className="col-lg-4 col-md-4 col-sm-4 border-end">
         <div className="d-flex justify-content-center">
-          <div className="p-2 d-flex justify-content-center">
+          <div className="p-2 mt-2 d-flex justify-content-center">
             <Link to={`/pageStore/${FillDetailPr?.store?.slug}`}>
               <img
                 src={
                   FillDetailPr && FillDetailPr.store
-                    ? 
-                        FillDetailPr.store.user.avatar
-                      
+                    ? FillDetailPr.store.user.avatar
                     : "/images/no_img.png"
                 }
                 alt=""
@@ -71,13 +70,13 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
             </Link>
           </div>
           <div className=" mt-3 ">
-            <div className="text-center mb-1">
+            <div className="d-flex justify-content-center mb-1">
               <Link
                 to={`/pageStore/${FillDetailPr?.store?.slug}`}
                 htmlFor=""
                 className={`fs-6 ${
                   mode === "light" ? "text-dark" : "text-white"
-                }`}
+                } align-content-center`}
                 // onClick={handleViewStoreInfo}
                 style={{ cursor: "pointer" }}
               >
@@ -85,14 +84,15 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
                   ? FillDetailPr.store.namestore
                   : "N/A"}
               </Link>
+              <FormReport idStore={FillDetailPr?.store.id} />
             </div>
-            <div className="d-flex">
+            <div className="d-flex justify-content-start">
               <Link
                 to={`/pageStore/${FillDetailPr?.store?.slug}`}
                 className="text-decoration-none"
               >
                 <button
-                  className="btn btn-sm mx-2"
+                  className="btn btn-sm me-2"
                   // onClick={handleViewStoreInfo}
                   id="btn-infor-shop"
                 >
@@ -100,9 +100,11 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
                 </button>
               </Link>
 
-              <button className="btn btn-sm" id="btn-chatMessage">
-                Nhắn tin shop
-              </button>
+              <Link>
+                <button className="btn btn-sm" id="btn-chatMessage">
+                  Nhắn tin shop
+                </button>
+              </Link>
             </div>
           </div>
         </div>

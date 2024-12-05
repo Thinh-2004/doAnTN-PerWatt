@@ -12,6 +12,7 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import { Button, Card, CardContent } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
+import FormReport from "../../Report/FormReport";
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -259,9 +260,7 @@ const Order = () => {
           <div className="d-flex align-items-center mb-3">
             <Link to={`/pageStore/${order.store.slug}`}>
               <img
-                src={
-                  order.store.user.avatar
-                }
+                src={order.store.user.avatar}
                 id="imgShop"
                 className="mx-2 object-fit-cover"
                 style={{
@@ -296,6 +295,17 @@ const Order = () => {
             <div className="col-3 d-flex justify-content-center">
               {order.paymentmethod.type}
             </div>
+            <div className="col-0 d-flex justify-content-center">
+              {order.orderstatus === "Hoàn thành" && (
+                <FormReport
+                  idStore={
+                    orderDetails[order.id] &&
+                    orderDetails[order.id][0].productDetail.product.store.id
+                  }
+                  idOrder={order.id}
+                />
+              )}
+            </div>
           </div>
           {orderDetails[order.id] &&
             orderDetails[order.id].slice(0, 2).map((orderDetail) => {
@@ -306,12 +316,8 @@ const Order = () => {
                     <img
                       src={
                         orderDetail.productDetail.imagedetail
-                          ? 
-                              orderDetail.productDetail.imagedetail
-                            
-                          :
-                              firstIMG?.imagename
-                            
+                          ? orderDetail.productDetail.imagedetail
+                          : firstIMG?.imagename
                       }
                       alt=""
                       style={{

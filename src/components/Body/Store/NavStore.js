@@ -178,7 +178,7 @@ const Store = () => {
     try {
       const res = await axios.get(`findVoucherByIdUser/${user.id}`);
       setVoucherDetail(res.data); // Lưu danh sách các voucher đã nhận vào state
-      console.log(res.data);
+      // console.log(res.data);
     } catch (error) {
       console.log(error);
     }
@@ -188,7 +188,7 @@ const Store = () => {
     if (user) {
       check();
     }
-  }, [user]);
+  }, [user.id]);
 
   useEffect(() => {
     // Hàm để lấy danh sách vouchers từ cửa hàng

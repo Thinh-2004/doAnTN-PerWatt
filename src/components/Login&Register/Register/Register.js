@@ -24,7 +24,7 @@ const Register = ({ onRegisterSuccess }) => {
     email: "",
     birthdate: "",
     gender: "",
-    role: 3, // Vai trò buyer
+    rolepermission: 6, // Vai trò buyer
     address: "",
     phone: "",
     configPassWord: "",

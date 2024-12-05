@@ -23,7 +23,7 @@ const Profile = () => {
     password: "",
     email: "",
     birthdate: "",
-    role: "",
+    rolePermission: "",
     address: "",
     phone: "",
     gender: true,
@@ -158,8 +158,8 @@ const Profile = () => {
         phone: fill.phone,
         gender: fill.gender,
         password: fill.password || null,
-        role: {
-          id: fill.role.id,
+        rolePermission: {
+          id: fill.rolePermission.id,
         },
         address: fill.address,
       };
