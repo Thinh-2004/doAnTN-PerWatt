@@ -1,6 +1,10 @@
 import {
   Badge,
   Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   styled,
   Switch,
   Table,
@@ -9,21 +13,50 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
 } from "@mui/material";
 import React, { useState } from "react";
 import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import { toast } from "react-toastify";
+import axios from "../../../Localhost/Custumize-axios";
+import { confirmAlert } from "react-confirm-alert";
 
-const TableProduct = ({ data }) => {
+const TableProduct = ({ data, isRefeshListProduct }) => {
   const [checkedStates, setCheckedStates] = useState({});
+  const [productStates, setProductStates] = useState({});
+  const [dates, setDates] = useState({});
+  const [reason, setReason] = useState("");
 
-  // Xử lý thay đổi trạng thái của switch
-  const handleChangeChecked = (id) => {
+  const handleSwitchChange = (id) => {
     setCheckedStates((prev) => ({
       ...prev,
-      [id]: !prev[id], // Đảo trạng thái hiện tại
+      [id]: !prev[id],
     }));
+  };
+
+  const handleSelectChange = (id, value) => {
+    setProductStates((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleDateChange = (id, name, value) => {
+    setDates((prev) => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        [name]: value,
+      },
+    }));
+  };
+
+  const handleChangeReason = (e) => {
+    const value = e.target.value;
+    setReason(value);
   };
 
   // Icon hoạt động
@@ -70,97 +103,266 @@ const TableProduct = ({ data }) => {
     },
   }));
 
+  const validateForm = (id) => {
+    // Kiểm tra trạng thái chặn
+    if (Object.values(checkedStates).every((value) => !value)) {
+      toast.warning("Chưa bật trạng thái chặn");
+      return false;
+    }
+
+    // Kiểm tra trạng thái "Hoạt động"
+    if (productStates[id] === "Hoạt động" || productStates[id] === null) {
+      toast.warning("Vui lòng chọn mức ban");
+      return false;
+    }
+
+    if (!dates[id]?.startday) {
+      toast.warning("Vui lòng chọn ngày bắt đầu");
+      return false;
+    } else {
+      const today = new Date();
+      const start = new Date(dates[id]?.startday);
+
+      // So sánh toàn bộ ngày
+      if (
+        start.getFullYear() < today.getFullYear() ||
+        (start.getFullYear() === today.getFullYear() &&
+          start.getMonth() < today.getMonth()) ||
+        (start.getFullYear() === today.getFullYear() &&
+          start.getMonth() === today.getMonth() &&
+          start.getDate() < today.getDate())
+      ) {
+        toast.warning("Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
+        return false;
+      }
+    }
+
+    if (!dates[id]?.endday) {
+      toast.warning("Vui lòng ngày kết thúc");
+      return false;
+    } else {
+      const start = new Date(dates[id]?.startday);
+      const end = new Date(dates[id]?.endday);
+      if (
+        end.getFullYear() < start.getFullYear() ||
+        (end.getFullYear() === start.getFullYear() &&
+          end.getMonth() < start.getMonth()) ||
+        (end.getFullYear() === start.getFullYear() &&
+          end.getMonth() === start.getMonth() &&
+          end.getDate() <= start.getDate())
+      ) {
+        toast.warning(
+          "Ngày kết thúc không được nhỏ hơn hoặc bằng ngày bắt đầu."
+        );
+        return false;
+      }
+    }
+
+    // Kiểm tra lý do
+    if (reason === "") {
+      toast.warning("Vui lòng nhập lý do ban");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleBanProduct = (id) => {
+    if (validateForm(id)) {
+      confirmAlert({
+        title: "Xác nhận các thông tin",
+        message:
+          "Hãy đảm bảo các thông tin là đúng sự thật, sau khi xác nhận sẽ không thể thay đổi.",
+        buttons: [
+          {
+            label: "Có",
+            onClick: async () => {
+              const productBanToSend = {
+                block: checkedStates[id],
+                status: productStates[id],
+                startday: dayjs(dates[id]?.startday).format("YYYY-MM-DD"),
+                endday: dayjs(dates[id]?.endday).format("YYYY-MM-DD"),
+                reason: reason,
+              };
+              console.log(productBanToSend);
+              const idToast = toast.loading("Vui lòng chờ...");
+              try {
+                // Xử lý cập nhật
+                await axios.put(`/ban/product/${id}`, productBanToSend);
+                setTimeout(() => {
+                  toast.update(idToast, {
+                    render: "Xác nhận báo cáo thành công",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 5000,
+                    closeButton: true,
+                  });
+                  isRefeshListProduct(true);
+                  setReason("");
+                }, 500);
+                setTimeout(() => {
+                  isRefeshListProduct(false);
+                }, 550);
+              } catch (error) {
+                toast.error("Đã xảy ra lỗi. Vui lòng thử lại!");
+              }
+            },
+          },
+          {
+            label: "Không",
+          },
+        ],
+        overlayClassName: "custom-overlay",
+      });
+    }
+  };
+
   return (
-    <TableContainer>
-      <Table
-        id="table"
-        sx={{ minWidth: 650, backgroundColor: "backgroundElement.children" }}
-        aria-label="simple  table"
-      >
-        <TableHead>
-          <TableRow>
-            <TableCell align="center">Hình</TableCell>
-            <TableCell align="center">Tên sản phẩm</TableCell>
-            <TableCell align="center">Số lượng đã bán</TableCell>
-            <TableCell align="center">Trạng thái chặn sản phẩm</TableCell>
-            <TableCell align="center">Hiện trạng hiện tại</TableCell>
-            <TableCell align="center">Ngày bắt đầu chặn</TableCell>
-            <TableCell align="center">Ngày kết thúc chặn</TableCell>
-            <TableCell align="center">Thao tác</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {data &&
-            data.map((row) => (
-              <TableRow key={row.product.id}>
-                <TableCell align="center" component="th" scope="row">
-                  <img
-                    src={row.product.images[0].imagename}
-                    alt=""
-                    className="rounded-3 object-fit-cover"
-                    style={{ width: "50%", aspectRatio: "1/1" }}
-                  />
-                </TableCell>
-                <TableCell align="center">{row.product.name}</TableCell>
-                <TableCell align="center">{row.countOrderSuccess}</TableCell>
-                <TableCell align="center">
-                  <Switch
-                    checked={checkedStates[row.product.id] || false} // Trạng thái của switch
-                    onChange={() => handleChangeChecked(row.product.id)} // Xử lý thay đổi
-                    inputProps={{ "aria-label": "controlled" }}
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <StyledBadge variant="dot" />
-                  &nbsp; {row.product.status ? row.product.status : "Hoạt động"}
-                </TableCell>
-                <TableCell align="center">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      format="DD/MM/YYYY"
-                      name="birthdate"
-                      // value={
-                      //   formUser.birthdate ? dayjs(formUser.birthdate) : null
-                      // } // Chuyển đổi múi giờ về Việt Nam
-                      // onChange={handleChange}
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          width: "100%",
-                          height: "40px",
-                        },
-                      }}
+    <>
+      <TableContainer className="mb-3">
+        <Table
+          id="table"
+          sx={{ minWidth: 650, backgroundColor: "backgroundElement.children" }}
+          aria-label="simple  table"
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell align="center">Hình</TableCell>
+              <TableCell align="center">Tên sản phẩm</TableCell>
+              <TableCell align="center">Số lượng đã bán</TableCell>
+              <TableCell align="center">Trạng thái chặn sản phẩm</TableCell>
+              <TableCell align="center">Hiện trạng hiện tại</TableCell>
+              <TableCell align="center">Ngày bắt đầu chặn</TableCell>
+              <TableCell align="center">Ngày kết thúc chặn</TableCell>
+              <TableCell align="center">Thao tác</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data &&
+              data.map((row) => (
+                <TableRow key={row.product.id}>
+                  <TableCell align="center" component="th" scope="row">
+                    <img
+                      src={row.product.images[0].imagename}
+                      alt=""
+                      className="rounded-3 object-fit-cover"
+                      style={{ width: "50%", aspectRatio: "1/1" }}
                     />
-                  </LocalizationProvider>
-                </TableCell>
-                <TableCell align="center">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      format="DD/MM/YYYY"
-                      name="birthdate"
-                      // value={
-                      //   formUser.birthdate ? dayjs(formUser.birthdate) : null
-                      // } // Chuyển đổi múi giờ về Việt Nam
-                      // onChange={handleChange}
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          width: "100%",
-                          height: "40px",
-                        },
-                      }}
+                  </TableCell>
+                  <TableCell align="center">{row.product.name}</TableCell>
+                  <TableCell align="center">{row.countOrderSuccess}</TableCell>
+                  <TableCell align="center">
+                    <Switch
+                      checked={
+                        checkedStates[row.product.id] || row.product.block
+                      }
+                      onChange={() => handleSwitchChange(row.product.id)}
+                      inputProps={{ "aria-label": "controlled" }}
                     />
-                  </LocalizationProvider>
-                </TableCell>
-                <TableCell align="center">
-                  <Button>
-                    <ModeEditOutlineOutlinedIcon />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-    
+                  </TableCell>
+                  <TableCell align="center">
+                    <div className="d-flex justify-content-between">
+                      {row.product.status === "Hoạt động" ? (
+                        <div className="align-content-center">
+                          <StyledBadge variant="dot" />
+                        </div>
+                      ) : (
+                        <div className="align-content-center">
+                          <StyledBadgeStop variant="dot" />
+                        </div>
+                      )}
+                      <FormControl size="small" sx={{ width: "80%" }}>
+                        <Select
+                          value={
+                            productStates[row.product.id] || row.product.status
+                          }
+                          onChange={(e) =>
+                            handleSelectChange(row.product.id, e.target.value)
+                          }
+                        >
+                          <MenuItem value="1 ngày">1 ngày</MenuItem>
+                          <MenuItem value="3 ngày">3 ngày</MenuItem>
+                          <MenuItem value="Vĩnh viễn">Vĩnh viễn</MenuItem>
+                          <MenuItem value="Hoạt động">Hoạt động</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </div>
+                  </TableCell>
+                  <TableCell align="center">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        format="DD/MM/YYYY"
+                        value={
+                          dates[row.product.id]?.startday ||
+                          row.product.startday
+                            ? dayjs(row.product.startday)
+                            : null
+                        }
+                        onChange={(newValue) =>
+                          handleDateChange(row.product.id, "startday", newValue)
+                        }
+                        sx={{
+                          "& .MuiInputBase-root": {
+                            width: "100%",
+                            height: "40px",
+                          },
+                        }}
+                        disabled={
+                          productStates[row.product.id] === "Vĩnh viễn" ||
+                          row.product.status === "Vĩnh viễn"
+                        }
+                      />
+                    </LocalizationProvider>
+                  </TableCell>
+                  <TableCell align="center">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        format="DD/MM/YYYY"
+                        value={
+                          dates[row.product.id]?.endday || row.product.endday
+                            ? dayjs(row.product.endday)
+                            : null
+                        }
+                        onChange={(newValue) =>
+                          handleDateChange(row.product.id, "endday", newValue)
+                        }
+                        sx={{
+                          "& .MuiInputBase-root": {
+                            width: "100%",
+                            height: "40px",
+                          },
+                        }}
+                        disabled={
+                          productStates[row.product.id] === "Vĩnh viễn" ||
+                          row.product.status === "Vĩnh viễn"
+                        }
+                      />
+                    </LocalizationProvider>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Button
+                      onClick={() => handleBanProduct(row.product.id)}
+                      disabled={row.product.block}
+                    >
+                      <ModeEditOutlineOutlinedIcon />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TextField
+        id="outlined-multiline-static"
+        label="Lý do ban"
+        name="reason"
+        value={reason}
+        multiline
+        rows={4}
+        fullWidth
+        onChange={handleChangeReason}
+      />
+    </>
   );
 };
 

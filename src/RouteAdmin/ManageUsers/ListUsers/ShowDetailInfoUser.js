@@ -35,6 +35,7 @@ import useDebounce from "../../../CustumHook/useDebounce";
 import { tailChase } from "ldrs";
 import { ThemeModeContext } from "../../../components/ThemeMode/ThemeModeProvider";
 import { toast } from "react-toastify";
+import { confirmAlert } from "react-confirm-alert";
 
 tailChase.register();
 
@@ -67,6 +68,8 @@ const ShowDetailInfoUser = ({ idUser }) => {
   const [loading, setLoading] = useState(true);
 
   const { mode } = useContext(ThemeModeContext);
+
+  const [isRefesh, setIsRefesh] = useState(false);
 
   const handleChange = (e, newValue) => {
     // Kiểm tra nếu e là một sự kiện (từ các input khác)
@@ -163,19 +166,31 @@ const ShowDetailInfoUser = ({ idUser }) => {
   };
 
   useEffect(() => {
-    if (slugStore) {
-      loadProductInStore(
-        slugStore,
-        useDebounceSearch ? 0 : currentPage,
-        totalPage,
-        useDebounceSearch
-      );
+    if (isRefesh) {
+      if (slugStore) {
+        loadProductInStore(
+          slugStore,
+          useDebounceSearch ? 0 : currentPage,
+          totalPage,
+          useDebounceSearch
+        );
+      }
+    } else {
+      if (slugStore) {
+        loadProductInStore(
+          slugStore,
+          useDebounceSearch ? 0 : currentPage,
+          totalPage,
+          useDebounceSearch
+        );
+      }
     }
-  }, [slugStore, currentPage, totalPage, useDebounceSearch]);
+  }, [slugStore, currentPage, totalPage, useDebounceSearch, isRefesh]);
 
   const validateForm = () => {
     if (!checked) {
       toast.warning("Chưa bật trạng thái chặn");
+
       return false;
     }
     if (select === "Hoạt động") {
@@ -189,10 +204,15 @@ const ShowDetailInfoUser = ({ idUser }) => {
     } else {
       const today = new Date();
       const start = new Date(startday);
+
+      // So sánh toàn bộ ngày
       if (
-        start.getDate !== today.getDate ||
-        start.getMonth !== today.getMonth ||
-        start.getFullYear !== today.getFullYear
+        start.getFullYear() < today.getFullYear() ||
+        (start.getFullYear() === today.getFullYear() &&
+          start.getMonth() < today.getMonth()) ||
+        (start.getFullYear() === today.getFullYear() &&
+          start.getMonth() === today.getMonth() &&
+          start.getDate() < today.getDate())
       ) {
         toast.warning("Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
         return false;
@@ -206,34 +226,84 @@ const ShowDetailInfoUser = ({ idUser }) => {
       const start = new Date(startday);
       const end = new Date(endday);
       if (
-        end.getDate <= start.getDate ||
-        end.getMonth <= start.getMonth ||
-        end.getFullYear <= start.getFullYear
+        end.getFullYear() < start.getFullYear() ||
+        (end.getFullYear() === start.getFullYear() &&
+          end.getMonth() < start.getMonth()) ||
+        (end.getFullYear() === start.getFullYear() &&
+          end.getMonth() === start.getMonth() &&
+          end.getDate() <= start.getDate())
       ) {
-        toast.warning("Ngày kết thúc không được nhỏ hơn ngày bắt đầu.");
+        toast.warning(
+          "Ngày kết thúc không được nhỏ hơn hoặc bằng ngày bắt đầu."
+        );
         return false;
       }
+    }
+
+    if (reason === "") {
+      toast.warning("Vui lòng nhập lý do ban ");
+      return false;
     }
     return true;
   };
 
   const handleBanStore = async () => {
     if (validateForm()) {
-      const storeBanToSend = {
-        block: checked,
-        status: select,
-        startday:
-          select === "Vĩnh viễn" ? null : dayjs(startday).format("DD/MM/YYYY"),
-        endday:
-          select === "Vĩnh viễn" ? null : dayjs(endday).format("DD/MM/YYYY"),
-        reason: reason,
-      };
-      console.log(storeBanToSend);
-      // try {
-      //   const res = axios.put(`/store/ban/${infoStore.id}`)
-      // } catch (error) {
-      //   console.log(error);
-      // }
+      confirmAlert({
+        title: "Xác nhận các thông tin",
+        message:
+          "Hãy đảm bảo các thông tin là đúng sự thật, sau khi xác nhận sẽ không thể thay đổi.",
+        buttons: [
+          {
+            label: "Có",
+            onClick: async () => {
+              const storeBanToSend = {
+                block: checked,
+                status: select,
+                startday:
+                  select === "Vĩnh viễn"
+                    ? null
+                    : dayjs(startday).format("YYYY-MM-DD"),
+                endday:
+                  select === "Vĩnh viễn"
+                    ? null
+                    : dayjs(endday).format("YYYY-MM-DD"),
+                reason: reason,
+              };
+              console.log(storeBanToSend);
+              const idToast = toast.loading("Vui lòng chờ...");
+
+              try {
+                const res = await axios.put(
+                  `/store/ban/${infoStore.id}`,
+                  storeBanToSend
+                );
+                setTimeout(() => {
+                  toast.update(idToast, {
+                    render: "Ban thành công",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 5000,
+                    closeButton: true,
+                  });
+                  loadProductInStore(
+                    slugStore,
+                    useDebounceSearch ? 0 : currentPage,
+                    totalPage,
+                    useDebounceSearch
+                  );
+                }, 2000);
+              } catch (error) {
+                console.log(error);
+              }
+            },
+          },
+          {
+            label: "Không",
+          },
+        ],
+        overlayClassName: "custom-overlay",
+      });
     }
   };
 
@@ -303,7 +373,7 @@ const ShowDetailInfoUser = ({ idUser }) => {
             ) : (
               <>
                 <div className="border-bottom mb-3">
-                  <div className="row">
+                  <div className="row mb-3">
                     <div className="col-lg-5 col-md-5 col-sm-5">
                       <div className="mb-3">
                         <strong>Tên cửa hàng:</strong>{" "}
@@ -402,6 +472,7 @@ const ShowDetailInfoUser = ({ idUser }) => {
                                         newValue
                                       )
                                     } // Truyền newValue
+                                    disabled={select === "Vĩnh viễn"}
                                     sx={{
                                       "& .MuiInputBase-root": {
                                         width: "100%",
@@ -422,6 +493,7 @@ const ShowDetailInfoUser = ({ idUser }) => {
                                     onChange={(newValue) =>
                                       handleChange({ name: "endday" }, newValue)
                                     } // Truyền newValue
+                                    disabled={select === "Vĩnh viễn"}
                                     sx={{
                                       "& .MuiInputBase-root": {
                                         width: "100%",
@@ -432,7 +504,10 @@ const ShowDetailInfoUser = ({ idUser }) => {
                                 </LocalizationProvider>
                               </TableCell>
                               <TableCell align="center">
-                                <Button onClick={handleBanStore}>
+                                <Button
+                                  onClick={handleBanStore}
+                                  disabled={infoStore?.block}
+                                >
                                   <ModeEditOutlineOutlinedIcon />
                                 </Button>
                               </TableCell>
@@ -497,6 +572,7 @@ const ShowDetailInfoUser = ({ idUser }) => {
                     <TableProduct
                       data={productStore.products}
                       dataProdcut={productStore}
+                      isRefeshListProduct={setIsRefesh}
                     />
                   )}
 

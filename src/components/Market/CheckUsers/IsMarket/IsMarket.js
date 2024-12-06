@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Route, Routes } from "react-router-dom";
 import "./isMarketStyle.css";
 import ListProduct from "./Product/List/ListProduct";
@@ -20,16 +20,32 @@ import EditVoucher from "./Voucher/UpdateVoucher";
 import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
 import PromotionalCard from "./StatisticalOrders/PromotionalCard";
 import Widget from "./StatisticalOrders/Widget";
+import { Alert, AlertTitle } from "@mui/material";
 
 const IsMarket = () => {
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
+  const [infoStore, setInfoStore] = useState(null);
+  const [checkBan, setCheckBan] = useState(0);
+
+  const checkban = async (idStore) => {
+    try {
+      const res = await axios.get(`check/ban/shop/${idStore}`);
+      setCheckBan(res.data);
+      // console.log(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     const searchIdStoreByIdUser = async () => {
       try {
         const res = await axios.get(`/searchStore/${user.id}`);
         sessionStorage.setItem("idStore", res.data.id);
+        setInfoStore(res.data);
+        // console.log(res.data);
       } catch (error) {
         // Xử lý lỗi nếu có
         console.error("Error fetching store data:", error);
@@ -41,6 +57,13 @@ const IsMarket = () => {
       searchIdStoreByIdUser();
     }
   }, [user.id]);
+
+  useEffect(() => {
+    if (infoStore) {
+      checkban(infoStore.id);
+    }
+  }, [infoStore]);
+
   return (
     <>
       <Header />
@@ -221,6 +244,29 @@ const IsMarket = () => {
           </Accordion>
         </div>
         <div className="col-lg-9">
+          {infoStore?.block && (
+            <div className="mt-3 mb-3">
+              <Alert severity="error">
+                <AlertTitle>Cảnh báo cửa hàng</AlertTitle>
+                {infoStore.reason}
+                <div className="d-flex justify-content-end">
+                  <storng>Hiệu lực</storng>(
+                  <label htmlFor="">{infoStore.status}</label>)
+                </div>
+              </Alert>
+            </div>
+          )}
+          {checkBan > 0 && (
+            <div className="mt-3 mb-3">
+              <Alert severity="error">
+                <AlertTitle>Cảnh báo sản phẩm</AlertTitle>
+                Quản trị website thấy rằng sản phẩm cửa hàng của bạn vi phạm
+                điều khoản và dịch vụ của website vui lòng kiểm tra và thay đổi
+                lại sản phẩm của cửa hàng.
+              </Alert>
+            </div>
+          )}
+
           <Routes>
             <Route path="/" element={<SellerDashboard />} />
             <Route path="/listStoreProduct" element={<ListProduct />} />

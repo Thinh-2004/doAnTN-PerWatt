@@ -1,11 +1,14 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Box } from "@mui/material";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 import FormReport from "../../../Report/FormReport";
+import axios from "../../../../Localhost/Custumize-axios";
+import StarIcon from "@mui/icons-material/Star";
 
 const NavStore = ({ FillDetailPr, countProductStore }) => {
   const { mode } = useContext(ThemeModeContext);
+  const [evaluateStore, setEvaluateStore] = useState(0);
 
   //Hàm cắt chuỗi địa chỉ
   const splitByAddress = (address) => {
@@ -14,6 +17,21 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
       return parts[4];
     }
   };
+
+  const fillEvaluete = async (id) => {
+    try {
+      const res = await axios.get(`/comment/evaluate/store/${id}`);
+      setEvaluateStore(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (FillDetailPr) {
+      fillEvaluete(FillDetailPr.store.id);
+    }
+  }, [FillDetailPr]);
 
   //Hàm tính toán ngày giờ
   const calculateAccountDuration = (accountCreatedDate) => {
@@ -147,7 +165,10 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
             <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="fst-italic">Đánh giá cửa hàng:</label>
-                <span className="fw-semibold">100</span>
+                <div className="align-items-center">
+                  <span className="fw-semibold">{evaluateStore || 0}</span>
+                  <StarIcon sx={{ color: "yellow" }} />
+                </div>
               </div>
             </div>
           </div>

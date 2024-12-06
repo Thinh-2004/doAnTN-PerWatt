@@ -30,7 +30,7 @@ const ProductStore = ({ item, idCate, resetSearch }) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/productStore/${slugStore}?pageNo=${pageNo || ""}&pageSize=${
+        `/showAllProduct/${slugStore}?pageNo=${pageNo || ""}&pageSize=${
           pageSize || ""
         }&keyWord=${keyWord || ""}&sortBy=${sortBy || ""}`
       );

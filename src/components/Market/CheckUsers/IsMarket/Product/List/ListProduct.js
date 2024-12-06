@@ -6,7 +6,14 @@ import axios from "../../../../../../Localhost/Custumize-axios";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import { bouncy } from "ldrs";
-import { Box, Paper, TableContainer, TablePagination } from "@mui/material";
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Paper,
+  TableContainer,
+  TablePagination,
+} from "@mui/material";
 import useDebounce from "../../../../../../CustumHook/useDebounce";
 
 import ProductTable from "./ProductTable";
@@ -195,7 +202,7 @@ const ListProduct = () => {
 
   return (
     <Box
-      className=" mt-4 mb-4"
+      className="mt-4 mb-4"
       sx={{ backgroundColor: "backgroundElement.children" }}
     >
       <div className="d-flex justify-content-between p-4">
@@ -222,7 +229,7 @@ const ListProduct = () => {
           <div className="mt-4 mb-4 d-flex justify-content-center">
             <l-bouncy size="60" speed="0.75" color="black"></l-bouncy>
           </div>
-        ) :  fill.length === 0 ? (
+        ) : fill.length === 0 ? (
           <>
             <hr />
             <h1 className="text-center">Bạn chưa đăng bán sản phẩm.</h1>
@@ -261,6 +268,18 @@ const ListProduct = () => {
           },
         }}
       />
+      {fill.map(
+        (showBan) =>
+          showBan.product.block && (
+            <Alert severity="error">
+              <AlertTitle>Quyết định xử phạt</AlertTitle>
+              Nội dung: {showBan.product.reason}
+              <div className="d-flex justify-content-end">
+                Hiệu lực({showBan.product.status})
+              </div>
+            </Alert>
+          )
+      )}
     </Box>
   );
 };

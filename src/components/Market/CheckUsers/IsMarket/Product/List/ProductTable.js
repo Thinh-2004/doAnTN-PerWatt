@@ -17,7 +17,6 @@ const ProductTable = ({
   isSortPrice,
   isSortQuantity,
 }) => {
-
   const formatPrice = (value) => {
     if (!value) return "";
     return Number(value).toLocaleString("vi-VN"); // Định dạng theo kiểu Việt Nam
@@ -25,11 +24,9 @@ const ProductTable = ({
 
   const handleSort = (value) => {
     // Gọi hàm sắp xếp với giá trị
-    if ((value === "newItems") | (value === "oldItems"))
-      valueSort(value);
+    if ((value === "newItems") | (value === "oldItems")) valueSort(value);
 
-    if ((value === "priceDESC") | (value === "priceASC"))
-      valueSort(value);
+    if ((value === "priceDESC") | (value === "priceASC")) valueSort(value);
 
     if ((value === "quantityDESC") | (value === "quantityASC"))
       valueSort(value);
@@ -105,12 +102,21 @@ const ProductTable = ({
               0
             );
             return (
-              <TableRow
+             <>
+             <TableRow
                 key={fill.product.id}
                 sx={{
                   "&:last-child td, &:last-child th": { border: 0 },
+                  backgroundColor: fill.product.block ? "#ff8a8a" : "",
                 }}
               >
+                {fill.product.block && (
+                  <>
+                    <label htmlFor="" className="text-white p-2">
+                      Sản phẩm bị vi phạm
+                    </label>
+                  </>
+                )}
                 <TableCell
                   component="th"
                   scope="row"
@@ -120,7 +126,7 @@ const ProductTable = ({
                     <img
                       src={firstIMG.imagename}
                       alt=""
-                      className="img-fluid"
+                      className="img-fluid rounded-3"
                       id="img-product-item"
                       loading="lazy"
                     />
@@ -139,7 +145,9 @@ const ProductTable = ({
                 <TableCell align="center">
                   {fill.product.productcategory.name}
                 </TableCell>
-                <TableCell align="center">{fill.product.trademark.name}</TableCell>
+                <TableCell align="center">
+                  {fill.product.trademark.name}
+                </TableCell>
                 <TableCell align="center">
                   {minPrice === maxPrice
                     ? formatPrice(minPrice) + " đ"
@@ -172,8 +180,11 @@ const ProductTable = ({
                     </Link>
                   </div>
                 </TableCell>
+                
               </TableRow>
+             </>
             );
+            
           })}
         </TableBody>
       </Table>
