@@ -10,9 +10,10 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import { Button, Card, CardContent } from "@mui/material";
+import { Button, Card, CardContent, Pagination } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
-import FormReport from "../../Report/FormReport";
+import { toast } from "react-toastify";
+import FormReport from '../../Report/FormReport'
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -42,6 +43,7 @@ const Order = () => {
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
+
   const [value, setValue] = useState(0);
   const [orderDetails, setOrderDetails] = useState({});
   tailspin.register();
@@ -49,103 +51,333 @@ const Order = () => {
   const [products, setProducts] = useState([]);
   const location = useLocation();
   const query = new URLSearchParams(location.search);
-  const resultCode = query.get("resultCode");
+  // const resultCode = query.get("resultCode");
   const orderInfo = query.get("orderInfo");
   const addressIds = orderInfo ? orderInfo.split(",").pop().trim() : "";
   const cartIds = orderInfo
     ? orderInfo.match(/\d+/g).slice(0, -1).join(",").trim()
     : "";
 
+  const amount = query.get("amount");
+  // const totalAmounts = amount.split(",").pop().trim();
+  // let totalAmount = totalAmounts / 100;
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+  const totalItems = fill.length;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = fill.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const load = async () => {
+    try {
+      const res = await axios.get(`orderFill/${user.id}`);
+      setFill(res.data);
+
+      res.data.forEach((order) => {
+        fillOrderDetailbyOrderID(order.id);
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const groupByStore = (products) => {
-    return products.reduce((groups, product) => {
-      const storeId = product.productDetail.product.store.id;
-      if (!groups[storeId]) {
-        groups[storeId] = {
-          store: product.productDetail.product.store,
+    return products.reduce((groupStores, product) => {
+      const { store } = product.productDetail.product;
+      const storeId = store.id;
+
+      if (!groupStores[storeId]) {
+        groupStores[storeId] = {
+          store,
           products: [],
         };
       }
-      groups[storeId].products.push(product);
-      return groups;
+
+      groupStores[storeId].products.push(product);
+      return groupStores;
     }, {});
   };
 
-  useEffect(() => {
-    if (cartIds) {
-      (async () => {
-        try {
-          const response = await axios.get(`/cart?id=${cartIds}`);
-          setProducts(response.data);
-        } catch (error) {
-          console.log(error);
-        }
-      })();
-    }
-  }, [user.id]);
-
-  const createMethodMoMo = async () => {
+  const fetchCartData = async () => {
     try {
-      const groupedProducts = groupByStore(products);
-
-      for (const storeId in groupedProducts) {
-        const { products: storeProducts } = groupedProducts[storeId];
-
-        const order = {
-          user: { id: user.id },
-          shippinginfor: { id: addressIds },
-          store: { id: storeId },
-          paymentdate: new Date().toISOString(),
-          orderstatus: "Đang chờ duyệt",
-        };
-
-        const orderDetails = storeProducts.map((product) => ({
-          productDetail: { id: product.productDetail.id },
-          quantity: product.quantity,
-          price: product.productDetail.price,
-        }));
-        //00 = thành công
-        if (resultCode === "0") {
-          const res = await axios.post("/createMoMoOrder", {
-            order,
-            orderDetails,
-          });
-          console.log(res.data);
-        } else {
-          return;
-        }
-      }
+      const response = await axios.get(`/cart?id=${cartIds}`);
+      setProducts(response.data);
     } catch (error) {
       console.log(error);
     }
   };
 
-  useEffect(() => {
-    createMethodMoMo();
-  }, [fill]);
+  // const createMethodMoMo = async () => {
+  //   try {
+  //     const groupedProducts = groupByStore(products);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await axios.get(`orderFill/${user.id}`);
-        setFill(res.data);
+  //     for (const storeId in groupedProducts) {
+  //       const { products: storeProducts } = groupedProducts[storeId];
+  //       const totalAmount = storeProducts.reduce((sum, product) => {
+  //         return sum + product.productDetail.price * product.quantity;
+  //       }, 0);
+  //       const order = {
+  //         user: { id: user.id },
+  //         paymentmethod: { tyle: "Thanh toán bằng MoMo" },
+  //         shippinginfor: { id: addressIds },
+  //         store: { id: storeId },
+  //         paymentdate: new Date().toISOString(),
+  //         orderstatus: "Đang chờ duyệt",
+  //         totalamount: totalAmount,
+  //       };
 
-        res.data.forEach((order) => {
-          fillOrderDetailbyOrderID(order.id);
-        });
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
+  //       const orderDetails = storeProducts.map((product) => ({
+  //         productDetail: { id: product.productDetail.id },
+  //         quantity: product.quantity,
+  //         price: product.productDetail.price,
+  //       }));
+
+  //       if (resultCode === "0") {
+  //         await axios.post("/createMoMoOrder", {
+  //           order,
+  //           orderDetails,
+  //         });
+  //       } else {
+  //         return;
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  const handleCod = async () => {
+    try {
+      if (amount) {
+        const totalAmount = amount.split(",").pop().trim();
+        // const savedFinalTotal = sessionStorage.getItem("finalTotal");
+        const groupedProducts = groupByStore(products);
+
+        let feeShip = 0;
+        let leadtime = [];
+
+        for (const storeId in groupedProducts) {
+          const { products: storeProducts, store } = groupedProducts[storeId];
+
+          if (!storeProducts.length) continue;
+
+          const outOfStockProduct = storeProducts.find(
+            (product) => product.productDetail.quantity === 0
+          );
+
+          if (outOfStockProduct) {
+            toast.error(
+              "Sản phẩm đã có người mua trước, vui lòng mua sản phẩm khác hoặc mua lại sau"
+            );
+            return;
+          }
+
+          const addressUser = await axios.get(`shippingInfoId/${addressIds}`);
+
+          const addressPartFroms = store.address
+            .split(",")
+            .map((part) => part.trim());
+
+          let phuong = "";
+          let quan = "";
+          let thanhPho = "";
+
+          if (addressPartFroms.length === 3) {
+            phuong = addressPartFroms[0];
+            quan = addressPartFroms[1];
+            thanhPho = addressPartFroms[2];
+          } else if (addressPartFroms.length === 4) {
+            phuong = addressPartFroms[1];
+            quan = addressPartFroms[2];
+            thanhPho = addressPartFroms[3];
+          } else if (addressPartFroms.length === 5) {
+            phuong = addressPartFroms[2];
+            quan = addressPartFroms[3];
+            thanhPho = addressPartFroms[4];
+          }
+
+          const addressPartsTo = addressUser.data.address
+            .split(",")
+            .map((part) => part.trim());
+
+          let to_ward_name = "";
+          let to_district_name = "";
+          let to_province_name = "";
+
+          if (addressPartsTo.length === 3) {
+            to_ward_name = addressPartsTo[0];
+            to_district_name = addressPartsTo[1];
+            to_province_name = addressPartsTo[2];
+          } else if (addressPartsTo.length === 4) {
+            to_ward_name = addressPartsTo[1];
+            to_district_name = addressPartsTo[2];
+            to_province_name = addressPartsTo[3];
+          } else if (addressPartsTo.length === 5) {
+            to_ward_name = addressPartsTo[2];
+            to_district_name = addressPartsTo[3];
+            to_province_name = addressPartsTo[4];
+          }
+
+          const ghnPayload = {
+            payment_type_id: 2,
+            note: "",
+            required_note: "KHONGCHOXEMHANG",
+            return_phone: store.phone,
+            return_address: store.address,
+            return_district_id: "",
+            return_ward_code: "",
+            client_order_code: "",
+            from_name: store.namestore,
+            from_phone: store.phone,
+            from_address: store.address,
+            from_ward_name: phuong,
+            from_district_name: quan,
+            from_province_name: thanhPho,
+            to_name: user.fullname,
+            to_phone: addressUser.data.user.phone,
+            to_address: addressUser.data.address,
+            to_ward_name: to_ward_name,
+            to_district_name: to_district_name,
+            to_province_name: to_province_name,
+            cod_amount: 0,
+            content: "",
+            weight: 200,
+            length: 1,
+            width: 20,
+            height: 10,
+            cod_failed_amount: 10000,
+            pick_station_id: 1444,
+            deliver_station_id: 0,
+            insurance_value: parseInt(totalAmount),
+            service_id: 2,
+            service_type_id: 2,
+            coupon: "",
+            pickup_time: 1733758226,
+            pick_shift: [1],
+            items: storeProducts.map((product) => ({
+              name:
+                product.productDetail.product.name +
+                " " +
+                product.productDetail?.namedetail,
+              code: String(product.productDetail.id),
+              quantity: product.quantity,
+              price: product.productDetail.price,
+              length: 12,
+              width: 12,
+              weight: 1200,
+              height: 12,
+              category: {
+                level1: "Sản phẩm",
+              },
+            })),
+          };
+
+          try {
+            console.log("Payload gửi tới GHN: ", ghnPayload);
+            const response = await axios.post(
+              "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",
+              ghnPayload,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  ShopId: "195541",
+                  Token: "ece58b2c-b0da-11ef-9083-dadc35c0870d",
+                  // Authorization: "Bearer ece58b2c-b0da-11ef-9083-dadc35c0870d",
+                },
+              }
+            );
+            console.log("Kết quả trả về từ GHN: ", response.data);
+            console.log("Total fee: ", response.data.data.total_fee);
+
+            feeShip += Number(response.data.data.total_fee);
+
+            if (!Array.isArray(leadtime)) {
+              leadtime = [];
+            }
+
+            leadtime = [...leadtime, response.data.data.expected_delivery_time];
+
+            const savedVoucherId = localStorage.getItem("voucherIdMoMo");
+
+            const order = {
+              user: { id: user.id },
+              paymentmethod: { id: 8 },
+              shippinginfor: { id: addressIds },
+              store: { id: storeId },
+              paymentdate: new Date().toISOString(),
+              receivedate: response.data.data.expected_delivery_time
+                ? new Date(
+                    response.data.data.expected_delivery_time
+                  ).toISOString()
+                : null,
+              orderstatus: "Đang chờ duyệt",
+              totalamount: parseInt(totalAmount) + feeShip,
+              voucher: savedVoucherId === "" ? null : { id: savedVoucherId },
+            };
+
+            const orderDetails = storeProducts.map((product) => ({
+              productDetail: { id: product.productDetail.id },
+              quantity: product.quantity,
+              price: product.productDetail.price,
+              status: null,
+            }));
+
+            await axios.post("/api/orderCreate", {
+              order,
+              orderDetails,
+            });
+          } catch (error) {
+            console.error("Error: ", error);
+            return;
+          }
+        }
+
+        sessionStorage.removeItem("voucherIdMoMo");
       }
-    };
+    } catch (error) {
+      console.error("Lỗi: ", error);
+      return;
+    }
+  };
 
-    load();
-    load();
+  useEffect(() => {
+    if (cartIds !== "") {
+      const timer = setTimeout(() => {
+        fetchCartData();
+      }, 10);
+      return () => clearTimeout(timer);
+    }
+  }, [cartIds]);
+
+  useEffect(() => {
+    if (cartIds !== "") {
+      const timer1 = setTimeout(() => {
+        handleCod();
+        const timer2 = setTimeout(() => {
+          load();
+        }, 1500);
+        return () => clearTimeout(timer2);
+      }, 10);
+
+      return () => clearTimeout(timer1);
+    }
+  }, [addressIds, products, user.id]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      load();
+    }, 500);
+    return () => clearTimeout(timer);
   }, [user.id]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return format(date, "HH:mm:ss dd/MM/yyyy");
+    return format(date, "dd/MM/yyyy HH:mm");
   };
 
   const handleCancelOrder = (orderId) => {
@@ -250,7 +482,7 @@ const Order = () => {
       return <div className="text-center">Chưa có sản phẩm</div>;
     }
 
-    return filteredOrders.map((order) => (
+    return currentItems.map((order) => (
       <Card
         className="rounded-3 mt-3"
         key={order.id}
@@ -313,19 +545,24 @@ const Order = () => {
               return (
                 <div key={orderDetail.id}>
                   <div className="d-flex align-items-start">
-                    <img
-                      src={
-                        orderDetail.productDetail.imagedetail
-                          ? orderDetail.productDetail.imagedetail
-                          : firstIMG?.imagename
-                      }
-                      alt=""
-                      style={{
-                        width: "100px",
-                        height: "100px",
-                      }}
-                      className="rounded-3 mb-3 me-3"
-                    />
+                    <a
+                      href={`/detailProduct/${orderDetail.productDetail.product.slug}`}
+                    >
+                      <img
+                        src={
+                          orderDetail.productDetail.imagedetail
+                            ? orderDetail.productDetail.imagedetail
+                            : firstIMG?.imagename
+                        }
+                        alt=""
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                        }}
+                        className="rounded-3 mb-3 me-3"
+                      />
+                    </a>
+
                     <div className="d-flex flex-column">
                       <div>{orderDetail.productDetail.product.name}</div>
                       {orderDetail.productDetail.namedetail && (
@@ -333,7 +570,6 @@ const Order = () => {
                           Phân loại: {orderDetail.productDetail.namedetail}
                         </label>
                       )}
-                      <div>Giá: {formatPrice(orderDetail.price) + " VNĐ"}</div>
                       <div>x {orderDetail.quantity}</div>
 
                       <div>
@@ -424,7 +660,7 @@ const Order = () => {
                       }}
                       disableElevation
                     >
-                      <i className="bi bi-cart-x-fill"></i>
+                      <i class="bi bi-x-circle-fill"></i>
                     </Button>
                   )
                 )}
@@ -527,6 +763,17 @@ const Order = () => {
           ))}
         </Box>
       </div>
+      <Pagination
+        count={Math.ceil(totalItems / itemsPerPage)}
+        page={currentPage}
+        onChange={(event, value) => paginate(value)}
+        color="primary"
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "20px",
+        }}
+      />
       <Footer />
     </div>
   );

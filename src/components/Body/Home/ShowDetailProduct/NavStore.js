@@ -5,10 +5,12 @@ import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 import FormReport from "../../../Report/FormReport";
 import axios from "../../../../Localhost/Custumize-axios";
 import StarIcon from "@mui/icons-material/Star";
+import ChatInterface from "../../../Notification&Message&Comment/Message/Message";
 
 const NavStore = ({ FillDetailPr, countProductStore }) => {
   const { mode } = useContext(ThemeModeContext);
   const [evaluateStore, setEvaluateStore] = useState(0);
+  const [isOpenChatBox, setIsOpenChatBox] = useState(false);
 
   //Hàm cắt chuỗi địa chỉ
   const splitByAddress = (address) => {
@@ -63,6 +65,14 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
       //Ngược lại lấy số ngày
       return diffInDays + " ngày";
     }
+  };
+
+  //sự kiện hiển thị chat
+  const handleOpenShowChatBox = () => {
+    setIsOpenChatBox(true);
+    setTimeout(() => {
+      setIsOpenChatBox(false);
+    }, 500);
   };
 
   return (
@@ -120,7 +130,11 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
               </Link>
 
               <Link>
-                <button className="btn btn-sm" id="btn-chatMessage">
+                <button
+                  className="btn btn-sm"
+                  id="btn-chatMessage"
+                  onClick={() => handleOpenShowChatBox()}
+                >
                   Nhắn tin shop
                 </button>
               </Link>
@@ -174,6 +188,10 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
             </div>
           </div>
         </div>
+        <ChatInterface
+          isOpenChatBox={isOpenChatBox}
+          store={FillDetailPr?.store}
+        />
       </div>
     </Box>
   );

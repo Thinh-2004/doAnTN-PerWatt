@@ -1,7 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "../../Localhost/Custumize-axios";
 import { toast } from "react-toastify";
-import { Button, Card, CardContent } from "@mui/material";
+import {
+  Backdrop,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  FormControlLabel,
+  Pagination,
+  Radio,
+} from "@mui/material";
 import { confirmAlert } from "react-confirm-alert";
 import FormSelectAdress from "../APIAddressVN/FormSelectAdress.js";
 import TextField from "@mui/material/TextField";
@@ -18,7 +27,17 @@ const ShippingList = () => {
   const [resetForm, setResetForm] = useState(false);
   const [newHomeUpdate, setNewHomeUpdate] = useState("");
   const [newHomeAdd, setNewHomeAdd] = useState("");
+  const [open, setOpen] = useState(false);
+
   const { mode } = useContext(ThemeModeContext);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+  const totalItems = shippingInfo.length;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = shippingInfo.slice(indexOfFirstItem, indexOfLastItem);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const fetchShippingInfo = async () => {
     try {
@@ -37,7 +56,6 @@ const ShippingList = () => {
     setNewHomeUpdate("");
     setTimeout(() => {
       setResetForm(false);
-      console.log("Reset hoàn tất!");
     }, 1000);
   };
 
@@ -68,11 +86,10 @@ const ShippingList = () => {
   };
 
   const handleUpdate = async () => {
-    if (!newAddress) {
-      toast("Vui lòng nhập địa chỉ.");
+    if (!addingAddress) {
+      toast("Vui lòng nhập địa chỉ!");
       return;
     }
-
     try {
       await axios.put(`/shippingInfoUpdate/${selectedShipping.id}`, {
         ...selectedShipping,
@@ -92,6 +109,33 @@ const ShippingList = () => {
     } catch (error) {
       console.error("Error updating shipping information:", error);
       toast.error("Đã xảy ra lỗi khi cập nhật địa chỉ.");
+    }
+  };
+
+  const handleUpdateDefault = async (ShipId) => {
+    setOpen(true);
+
+    try {
+      const response = await axios.get(`/shippingInfoId/${ShipId}`);
+
+      if (response.data) {
+        await axios.put(`/shippingInfoUpdateDefault/${ShipId}`, {
+          isDefault: true,
+          user: { id: user.id },
+          address: response.data.address,
+        });
+
+        fetchShippingInfo();
+      } else {
+        toast.error("Không tìm thấy thông tin địa chỉ.");
+      }
+    } catch (error) {
+      console.error("Error updating default address:", error);
+      toast.error("Đã xảy ra lỗi khi cập nhật địa chỉ");
+    } finally {
+      setTimeout(() => {
+        setOpen(false);
+      }, 100);
     }
   };
 
@@ -120,13 +164,23 @@ const ShippingList = () => {
     });
   };
 
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   return (
-    <>
+    <div>
       <div
         className="col-12 col-md-12 col-lg-12 offset-lg-0"
         style={{ transition: "0.5s" }}
       >
-        <Card className=" rounded-4" sx={{ boxShadow: "none", backgroundColor : "backgroundElement.children"}}>
+        <Card
+          className=" rounded-4"
+          sx={{
+            boxShadow: "none",
+            backgroundColor: "backgroundElement.children",
+          }}
+        >
           <CardContent className="">
             <h3 className="d-flex justify-content-between align-items-center">
               Danh sách địa chỉ nhận hàng
@@ -140,23 +194,32 @@ const ShippingList = () => {
                 }}
                 disableElevation
               >
-                Thêm
+                <i class="bi bi-plus-circle-fill"></i>
               </Button>
             </h3>
             <hr />
-            {shippingInfo.length > 0 ? (
-              shippingInfo.map((info) => (
+            <Backdrop
+              sx={(theme) => ({
+                color: "#fff",
+                zIndex: theme.zIndex.drawer + 1,
+              })}
+              open={open}
+              onClick={handleClose}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
+            {currentItems.length > 0 ? (
+              currentItems.map((info) => (
                 <Card
                   className="mb-3"
-                  id=""
-                  // sx={{ backgroundColor: "backgroundElement.children" }}
                   key={info.id}
+                  sx={{ backgroundColor: "backgroundElement.children" }}
                 >
                   <CardContent className=" d-flex justify-content-between align-items-center">
-                    <h5 className="mb-1">{info.address}</h5>
+                    <h5 className="">{info.address}</h5>
                     <div className="button-group">
                       <Button
-                        className="me-2"
+                        className="me-3"
                         data-bs-toggle="modal"
                         data-bs-target="#exampleModal3"
                         onClick={() => setSelectedShipping(info)}
@@ -167,7 +230,7 @@ const ShippingList = () => {
                         }}
                         disableElevation
                       >
-                        Sửa
+                        <i class="bi bi-pencil-square"></i>
                       </Button>
                       <Button
                         onClick={() => handleDelete(info.id)}
@@ -178,8 +241,17 @@ const ShippingList = () => {
                         }}
                         disableElevation
                       >
-                        Xóa
+                        <i class="bi bi-trash-fill"></i>
                       </Button>
+                      <div>
+                        <FormControlLabel
+                          value="true"
+                          control={<Radio />}
+                          label="Địa chỉ mặc định"
+                          checked={info.isdefault === true}
+                          onClick={() => handleUpdateDefault(info.id)}
+                        />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -201,7 +273,9 @@ const ShippingList = () => {
         <div className="modal-dialog">
           <div
             className="modal-content"
-            style={{ backgroundColor: mode === "light" ? "white" : "#363535" }}
+            style={{
+              backgroundColor: mode === "light" ? "white" : "#363535",
+            }}
           >
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="exampleModalLabel3">
@@ -215,16 +289,6 @@ const ShippingList = () => {
               ></button>
             </div>
             <div className="modal-body">
-              {/* <label className="label-control">
-                Địa chỉ nhận hàng hiện tại
-              </label>
-              <input
-                type="text"
-                className="form-control mb-3"
-                value={selectedShipping ? selectedShipping.address : ""}
-                readOnly
-              /> */}
-
               <TextField
                 className="mb-3"
                 size="small"
@@ -237,14 +301,6 @@ const ShippingList = () => {
                   readOnly: true,
                 }}
               />
-
-              {/* <label className="label-control">Địa chỉ nhận hàng mới</label>
-              <input
-                type="text"
-                className="form-control mb-3"
-                value={newAddress}
-                onChange={(e) => setNewAddress(e.target.value)}
-              /> */}
 
               <TextField
                 className="mb-3"
@@ -259,13 +315,6 @@ const ShippingList = () => {
                   readOnly: true,
                 }}
               />
-
-              {/* <FormSelectAdress
-                apiAddress={(fullAddress) => setNewAddress(fullAddress)}
-                resetForm={resetForm}
-                editFormAddress={selectedShipping.address}
-              /> */}
-
               <FormSelectAdress
                 apiAddress={(fullAddressUpdate) => {
                   setNewAddress(`${newHomeUpdate} ${fullAddressUpdate}`);
@@ -274,7 +323,6 @@ const ShippingList = () => {
                 setNewAddress=""
                 editFormAddress={newAddress}
               />
-
               <TextField
                 className="mt-3"
                 size="small"
@@ -287,7 +335,7 @@ const ShippingList = () => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     setNewAddress(`${newHomeUpdate}, ${newAddress}`);
-                    setNewHomeUpdate(""); // Xoá input sau khi nhấn Enter
+                    setNewHomeUpdate("");
                   }
                 }}
               />
@@ -302,7 +350,7 @@ const ShippingList = () => {
                 disableElevation
                 onClick={handleReset}
               >
-                Chọn lại
+                <i class="bi bi-arrow-clockwise"></i>
               </Button>
             </div>
             <div className="modal-footer">
@@ -316,7 +364,7 @@ const ShippingList = () => {
                 }}
                 disableElevation
               >
-                Cập nhật
+                <i class="bi bi-pencil-square"></i>
               </Button>
             </div>
           </div>
@@ -333,7 +381,9 @@ const ShippingList = () => {
         <div className="modal-dialog">
           <div
             className="modal-content"
-            style={{ backgroundColor: mode === "light" ? "white" : "#363535" }}
+            style={{
+              backgroundColor: mode === "light" ? "white" : "#363535",
+            }}
           >
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="exampleModalLabel2">
@@ -347,14 +397,6 @@ const ShippingList = () => {
               ></button>
             </div>
             <div className="modal-body">
-              {/* <label className="label-control">Địa chỉ nhận hàng</label>
-              <input
-                type="text"
-                className="form-control mb-3"
-                value={addingAddress}
-                onChange={(e) => setAddingAddress(e.target.value)}
-              /> */}
-
               <TextField
                 className="mb-3"
                 size="small"
@@ -369,12 +411,6 @@ const ShippingList = () => {
                 }}
               />
 
-              {/* <FormSelectAdress
-                apiAddress={(fullAddress) => setAddingAddress(fullAddress)}
-                resetForm={resetForm}
-                editFormAddress={addingAddress}
-              /> */}
-
               <FormSelectAdress
                 apiAddress={(fullAddressAdd) => {
                   setAddingAddress(`${newHomeAdd} ${fullAddressAdd}`);
@@ -383,23 +419,6 @@ const ShippingList = () => {
                 setAddingAddress=""
                 editFormAddress={addingAddress}
               />
-
-              {/* <TextField
-                className="mt-3"
-                size="small"
-                fullWidth
-                id="outlined-basic"
-                label="Số nhà"
-                variant="outlined"
-                value={newHomeAdd}
-                onChange={(e) => setNewHomeAdd(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setNewAddress(`${newHomeAdd} ${addingAddress}`);
-                    setNewHomeAdd(""); // Xoá input sau khi nhấn Enter
-                  }
-                }}
-              /> */}
 
               <TextField
                 className="mt-3"
@@ -412,8 +431,8 @@ const ShippingList = () => {
                 onChange={(e) => setNewHomeAdd(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    setAddingAddress(`${newHomeAdd}, ${addingAddress}`); // Đúng state cần cập nhật
-                    setNewHomeAdd(""); // Xóa input sau khi nhập
+                    setAddingAddress(`${newHomeAdd}, ${addingAddress}`);
+                    setNewHomeAdd("");
                   }
                 }}
               />
@@ -428,7 +447,7 @@ const ShippingList = () => {
                 disableElevation
                 onClick={handleReset}
               >
-                Chọn lại
+                <i class="bi bi-arrow-clockwise"></i>
               </Button>
             </div>
             <div className="modal-footer">
@@ -441,13 +460,24 @@ const ShippingList = () => {
                 }}
                 disableElevation
               >
-                Thêm
+                <i class="bi bi-plus-circle-fill"></i>
               </Button>
             </div>
           </div>
         </div>
       </div>
-    </>
+      <Pagination
+        count={Math.ceil(totalItems / itemsPerPage)}
+        page={currentPage}
+        onChange={(event, value) => paginate(value)}
+        color="primary"
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "20px",
+        }}
+      />
+    </div>
   );
 };
 

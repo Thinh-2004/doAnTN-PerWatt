@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { Box, Container, Typography } from "@mui/material";
 import axios from "../../../Localhost/Custumize-axios";
 import dayjs from "dayjs";
+import ListFlashSale from "../../../RouteAdmin/Admin/ListFlashSale";
 
 const Home = () => {
   const [searchProduct, setSearchProduct] = useState(() => {
@@ -25,6 +26,7 @@ const Home = () => {
     return savedIdCate ? savedIdCate : "";
   });
   const [valueMT, setValueMT] = useState(15); // value của magrin top
+  const [voucher, setVoucher] = useState(null);
 
   //State kiểm tra hiển thị bannerMid
   const [checkShowBannerMid, setCheckShowBannerMid] = useState([]);
@@ -126,7 +128,26 @@ const Home = () => {
 
     loadBannerMid();
   }, []);
-  
+
+  useEffect(() => {
+    const fetchVouchers = async () => {
+      try {
+        const res = await axios.get("/vouchersAdminInPgaeHome");
+        const currentDate = new Date();
+        const activeVoucher = res.data.find((v) => {
+          const startDay = new Date(v.startday);
+          const endDay = new Date(v.endday);
+          return currentDate >= startDay && currentDate <= endDay;
+        });
+        setVoucher(activeVoucher);
+      } catch (error) {
+        console.error("Error fetching vouchers:", error);
+      }
+    };
+
+    fetchVouchers();
+  }, []);
+
   return (
     <>
       <Header contextSearch={handleSearch} resetSearch={resetSearch}></Header>
@@ -194,6 +215,19 @@ const Home = () => {
             <ProductItemPerMall />
           </Box>
         </Box>
+
+        {voucher ? (
+          <>
+            <h4 className="text-center fw-bold mt-4">
+              Chương trình khuyến mãi: {voucher.vouchername}
+            </h4>
+            <div className="row d-flex justify-content-center">
+              <ListFlashSale />
+            </div>
+          </>
+        ) : (
+          <h4 className="text-center fw-bold mt-4"></h4>
+        )}
 
         <h4 className="text-center fw-bold mt-4">Sản phẩm dành cho bạn</h4>
         <div className="row d-flex justify-content-center">

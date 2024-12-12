@@ -94,7 +94,7 @@ const WarehouseVoucherUser = () => {
                         </Typography>
                         <img
                           src={
-                            fill.vouchers[0].voucher.productDetail.product
+                            fill.vouchers[0].voucher.product
                               .images[0].imagename
                           }
                           alt=""
@@ -114,7 +114,7 @@ const WarehouseVoucherUser = () => {
                         <Link
                           className="btn"
                           id="btn-use-now"
-                          to={`/detailProduct/${fill.vouchers[0].voucher.productDetail.product.slug}`}
+                          to={`/detailProduct/${fill.vouchers[0].voucher.product.slug}`}
                         >
                           Dùng ngay
                         </Link>

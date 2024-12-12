@@ -549,7 +549,7 @@ const RightHeader = ({ reloadCartItems }) => {
 
               <Tooltip
                 title="Website sẽ tự động điều chỉnh màn hình theo cài đặt hệ thống trên thiết bị của bạn."
-                placement="top"
+                placement="left-start"
                 className="d-flex align-items-center"
                 TransitionComponent={Zoom}
               >
@@ -767,7 +767,7 @@ const RightHeader = ({ reloadCartItems }) => {
                 title="Website sẽ tự động điều chỉnh màn hình theo cài đặt hệ thống trên thiết bị của bạn."
                 className="d-flex align-items-center"
                 TransitionComponent={Zoom}
-                placement="top"
+                placement="left-start"
               >
                 <MenuItem>
                   <Checkbox

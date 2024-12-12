@@ -133,29 +133,7 @@
   margin-bottom: 2rem;
 }
 
-.productCardClass {
-  /* background-color: white; */
-  padding: 1rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease-in-out;
-  text-align: center;
-  margin-bottom: 1rem;
-  flex-grow: 1;
-  flex-shrink: 0;
-  flex-basis: calc(25% - 1rem); /* Chia đều các sản phẩm thành 4 cột */
-  max-width: 250px;
 
-  min-height: 350px; /* Chiều cao tối thiểu để các thẻ không bị lệch nhau */
-  overflow: hidden; /* Ẩn nội dung bị tràn */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* Giữ khoảng cách đều giữa các phần */
-}
-
-.productCardClass:hover {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Shadow đậm hơn khi hover */
-}
 
 .productImageClass {
   display: block;
@@ -230,17 +208,23 @@
   justify-content: space-between; /* Tạo khoảng cách giữa các biểu đồ */
 }
 
-.areaChartClass,
-.pieChartClass {
-  flex: 1; /* Mỗi biểu đồ chiếm 1 phần không gian */
-  margin: 0 10px; /* Khoảng cách bên trái và bên phải */
-}
-
 /* Nếu bạn muốn thiết lập kích thước cụ thể cho từng biểu đồ */
 .areaChartClass {
-  max-width: 50%; /* Tối đa chiều rộng là 50% */
+  max-width: 100%; /* Tối đa chiều rộng là 50% */
 }
 
-.pieChartClass {
-  max-width: 50%; /* Tối đa chiều rộng là 50% */
+.toplist-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
 }
+/* Thêm CSS này trong tệp .css hoặc .scss của bạn */
+.ant-modal {
+  width: 900px !important; /* Điều chỉnh chiều rộng của Modal */
+  height: 80vh !important; /* Điều chỉnh chiều cao của Modal */
+}
+
+.ant-modal-body {
+  padding: 16px; /* Điều chỉnh padding nếu cần */
+}
+

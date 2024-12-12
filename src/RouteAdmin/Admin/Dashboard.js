@@ -424,6 +424,8 @@ const Dashboard = () => {
             />
           </Box>
         </div>
+        {/* Thêm ProductList vào đây */}
+        <ProductList />
       </Container>
 
       {showRevenueChart && (
@@ -472,9 +474,6 @@ const Dashboard = () => {
           <UserChart onClose={() => setShowUserChart(false)} />
         </div>
       )}
-
-      {/* Thêm ProductList vào đây */}
-      <ProductList />
     </div>
   );
 };
