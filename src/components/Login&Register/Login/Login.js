@@ -67,21 +67,20 @@ const Login = () => {
         };
         localStorage.setItem("user", JSON.stringify(userInfo));
         searchStoreByidUser(userInfo.id);
-        setTimeout(() => {
-          toast.update(idToast, {
-            render: "Đăng nhập thành công",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          // console.log(resUserInfo.data);
-          if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
-            navigate("/admin");
-          } else {
-            navigate("/");
-          }
-        }, 500);
+
+        toast.update(idToast, {
+          render: "Đăng nhập thành công",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
+        // console.log(resUserInfo.data);
+        if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
       } catch (error) {
         if (error.status === 401) {
           toast.update(idToast, {
@@ -150,21 +149,20 @@ const Login = () => {
       };
       localStorage.setItem("user", JSON.stringify(userInfo));
       searchStoreByidUser(userInfo.id);
-      setTimeout(() => {
-        toast.update(idToast, {
-          render: "Đăng nhập thành công",
-          type: "success",
-          isLoading: false,
-          autoClose: 5000,
-          closeButton: true,
-        });
-        console.log(resUserInfo.data);
-        if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
-          navigate("/admin");
-        } else {
-          navigate("/");
-        }
-      }, 500);
+
+      toast.update(idToast, {
+        render: "Đăng nhập thành công",
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+        closeButton: true,
+      });
+      console.log(resUserInfo.data);
+      if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.log(error);
       toast.update(idToast, {

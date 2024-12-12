@@ -12,7 +12,6 @@ import {
   TextField,
   Tooltip,
   Typography,
-  useTheme,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DetailProduct from "../DetailProduct/DetailProduct";
@@ -107,15 +106,6 @@ const FormProduct = () => {
       specializedgame,
     } = formProduct;
 
-    if (detailProductRef.current) {
-      const { valid, message } = detailProductRef.current.validateChild();
-
-      if (!valid) {
-        toast.warning(message);
-        return false;
-      }
-    }
-
     if (
       !name &&
       !size &&
@@ -128,6 +118,14 @@ const FormProduct = () => {
       toast.warning("Vui lòng nhập đầy đủ thông tin.");
       return false;
     } else {
+      if (detailProductRef.current) {
+        const { valid, message } = detailProductRef.current.validateChild();
+
+        if (!valid) {
+          toast.warning(message);
+          return false;
+        }
+      }
       if (name === "") {
         toast.warning("Vui lòng nhập tên sản phẩm.");
         return false;
@@ -149,11 +147,6 @@ const FormProduct = () => {
         return false;
       }
 
-      if (specializedgame === "") {
-        toast.warning("Cần chọn chuyên dụng.");
-        return false;
-      }
-
       if (trademark === "") {
         toast.warning("Cần chọn thương hiệu.");
         return false;
@@ -164,13 +157,18 @@ const FormProduct = () => {
         return false;
       }
 
+      if (specializedgame === "") {
+        toast.warning("Cần chọn chuyên dụng.");
+        return false;
+      }
+
       if (size === "") {
         toast.warning("Cần nhập kích cỡ.");
         return false;
       }
 
       if ((images.length === 0) | (images === null)) {
-        toast.warning("Cần nhập chọn hình sản phẩm.");
+        toast.warning("Cần chọn hình sản phẩm.");
         return false;
       }
 
@@ -225,31 +223,29 @@ const FormProduct = () => {
             "Content-Type": "multipart/form-data",
           },
         });
-        setTimeout(() => {
-          toast.update(id, {
-            render: "Sản phẩm đã được đăng thành công",
-            type: "success",
-            isLoading: false,
-            closeButton: true,
-            autoClose: 5000,
-          });
-          setFormProduct({
-            name: "",
-            productcategory: "",
-            trademark: "",
-            warranties: "",
-            size: "",
-            specializedgame: "",
-            description: "",
-            store: idStore,
-          });
-          setImages([]);
-          setDetailProduct([]); // Reset dữ liệu chi tiết sản phẩm
-          setIsArrayDetail(true); //đặt trang thái reloadArray cho detail
-          // Đặt lại giá trị đếm kí tự
-          setCharCount(0);
-          setCharCountDesception(0);
-        }, 500);
+        toast.update(id, {
+          render: "Sản phẩm đã được đăng thành công",
+          type: "success",
+          isLoading: false,
+          closeButton: true,
+          autoClose: 5000,
+        });
+        setFormProduct({
+          name: "",
+          productcategory: "",
+          trademark: "",
+          warranties: "",
+          size: "",
+          specializedgame: "",
+          description: "",
+          store: idStore,
+        });
+        setImages([]);
+        setDetailProduct([]); // Reset dữ liệu chi tiết sản phẩm
+        setIsArrayDetail(true); //đặt trang thái reloadArray cho detail
+        // Đặt lại giá trị đếm kí tự
+        setCharCount(0);
+        setCharCountDesception(0);
       } catch (error) {
         console.error("Error:", error.response?.data || error.message);
         toast.update(id, {

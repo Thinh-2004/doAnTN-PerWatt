@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Home from "../components/Body/Home/Home";
 import Form from "../components/Login&Register/Form";
@@ -30,22 +30,29 @@ import axios from "../Localhost/Custumize-axios";
 
 const RouteUsers = (props) => {
   //Khi vừa render trang web kiểm tra quyền
-  // const token = localStorage.getItem("hadfjkdshf");
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const loadCheck = async () => {
-  //     const resUserInfo = await axios.get(`/userProFile/myInfo`);
-  //     if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
-  //       navigate("/admin");
-  //     } else {
-  //       navigate("/");
-  //     }
-  //   };
-  //   if (token) {
-  //     loadCheck();
-  //   }
-  // }, [token]);
+  useEffect(() => {
+    const loadCheck = async () => {
+      try {
+        const resUserInfo = await axios.get(`/userProFile/myInfo`);
+        // Lưu trạng thái đã phân quyền vào sessionStorage
+        sessionStorage.setItem("checkRenderWebsite", true);
+        if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Error checking user role:", error);
+      }
+    };
+
+    if (!sessionStorage.getItem("checkRenderWebsite")) {
+      // Chỉ kiểm tra quyền lần đầu tiên
+      loadCheck();
+    }
+  }, [navigate]);
   return (
     <Routes>
       {/* Các routes public */}

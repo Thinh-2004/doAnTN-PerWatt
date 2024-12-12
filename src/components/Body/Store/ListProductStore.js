@@ -84,8 +84,9 @@ const ListProductStore = ({ data }) => {
 
         //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
         const isVoucherPrice = productVoucher.some(
-          (check) => check.productDetail.product.id === fill.product.id
+          (check) => check.product.id === fill.product.id
         );
+
         //Kiểm tra status voucher
         const isStatusVoucher = productVoucher.some(
           (check) => check.status === "Hoạt động"
@@ -95,34 +96,16 @@ const ListProductStore = ({ data }) => {
         let result;
 
         if (productVoucher.length > 0) {
-          // Nếu chỉ có 1 sản phẩm được chọn
-          if (productVoucher.length === 1) {
-            // Tính giá giảm
-            const priceDown =
-              productVoucher[0].productDetail.price *
-              (productVoucher[0].discountprice / 100);
-            result = formatPrice(
-              productVoucher[0].productDetail?.price - priceDown
-            );
-          } else {
-            // Tính giá giảm cho giá nhỏ nhất và lớn nhất
-            const minPriceProductDetail = Math.min(
-              ...productVoucher.map((filter) => filter.productDetail.price)
-            );
-            const maxPriceProductDetail = Math.max(
-              ...productVoucher.map((filter) => filter.productDetail.price)
-            );
-            // Tính giá giảm First và Last
-            const priceDownFirst =
-              minPriceProductDetail * (productVoucher[0].discountprice / 100);
-            const priceDownLast =
-              maxPriceProductDetail *
-              (productVoucher[productVoucher.length - 1].discountprice / 100);
-            //Kết quả
-            const resultFirst = minPriceProductDetail - priceDownFirst;
-            const resultLast = maxPriceProductDetail - priceDownLast;
-            result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
-          }
+          // Tính giá giảm First và Last
+          const priceDownFirst =
+            minPrice * (productVoucher[0].discountprice / 100);
+          const priceDownLast =
+            maxPrice *
+            (productVoucher[productVoucher.length - 1].discountprice / 100);
+          //Kết quả
+          const resultFirst = minPrice - priceDownFirst;
+          const resultLast = maxPrice - priceDownLast;
+          result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
         }
 
         //Lấy rating tương ứng từng product

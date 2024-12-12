@@ -1,22 +1,14 @@
 import {
   Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
-  Slide,
   TextField,
 } from "@mui/material";
 import axios from "../../../Localhost/Custumize-axios";
 
-import React, { forwardRef, useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useCallback, useEffect, useState } from "react";
 import FormManageAdd from "../FormManage/FormManageAdd";
 
 const ToolbarListUserAdmins = ({
@@ -89,7 +81,7 @@ const ToolbarListUserAdmins = ({
             >
               <MenuItem value={""}>Vui lòng chọn</MenuItem>
               {listRolePermission.map((fill) => (
-                <MenuItem value={fill.permission.id}>
+                <MenuItem key={fill.id} value={fill.permission.id}>
                   {fill.permission.name} - ({fill.note})
                 </MenuItem>
               ))}

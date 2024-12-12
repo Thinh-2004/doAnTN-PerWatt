@@ -12,12 +12,10 @@ import {
   TableSortLabel,
   Tooltip,
 } from "@mui/material";
-import { Typography } from "antd";
 import dayjs from "dayjs";
 import React from "react";
 import { Link } from "react-router-dom";
 import TimerIcon from "@mui/icons-material/Timer";
-import axios from "../../../../../Localhost/Custumize-axios";
 
 const VoucherTable = ({
   data,
@@ -26,10 +24,6 @@ const VoucherTable = ({
   isSortDisCountPrice,
   valueSort,
 }) => {
-  const formatPrice = (value) => {
-    return value ? Number(value).toLocaleString("vi-VN") : "";
-  };
-
   // Icon hoạt động
   const StyledBadge = styled(Badge)(({ theme }) => ({
     "& .MuiBadge-badge": {
@@ -103,25 +97,11 @@ const VoucherTable = ({
                 Tên Voucher
               </TableSortLabel>
             </TableCell>
-            <TableCell align="center">
-              <TableSortLabel
-                active={true}
-                direction={isSortDisCountPrice ? "desc" : "asc"}
-                onClick={() =>
-                  isSortDisCountPrice
-                    ? handleSort("disCountPriceDESC")
-                    : handleSort("disCountPriceASC")
-                }
-              >
-                Giá Giảm (%)
-              </TableSortLabel>
-            </TableCell>
-            <TableCell align="center">Giá gốc</TableCell>
             <TableCell align="center">Tên Sản phẩm</TableCell>
-            <TableCell align="center">Loại sản phẩm</TableCell>
             <TableCell align="center">Ngày Bắt Đầu</TableCell>
             <TableCell align="center">Ngày Kết Thúc</TableCell>
             <TableCell align="center">Trạng thái</TableCell>
+            <TableCell align="center">Số lượng voucher</TableCell>
             <TableCell align="center">Hành Động</TableCell>
           </TableRow>
         </TableHead>
@@ -129,10 +109,6 @@ const VoucherTable = ({
           {data &&
             data.map((fill) => {
               return fill.vouchers.map((voucher, index) => {
-                const priceDown =
-                  voucher.productDetail.price * (voucher.discountprice / 100);
-                const result = voucher.productDetail.price - priceDown;
-
                 return (
                   <TableRow key={voucher.id}>
                     {/* Cột Voucher Name - Hiển thị tên voucher chỉ 1 lần cho nhóm */}
@@ -151,12 +127,6 @@ const VoucherTable = ({
                       </TableCell>
                     )}
 
-                    <TableCell align="center">
-                      {formatPrice(result)} ({voucher.discountprice}%)
-                    </TableCell>
-                    <TableCell align="center">
-                      {formatPrice(voucher.productDetail.price)}
-                    </TableCell>
                     <TableCell
                       align="center"
                       sx={{
@@ -167,27 +137,11 @@ const VoucherTable = ({
                       }}
                     >
                       <img
-                        src={voucher.productDetail?.product.images[0].imagename}
+                        src={voucher.product.images[0].imagename}
                         style={{ width: "40px", aspectRatio: "1/1" }}
                         alt=""
                       />
-                      &nbsp; {voucher.productDetail?.product.name}
-                    </TableCell>
-                    <TableCell align="left">
-                      {voucher.productDetail?.namedetail ? (
-                        <>
-                          <img
-                            style={{ width: "40px", aspectRatio: "1/1" }}
-                            src={voucher.productDetail?.imagedetail}
-                            alt=""
-                          />
-                          &nbsp; {voucher.productDetail?.namedetail}
-                        </>
-                      ) : (
-                        <Typography variant="strong" className="fw-bold">
-                          Không phân loại
-                        </Typography>
-                      )}
+                      &nbsp; {voucher.product.name}
                     </TableCell>
                     <TableCell align="center">
                       {dayjs(voucher.startday).format("DD/MM/YYYY")}
@@ -211,6 +165,10 @@ const VoucherTable = ({
                         &nbsp;&nbsp; {voucher.status}
                       </TableCell>
                     )}
+
+                    <TableCell align="center">
+                      {voucher.quantityvoucher}
+                    </TableCell>
 
                     {/* Nút hành động - chỉ hiển thị cho dòng đầu tiên của nhóm voucher */}
                     <TableCell align="center">
@@ -271,6 +229,7 @@ const VoucherTable = ({
                               }}
                               component={Link}
                               to={`/profileMarket/editVoucher/${voucher.slug}`}
+                              disableElevation
                             >
                               <i className="bi bi-pencil-square"></i>
                             </Button>
@@ -290,6 +249,7 @@ const VoucherTable = ({
                                 ml: 2,
                               }}
                               onClick={() => handleDelete(voucher.slug)}
+                              disableElevation
                             >
                               <i className="bi bi-trash"></i>
                             </Button>

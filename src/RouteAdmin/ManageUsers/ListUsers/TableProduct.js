@@ -1,8 +1,12 @@
 import {
   Badge,
   Button,
+  Collapse,
   FormControl,
-  InputLabel,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
   MenuItem,
   Select,
   styled,
@@ -14,8 +18,10 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
+  Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -23,12 +29,34 @@ import dayjs from "dayjs";
 import { toast } from "react-toastify";
 import axios from "../../../Localhost/Custumize-axios";
 import { confirmAlert } from "react-confirm-alert";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
 
 const TableProduct = ({ data, isRefeshListProduct }) => {
   const [checkedStates, setCheckedStates] = useState({});
   const [productStates, setProductStates] = useState({});
   const [dates, setDates] = useState({});
   const [reason, setReason] = useState("");
+  //Tạo 1 đối tượng nhận mảng block của idProduct
+  const [listNameProductChange, setListNameProductChange] = useState({});
+
+  const loadList = async (idProduct) => {
+    try {
+      const res = await axios.get(`/list/block/product/${idProduct}`);
+      setListNameProductChange((pre) => ({
+        ...pre,
+        [idProduct]: res.data,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    if (data) {
+      data.forEach((fill) => {
+        loadList(fill.product.id);
+      });
+    }
+  }, [data]);
 
   const handleSwitchChange = (id) => {
     setCheckedStates((prev) => ({
@@ -111,7 +139,7 @@ const TableProduct = ({ data, isRefeshListProduct }) => {
     }
 
     // Kiểm tra trạng thái "Hoạt động"
-    if (productStates[id] === "Hoạt động" || productStates[id] === null) {
+    if (productStates[id] === "Không hiệu lực" || productStates[id] === null) {
       toast.warning("Vui lòng chọn mức ban");
       return false;
     }
@@ -133,6 +161,16 @@ const TableProduct = ({ data, isRefeshListProduct }) => {
           start.getDate() < today.getDate())
       ) {
         toast.warning("Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
+        return false;
+      } else if (
+        start.getFullYear() > today.getFullYear() ||
+        (start.getFullYear() === today.getFullYear() &&
+          start.getMonth() > today.getMonth()) ||
+        (start.getFullYear() === today.getFullYear() &&
+          start.getMonth() === today.getMonth() &&
+          start.getDate() > today.getDate())
+      ) {
+        toast.warning("Ngày bắt đầu không được lớn hơn ngày hiện tại.");
         return false;
       }
     }
@@ -184,22 +222,20 @@ const TableProduct = ({ data, isRefeshListProduct }) => {
                 endday: dayjs(dates[id]?.endday).format("YYYY-MM-DD"),
                 reason: reason,
               };
-              console.log(productBanToSend);
+              // console.log(productBanToSend);
               const idToast = toast.loading("Vui lòng chờ...");
               try {
                 // Xử lý cập nhật
                 await axios.put(`/ban/product/${id}`, productBanToSend);
-                setTimeout(() => {
-                  toast.update(idToast, {
-                    render: "Xác nhận báo cáo thành công",
-                    type: "success",
-                    isLoading: false,
-                    autoClose: 5000,
-                    closeButton: true,
-                  });
-                  isRefeshListProduct(true);
-                  setReason("");
-                }, 500);
+                toast.update(idToast, {
+                  render: "Xác nhận báo cáo thành công",
+                  type: "success",
+                  isLoading: false,
+                  autoClose: 5000,
+                  closeButton: true,
+                });
+                isRefeshListProduct(true);
+                setReason("");
                 setTimeout(() => {
                   isRefeshListProduct(false);
                 }, 550);
@@ -215,6 +251,12 @@ const TableProduct = ({ data, isRefeshListProduct }) => {
         overlayClassName: "custom-overlay",
       });
     }
+  };
+
+  const [open, setOpen] = React.useState(true);
+
+  const handleClick = () => {
+    setOpen(!open);
   };
 
   return (
@@ -239,116 +281,188 @@ const TableProduct = ({ data, isRefeshListProduct }) => {
           </TableHead>
           <TableBody>
             {data &&
-              data.map((row) => (
-                <TableRow key={row.product.id}>
-                  <TableCell align="center" component="th" scope="row">
-                    <img
-                      src={row.product.images[0].imagename}
-                      alt=""
-                      className="rounded-3 object-fit-cover"
-                      style={{ width: "50%", aspectRatio: "1/1" }}
-                    />
-                  </TableCell>
-                  <TableCell align="center">{row.product.name}</TableCell>
-                  <TableCell align="center">{row.countOrderSuccess}</TableCell>
-                  <TableCell align="center">
-                    <Switch
-                      checked={
-                        checkedStates[row.product.id] || row.product.block
-                      }
-                      onChange={() => handleSwitchChange(row.product.id)}
-                      inputProps={{ "aria-label": "controlled" }}
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <div className="d-flex justify-content-between">
-                      {row.product.status === "Hoạt động" ? (
-                        <div className="align-content-center">
-                          <StyledBadge variant="dot" />
-                        </div>
-                      ) : (
-                        <div className="align-content-center">
-                          <StyledBadgeStop variant="dot" />
-                        </div>
-                      )}
-                      <FormControl size="small" sx={{ width: "80%" }}>
-                        <Select
+              data.map((row) => {
+                //Lấy mảng dựa theo idProduct
+                const listChangeNameProduct =
+                  listNameProductChange[row.product.id] || [];
+                return (
+                  <TableRow key={row.product.id}>
+                    <TableCell align="center" component="th" scope="row">
+                      <img
+                        src={row.product.images[0].imagename}
+                        alt=""
+                        className="rounded-3 object-fit-cover"
+                        style={{ width: "50%", aspectRatio: "1/1" }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      {listChangeNameProduct.length === 0
+                        ? row.product.name
+                        : listChangeNameProduct.length === 1 && (
+                            <>
+                              <ListItemButton
+                                onClick={handleClick}
+                                sx={{
+                                  "&:hover": { backgroundColor: "transparent" },
+                                }}
+                              >
+                                <ListItemIcon sx={{ color: "text.default" }}>
+                                  {
+                                    listNameProductChange[row.product.id][0]
+                                      .nameproduct
+                                  }
+                                </ListItemIcon>
+                                {typeof listNameProductChange[
+                                  row.product.id
+                                ]?.[0]?.nameproduct === "string" &&
+                                  !listNameProductChange[
+                                    row.product.id
+                                  ][0].nameproduct.includes(
+                                    row.product.name
+                                  ) && (
+                                    <>
+                                      {open ? <ExpandLess /> : <ExpandMore />}
+                                    </>
+                                  )}
+                              </ListItemButton>
+                              {typeof listNameProductChange[row.product.id]?.[0]
+                                ?.nameproduct === "string" &&
+                                !listNameProductChange[
+                                  row.product.id
+                                ][0].nameproduct.includes(row.product.name) && (
+                                  <Collapse
+                                    in={open}
+                                    timeout="auto"
+                                    unmountOnExit
+                                  >
+                                    <List component="div" disablePadding>
+                                      <div className="text-start">
+                                        <strong>Tên được thay đổi:</strong>
+                                      </div>
+                                      <ListItemButton>
+                                        <div className="d-flex justify-content-start">
+                                          <Typography
+                                            variant="span"
+                                            className=""
+                                          >
+                                            {row.product.name}
+                                          </Typography>
+                                        </div>
+                                      </ListItemButton>
+                                    </List>
+                                  </Collapse>
+                                )}
+                            </>
+                          )}
+                    </TableCell>
+                    <TableCell align="center">
+                      {row.countOrderSuccess}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Switch
+                        checked={
+                          checkedStates[row.product.id] || row.product.block
+                        }
+                        onChange={() => handleSwitchChange(row.product.id)}
+                        inputProps={{ "aria-label": "controlled" }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <div className="d-flex justify-content-between">
+                        {row.product.status === "Không hiệu lực" ? (
+                          <div className="align-content-center">
+                            <StyledBadge variant="dot" />
+                          </div>
+                        ) : (
+                          <div className="align-content-center">
+                            <StyledBadgeStop variant="dot" />
+                          </div>
+                        )}
+                        <FormControl size="small" sx={{ width: "80%" }}>
+                          <Select
+                            value={
+                              productStates[row.product.id] ||
+                              row.product.status
+                            }
+                            onChange={(e) =>
+                              handleSelectChange(row.product.id, e.target.value)
+                            }
+                          >
+                            <MenuItem value="Có hiệu lực">Có hiệu lực</MenuItem>
+                            <MenuItem value="Không hiệu lực">
+                              Không hiệu lực
+                            </MenuItem>
+                            <MenuItem value="Vĩnh viễn">Vĩnh viễn</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </div>
+                    </TableCell>
+                    <TableCell align="center">
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          format="DD/MM/YYYY"
                           value={
-                            productStates[row.product.id] || row.product.status
+                            dates[row.product.id]?.startday ||
+                            row.product.startday
+                              ? dayjs(row.product.startday)
+                              : null
                           }
-                          onChange={(e) =>
-                            handleSelectChange(row.product.id, e.target.value)
+                          onChange={(newValue) =>
+                            handleDateChange(
+                              row.product.id,
+                              "startday",
+                              newValue
+                            )
                           }
-                        >
-                          <MenuItem value="1 ngày">1 ngày</MenuItem>
-                          <MenuItem value="3 ngày">3 ngày</MenuItem>
-                          <MenuItem value="Vĩnh viễn">Vĩnh viễn</MenuItem>
-                          <MenuItem value="Hoạt động">Hoạt động</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </div>
-                  </TableCell>
-                  <TableCell align="center">
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        format="DD/MM/YYYY"
-                        value={
-                          dates[row.product.id]?.startday ||
-                          row.product.startday
-                            ? dayjs(row.product.startday)
-                            : null
-                        }
-                        onChange={(newValue) =>
-                          handleDateChange(row.product.id, "startday", newValue)
-                        }
-                        sx={{
-                          "& .MuiInputBase-root": {
-                            width: "100%",
-                            height: "40px",
-                          },
-                        }}
-                        disabled={
-                          productStates[row.product.id] === "Vĩnh viễn" ||
-                          row.product.status === "Vĩnh viễn"
-                        }
-                      />
-                    </LocalizationProvider>
-                  </TableCell>
-                  <TableCell align="center">
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        format="DD/MM/YYYY"
-                        value={
-                          dates[row.product.id]?.endday || row.product.endday
-                            ? dayjs(row.product.endday)
-                            : null
-                        }
-                        onChange={(newValue) =>
-                          handleDateChange(row.product.id, "endday", newValue)
-                        }
-                        sx={{
-                          "& .MuiInputBase-root": {
-                            width: "100%",
-                            height: "40px",
-                          },
-                        }}
-                        disabled={
-                          productStates[row.product.id] === "Vĩnh viễn" ||
-                          row.product.status === "Vĩnh viễn"
-                        }
-                      />
-                    </LocalizationProvider>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Button
-                      onClick={() => handleBanProduct(row.product.id)}
-                      disabled={row.product.block}
-                    >
-                      <ModeEditOutlineOutlinedIcon />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                          sx={{
+                            "& .MuiInputBase-root": {
+                              width: "100%",
+                              height: "40px",
+                            },
+                          }}
+                          disabled={
+                            productStates[row.product.id] === "Vĩnh viễn" ||
+                            row.product.status === "Vĩnh viễn"
+                          }
+                        />
+                      </LocalizationProvider>
+                    </TableCell>
+                    <TableCell align="center">
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          format="DD/MM/YYYY"
+                          value={
+                            dates[row.product.id]?.endday || row.product.endday
+                              ? dayjs(row.product.endday)
+                              : null
+                          }
+                          onChange={(newValue) =>
+                            handleDateChange(row.product.id, "endday", newValue)
+                          }
+                          sx={{
+                            "& .MuiInputBase-root": {
+                              width: "100%",
+                              height: "40px",
+                            },
+                          }}
+                          disabled={
+                            productStates[row.product.id] === "Vĩnh viễn" ||
+                            row.product.status === "Vĩnh viễn"
+                          }
+                        />
+                      </LocalizationProvider>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Button
+                        onClick={() => handleBanProduct(row.product.id)}
+                        disabled={row.product.block}
+                      >
+                        <ModeEditOutlineOutlinedIcon />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
           </TableBody>
         </Table>
       </TableContainer>

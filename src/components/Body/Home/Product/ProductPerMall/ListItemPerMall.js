@@ -82,7 +82,7 @@ const ListItemPerMall = ({ data }) => {
 
         //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
         const isVoucherPrice = productVoucher.some(
-          (check) => check.productDetail.product.id === fill.product.id
+          (check) => check.product.id === fill.product.id
         );
 
         //Kiểm tra status voucher
@@ -94,34 +94,16 @@ const ListItemPerMall = ({ data }) => {
         let result;
 
         if (productVoucher.length > 0) {
-          // Nếu chỉ có 1 sản phẩm được chọn
-          if (productVoucher.length === 1) {
-            // Tính giá giảm
-            const priceDown =
-              productVoucher[0].productDetail.price *
-              (productVoucher[0].discountprice / 100);
-            result = formatPrice(
-              productVoucher[0].productDetail?.price - priceDown
-            );
-          } else {
-            // Tính giá giảm cho giá nhỏ nhất và lớn nhất
-            const minPriceProductDetail = Math.min(
-              ...productVoucher.map((filter) => filter.productDetail.price)
-            );
-            const maxPriceProductDetail = Math.max(
-              ...productVoucher.map((filter) => filter.productDetail.price)
-            );
-            // Tính giá giảm First và Last
-            const priceDownFirst =
-              minPriceProductDetail * (productVoucher[0].discountprice / 100);
-            const priceDownLast =
-              maxPriceProductDetail *
-              (productVoucher[productVoucher.length - 1].discountprice / 100);
-            //Kết quả
-            const resultFirst = minPriceProductDetail - priceDownFirst;
-            const resultLast = maxPriceProductDetail - priceDownLast;
-            result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
-          }
+          // Tính giá giảm First và Last
+          const priceDownFirst =
+            minPrice * (productVoucher[0].discountprice / 100);
+          const priceDownLast =
+            maxPrice *
+            (productVoucher[productVoucher.length - 1].discountprice / 100);
+          //Kết quả
+          const resultFirst = minPrice - priceDownFirst;
+          const resultLast = maxPrice - priceDownLast;
+          result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
         }
 
         //Lấy rating tương ứng từng product
@@ -149,7 +131,7 @@ const ListItemPerMall = ({ data }) => {
         const emptyStars = 5 - fullStars;
         return (
           <Box
-            className="col-lg-3 col-md-3 col-sm-3 mb-2 shadow rounded-3 p-2 d-flex flex-column"
+            className="col-lg-3 col-md-3 col-sm-3 mb-2 shadow rounded-3 p-2"
             sx={{ maxWidth: "23%", bgcolor: "backgroundElement.children" }}
             key={fill.product.id}
             id="home-product-itemPerMall"
@@ -161,7 +143,7 @@ const ListItemPerMall = ({ data }) => {
             >
               <img
                 src={firstIMG ? firstIMG.imagename : "/images/no_img.png"}
-                style={{ width: "100%", height: "150px" }}
+                style={{ width: "100%", aspectRatio : "1/1" }}
                 loading="lazy"
                 className="img-fluid rounded-3"
                 alt="Product"

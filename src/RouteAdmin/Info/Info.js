@@ -5,11 +5,7 @@ import { toast } from "react-toastify";
 import { Box, Button, styled, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import WcIcon from "@mui/icons-material/Wc";
-import {
-  AccountCircle,
-  CalendarToday,
-  LocalPhone,
-} from "@mui/icons-material";
+import { AccountCircle, CalendarToday, LocalPhone } from "@mui/icons-material";
 import { Email } from "@mui/icons-material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -30,8 +26,6 @@ const Info = () => {
     avatar: "",
   });
 
-
-
   const [previewAvatar, setPreviewAvatar] = useState(""); // State for image preview
 
   const loadData = async () => {
@@ -40,9 +34,7 @@ const Info = () => {
       setFill(res.data);
       // console.log(res.data);
       // Set the preview URL if there is an avatar
-      setPreviewAvatar(
-        res.data.avatar ?  res.data.avatar : ""
-      );
+      setPreviewAvatar(res.data.avatar ? res.data.avatar : "");
       // console.log(res.data);
     } catch (error) {
       console.log(error);
@@ -173,26 +165,24 @@ const Info = () => {
           },
         });
 
-        setTimeout(() => {
-          toast.update(idToast, {
-            render: "Cập nhật thông tin thành công",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          setFill(res.data); // Cập nhật thông tin sau khi lưu thành công
-          const userInfo = {
-            id: res.data.id,
-            fullname: res.data.fullname,
-            avatar: res.data.avatar,
-          };
-          localStorage.setItem("user", JSON.stringify(userInfo)); //Chuyển đổi đối tượng thành JSON
-          // sessionStorage.setItem("fullname", res.data.fullname);
-          // sessionStorage.setItem("avatar", res.data.avatar);
-          window.location.reload();
-          loadData();
-        }, 500);
+        toast.update(idToast, {
+          render: "Cập nhật thông tin thành công",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
+        setFill(res.data); // Cập nhật thông tin sau khi lưu thành công
+        const userInfo = {
+          id: res.data.id,
+          fullname: res.data.fullname,
+          avatar: res.data.avatar,
+        };
+        localStorage.setItem("user", JSON.stringify(userInfo)); //Chuyển đổi đối tượng thành JSON
+        // sessionStorage.setItem("fullname", res.data.fullname);
+        // sessionStorage.setItem("avatar", res.data.avatar);
+        window.location.reload();
+        loadData();
       } catch (error) {
         toast.update(idToast, {
           render: "Có lỗi xảy ra khi cập nhật hồ sơ",
@@ -416,7 +406,7 @@ const Info = () => {
             <div className="row">
               <div className="col-lg-12 d-flex justify-content-center mb-3">
                 <img
-                  src={previewAvatar ||  fill.avatar}
+                  src={previewAvatar || fill.avatar}
                   alt="Avatar"
                   className="img-fluid"
                   id="img-change-avatar"

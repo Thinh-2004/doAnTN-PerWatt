@@ -21,6 +21,13 @@ import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
 import PromotionalCard from "./StatisticalOrders/PromotionalCard";
 import Widget from "./StatisticalOrders/Widget";
 import { Alert, AlertTitle } from "@mui/material";
+import ViewListSharpIcon from "@mui/icons-material/ViewListSharp";
+import AddCircleOutlineRoundedIcon from "@mui/icons-material/AddCircleOutlineRounded";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
+import ManageHistoryOutlinedIcon from "@mui/icons-material/ManageHistoryOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import ShopOutlinedIcon from "@mui/icons-material/ShopOutlined";
 
 const IsMarket = () => {
   const user = localStorage.getItem("user")
@@ -86,20 +93,25 @@ const IsMarket = () => {
                   style={{ listStyleType: "none", textDecoration: "none" }}
                   className="p-0 m-0"
                 >
-                  <li>
+                  <li className="">
                     <Link
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/listStoreProduct"
                     >
-                      Danh sách sản phẩm
+                      <Typography sx={{ color: "text.default" }}>
+                        <ViewListSharpIcon /> Danh sách sản phẩm
+                      </Typography>
                     </Link>
                   </li>
+                  <hr />
                   <li>
                     <Link
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/FormStoreProduct"
                     >
-                      Thêm sản phẩm
+                      <Typography sx={{ color: "text.default" }}>
+                        <AddCircleOutlineRoundedIcon /> Thêm sản phẩm
+                      </Typography>
                     </Link>
                   </li>
                 </ul>
@@ -129,7 +141,9 @@ const IsMarket = () => {
                       style={{ textDecoration: "none" }}
                       to={`/profileMarket/orderSeller/${user.id}`}
                     >
-                      Đơn hàng
+                      <Typography sx={{ color: "text.default" }}>
+                        <ReceiptLongOutlinedIcon /> Đơn hàng
+                      </Typography>
                     </Link>
                   </li>
                 </ul>
@@ -159,7 +173,9 @@ const IsMarket = () => {
                       style={{ textDecoration: "none" }}
                       to="/profileMarket"
                     >
-                      Doanh thu
+                      <Typography sx={{ color: "text.default" }}>
+                        <PaymentsOutlinedIcon /> Doanh thu
+                      </Typography>
                     </Link>
                   </li>
                 </ul>
@@ -189,7 +205,9 @@ const IsMarket = () => {
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/profileShop"
                     >
-                      Hồ sơ shop
+                      <Typography sx={{ color: "text.default" }}>
+                        <StoreOutlinedIcon /> Hồ sơ shop
+                      </Typography>
                     </Link>
                   </li>
                 </ul>
@@ -219,23 +237,34 @@ const IsMarket = () => {
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/addVoucher"
                     >
-                      Thêm khuyến mãi
+                      <Typography sx={{ color: "text.default" }}>
+                        <AddCircleOutlineRoundedIcon />
+                        Thêm khuyến mãi
+                      </Typography>
                     </Link>
                   </li>
+                  <hr />
                   <li>
                     <Link
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/fillVoucher"
                     >
-                      Quản lý khuyến mãi
+                      <Typography sx={{ color: "text.default" }}>
+                        {" "}
+                        <ManageHistoryOutlinedIcon /> Quản lý khuyến mãi
+                      </Typography>
                     </Link>
                   </li>
+                  <hr />
                   <li>
                     <Link
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/voucher/webite"
                     >
-                      Chương trình PerWatt
+                      <Typography sx={{ color: "text.default" }}>
+                        {" "}
+                        <ShopOutlinedIcon /> Chương trình PerWatt
+                      </Typography>
                     </Link>
                   </li>
                 </ul>

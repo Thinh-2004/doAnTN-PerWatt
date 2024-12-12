@@ -252,28 +252,26 @@ const FormManageUpdate = ({ idUser, isRefeshTable }) => {
           },
         });
 
-        setTimeout(() => {
-          toast.update(id, {
-            render: "Tạo quản trị mới thành công",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          setFormEditUser({
-            fullname: "",
-            password: "",
-            email: "",
-            birthdate: "",
-            gender: "",
-            rolepermission: "", // Vai trò
-            phone: "",
-            configPassWord: "",
-          });
-          setSelectedRolePermission("");
-          handleClose();
-          isRefeshTable(true);
-        }, 2000);
+        toast.update(id, {
+          render: "Tạo quản trị mới thành công",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
+        setFormEditUser({
+          fullname: "",
+          password: "",
+          email: "",
+          birthdate: "",
+          gender: "",
+          rolepermission: "", // Vai trò
+          phone: "",
+          configPassWord: "",
+        });
+        setSelectedRolePermission("");
+        handleClose();
+        isRefeshTable(true);
         setTimeout(() => {
           isRefeshTable(false);
         }, 2500);
@@ -283,15 +281,13 @@ const FormManageUpdate = ({ idUser, isRefeshTable }) => {
           error.response && error.response.data
             ? error.response.data
             : "Đã xảy ra lỗi, vui lòng thử lại";
-        setTimeout(() => {
-          toast.update(id, {
-            render: `${errorMessage}`,
-            type: "error",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-        }, 2000);
+        toast.update(id, {
+          render: `${errorMessage}`,
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
       }
     }
   };

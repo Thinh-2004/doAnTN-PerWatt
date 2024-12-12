@@ -22,7 +22,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import React, { useContext, useEffect, useState } from "react";
+import React, { forwardRef, useContext, useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import PermContactCalendarOutlinedIcon from "@mui/icons-material/PermContactCalendarOutlined";
 import axios from "../../../Localhost/Custumize-axios";
@@ -39,7 +39,7 @@ import { confirmAlert } from "react-confirm-alert";
 
 tailChase.register();
 
-const Transition = React.forwardRef(function Transition(props, ref) {
+const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
@@ -193,7 +193,7 @@ const ShowDetailInfoUser = ({ idUser }) => {
 
       return false;
     }
-    if (select === "Hoạt động") {
+    if (select === "Không hiệu lực") {
       toast.warning("Vui lòng chọn mức ban");
       return false;
     }
@@ -278,23 +278,24 @@ const ShowDetailInfoUser = ({ idUser }) => {
                   `/store/ban/${infoStore.id}`,
                   storeBanToSend
                 );
-                setTimeout(() => {
-                  toast.update(idToast, {
-                    render: "Ban thành công",
-                    type: "success",
-                    isLoading: false,
-                    autoClose: 5000,
-                    closeButton: true,
-                  });
-                  loadProductInStore(
-                    slugStore,
-                    useDebounceSearch ? 0 : currentPage,
-                    totalPage,
-                    useDebounceSearch
-                  );
-                }, 2000);
+                toast.update(idToast, {
+                  render: "Ban thành công",
+                  type: "success",
+                  isLoading: false,
+                  autoClose: 5000,
+                  closeButton: true,
+                });
+                loadProductInStore(
+                  slugStore,
+                  useDebounceSearch ? 0 : currentPage,
+                  totalPage,
+                  useDebounceSearch
+                );
               } catch (error) {
                 console.log(error);
+                toast.error(
+                  "Lỗi không thể ban thành công, vui lòng thử lại sau"
+                );
               }
             },
           },
@@ -447,13 +448,14 @@ const ShowDetailInfoUser = ({ idUser }) => {
                                     onChange={handleChange}
                                     name="select"
                                   >
-                                    <MenuItem value="1 ngày">1 ngày</MenuItem>
-                                    <MenuItem value="3 ngày">3 ngày</MenuItem>
+                                    <MenuItem value="Có hiệu lực">
+                                      Có hiệu lực
+                                    </MenuItem>
+                                    <MenuItem value="Không hiệu lực">
+                                      Không hiệu lực
+                                    </MenuItem>
                                     <MenuItem value="Vĩnh viễn">
                                       Vĩnh viễn
-                                    </MenuItem>
-                                    <MenuItem value="Hoạt động">
-                                      Hoạt động
                                     </MenuItem>
                                   </Select>
                                 </FormControl>

@@ -7,7 +7,14 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
+  Typography,
 } from "@mui/material";
 import axios from "../../../../../Localhost/Custumize-axios";
 import "./AddVoucher.css";
@@ -24,22 +31,19 @@ const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 function AddVoucherForm() {
+  //State request
   const [vouchername, setvouchername] = useState("");
   const [startday, setstartday] = useState(null);
   const [endday, setendday] = useState(null);
-  const [discountprice, setdiscountprice] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState(""); // State for selected product
-  const [selectedProductDetails, setSelectedProductDetails] = useState([]);
+  const [discountprice, setdiscountprice] = useState(0);
+  const [quantiy, setQuantity] = useState(0);
+  //State logic
+  const [selectedProduct, setSelectedProduct] = useState([]);
   const [products, setProducts] = useState([]);
-  const [productsDetails, setProductsDetails] = useState([]); // State to store products
-  const [priceDetailProduct, setPriceDetailProduct] = useState("");
-  const [resultPrice, setResultPrice] = useState("");
   const navigate = useNavigate();
   const formatPrice = (value) => {
     return value ? Number(value).toLocaleString("vi-VN") : "";
   };
-  //checkcombobox null
-  const [checkName, setCheckName] = useState("");
 
   ///
   const dateNow = dayjs();
@@ -51,14 +55,8 @@ function AddVoucherForm() {
     }
 
     // Kiểm tra sản phẩm được chọn
-    if (!selectedProduct) {
+    if (selectedProduct.length === 0) {
       toast.warning("Vui lòng chọn sản phẩm");
-      return false;
-    }
-
-    // Kiểm tra phân loại sản phẩm được chọn
-    if (!selectedProductDetails && checkName) {
-      toast.warning("Vui lòng chọn phân loại sản phẩm");
       return false;
     }
 
@@ -66,6 +64,11 @@ function AddVoucherForm() {
     const discount = parseFloat(discountprice);
     if (!discountprice || isNaN(discount) || discount <= 0 || discount > 100) {
       toast.warning("Vui lòng nhập giá giảm hợp lệ (1% => 100%)");
+      return false;
+    }
+
+    if (quantiy <= 0) {
+      toast.warning("Vui lòng nhập số lượng voucher hợp lệ");
       return false;
     }
 
@@ -108,6 +111,7 @@ function AddVoucherForm() {
           // Gọi API để lấy sản phẩm theo storeId
           const response = await axios.get(`fillProduct/${idStore}`);
           setProducts(response.data); // Lưu dữ liệu sản phẩm vào state
+          // console.log(response.data);
         } catch (error) {
           console.error("Error fetching products", error);
         }
@@ -122,7 +126,6 @@ function AddVoucherForm() {
   // Hàm xử lý việc thêm voucher
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (validate()) {
       // Chuyển đổi giá giảm thành số thực và chọn sản phẩm
       const discount = parseFloat(discountprice);
@@ -133,25 +136,22 @@ function AddVoucherForm() {
           : null,
         endday: endday ? dayjs(endday).format("YYYY-MM-DDTHH:mm:ssZ") : null,
         discountprice: discount, // Giá giảm đã chuyển đổi thành số thực
-
-        status: "Hoạt động",
         slug: "",
+        quantityvoucher: parseInt(quantiy),
       };
+      const products = selectedProduct.map((id) => ({ id }.id.product));
 
-      const productDetails =
-        checkName === null
-          ? [productsDetails[0]]
-          : selectedProductDetails.map((id) => ({ id }.id));
-
+      console.log(voucher);
+      console.log(products);
+      const idToast = toast.loading("Vui lòng chờ...");
       try {
         const response = await axios.post("addVouchers", {
           voucher,
-          productDetails,
+          products,
         });
-        console.log("Voucher created:", response.data);
         // Reset form sau khi thêm thành công
         resetForm();
-        const idToast = toast.loading("Vui lòng chờ...");
+
         toast.update(idToast, {
           render: "Thêm voucher thành công!",
           type: "success",
@@ -164,16 +164,23 @@ function AddVoucherForm() {
       } catch (error) {
         console.log(error);
 
+        toast.update(idToast, {
+          render: "Thêm voucher thất bại!",
+          type: "error",
+          isLoading: false,
+          autoClose: 1500,
+          closeButton: true,
+        });
+
         if (error.response && error.response.status === 400) {
           // Display the error message to the user
-          toast.error(
-            error.response.data.error ||
-              "Tên voucher hoặc phân loại sản phẩm đã bị trùng.",
-            {
-              autoClose: 1500,
-              closeButton: true,
-            }
-          );
+          toast.update(idToast, {
+            render: `${error.response.data}`,
+            type: "error",
+            isLoading: false,
+            autoClose: 1500,
+            closeButton: true,
+          });
         }
       }
     }
@@ -184,136 +191,44 @@ function AddVoucherForm() {
     setvouchername("");
     setstartday(null);
     setendday(null);
-    setdiscountprice("");
-    setSelectedProduct("");
-    setSelectedProductDetails([]);
-    setCheckName("");
-    setResultPrice("");
-    setPriceDetailProduct("");
-    setProductsDetails([]);
+    setdiscountprice(0);
+    setSelectedProduct([]);
+    setQuantity(0);
   };
 
-  const handleClickIdProduct = async (e) => {
-    const value = e.target.value;
-    setSelectedProduct(value);
-    if (value !== selectedProduct) {
-      setPriceDetailProduct("");
-      setResultPrice("");
-    }
-    try {
-      // Gọi API để lấy sản phẩm theo idProduct
-      const response = await axios.get(`fillProductDetails/${value}`);
-      setProductsDetails(response.data); // Lưu dữ liệu sản phẩm vào state
-
-      setCheckName(response.data[0].namedetail);
-      setdiscountprice("");
-      setResultPrice("");
-      setPriceDetailProduct("");
-    } catch (error) {
-      console.error("Error fetching products", error);
-    }
-  };
-
-  const handleOnChangeProductDetails = (e, newValue) => {
+  const handleChangeSelectedProduct = (e, newValue) => {
     // `newValue` là mảng các sản phẩm đã được chọn sau mỗi thay đổi
-    setSelectedProductDetails(newValue); // Cập nhật giá trị đã chọn
-
-    // Nếu có ít nhất 1 sản phẩm được chọn
-    if (newValue.length > 0) {
-      // Nếu chỉ có 1 sản phẩm được chọn
-      if (newValue.length === 1) {
-        setdiscountprice("");
-        setResultPrice("");
-        // Lấy giá của sản phẩm đã chọn
-        const selectedProduct = productsDetails.find(
-          (prDetails) => prDetails.id === newValue[0].id
-        );
-        if (selectedProduct) {
-          setPriceDetailProduct(`${formatPrice(selectedProduct.price)}`);
-        }
-      } else {
-        setdiscountprice("");
-        setResultPrice("");
-        // Nếu có nhiều hơn 1 sản phẩm được chọn
-        //Lấy data giá
-        const dataProductDetail = newValue.map((data) => data.price);
-        //Lấy giá nhỏ nhất
-        const minPriceSelected = Math.min(...dataProductDetail);
-        //Lấy giá lớn nhất
-        const maxPriceSelected = Math.max(...dataProductDetail);
-        // Nếu tìm thấy cả 2 sản phẩm đầu tiên và cuối cùng, hiển thị giá của chúng
-        if (minPriceSelected && maxPriceSelected) {
-          setPriceDetailProduct(
-            `${formatPrice(minPriceSelected)} - ${formatPrice(
-              maxPriceSelected
-            )}`
-          );
-        }
-      }
-    } else {
-      setPriceDetailProduct(0); // Nếu không có sản phẩm nào được chọn, reset giá
-    }
+    setSelectedProduct(newValue); // Cập nhật giá trị đã chọn
+    console.log(newValue);
   };
 
   const handleOnChangePhanTramGiamGia = (e) => {
     const value = e.target.value;
 
-    // Restrict input between 1 and 100
-    if (value.length <= 3 && value >= 0 && value <= 100) {
-      setdiscountprice(value); // Set phần trăm giảm giá
+    // Nếu giá trị là rỗng, đặt giảm giá và kết quả giá về 0
+    if (value === "") {
+      setdiscountprice(0);
+      return;
+    }
 
-      // Cập nhật giá đã chọn cho người dùng
-      if (selectedProductDetails.length > 0) {
-        // Nếu chỉ chọn 1 sản phẩm
-        if (selectedProductDetails.length === 1) {
-          const selectedProduct = productsDetails.find(
-            (prDetails) => prDetails.id === selectedProductDetails[0].id
-          );
-          // Tính giá giảm
-          const priceDown = selectedProduct.price * (value / 100);
-          const result = selectedProduct.price - priceDown;
+    const discountValue = parseFloat(value);
 
-          if (selectedProduct) {
-            setResultPrice(formatPrice(result));
-          }
-        } else {
-          // Nếu có nhiều sản phẩm, hiển thị giá của sản phẩm đầu tiên và cuối cùng
-
-          //Lấy data giá
-          const dataProductDetail = productsDetails.map((data) => data.price);
-          //Lấy giá nhỏ nhất
-          const minPriceSelected = Math.min(...dataProductDetail);
-          //Lấy giá lớn nhất
-          const maxPriceSelected = Math.max(...dataProductDetail);
-          // Tính giá giảm First
-          const priceDownFirst = minPriceSelected * (value / 100);
-          const resultFirst = minPriceSelected - priceDownFirst;
-          // Tính giá giảm First
-          const priceDownLast = maxPriceSelected * (value / 100);
-          const resultLast = maxPriceSelected - priceDownLast;
-
-          if (minPriceSelected && maxPriceSelected) {
-            setResultPrice(
-              `${formatPrice(resultFirst)} - ${formatPrice(resultLast)}`
-            );
-          }
-        }
-      } else {
-        // Tính giá giảm
-        const priceDown = productsDetails[0].price * (value / 100);
-        const result = productsDetails[0].price - priceDown;
-        setResultPrice(formatPrice(result));
-      }
+    if (!isNaN(discountValue) && discountValue >= 0 && discountValue <= 100) {
+      setdiscountprice(discountValue);
     }
   };
 
-  useEffect(() => {
-    if (checkName === null) {
-      setPriceDetailProduct(formatPrice(productsDetails[0].price));
-    } else {
-      setPriceDetailProduct("");
+  const handleQuantity = (e) => {
+    const value = e.target.value;
+
+    if (value === "") {
+      setQuantity(0);
+      return;
     }
-  }, [checkName, productsDetails]);
+
+    const discountValue = parseInt(value);
+    setQuantity(discountValue);
+  };
 
   return (
     <Box
@@ -333,149 +248,43 @@ function AddVoucherForm() {
           />
         </div>
 
-        {/* Product selection using styled ComboBox */}
         <div className="form-group">
-          <FormControl fullWidth>
-            <InputLabel id="product-label">Chọn Sản Phẩm</InputLabel>
-            <Select
-              labelId="product-label"
-              id="product-select"
-              value={selectedProduct}
-              onChange={handleClickIdProduct}
-              label="Chọn Sản Phẩm"
-              fullWidth
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 400, // Đặt chiều cao tối đa cho dropdown để giữ thanh cuộn
-                  },
-                },
-                disableScrollLock: true, // Ngăn trang web khóa cuộn khi mở dropdown
-              }}
-            >
-              {products.map((product) => {
-                const images = product.images[0];
-                return (
-                  <MenuItem key={product.id} value={product.id}>
-                    <Box display="flex" alignItems="center">
-                      <img
-                        src={images.imagename}
-                        style={{ width: "40px", aspectRatio: "1/1" }}
-                        alt=""
-                      />
-                      &nbsp;
-                      <span
-                        style={{
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          maxWidth: "500px", // Đặt chiều rộng tối đa cho tên sản phẩm
-                        }}
-                      >
-                        {product.name}
-                      </span>
-                    </Box>
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-        </div>
-        <div className="form-group">
-          {checkName === null ? (
-            <FormControl fullWidth disabled>
-              <InputLabel id="demo-simple-select-disabled-label">
-                {" "}
-                Sản phẩm không có phân loại
-              </InputLabel>
-              <Select
-                labelId="demo-simple-select-disabled-label"
-                id="demo-simple-select-disabled"
-                label="Chọn Loại Sản Phẩm"
-              ></Select>
-            </FormControl>
-          ) : (
-            <>
-              {/* <FormControl fullWidth>
-              <InputLabel id="product-label">Chọn Loại Sản Phẩm</InputLabel>
-              <Select
-                labelId="product-label"
-                id="product-select"
-                value={selectedProductDetails}
-                onChange={handleOnChangeProductDetails}
-                label="Chọn Sản Phẩm"
-                fullWidth
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 400, // Đặt chiều cao tối đa cho dropdown để giữ thanh cuộn
-                    },
-                  },
-                  disableScrollLock: true, // Ngăn trang web khóa cuộn khi mở dropdown
-                }}
-              >
-                {productsDetails.map((productsDetails) => (
-                  <MenuItem key={productsDetails.id} value={productsDetails.id}>
-                    <Box display="flex" alignItems="center">
-                      <img
-                        style={{ width: "40px", aspectRatio: "1/1" }}
-                        src={geturlImgDetailProduct(
-                          productsDetails.id,
-                          productsDetails.imagedetail
-                        )}
-                        alt=""
-                      />
-                      &nbsp;
-                      <span
-                        style={{
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          maxWidth: "500px", // Đặt chiều rộng tối đa cho tên sản phẩm
-                        }}
-                      >
-                        {productsDetails.namedetail}
-                      </span>
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl> */}
-              <Autocomplete
-                multiple
-                id="checkboxes-tags-demo"
-                options={productsDetails}
-                value={selectedProductDetails}
-                onChange={handleOnChangeProductDetails}
-                disableCloseOnSelect
-                getOptionLabel={(option) => option.namedetail}
-                renderOption={(props, option, { selected }) => {
-                  const { key, ...optionProps } = props;
-                  return (
-                    <li key={key} {...optionProps}>
-                      <Checkbox
-                        icon={icon}
-                        checkedIcon={checkedIcon}
-                        style={{ marginRight: 8 }}
-                        checked={selected}
-                      />
-                      <img
-                        style={{ width: "40px", aspectRatio: "1/1" }}
-                        src={option.imagedetail}
-                        alt=""
-                      />
-                      &nbsp;
-                      {option.namedetail}
-                    </li>
-                  );
-                }}
-                fullWidth
-                renderInput={(params) => (
-                  <TextField {...params} label="Chọn phân loại" />
-                )}
-              />
-            </>
-          )}
+          <Autocomplete
+            multiple
+            id="checkboxes-tags-demo"
+            options={products}
+            value={selectedProduct}
+            onChange={handleChangeSelectedProduct}
+            disableCloseOnSelect
+            getOptionLabel={(option) => option.product.name}
+            isOptionEqualToValue={(option, value) =>
+              option.product.id === value.product.id
+            }
+            renderOption={(props, option, { selected }) => {
+              const { key, ...optionProps } = props;
+              return (
+                <li key={option.product.id} {...optionProps}>
+                  <Checkbox
+                    icon={icon}
+                    checkedIcon={checkedIcon}
+                    style={{ marginRight: 8 }}
+                    checked={selected}
+                  />
+                  <img
+                    style={{ width: "40px", aspectRatio: "1/1" }}
+                    src={option.product.images[0].imagename}
+                    alt=""
+                  />
+                  &nbsp;
+                  <label className="text-truncate">{option.product.name}</label>
+                </li>
+              );
+            }}
+            fullWidth
+            renderInput={(params) => (
+              <TextField {...params} label="Chọn sản phẩm" />
+            )}
+          />
         </div>
         <div className="form-group">
           <TextField
@@ -486,34 +295,89 @@ function AddVoucherForm() {
             fullWidth
           />
         </div>
-        <div className="row">
-          <div className="col-lg-6 col-md-6 col-sm-6">
-            <div className="form-group">
-              <TextField
-                label="Giá gốc"
-                variant="outlined"
-                value={priceDetailProduct}
-                fullWidth
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </div>
-          </div>
-          <div className="col-lg-6 col-md-6 col-sm-6">
-            <div className="form-group">
-              <TextField
-                label="Giá Giảm (%)"
-                variant="outlined"
-                value={resultPrice}
-                fullWidth
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </div>
-          </div>
+
+        <div className="form-group">
+          <TextField
+            label="Số lượng voucher"
+            variant="outlined"
+            value={quantiy}
+            onChange={handleQuantity}
+            fullWidth
+          />
         </div>
+        <TableContainer className="border mb-3">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell align="center" width={200}>
+                  Hình
+                </TableCell>
+                <TableCell align="center" width={100}>
+                  Giá gốc
+                </TableCell>
+                <TableCell align="center">Giá giảm</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {selectedProduct.length === 0 ? (
+                <h6 className="p-2">Vui lòng chọn sản phẩm</h6>
+              ) : (
+                selectedProduct &&
+                selectedProduct.map((fill) => {
+                  //Lấy giá từng mảng product
+                  const priceProductDetail = fill.productDetails.map(
+                    (data) => data.price
+                  );
+                  const discountPrices = priceProductDetail.map((price) => {
+                    const discount = price * (discountprice / 100);
+                    return price - discount;
+                  });
+
+                  const minPrice = Math.min(...priceProductDetail);
+                  const maxPrice = Math.max(...priceProductDetail);
+                  const minDiscountPrice = Math.min(...discountPrices);
+                  const maxDiscountPrice = Math.max(...discountPrices);
+
+                  let finalPrice;
+                  if (minPrice === maxPrice) {
+                    finalPrice = formatPrice(minDiscountPrice); // Hoặc có thể tính với maxDiscountPrice
+                  } else {
+                    finalPrice = `${formatPrice(
+                      minDiscountPrice
+                    )} - ${formatPrice(maxDiscountPrice)}`;
+                  }
+
+                  return (
+                    <TableRow key={fill.product.id}>
+                      <TableCell align="center">
+                        <Typography className="text-truncate">
+                          <img
+                            src={fill.product.images[0].imagename}
+                            alt=""
+                            className="object-fit-cover"
+                            style={{ width: "50%", aspectRatio: "1/1" }}
+                          />
+                        </Typography>
+                      </TableCell>
+                      <TableCell style={{ width: 160 }} align="center">
+                        {minPrice === maxPrice ? (
+                          formatPrice(maxPrice)
+                        ) : (
+                          <>
+                            {formatPrice(minPrice)} - {formatPrice(maxPrice)}
+                          </>
+                        )}
+                      </TableCell>
+                      <TableCell style={{ width: 160 }} align="center">
+                        {finalPrice}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
         {/* Ngày bắt đầu sử dụng MUI DatePicker */}
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker

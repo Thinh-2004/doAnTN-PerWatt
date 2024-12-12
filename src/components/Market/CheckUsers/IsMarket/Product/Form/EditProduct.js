@@ -159,37 +159,37 @@ const EditProduct = () => {
       specializedgame,
     } = formEditProduct;
     if (
-      !name ||
-      !size ||
-      !description ||
-      !productcategory ||
-      !trademark ||
-      !warranties ||
+      !name &&
+      !size &&
+      !description &&
+      !productcategory &&
+      !trademark &&
+      !warranties &&
       !specializedgame
     ) {
       toast.warning("Vui lòng nhập đầy đủ thông tin.");
       return false;
-    }
+    } else {
+      if (name === "") {
+        toast.warning("Nhập tên sản phẩm.");
+        return false;
+      } else if (name.length < 20) {
+        toast.warning("Tên sản phẩm tối thiểu 20 kí tự.");
+        return false;
+      }
 
-    if (name === "") {
-      toast.warning("Nhập tên sản phẩm.");
-      return false;
-    } else if (name.length < 20) {
-      toast.warning("Tên sản phẩm tối thiểu 20 kí tự.");
-      return false;
-    }
+      if (description === "") {
+        toast.warning("Vui lòng nhập mô tả.");
+        return false;
+      } else if (description.length < 250) {
+        toast.warning("Mô tả không được ít hơn 250 kí tự");
+        return false;
+      }
 
-    if (description === "") {
-      toast.warning("Vui lòng nhập mô tả.");
-      return false;
-    } else if (description.length < 250) {
-      toast.warning("Mô tả không được ít hơn 250 kí tự");
-      return false;
-    }
-
-    if (size === "") {
-      toast.warning("Vui lòng nhập kích thước");
-      return false;
+      if (size === "") {
+        toast.warning("Vui lòng nhập kích thước");
+        return false;
+      }
     }
     return true;
   };
@@ -222,17 +222,15 @@ const EditProduct = () => {
             },
           }
         );
-        setTimeout(() => {
-          toast.update(idToast, {
-            render: "Cập nhật sản phẩm thành công",
-            type: "success",
-            isLoading: false,
-            closeButton: true,
-            autoClose: 5000,
-          });
-          changeLink("/profileMarket/listStoreProduct");
-          setImages([]);
-        }, 500);
+        toast.update(idToast, {
+          render: "Cập nhật sản phẩm thành công",
+          type: "success",
+          isLoading: false,
+          closeButton: true,
+          autoClose: 5000,
+        });
+        changeLink("/profileMarket/listStoreProduct");
+        setImages([]);
       } catch (error) {
         console.error("Error:", error.response?.data || error.message);
         toast.update(idToast, {

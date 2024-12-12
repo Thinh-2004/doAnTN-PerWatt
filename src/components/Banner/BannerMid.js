@@ -13,6 +13,7 @@ const Banner = () => {
       try {
         const response = await axios.get("/banners");
         setBanners(response.data);
+        
       } catch (error) {
         console.error("Error fetching banners:", error);
       }

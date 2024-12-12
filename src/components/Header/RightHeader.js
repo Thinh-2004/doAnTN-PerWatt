@@ -150,16 +150,14 @@ const RightHeader = ({ reloadCartItems }) => {
             onClick: () => {
               // Hiển thị thông báo đang tải
               const id = toast.loading("Vui lòng chờ...");
-              setTimeout(() => {
-                toast.update(id, {
-                  render: "Chuyển hướng đến trang đăng nhập",
-                  type: "info",
-                  isLoading: false,
-                  autoClose: 2000,
-                  closeButton: true,
-                });
-                changeLink("/login");
-              }, 500);
+              toast.update(id, {
+                render: "Chuyển hướng đến trang đăng nhập",
+                type: "info",
+                isLoading: false,
+                autoClose: 2000,
+                closeButton: true,
+              });
+              changeLink("/login");
             },
           },
           {
@@ -195,16 +193,14 @@ const RightHeader = ({ reloadCartItems }) => {
             onClick: () => {
               // Hiển thị thông báo đang tải
               const id = toast.loading("Vui lòng chờ...");
-              setTimeout(() => {
-                toast.update(id, {
-                  render: "Chuyển hướng đến trang đăng nhập",
-                  type: "info",
-                  isLoading: false,
-                  autoClose: 2000,
-                  closeButton: true,
-                });
-                changeLink("/login");
-              }, 500);
+              toast.update(id, {
+                render: "Chuyển hướng đến trang đăng nhập",
+                type: "info",
+                isLoading: false,
+                autoClose: 2000,
+                closeButton: true,
+              });
+              changeLink("/login");
             },
           },
           {
@@ -232,16 +228,14 @@ const RightHeader = ({ reloadCartItems }) => {
             onClick: () => {
               // Hiển thị thông báo đang tải
               const id = toast.loading("Vui lòng chờ...");
-              setTimeout(() => {
-                toast.update(id, {
-                  render: "Chuyển hướng đến trang đăng nhập",
-                  type: "info",
-                  isLoading: false,
-                  autoClose: 2000,
-                  closeButton: true,
-                });
-                changeLink("/login");
-              }, 500);
+              toast.update(id, {
+                render: "Chuyển hướng đến trang đăng nhập",
+                type: "info",
+                isLoading: false,
+                autoClose: 2000,
+                closeButton: true,
+              });
+              changeLink("/login");
             },
           },
           {
@@ -398,13 +392,13 @@ const RightHeader = ({ reloadCartItems }) => {
 
   return (
     <>
-      <div className="d-flex align-items-center border-end">
+      <div className="d-flex align-items-center border-end mx-3">
         {matchSeller ? (
           <>
             <Tooltip title="Trang chủ PerWatt">
               <Link
                 type="button"
-                className="btn btn-icon position-relative rounded-3 me-3"
+                className="btn btn-icon position-relative rounded-3 me-1"
                 to={"/"}
               >
                 <Typography sx={{ color: "text.primary" }}>
@@ -415,7 +409,7 @@ const RightHeader = ({ reloadCartItems }) => {
             <Tooltip title="Giỏ hàng">
               <Link
                 type="button"
-                className="btn btn-icon position-relative rounded-3 me-3"
+                className="btn btn-icon position-relative rounded-3 me-1"
                 to={"/cart"}
               >
                 <Typography sx={{ color: "text.primary" }}>
@@ -430,11 +424,11 @@ const RightHeader = ({ reloadCartItems }) => {
               <Link
                 onClick={checkUserIdOnReport}
                 type="button"
-                className="btn btn-icon position-relative rounded-3 me-3"
+                className="btn btn-icon position-relative rounded-3 me-1"
                 to={""}
               >
                 <Typography sx={{ color: "text.primary" }}>
-                  <OutlinedFlagIcon />
+                  <i className="bi bi-flag fs-4"></i>
                 </Typography>
                 {/* <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                   {0}
@@ -578,7 +572,7 @@ const RightHeader = ({ reloadCartItems }) => {
               <Tooltip title="Trang admin">
                 <Link
                   type="button"
-                  className="btn btn-icon position-relative rounded-3 me-3"
+                  className="btn btn-icon position-relative rounded-3 me-1"
                   to={"/admin"}
                 >
                   <Typography sx={{ color: "text.primary" }}>
@@ -590,7 +584,7 @@ const RightHeader = ({ reloadCartItems }) => {
             <Tooltip title="Giỏ hàng">
               <Link
                 type="button"
-                className="btn btn-icon position-relative rounded-3 me-3"
+                className="btn btn-icon position-relative rounded-3 me-1"
                 onClick={checkUserIdOnCart}
               >
                 <Typography sx={{ color: "text.primary" }}>
@@ -605,7 +599,7 @@ const RightHeader = ({ reloadCartItems }) => {
               <Link
                 onClick={checkUserId}
                 type="button"
-                className="btn btn-icon btn-sm rounded-3 me-3"
+                className="btn btn-icon btn-sm rounded-3 me-1"
               >
                 <Typography sx={{ color: "text.primary" }}>
                   {" "}
@@ -616,7 +610,7 @@ const RightHeader = ({ reloadCartItems }) => {
             <Tooltip title="Thông báo">
               <Link
                 type="button"
-                className="btn btn-icon btn-sm  position-relative rounded-3 me-3"
+                className="btn btn-icon btn-sm  position-relative rounded-3 me-1"
                 to={"/buyerNotification"}
               >
                 <Typography sx={{ color: "text.primary" }}>
@@ -631,11 +625,11 @@ const RightHeader = ({ reloadCartItems }) => {
               <Link
                 onClick={checkUserIdOnReport}
                 type="button"
-                className="btn btn-icon position-relative rounded-3 me-3"
+                className="btn btn-icon position-relative rounded-3 me-2"
                 to={""}
               >
                 <Typography sx={{ color: "text.primary" }}>
-                  <OutlinedFlagIcon />
+                  <i className="bi bi-flag fs-4"></i>
                 </Typography>
                 {/* <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                   {0}

@@ -123,7 +123,7 @@ const Dashboard = () => {
         }
 
         const res = await axios.get(`/userProFile/myInfo`);
-        console.log(res.data);
+        // console.log(res.data);
         setRolePermission(res.data.rolePermission.permission.name);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -266,12 +266,12 @@ const Dashboard = () => {
             )}
             {rolePermission === "All_Function" ||
             rolePermission === "Manage_Banner" ? (
-              <Tooltip title="Quản lí banner">
+              <Tooltip title="Quản lý banner">
                 <Button
                   size="small"
                   variant="outlined"
                   LinkComponent={Link}
-                  to="/admin/voucher/website"
+                  to="/admin/banner"
                   className="me-2"
                 >
                   <ViewCarouselOutlinedIcon

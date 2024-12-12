@@ -24,7 +24,7 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import AssistantPhotoOutlinedIcon from "@mui/icons-material/AssistantPhotoOutlined";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
@@ -137,11 +137,6 @@ const ModelDialogUpdateReport = ({ detailInfo, isRefeshTable }) => {
             label: "Có",
             onClick: async () => {
               const formReport = {
-                user: detailInfo.user,
-                store: detailInfo.store,
-                order: detailInfo.order,
-                content: detailInfo.content,
-                media: detailInfo.media,
                 status: selected,
                 createdat: detailInfo.createdat,
                 replyreport: replyReport,
@@ -151,20 +146,19 @@ const ModelDialogUpdateReport = ({ detailInfo, isRefeshTable }) => {
               try {
                 // Xử lý cập nhật
                 await axios.put(`/report/update/${detailInfo.id}`, formReport);
-                setTimeout(() => {
-                  toast.update(idToast, {
-                    render: "Xác nhận báo cáo thành công",
-                    type: "success",
-                    isLoading: false,
-                    autoClose: 5000,
-                    closeButton: true,
-                  });
-                }, 500);
+                toast.update(idToast, {
+                  render: "Xác nhận báo cáo thành công",
+                  type: "success",
+                  isLoading: false,
+                  autoClose: 5000,
+                  closeButton: true,
+                });
                 isRefeshTable(true);
-                setTimeout(() => {
+                const timmer = setTimeout(() => {
                   isRefeshTable(false);
                 }, 500);
                 handleClose();
+                return clearTimeout(timmer);
               } catch (error) {
                 toast.error("Đã xảy ra lỗi. Vui lòng thử lại!");
               }
@@ -176,6 +170,24 @@ const ModelDialogUpdateReport = ({ detailInfo, isRefeshTable }) => {
         ],
         overlayClassName: "custom-overlay",
       });
+    }
+  };
+
+  //Hàm phâm tách link video hoặc link hình
+  const checkMediaType = (url) => {
+    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff"];
+    const videoExtensions = [".mp4", ".avi", ".mov", ".webm"];
+
+    // Lấy phần mở rộng của URL
+    const cleanedUrl = url.split("?")[0]; // Loại bỏ phần query string
+    const extension = cleanedUrl.slice(cleanedUrl.lastIndexOf(".")); // Lấy phần sau dấu '.'
+
+    if (imageExtensions.includes(extension)) {
+      return "image";
+    } else if (videoExtensions.includes(extension)) {
+      return "video";
+    } else {
+      return "unknown";
     }
   };
 
@@ -236,14 +248,40 @@ const ModelDialogUpdateReport = ({ detailInfo, isRefeshTable }) => {
           </Typography>
           <Typography sx={{ color: "text.secondary", mb: 1.5 }}>
             <strong>Video chứng thực:</strong>
-            {detailInfo.media && (
-              <div className="mt-3">
-                <video width="100%" controls className="rounded-3">
-                  <source src={detailInfo?.media} type="video/mp4" />
-                  Trình duyệt của bạn không hỗ trợ thẻ video.
-                </video>
-              </div>
-            )}
+            <div className="row mt-3">
+              {detailInfo?.imagesReports.map((fill, index) => {
+                const media = checkMediaType(fill.media);
+                return (
+                  <div key={index} className="col-lg-6 col-md-6 col-sm-6">
+                    {media === "image" ? (
+                      <Card sx={{ width: "100%" }} className="mb-3">
+                        <CardContent>
+                          <img
+                            src={fill.media}
+                            alt={`media-${index}`}
+                            className="rounded-3 object-fit-cover"
+                            style={{ width: "100%", height: "200px" }}
+                          />
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <Card sx={{ width: "100%" }} className="mb-3">
+                        <CardContent>
+                          <video
+                            controls
+                            className="rounded-3"
+                            style={{ width: "100%", height: "200px" }}
+                          >
+                            <source src={fill.media} type="video/mp4" />
+                            Trình duyệt của bạn không hỗ trợ thẻ video.
+                          </video>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </Typography>
           {/*  */}
           <h4 className="border-top">Thao tác quản trị</h4>

@@ -40,7 +40,7 @@ const CardReportUserByWait = () => {
       );
       setListHistoryWait(res.data.reports);
       setTotalItems(res.data.totalItems);
-      // console.log(res.data.reports);
+      console.log(res.data);
     } catch (error) {
       console.log(error);
     } finally {
@@ -63,12 +63,13 @@ const CardReportUserByWait = () => {
   return (
     <>
       <h5 className="border p-2 rounded-3">Chờ xử lý</h5>
-      {listHistoryWait.length === 0 ? (
+      {listHistoryWait && listHistoryWait.length === 0 ? (
         <strong>Không có lịch sử.</strong>
       ) : (
+        listHistoryWait &&
         listHistoryWait.map((fill) => (
           <Card
-            sx={{ minWidth: 275, boxShadow: "none" }}
+            sx={{ minWidth: 275, boxShadow: "none", backgroundColor : "backgroundElement.children" }}
             className="mb-3 rounded-3"
           >
             <CardContent>
@@ -91,7 +92,7 @@ const CardReportUserByWait = () => {
           </Card>
         ))
       )}
-      {listHistoryWait.length !== 0 ? (
+      {listHistoryWait && listHistoryWait.length !== 0 ? (
         listHistoryWait.length < totalItems ? (
           <div className=" d-flex justify-content-center">
             <Button
@@ -171,7 +172,7 @@ const CardReportUserByProcessed = () => {
       ) : (
         listHistoryProcess.map((fill) => (
           <Card
-            sx={{ minWidth: 275, boxShadow: "none" }}
+            sx={{ minWidth: 275, boxShadow: "none",backgroundColor : "backgroundElement.children" }}
             className="mb-3 rounded-3"
           >
             <CardContent>
@@ -282,7 +283,7 @@ const CardReportUserByRefuse = () => {
       ) : (
         listHistoryRefuse.map((fill) => (
           <Card
-            sx={{ minWidth: 275, boxShadow: "none" }}
+            sx={{ minWidth: 275, boxShadow: "none",backgroundColor : "backgroundElement.children" }}
             className="mb-3 rounded-3"
           >
             <CardContent>
@@ -411,6 +412,24 @@ const ModelDialog = ({ idReport, idOrder }) => {
     setInfoReport(null);
   };
 
+  //Hàm phâm tách link video hoặc link hình
+  const checkMediaType = (url) => {
+    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff"];
+    const videoExtensions = [".mp4", ".avi", ".mov", ".webm"];
+
+    // Lấy phần mở rộng của URL
+    const cleanedUrl = url.split("?")[0]; // Loại bỏ phần query string
+    const extension = cleanedUrl.slice(cleanedUrl.lastIndexOf(".")); // Lấy phần sau dấu '.'
+
+    if (imageExtensions.includes(extension)) {
+      return "image";
+    } else if (videoExtensions.includes(extension)) {
+      return "video";
+    } else {
+      return "unknown";
+    }
+  };
+
   return (
     <>
       <Button onClick={handleClickOpen}>
@@ -442,7 +461,7 @@ const ModelDialog = ({ idReport, idOrder }) => {
             <strong>Người báo cáo:</strong> {infoReport?.user?.fullname}
           </Typography>
           <Typography gutterBottom>
-            <stong>Đơn vị bị cáo báo:</stong> {infoReport?.store.namestore}
+            <srtong>Đơn vị bị cáo báo:</srtong> {infoReport?.store.namestore}
           </Typography>
           <Typography gutterBottom>
             <strong>Sản phẩm bị báo cáo:</strong>{" "}
@@ -452,15 +471,41 @@ const ModelDialog = ({ idReport, idOrder }) => {
             <strong>Nội dụng báo cáo:</strong> {infoReport?.content}
           </Typography>
           <Typography gutterBottom>
-            <strong>Video xác thực:</strong>
-            {infoReport?.media && (
-              <div className="mt-3">
-                <video width="100%" controls className="rounded-3">
-                  <source src={infoReport?.media} type="video/mp4" />
-                  Trình duyệt của bạn không hỗ trợ thẻ video.
-                </video>
-              </div>
-            )}
+            <strong>Minh chứng xác thực:</strong>
+            <div className="row mt-3">
+              {infoReport?.imagesReports.map((fill, index) => {
+                const media = checkMediaType(fill.media);
+                return (
+                  <div key={index} className="col-lg-6 col-md-6 col-sm-6">
+                    {media === "image" ? (
+                      <Card sx={{ width: "100%" }} className="mb-3">
+                        <CardContent>
+                          <img
+                            src={fill.media}
+                            alt={`media-${index}`}
+                            className="rounded-3 object-fit-cover"
+                            style={{ width: "100%", height: "200px" }}
+                          />
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <Card sx={{ width: "100%" }} className="mb-3">
+                        <CardContent>
+                          <video
+                            controls
+                            className="rounded-3"
+                            style={{ width: "100%", height: "200px" }}
+                          >
+                            <source src={fill.media} type="video/mp4" />
+                            Trình duyệt của bạn không hỗ trợ thẻ video.
+                          </video>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </Typography>
         </DialogContent>
       </BootstrapDialog>

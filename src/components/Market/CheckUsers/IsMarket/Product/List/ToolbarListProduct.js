@@ -9,6 +9,7 @@ import {
   lighten,
   styled,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import axios from "../../../../../../Localhost/Custumize-axios";
 
@@ -92,7 +93,7 @@ const ToolbarListPorudct = ({
             renderInput={(params) => (
               <TextField {...params} label="Tìm kiếm theo danh mục sản phẩm" />
             )}
-            sx={{ width: 390, marginRight : 1 }}
+            sx={{ width: 390, marginRight: 1 }}
             renderGroup={(params) => (
               <li key={params.key}>
                 <GroupHeader>{params.group}</GroupHeader>
@@ -102,25 +103,50 @@ const ToolbarListPorudct = ({
             size="small"
           />
           {/* Lọc số lượng hết hàng */}
-          <Badge badgeContent={countQuantitySoldOut} color="error">
-            <Button
-              variant="outlined"
-              onClick={handleClickFilterSoldOutByQuantity}
-              // sx={{ width: 320 }}
-            >
-              {isFilterQuantitySoldOut ? (
-                <>
-                  <FilterAltOffIcon />
-                  Hiển thị tất cả
-                </>
-              ) : (
-                <>
-                  <FilterAltIcon />
-                  Lọc sản phẩm hết hàng
-                </>
-              )}
-            </Button>
-          </Badge>
+          {countQuantitySoldOut === 0 ? (
+            <Tooltip title="Không có sản phẩm hết hàng">
+              <Badge badgeContent={countQuantitySoldOut} color="error">
+                <Button
+                  variant="outlined"
+                  onClick={handleClickFilterSoldOutByQuantity}
+                  // sx={{ width: 320 }}
+                  disabled
+                >
+                  {isFilterQuantitySoldOut ? (
+                    <>
+                      <FilterAltOffIcon />
+                      Hiển thị tất cả
+                    </>
+                  ) : (
+                    <>
+                      <FilterAltIcon />
+                      Lọc sản phẩm hết hàng
+                    </>
+                  )}
+                </Button>
+              </Badge>
+            </Tooltip>
+          ) : (
+            <Badge badgeContent={countQuantitySoldOut} color="error">
+              <Button
+                variant="outlined"
+                onClick={handleClickFilterSoldOutByQuantity}
+                // sx={{ width: 320 }}
+              >
+                {isFilterQuantitySoldOut ? (
+                  <>
+                    <FilterAltOffIcon />
+                    Hiển thị tất cả
+                  </>
+                ) : (
+                  <>
+                    <FilterAltIcon />
+                    Lọc sản phẩm hết hàng
+                  </>
+                )}
+              </Button>
+            </Badge>
+          )}
         </div>
       </div>
     </div>

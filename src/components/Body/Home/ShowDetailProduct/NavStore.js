@@ -84,6 +84,7 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
                 id="avt-store"
                 //   onClick={handleViewStoreInfo}
                 style={{ cursor: "pointer", border: "none" }}
+                className="object-fit-lg-cover"
               />
             </Link>
           </div>
@@ -165,10 +166,10 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
             <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="fst-italic">Đánh giá cửa hàng:</label>
-                <div className="align-items-center">
-                  <span className="fw-semibold">{evaluateStore || 0}</span>
-                  <StarIcon sx={{ color: "yellow" }} />
-                </div>
+                <span className="fw-semibold d-flex justify-content-end">
+                  {evaluateStore || 0}{" "}
+                  <StarIcon sx={{ color: "yellow", width: "50%" }} />
+                </span>
               </div>
             </div>
           </div>

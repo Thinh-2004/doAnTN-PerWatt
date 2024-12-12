@@ -28,15 +28,6 @@ const CheckItemProduct = () => {
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1); //trạng thái cho số lượng trước khi thêm giỏ hàng
 
-  const geturlIMG = (productId, filename) => {
-    return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  };
-  const geturlIMGStore = (userId, filename) => {
-    return `${axios.defaults.baseURL}files/user/${userId}/${filename}`;
-  };
-  const geturlImgDetailProduct = (detailId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
-  };
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
@@ -284,11 +275,7 @@ const CheckItemProduct = () => {
                         style={{ cursor: "pointer" }}
                       >
                         <img
-                          src={
-                            FillDetailPr
-                              ? geturlIMG(FillDetailPr.id, image.imagename)
-                              : "/images/no_img.png"
-                          }
+                          src={image.imagename}
                           className="d-block object-fit-cover rounded-5"
                           alt={FillDetailPr ? FillDetailPr.name : "No Image"}
                           style={{ width: "100%", height: "100%" }}
@@ -305,14 +292,7 @@ const CheckItemProduct = () => {
                       >
                         <DialogContent>
                           <img
-                            src={
-                              popUpImage
-                                ? geturlIMG(
-                                    FillDetailPr.id,
-                                    popUpImage.imagename
-                                  )
-                                : ""
-                            }
+                            src={popUpImage?.imagename}
                             className="d-block"
                             alt={FillDetailPr ? FillDetailPr.name : "No Image"}
                             style={{ width: "100%", height: "100%" }}
@@ -389,11 +369,7 @@ const CheckItemProduct = () => {
                       }
                     >
                       <img
-                        src={
-                          FillDetailPr
-                            ? geturlIMG(FillDetailPr.id, image.imagename)
-                            : "/images/no_img.png"
-                        }
+                        src={image.imagename}
                         className="rounded-3 border"
                         alt=""
                         style={{ width: "100px", height: "100px" }}
@@ -596,10 +572,7 @@ const CheckItemProduct = () => {
                         }}
                       >
                         <img
-                          src={geturlImgDetailProduct(
-                            fillDetail.id,
-                            fillDetail.imagedetail
-                          )}
+                          src={fillDetail.imagedetail}
                           alt="Ảnh phân loại sản phẩm"
                           className="img-fluid"
                           style={{ maxWidth: "50px", maxHeight: "50px" }}
@@ -644,14 +617,7 @@ const CheckItemProduct = () => {
             <div className="d-flex justify-content-center">
               <div className="p-2 d-flex justify-content-center">
                 <img
-                  src={
-                    FillDetailPr && FillDetailPr.store
-                      ? geturlIMGStore(
-                          FillDetailPr.store.user.id,
-                          FillDetailPr.store.user.avatar
-                        )
-                      : "/images/no_img.png"
-                  }
+                  src={FillDetailPr?.store.user.avatar}
                   alt=""
                   id="avt-store"
                   onClick={handleViewStoreInfo}
@@ -692,7 +658,7 @@ const CheckItemProduct = () => {
                 <div className="col-lg-4 col-md-4 col-sm-4 mb-3 border-end">
                   <div className="d-flex justify-content-between align-items-center">
                     <label className="fst-italic">Sản phẩm đã đăng bán:</label>
-                    <span className="fw-semibold">{countProductStore}</span>
+                    <span className="fw-semibold">{countProductStore || 0}</span>
                   </div>
                 </div>
 
@@ -733,7 +699,10 @@ const CheckItemProduct = () => {
             </div>
           </div>
         </Box>
-        <Box sx={{backgroundColor: "backgroundElement.children"}} className="row rounded-4 mt-3">
+        <Box
+          sx={{ backgroundColor: "backgroundElement.children" }}
+          className="row rounded-4 mt-3"
+        >
           <div className="p-3">
             <h4>Thông tin chi tiết sản phẩm</h4>
             <span className="p-0 m-0">

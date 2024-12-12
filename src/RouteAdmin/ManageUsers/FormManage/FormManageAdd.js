@@ -149,7 +149,7 @@ const FormManageAdd = ({ isRefeshTable }) => {
         }
 
         const res = await axios.get(`/userProFile/myInfo`);
-        console.log(res.data);
+        // console.log(res.data);
         setRole(res.data.rolePermission.permission.name);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -294,27 +294,25 @@ const FormManageAdd = ({ isRefeshTable }) => {
         console.log(userToSend);
         const res = await axios.post("/manage/create", userToSend);
 
-        setTimeout(() => {
-          toast.update(id, {
-            render: "Tạo quản trị mới thành công",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          setFormUser({
-            fullname: "",
-            password: "",
-            email: "",
-            birthdate: "",
-            gender: "",
-            rolepermission: "", // Vai trò
-            phone: "",
-            configPassWord: "",
-          });
-          setSelectedRolePermission("");
-          isRefeshTable(true);
-        }, 2000);
+        toast.update(id, {
+          render: "Tạo quản trị mới thành công",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
+        setFormUser({
+          fullname: "",
+          password: "",
+          email: "",
+          birthdate: "",
+          gender: "",
+          rolepermission: "", // Vai trò
+          phone: "",
+          configPassWord: "",
+        });
+        setSelectedRolePermission("");
+        isRefeshTable(true);
         setTimeout(() => {
           isRefeshTable(false);
         }, 2500);
@@ -324,15 +322,13 @@ const FormManageAdd = ({ isRefeshTable }) => {
           error.response && error.response.data
             ? error.response.data
             : "Đã xảy ra lỗi, vui lòng thử lại";
-        setTimeout(() => {
-          toast.update(id, {
-            render: `${errorMessage}`,
-            type: "error",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-        }, 2000);
+        toast.update(id, {
+          render: `${errorMessage}`,
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
       }
     }
   };

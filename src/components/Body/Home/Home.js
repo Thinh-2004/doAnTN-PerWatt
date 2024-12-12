@@ -12,6 +12,7 @@ import DoneAllIcon from "@mui/icons-material/DoneAll";
 import { Link } from "react-router-dom";
 import { Box, Container, Typography } from "@mui/material";
 import axios from "../../../Localhost/Custumize-axios";
+import dayjs from "dayjs";
 
 const Home = () => {
   const [searchProduct, setSearchProduct] = useState(() => {
@@ -107,16 +108,25 @@ const Home = () => {
   //Hàm load api check bannerMid
   useEffect(() => {
     const loadBannerMid = async () => {
+      const today = dayjs().format("YYYY-MM-DD");
       try {
         const res = await axios.get(`/banners/checkShowBannerMid`);
-        setCheckShowBannerMid(res.data);
-        // console.log(res.data);
+
+        // Lọc danh sách banner không có enddate bằng ngày hiện tại
+        const filteredBanners = res.data.filter((banner) => {
+          // Giả sử `enddate` là chuỗi ngày ở định dạng "YYYY-MM-DD"
+          return banner.enddate !== today;
+        });
+
+        setCheckShowBannerMid(filteredBanners);
       } catch (error) {
         console.log(error);
       }
     };
+
     loadBannerMid();
   }, []);
+  
   return (
     <>
       <Header contextSearch={handleSearch} resetSearch={resetSearch}></Header>
