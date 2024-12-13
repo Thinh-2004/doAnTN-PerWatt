@@ -1,12 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-import Slider from "react-slick";
-import { Table, Spin, Alert } from "antd"; // Import Alert từ Ant Design
-import { useSpring, animated } from "@react-spring/web"; // Import react-spring
+import { useInView } from "react-intersection-observer";
+import { Table, Spin, Alert, Pagination, Modal,Select } from "antd";
+import { useSpring, animated } from "@react-spring/web";
 import "./ProductList.css";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import axios from "../../Localhost/Custumize-axios";
-import { Card, CardContent, Container } from "@mui/material";
+import { CardContent } from "@mui/material";
 import { Link } from "react-router-dom";
 import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
 
@@ -19,20 +17,27 @@ const ProductCard = ({
   rating,
   slugProduct,
 }) => {
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
   return (
     <Link to={`/detailProduct/${slugProduct}`}>
-      <Card className="">
+      <div
+        ref={ref}
+        className={`product-card ${inView ? "visible" : "hidden"}`}
+      >
         <CardContent>
           <img src={imageUrl} alt={altText} className="image" />
           <h3 className="title">{title}</h3>
           <span className="price text-danger">{price}</span>
           <br />
           <div className="d-flex justify-content-between">
-            <span className="sold">Đã bán: {soldCount}</span>
-            <span className="rating">Xếp hạng: {rating}</span>
+            <span className="sold mt-3">Đã bán: {soldCount}</span>
+            <span className="rating mt-3">Xếp hạng: {rating}</span>
           </div>
         </CardContent>
-      </Card>
+      </div>
     </Link>
   );
 };
@@ -41,44 +46,26 @@ const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [revenueData, setRevenueData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // Thêm trạng thái error
+  const [error, setError] = useState(null);
+  const [availableYears, setAvailableYears] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortPriceOrder, setSortPriceOrder] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);  // Trạng thái cho trang hiện tại
+  const [pageSize] = useState(6);  // Số sản phẩm trên mỗi trang
   const { mode } = useContext(ThemeModeContext);
-
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 6,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 3000,
-    responsive: [
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 480,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
-      },
-    ],
-  };
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalRevenueDetail, setModalRevenueDetail] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const filteredRevenueData = revenueData.filter(item => item.Year === selectedYear);
+  
   const columns = [
     {
       title: "Tên Cửa Hàng",
       dataIndex: "StoreName",
       key: "storeName",
       render: (StoreName, record) => (
-        <Link to={`/pageStore/${record.slugStore}`}
-          style={{color : mode === "light" ? "black" : "white"}}
-        >
+        <Link to={`/pageStore/${record.slugStore}`} style={{ color: mode === "light" ? "black" : "white" }}>
           {StoreName}
         </Link>
       ),
@@ -87,13 +74,23 @@ const ProductList = () => {
       title: "Doanh Thu",
       dataIndex: "NetRevenue",
       key: "netRevenue",
-      render: (value) =>
-        new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(value),
+      render: (value, record) => (
+        <span onClick={() => handleShowRevenueDetail(record)} style={{ color: "blue", cursor: "pointer" }}>
+          {new Intl.NumberFormat("vi-VN", {
+            style: "decimal",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }).format(value)}{" "}
+          đ
+        </span>
+      ),
     },
   ];
+
+  const handleYearChange = (value) => {
+    setSelectedYear(value);
+  };
+  
 
   const calculateRating = (soldCount) => {
     if (soldCount >= 500) return "⭐⭐⭐⭐⭐";
@@ -103,31 +100,56 @@ const ProductList = () => {
     return "⭐";
   };
 
+  const handleSort = () => {
+    const sortedProducts = [...products].sort((a, b) => {
+      if (sortOrder === "asc") {
+        return a.soldCount - b.soldCount;
+      }
+      return b.soldCount - a.soldCount;
+    });
+    setProducts(sortedProducts);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
+  const handleSortByPrice = () => {
+    const sortedProducts = [...products].sort((a, b) => {
+      // Chuyển đổi giá từ chuỗi sang số thực để so sánh
+      const priceA = parseFloat(a.price.replace(/[^\d]/g, ""));
+      const priceB = parseFloat(b.price.replace(/[^\d]/g, ""));
+      return sortPriceOrder === "asc" ? priceA - priceB : priceB - priceA;
+    });
+    setProducts(sortedProducts);
+    setSortPriceOrder(sortPriceOrder === "asc" ? "desc" : "asc");
+  };
+
+  const filteredProducts = products.filter((product) => {
+    // Lấy giá trị giá sản phẩm dưới dạng số
+    const price = parseFloat(product.price.replace(/[^\d]/g, ""));
+
+    // Kiểm tra điều kiện tìm kiếm
+    return (
+      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      price.toString().includes(searchTerm)
+    );
+  });
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get("/product-sales");
-        console.log(response.data);
-        const productData = response.data.map((product) => {
-          const productName = product.ProductName;
-          const imageUrl = product.ImageNameDetail
-            ? product.ImageNameDetail
-            : product.ProductImage;
-
-          return {
-            imageUrl: imageUrl,
-            altText: productName,
-            title: productName,
-            price: new Intl.NumberFormat("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            }).format(product.ProductPriceDetail),
-            soldCount: product.QuantitySoldDetail,
-            rating: calculateRating(product.QuantitySoldDetail),
-            slugProduct: product.slugProduct,
-            slugStore: product.slugStore,
-          };
-        });
+        const productData = response.data.map((product) => ({
+          imageUrl: product.ImageNameDetail || product.ProductImage,
+          altText: product.ProductName,
+          title: product.ProductName,
+          price: new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(product.ProductPriceDetail),
+          soldCount: product.QuantitySoldDetail,
+          rating: calculateRating(product.QuantitySoldDetail),
+          slugProduct: product.slugProduct,
+          slugStore: product.slugStore,
+        }));
         setProducts(productData);
       } catch (error) {
         console.error("Error fetching product data:", error);
@@ -139,11 +161,40 @@ const ProductList = () => {
 
     const fetchRevenueData = async () => {
       try {
-        const response = await axios.get(
-          "/revenue/net-store-revenue"
-        );
-        setRevenueData(response.data);
-        // console.log(response.data);
+        const response = await axios.get(`/revenue/net-store-revenue`);
+        const rawRevenueData = response.data;
+    
+        // Gộp dữ liệu theo năm
+        const groupedData = rawRevenueData.reduce((acc, curr) => {
+          const { Year, NetRevenue, StoreName, slugStore, OrderCount } = curr;
+    
+          // Kiểm tra xem năm đã tồn tại trong `acc` chưa
+          if (!acc[Year]) {
+            acc[Year] = { 
+              Year, 
+              NetRevenue: 0, 
+              OrderCount: 0, 
+              StoreName, 
+              slugStore 
+            };
+          }
+    
+          // Cộng dồn doanh thu và số lượng đơn hàng
+          acc[Year].NetRevenue += NetRevenue;
+          acc[Year].OrderCount += OrderCount;
+    
+          return acc;
+        }, {});
+    
+        // Chuyển đổi đối tượng thành mảng
+        const aggregatedRevenueData = Object.values(groupedData);
+    
+        // Cập nhật state với dữ liệu gộp
+        setRevenueData(aggregatedRevenueData);
+    
+        // Lấy danh sách các năm có sẵn từ dữ liệu doanh thu
+        const years = [...new Set(aggregatedRevenueData.map((item) => item.Year))];
+        setAvailableYears(years); // Cập nhật danh sách năm
       } catch (error) {
         console.error("Error fetching revenue data:", error);
         setError("Không thể tải dữ liệu doanh thu.");
@@ -151,54 +202,152 @@ const ProductList = () => {
         setLoading(false);
       }
     };
+    
 
     fetchProducts();
     fetchRevenueData();
   }, []);
+  
 
-  // Hiệu ứng slide-in cho thông báo lỗi
   const errorAnimation = useSpring({
-    transform: error ? "translateY(0)" : "translateY(-100%)", // Trượt từ trên xuống
+    transform: error ? "translateY(0)" : "translateY(-100%)",
     opacity: error ? 1 : 0,
     config: { tension: 250, friction: 20 },
   });
 
+  // Tính toán các sản phẩm hiển thị cho trang hiện tại
+  const currentProducts = filteredProducts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleShowRevenueDetail = (store) => {
+    setModalRevenueDetail(store);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setModalRevenueDetail(null);
+  };
+
   return (
-    <Container
-      className="rounded-3 mt-3"
-      sx={{ backgroundColor: "backgroundElement.children" }}
-    >
+    <div className="product-list-container rounded-3 mt-3">
       <h3 className="header p-2">Sản phẩm bán chạy</h3>
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Tìm kiếm sản phẩm theo tên hoặc giá..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+      </div>
+      <div className="sort-container">
+        {products.length > 0 && (
+          <>
+            <button onClick={handleSort} className="sort-button">
+              Sắp xếp theo số lượng ({sortOrder === "asc" ? "↑" : "↓"})
+            </button>
+            <button onClick={handleSortByPrice} className="sort-button">
+              Sắp xếp theo giá ({sortPriceOrder === "asc" ? "↑" : "↓"})
+            </button>
+          </>
+        )}
+      </div>
       {loading ? (
         <div className="loading-container">
           <Spin size="large" tip="Đang tải..." />
         </div>
       ) : error ? (
         <animated.div style={errorAnimation}>
-          <Alert message={error} type="error" showIcon />{" "}
-          {/* Hiển thị thông báo lỗi với hiệu ứng */}
+          <Alert message={error} type="error" showIcon />
         </animated.div>
-      ) : products.length === 0 ? (
+      ) : filteredProducts.length === 0 ? (
         <div className="no-data-message" style={{ minHeight: "200px" }}>
           Không có sản phẩm
         </div>
       ) : (
-        <Slider {...sliderSettings}>
-          {products.map((product, index) => (
+        <div className="product-grid">
+          {currentProducts.map((product, index) => (
             <ProductCard key={index} {...product} />
           ))}
-        </Slider>
+        </div>
       )}
+      <div className="pagination-container">
+        <Pagination
+          current={currentPage}
+          total={filteredProducts.length}
+          pageSize={pageSize}
+          onChange={handlePageChange}
+          style={{ textAlign: "center", marginTop: "20px" }}
+        />
+      </div>
+      <h3 className="header p-1">Doanh thu Cửa Hàng</h3>
+      <Select
+        defaultValue={selectedYear}
+        style={{ width: 120, marginBottom: 20 }}
+        onChange={handleYearChange}
+      >
+        {availableYears.map((year) => (
+          <Select.Option key={year} value={year}>
+            {year}
+          </Select.Option>
+        ))}
+      </Select>
 
-      <h3 className="header">Doanh Thu Cửa Hàng</h3>
+      {/* Hiển thị bảng với dữ liệu doanh thu */}
       <Table
-        dataSource={revenueData}
         columns={columns}
-        pagination={{ pageSize: 3 }}
-        rowKey="storeName"
-        className={mode === "light" ? "light-mode-table" : "dark-mode-table"}
+        dataSource={filteredRevenueData}  // Sử dụng dữ liệu đã lọc theo năm
+        loading={loading}
+        rowKey="slugStore"
       />
-    </Container>
+     <Modal
+  title="Chi tiết Doanh thu"
+  visible={modalVisible}
+  onCancel={handleCloseModal}
+  footer={null}
+>
+  {modalRevenueDetail && (
+    <div>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Thông tin</th>
+            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Giá trị</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style={{ border: '1px solid #ddd', padding: '8px' }}>Tên Cửa Hàng</td>
+            <td style={{ border: '1px solid #ddd', padding: '8px' }}>{modalRevenueDetail.StoreName}</td>
+          </tr>
+          <tr>
+            <td style={{ border: '1px solid #ddd', padding: '8px' }}>Doanh thu</td>
+            <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+              {new Intl.NumberFormat("vi-VN", {
+                style: "decimal",
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }).format(modalRevenueDetail.NetRevenue)} đ
+            </td>
+          </tr>
+          <tr>
+            <td style={{ border: '1px solid #ddd', padding: '8px' }}>Số đơn hàng</td>
+            <td style={{ border: '1px solid #ddd', padding: '8px' }}>{modalRevenueDetail.OrderCount}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  )}
+</Modal>
+
+    </div>
   );
 };
 

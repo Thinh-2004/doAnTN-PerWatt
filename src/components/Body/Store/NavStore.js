@@ -17,6 +17,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { ThemeModeContext } from "../../ThemeMode/ThemeModeProvider";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
+import { confirmAlert } from "react-confirm-alert";
 
 const Store = () => {
   const getIdBySlugStore = useParams();
@@ -90,6 +91,8 @@ const Store = () => {
         `store/${storeRes.data.products[0].product.store.id}`
       );
       setFill(res.data);
+      loadIsUserFollowStore(res.data.id);
+      loadTotalFollower(res.data.id);
 
       //Kiểm tra infoStore trước khi call API
       if (res.data && res.data.id) {
@@ -178,7 +181,7 @@ const Store = () => {
     try {
       const res = await axios.get(`findVoucherByIdUser/${user.id}`);
       setVoucherDetail(res.data); // Lưu danh sách các voucher đã nhận vào state
-      console.log(res.data);
+      // console.log(res.data);
     } catch (error) {
       console.log(error);
     }
@@ -188,7 +191,7 @@ const Store = () => {
     if (user) {
       check();
     }
-  }, [user]);
+  }, [user.id]);
 
   useEffect(() => {
     // Hàm để lấy danh sách vouchers từ cửa hàng
@@ -231,6 +234,70 @@ const Store = () => {
     return acc;
   }, []);
 
+  // Bổ sung follow
+  const [isUserFollowStore, setIsUserFollowStore] = useState(false);
+  const [totalFollower, setTotalFollower] = useState(0);
+
+  const toggleFollow = async () => {
+    if (isUserFollowStore) {
+      await axios.post("/unfollow", {
+        userId: user.id,
+        storeId: fill.id,
+      });
+      setIsUserFollowStore(false);
+      setIsOpenDropdownFollow(false); // Bổ sung follow 2
+    } else {
+      await axios.post("/follow", {
+        userId: user.id,
+        storeId: fill.id,
+      });
+      setIsUserFollowStore(true);
+    }
+    loadTotalFollower(fill.id);
+  };
+
+  const loadIsUserFollowStore = async (storeId) => {
+    var check = await axios.get("/follow/user", {
+      params: {
+        userId: user.id,
+        storeId: storeId,
+      },
+    });
+    setIsUserFollowStore(check.data);
+  };
+  const loadTotalFollower = async (storeId) => {
+    var res = await axios.get("/follow/count", {
+      params: {
+        storeId: storeId,
+      },
+    });
+    setTotalFollower(res.data);
+  };
+
+  // Bổ sung follow 2
+  const [isOpenDropdownFollow, setIsOpenDropdownFollow] = useState(false);
+  const toggleDropdownFollow = () => {
+    setIsOpenDropdownFollow(!isOpenDropdownFollow);
+  };
+
+  const handleUnFollow = () => {
+    confirmAlert({
+      title: "Hủy theo dõi",
+      message: "Bạn chắc chắn muốn hủy theo dõi?",
+      buttons: [
+        {
+          label: "Không",
+        },
+        {
+          label: "Hủy Theo Dõi",
+          onClick: async () => {
+            toggleFollow();
+          },
+        },
+      ],
+    });
+  };
+
   return (
     <>
       <Header></Header>
@@ -238,11 +305,7 @@ const Store = () => {
         className={`mt-2 container-fluid ${mode === "light" ? "bg-white" : ""}`}
       >
         <div className="position-relative">
-          <img
-            src={fill.imgbackgound}
-            alt=""
-            id="background-img-filter"
-          />
+          <img src={fill.imgbackgound} alt="" id="background-img-filter" />
           <div className="container-lg position-absolute top-50 start-50 translate-middle">
             <img
               src={fill.imgbackgound}
@@ -259,7 +322,7 @@ const Store = () => {
                 <img
                   src={
                     fill && fill.user && fill.user.avatar
-                      ?  fill.user.avatar
+                      ? fill.user.avatar
                       : null
                   }
                   alt=""
@@ -280,10 +343,36 @@ const Store = () => {
             </div>
             <div className="col-lg-4 col-md-4 col-sm-4 align-content-end">
               <div className="d-flex p-2">
-                <button className="btn" id="btn-follow">
-                  <i className="bi bi-plus-lg"></i>{" "}
-                  <span htmlFor="">Theo dõi</span>
-                </button>
+                {isUserFollowStore ? (
+                  <button
+                    className="btn position-relative"
+                    id="btn-follow"
+                    onClick={toggleDropdownFollow}
+                  >
+                    <i class="bi bi-house-check"></i>{" "}
+                    <span htmlFor="">Đã theo đõi</span>
+                    {isOpenDropdownFollow && (
+                      <button
+                        className="btn custom-dropdown"
+                        id="btn-follow"
+                        onClick={handleUnFollow}
+                      >
+                        <i class="bi bi-x-square"></i>{" "}
+                        <span htmlFor="">Hủy theo dõi</span>
+                        <div className="custom-arrow-up"></div>
+                      </button>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    className="btn"
+                    id="btn-follow"
+                    onClick={toggleFollow}
+                  >
+                    <i className="bi bi-plus-lg"></i>{" "}
+                    <span htmlFor="">Theo dõi</span>
+                  </button>
+                )}
                 <button className="btn mx-2" id="btn-chatMess">
                   <i className="bi bi-chat"></i> Nhắn tin
                 </button>
@@ -329,7 +418,7 @@ const Store = () => {
               {" "}
               <span>
                 <i className="bi bi-person-lines-fill"></i> Người theo dõi:{" "}
-                <label htmlFor="">900</label>{" "}
+                <label htmlFor="">{totalFollower}</label>{" "}
               </span>
             </div>
           </div>
@@ -414,9 +503,7 @@ const Store = () => {
                           {voucher.vouchername}
                         </Typography>
                         <img
-                          src={
-                            voucher.productDetail.product.images[0].imagename
-                          }
+                          src={voucher.product.images[0].imagename}
                           alt=""
                           id="img-product-voucher"
                           className="mb-2 mt-2"

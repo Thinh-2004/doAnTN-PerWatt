@@ -1,9 +1,16 @@
 import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControl,
   IconButton,
   Input,
   InputAdornment,
   InputLabel,
+  styled,
   TextField,
   useTheme,
 } from "@mui/material";
@@ -16,6 +23,83 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import FormSelectAdress from "../../APIAddressVN/FormSelectAdress";
+import TermsPopup from "../TermsPopup";
+import CloseIcon from "@mui/icons-material/Close";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialogContent-root": {
+    padding: theme.spacing(2),
+  },
+  "& .MuiDialogActions-root": {
+    padding: theme.spacing(1),
+  },
+}));
+
+const ModelTermPopUp = () => {
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <>
+      <label>
+        Tôi đồng ý với các{" "}
+        <Link onClick={handleClickOpen}>điều khoản và dịch vụ</Link>.
+      </label>
+      <BootstrapDialog
+        onClose={handleClose}
+        aria-labelledby="customized-dialog-title"
+        open={open}
+        fullWidth
+      >
+        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+          <div className="py-3 d-flex justify-content-around">
+            <div className="d-flex align-items-center">
+              <div>
+                <ReceiptLongIcon
+                  style={{
+                    fontSize: "80px",
+                    color: "#228dff",
+                  }}
+                />
+              </div>
+              <div className="stack ms-3">
+                <div className="fs-4">Điều Khoản và Dịch Vụ</div>
+              </div>
+            </div>
+          </div>
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleClose}
+          sx={(theme) => ({
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: theme.palette.grey[500],
+          })}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent dividers>
+          <TermsPopup />
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={handleClose}>
+            Đóng
+          </Button>
+        </DialogActions>
+      </BootstrapDialog>
+    </>
+  );
+};
 
 const Register = ({ onRegisterSuccess }) => {
   const [formUser, setFormUser] = useState({
@@ -24,7 +108,7 @@ const Register = ({ onRegisterSuccess }) => {
     email: "",
     birthdate: "",
     gender: "",
-    role: 3, // Vai trò buyer
+    rolePermission: 6, // Vai trò buyer
     address: "",
     phone: "",
     configPassWord: "",
@@ -33,7 +117,7 @@ const Register = ({ onRegisterSuccess }) => {
 
   //Hidden or show pass
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfig, setShowPasswordConfig] = React.useState(false);
+  const [showPasswordConfig, setShowPasswordConfig] = useState(false);
   const [isFocusedPass, setIsFocusedPass] = useState(false);
   const [isFocusedPassCofig, setIsFocusedPassCofig] = useState(false);
 
@@ -178,52 +262,48 @@ const Register = ({ onRegisterSuccess }) => {
           email: formUser.email,
           birthdate: formUser.birthdate,
           gender: genderBoolean,
-          role: {
-            id: formUser.role,
+          rolePermission: {
+            id: formUser.rolePermission,
           },
           address: null,
           phone: formUser.phone,
         };
         const res = await axios.post("/user", userToSend);
 
-        setTimeout(() => {
-          toast.update(id, {
-            render: "Đăng ký thành công, hệ thống sẽ chuyển sang đăng nhập.",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          setFormUser({
-            fullname: "",
-            password: "",
-            email: "",
-            birthdate: "",
-            gender: "",
-            role: 3, // Vai trò buyer
-            phone: "",
-            configPassWord: "",
-            check: false,
-          });
-          if (onRegisterSuccess) {
-            onRegisterSuccess();
-          }
-        }, 2000);
+        toast.update(id, {
+          render: "Đăng ký thành công, hệ thống sẽ chuyển sang đăng nhập.",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
+        setFormUser({
+          fullname: "",
+          password: "",
+          email: "",
+          birthdate: "",
+          gender: "",
+          rolePermission: 6, // Vai trò buyer
+          phone: "",
+          configPassWord: "",
+          check: false,
+        });
+        if (onRegisterSuccess) {
+          onRegisterSuccess();
+        }
       } catch (error) {
         console.error("Error response:", error.response);
         const errorMessage =
           error.response && error.response.data
             ? error.response.data
             : "Đã xảy ra lỗi, vui lòng thử lại";
-        setTimeout(() => {
-          toast.update(id, {
-            render: `${errorMessage}`,
-            type: "error",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-        }, 2000);
+        toast.update(id, {
+          render: `${errorMessage}`,
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
       }
     }
   };
@@ -421,10 +501,7 @@ const Register = ({ onRegisterSuccess }) => {
               checked={formUser.check}
               onChange={handleChange}
             />
-            <label>
-              Tôi đồng ý với các <Link>điều khoản</Link> và <Link>dịch vụ</Link>
-              .
-            </label>
+            <ModelTermPopUp />
           </div>
         </div>
       </div>

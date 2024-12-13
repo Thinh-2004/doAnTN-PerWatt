@@ -55,8 +55,6 @@ const BannerTable = () => {
   ); // Months are 0-based
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
 
-
-
   useEffect(() => {
     if (user) {
       setFormData((prevState) => ({
@@ -71,7 +69,7 @@ const BannerTable = () => {
 
   const fetchBanners = async () => {
     try {
-      const response = await axios.get("/banners");
+      const response = await axios.get("/banners/list");
       setBanners(response.data);
     } catch (error) {
       console.error("Error fetching banners:", error);
@@ -411,7 +409,7 @@ const BannerTable = () => {
                         </TableCell>
                         <TableCell align="center">
                           <img
-                            src={ banner.img}
+                            src={banner.img}
                             alt={banner.bannername}
                             width="100"
                           />

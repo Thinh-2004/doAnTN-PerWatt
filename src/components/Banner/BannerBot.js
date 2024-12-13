@@ -23,7 +23,7 @@ const Banner = () => {
   // Filter active banners based on startdate and enddate
   const getActiveBanners = () => {
     const today = new Date();
-    return banners.filter(banner => {
+    return banners.filter((banner) => {
       const startDate = new Date(banner.startdate);
       const endDate = new Date(banner.enddate);
       return today >= startDate && today <= endDate;
@@ -31,12 +31,14 @@ const Banner = () => {
   };
 
   const activeBanners = getActiveBanners();
-  const botBanners = activeBanners.filter(banner => banner.position === "BOT");
+  const botBanners = activeBanners.filter(
+    (banner) => banner.position === "BOT"
+  );
 
   // Auto change active banner every 3 seconds
   useEffect(() => {
     const botInterval = setInterval(() => {
-      setBotIndex(prevIndex => (prevIndex + 1) % botBanners.length);
+      setBotIndex((prevIndex) => (prevIndex + 1) % botBanners.length);
     }, 3000);
 
     return () => {
@@ -45,7 +47,12 @@ const Banner = () => {
   }, [botBanners.length]);
 
   return (
-    <div id="carouselExampleAutoplaying" className="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+    <div
+      id="carouselExampleAutoplaying"
+      className="carousel slide"
+      data-bs-ride="carousel"
+      data-bs-interval="3000"
+    >
       <div className="carousel-indicators">
         {botBanners.length > 0 &&
           botBanners.map((_, index) => (
@@ -60,9 +67,12 @@ const Banner = () => {
           ))}
       </div>
       <div className="carousel-inner rounded-3">
-        {botBanners.length > 0 &&
+        {botBanners.length > 0 ? (
           botBanners.map((banner, index) => (
-            <div key={index} className={`carousel-item ${index === botIndex ? "active" : ""}`}>
+            <div
+              key={index}
+              className={`carousel-item ${index === botIndex ? "active" : ""}`}
+            >
               <img
                 src={banner.img}
                 className="d-block w-100"
@@ -70,7 +80,15 @@ const Banner = () => {
                 alt={banner.bannername}
               />
             </div>
-          ))}
+          ))
+        ) : (
+          <img
+            src="/images/no_img.png"
+            className="d-block w-100"
+            style={{ height: "610px" }}
+            alt={"no images"}
+          />
+        )}
       </div>
       <button
         className="carousel-control-prev"

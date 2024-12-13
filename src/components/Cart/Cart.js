@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./CartStyle.css";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
@@ -8,7 +8,13 @@ import { tailspin } from "ldrs";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import { FaBan } from "react-icons/fa";
-import { Button, Card, CardContent, Typography } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  Pagination,
+  Typography,
+} from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import Box from "@mui/material/Box";
 import Popper from "@mui/material/Popper";
@@ -26,6 +32,8 @@ const Cart = () => {
     : null;
 
   const [selectedProductIds, setSelectedProductIds] = useState([]);
+  const [cartData, setCartData] = useState([]);
+
   const [groupSelection, setGroupSelection] = useState({});
   const [selectAll, setSelectAll] = useState(false);
   const [isCardLoaded, setIsCardLoaded] = useState(false);
@@ -37,6 +45,7 @@ const Cart = () => {
   const [loading, setLoading] = useState(true); // Trạng thái loading
   const [cartId, setCartId] = useState(null);
   const { mode } = useContext(ThemeModeContext);
+  const [voucher, setVoucher] = useState([]);
 
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -74,25 +83,76 @@ const Cart = () => {
   };
 
   const fetchCart = async () => {
-    setLoading(true);
-    setFill([]);
+    const loadingTimeout = new Promise((resolve) => setTimeout(resolve, 1000));
 
     try {
-      const res = await axios.get(`/cart/${user.id}`);
-      setFill(res.data);
-      const grouped = groupByStore(res.data);
-      setGroupSelection(
-        Object.keys(grouped).reduce((acc, storeId) => {
-          acc[storeId] = false;
-          return acc;
-        }, {})
-      );
-      updateTotalPrice(res.data);
+      const res = await Promise.race([
+        axios.get(`/cart/${user.id}`),
+        loadingTimeout,
+      ]);
+      setCartData(res.data);
+
+      if (res) {
+        setFill(res.data);
+        const grouped = groupByStore(res.data);
+        setGroupSelection(
+          Object.keys(grouped).reduce((acc, storeId) => {
+            acc[storeId] = false;
+            return acc;
+          }, {})
+        );
+        updateTotalPrice(res.data);
+      } else {
+        setLoading(true);
+      }
     } catch (error) {
       console.error("Error loading cart items:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadVoucher = async (idProduct) => {
+    try {
+      const res = await axios.get(`fillVoucherPrice/${idProduct}`);
+      setVoucher((pre) => ({
+        ...pre,
+        [idProduct]: res.data,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fill.forEach((voucher) => {
+      loadVoucher(voucher.productDetail.product.id);
+    });
+  }, [fill]);
+
+  const deleteSelectedProduct = async (cartId) => {
+    confirmAlert({
+      title: "Xóa sản phẩm khỏi giỏ hàng",
+      message: "Bạn có chắc chắn muốn xóa các sản phẩm đã chọn không?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            try {
+              axios.delete(`/cartDelete/${cartId}`);
+              setIsCountAddCart(true);
+              fetchCart();
+            } catch (error) {
+              console.error("Lỗi xóa sản phẩm:", error);
+            }
+            fetchCart();
+          },
+        },
+        {
+          label: "Không",
+        },
+      ],
+    });
   };
 
   const deleteSelectedProducts = async () => {
@@ -154,16 +214,6 @@ const Cart = () => {
       ],
     });
   };
-  const updateTotalPrice = () => {
-    const newTotalPrice = fill.reduce(
-      (acc, item) =>
-        selectedProductIds.includes(item.id)
-          ? acc + item.productDetail.price * item.quantity
-          : acc,
-      0
-    );
-    setTotalPrice(newTotalPrice);
-  };
 
   const handleCheckboxChange = (productId, isChecked) => {
     const updatedSelectedProductIds = isChecked
@@ -201,32 +251,65 @@ const Cart = () => {
     }
   };
 
+  const updateTotalPrice = () => {
+    const newTotalPrice = fill.reduce(
+      (acc, item) =>
+        selectedProductIds.includes(item.id)
+          ? acc + item.productDetail.price * item.quantity
+          : acc,
+      0
+    );
+    setTotalPrice(newTotalPrice);
+  };
+
   const handleIncrease = async (productId) => {
     const updatedFill = fill.map((item) =>
       item.id === productId && item.quantity < item.productDetail.quantity
         ? { ...item, quantity: item.quantity + 1 }
         : item
     );
-    setFill(updatedFill);
+    setFill(updatedFill); // Cập nhật trạng thái `fill`
+
+    // Tính toán tổng tiền ngay sau khi cập nhật `fill`
+    const newTotalPrice = updatedFill.reduce(
+      (acc, item) =>
+        selectedProductIds.includes(item.id)
+          ? acc + item.productDetail.price * item.quantity
+          : acc,
+      0
+    );
+    setTotalPrice(newTotalPrice);
+
     await updateQuantity(
       productId,
       updatedFill.find((item) => item.id === productId).quantity
     );
-    updateTotalPrice();
   };
 
   const handleDecrease = async (productId) => {
-    const updatedFill = fill.map((item) =>
-      item.id === productId && item.quantity > 1
-        ? { ...item, quantity: item.quantity - 1 }
-        : item
-    );
-    setFill(updatedFill);
-    await updateQuantity(
-      productId,
-      updatedFill.find((item) => item.id === productId).quantity
-    );
-    updateTotalPrice();
+    const currentProduct = fill.find((item) => item.id === productId);
+
+    if (currentProduct.quantity === 1) {
+      await deleteSelectedProduct(productId);
+    } else {
+      const updatedFill = fill.map((item) =>
+        item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
+      );
+      setFill(updatedFill);
+
+      // Tính toán tổng tiền ngay sau khi cập nhật `fill`
+      const newTotalPrice = updatedFill.reduce(
+        (acc, item) =>
+          selectedProductIds.includes(item.id)
+            ? acc + item.productDetail.price * item.quantity
+            : acc,
+        0
+      );
+      setTotalPrice(newTotalPrice);
+
+      const updatedQuantity = currentProduct.quantity - 1;
+      await updateQuantity(productId, updatedQuantity);
+    }
   };
 
   const handleQuantityChange = async (productId, newQuantity) => {
@@ -239,11 +322,20 @@ const Cart = () => {
         : item
     );
     setFill(updatedFill);
+
+    const newTotalPrice = updatedFill.reduce(
+      (acc, item) =>
+        selectedProductIds.includes(item.id)
+          ? acc + item.productDetail.price * item.quantity
+          : acc,
+      0
+    );
+    setTotalPrice(newTotalPrice);
+
     await updateQuantity(
       productId,
       updatedFill.find((item) => item.id === productId).quantity
     );
-    updateTotalPrice();
   };
 
   const formatPrice = (value) => {
@@ -278,12 +370,7 @@ const Cart = () => {
     fetchProductDetails(productId);
   };
 
-  const handleDetailUpdate = (
-    cartId,
-    selectedDetailId,
-
-    quantityDetail
-  ) => {
+  const handleDetailUpdate = (cartId, selectedDetailId, quantityDetail) => {
     if (selectedDetailId) {
       updateCartProductDetail(cartId, selectedDetailId, quantityDetail)
         .then(() => {
@@ -410,6 +497,7 @@ const Cart = () => {
                   const storeProducts = groupedProducts[storeId];
                   const store = storeProducts[0].productDetail.product.store;
                   const isGroupSelected = groupSelection[storeId] || false;
+
                   return (
                     <Card
                       className="rounded-3 mb-3"
@@ -417,6 +505,9 @@ const Cart = () => {
                       key={storeId}
                       style={{ position: "relative", minHeight: "200px" }}
                       sx={{ boxShadow: "none" }}
+                      onLoad={() => {
+                        setIsCardLoaded(true);
+                      }}
                     >
                       {!isCardLoaded && (
                         <l-tailspin
@@ -458,6 +549,7 @@ const Cart = () => {
                               <img
                                 src={store.user.avatar}
                                 id="imgShop"
+                                alt=""
                                 className="mx-2 object-fit-cover"
                                 style={{
                                   width: "30px",
@@ -468,8 +560,6 @@ const Cart = () => {
                                   backgroundColor: "#f0f0f0",
                                   borderRadius: "100%",
                                 }}
-                                alt=""
-                                loading="lazy"
                               />
                             </Link>
                             <h5 id="nameShop" className="mt-1">
@@ -489,10 +579,42 @@ const Cart = () => {
                             </h5>
                           </div>
                         </div>
+
                         <hr id="hr" />
                         {storeProducts.map((cart) => {
                           const firstIMG =
-                            cart.productDetail.product.images?.[0];
+                            cart.productDetail.product?.images?.[0];
+
+                          const productVoucher =
+                            voucher[cart.productDetail.product.id] || [];
+
+                          const matchingPrices = productVoucher.filter(
+                            (v) =>
+                              cart.productDetail.product.id === v.product.id
+                          );
+
+                          const isVoucherPrice = productVoucher.some(
+                            (check) =>
+                              check.product.id === cart.productDetail.product.id
+                          );
+
+                          const isStatusVoucher = productVoucher.some(
+                            (check) => check.status === "Hoạt động"
+                          );
+
+                          let result;
+
+                          if (matchingPrices.length > 0) {
+                            const priceDown =
+                              cart.productDetail.price *
+                              cart.quantity *
+                              (matchingPrices[0].discountprice / 100);
+                            result = formatPrice(
+                              cart.productDetail.price * cart.quantity -
+                                priceDown
+                            );
+                            console.log(result);
+                          }
                           return (
                             <div className="d-flex mt-3 mb-3" key={cart.id}>
                               {cart.productDetail.quantity === 0 ? (
@@ -554,10 +676,6 @@ const Cart = () => {
                                       backgroundColor: "#ffff",
                                     }}
                                     className="rounded-3"
-                                    onLoad={() => {
-                                      setIsCardLoaded(true);
-                                    }}
-                                    // loading="lazy"
                                   />
                                   {cart.productDetail.quantity === 0 && (
                                     <div
@@ -574,8 +692,9 @@ const Cart = () => {
                                   )}
                                 </Link>
                               </div>
-                              <div className="row">
-                                <div className="col-lg-5 col-md-12 mt-3 mx-3 pe-4">
+
+                              <div className="row ms-2">
+                                <div className="col-lg-6 col-md-12 mt-3 mx-3 pe-4">
                                   <div className="row">
                                     <div id="fontSizeTitle">
                                       <Typography
@@ -697,7 +816,10 @@ const Cart = () => {
                                                               }}
                                                               loading="lazy"
                                                             />
-                                                            {detail.namedetail}
+                                                            {detail.namedetail}{" "}
+                                                            {formatPrice(
+                                                              detail.price
+                                                            ) + " VNĐ"}
                                                           </button>
                                                         </div>
                                                       );
@@ -756,7 +878,7 @@ const Cart = () => {
                                     </Box>
                                   </div>
                                 </div>
-                                <div className="col-lg-6 col-md-12">
+                                <div className="col-lg-5 col-md-12">
                                   <div
                                     className="d-flex mt-3"
                                     id="spinner"
@@ -836,14 +958,41 @@ const Cart = () => {
                                     </Button>
                                   </div>
                                   <Typography
-                                    variant="h5"
+                                    variant="h6"
                                     className="mt-2"
-                                    sx={{ color: "text.default" }}
+                                    sx={{
+                                      color: "text.default",
+                                      ontSize: "15px",
+                                    }}
                                   >
-                                    Tổng cộng:{" "}
-                                    {formatPrice(
-                                      cart.productDetail.price * cart.quantity
-                                    ) + " VNĐ"}
+                                    <div
+                                      className="d-flex align-items-center"
+                                      style={{ fontSize: "20px" }}
+                                    >
+                                      <div className="me-2">Tổng:</div>
+                                      {isVoucherPrice && isStatusVoucher ? (
+                                        <>
+                                          <del
+                                            className="me-2"
+                                            style={{ fontSize: "15px" }}
+                                          >
+                                            {formatPrice(
+                                              cart.productDetail.price *
+                                                cart.quantity
+                                            ) + " VNĐ"}
+                                          </del>
+                                          <div>{result + " VNĐ"}</div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          {formatPrice(
+                                            cart.productDetail.price *
+                                              cart.quantity
+                                          ) + " VNĐ"}
+                                        </>
+                                      )}
+                                    </div>
+
                                     {cart.productDetail.quantity <= 10 && (
                                       <div className="text-danger">
                                         Còn lại: {cart.productDetail.quantity}{" "}
@@ -902,6 +1051,14 @@ const Cart = () => {
                   variant="contained"
                   id="button"
                   onClick={() => {
+                    if (!cartData[0].user.phone) {
+                      toast.warning(
+                        "Tài khoản của bạn chưa có số điện thoại nhận để nhận hàng!" +
+                          cartData[0].user.phone
+                      );
+                      return;
+                    }
+
                     if (selectedProductIds.length > 0) {
                       window.location.href = `/paybuyer?cartIds=${selectedProductIds.join(
                         ","
@@ -914,13 +1071,14 @@ const Cart = () => {
                     anySelectedProductOutOfStock()
                   }
                 >
-                  Đặt hàng
+                  <i class="bi bi-bag-fill me-1"></i> Mua hàng
                 </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
+
       <Footer />
     </div>
   );

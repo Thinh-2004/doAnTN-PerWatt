@@ -23,23 +23,23 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { ThemeModeContext } from "../ThemeMode/ThemeModeProvider";
 import MotionPhotosAutoIcon from "@mui/icons-material/MotionPhotosAuto";
 import AccountBoxIcon from "@mui/icons-material/AccountBox";
-import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
-import WalletIcon from "@mui/icons-material/Wallet";
 import RoofingIcon from "@mui/icons-material/Roofing";
+import OutlinedFlagIcon from "@mui/icons-material/OutlinedFlag";
 
 const RightHeader = ({ reloadCartItems }) => {
   const changeLink = useNavigate();
-
 
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
 
   const idStore = localStorage.getItem("idStore");
+  const token = localStorage.getItem("hadfjkdshf");
 
   const [count, setCount] = useState(0);
-  const [countOrder, setCountOrder] = useState(0);
+  const [countOrderBuyer, setCountOrderBuyer] = useState(0);
+  const [countOrderSeller, setCountOrderSeller] = useState(0);
   const matchSeller = useMatch("/profileMarket/*"); //Kiểm tra đường dẫn có chứa tham số động
   const matchAdmin = useMatch("/admin/*"); //Kiểm tra đường dẫn có chứa tham số động
 
@@ -70,17 +70,12 @@ const RightHeader = ({ reloadCartItems }) => {
           onClick: async () => {
             const toastId = toast.loading("Vui lòng chờ...");
 
-            // Xóa localStorage ngay khi người dùng nhấn "Đăng xuất"
-            localStorage.clear();
-            sessionStorage.clear();
-
             try {
               // Gửi yêu cầu logout
               const token = localStorage.getItem("hadfjkdshf");
               await axios.post(
-                `/logout`,
-                { token: token }, // Gửi qua body
-                { headers: { "Content-Type": "application/json" } }
+                `form/logout`,
+                { token: token } // Gửi qua body
               );
 
               // Hiển thị thông báo thành công
@@ -91,31 +86,25 @@ const RightHeader = ({ reloadCartItems }) => {
                 autoClose: 5000,
                 closeButton: true,
               });
-
+              // Xóa localStorage ngay khi người dùng nhấn "Đăng xuất"
+              localStorage.clear();
+              sessionStorage.clear();
               // Chuyển hướng về trang chủ
               changeLink("/");
             } catch (error) {
               console.error("Logout error:", error);
 
               // Hiển thị thông báo lỗi
-              // toast.update(toastId, {
-              //   render: "Đăng xuất thất bại",
-              //   type: "error",
-              //   isLoading: false,
-              //   autoClose: 5000,
-              //   closeButton: true,
-              // });
-              // Hiển thị thông báo thành công
               toast.update(toastId, {
-                render: "Đăng xuất thành công",
-                type: "success",
+                render: "Đăng xuất thất bại",
+                type: "error",
                 isLoading: false,
                 autoClose: 5000,
                 closeButton: true,
               });
+              // Hiển thị thông báo thành công
 
               // Chuyển hướng về trang chủ
-              changeLink("/");
             }
           },
         },
@@ -161,16 +150,14 @@ const RightHeader = ({ reloadCartItems }) => {
             onClick: () => {
               // Hiển thị thông báo đang tải
               const id = toast.loading("Vui lòng chờ...");
-              setTimeout(() => {
-                toast.update(id, {
-                  render: "Chuyển hướng đến trang đăng nhập",
-                  type: "info",
-                  isLoading: false,
-                  autoClose: 2000,
-                  closeButton: true,
-                });
-                changeLink("/login");
-              }, 500);
+              toast.update(id, {
+                render: "Chuyển hướng đến trang đăng nhập",
+                type: "info",
+                isLoading: false,
+                autoClose: 2000,
+                closeButton: true,
+              });
+              changeLink("/login");
             },
           },
           {
@@ -206,16 +193,14 @@ const RightHeader = ({ reloadCartItems }) => {
             onClick: () => {
               // Hiển thị thông báo đang tải
               const id = toast.loading("Vui lòng chờ...");
-              setTimeout(() => {
-                toast.update(id, {
-                  render: "Chuyển hướng đến trang đăng nhập",
-                  type: "info",
-                  isLoading: false,
-                  autoClose: 2000,
-                  closeButton: true,
-                });
-                changeLink("/login");
-              }, 500);
+              toast.update(id, {
+                render: "Chuyển hướng đến trang đăng nhập",
+                type: "info",
+                isLoading: false,
+                autoClose: 2000,
+                closeButton: true,
+              });
+              changeLink("/login");
             },
           },
           {
@@ -225,6 +210,41 @@ const RightHeader = ({ reloadCartItems }) => {
       });
     } else {
       changeLink("/cart");
+    }
+  };
+
+  const checkUserIdOnReport = async (e) => {
+    // Ngăn chặn hành động mặc định của liên kết
+    e.preventDefault();
+
+    // Kiểm tra nếu id là null hoặc undefined
+    if (user === null || user === undefined) {
+      confirmAlert({
+        title: "Bạn đã đăng nhập chưa?",
+        message: "Bạn cần đăng nhập để vào danh sách báo cáo của mình",
+        buttons: [
+          {
+            label: "Có",
+            onClick: () => {
+              // Hiển thị thông báo đang tải
+              const id = toast.loading("Vui lòng chờ...");
+              toast.update(id, {
+                render: "Chuyển hướng đến trang đăng nhập",
+                type: "info",
+                isLoading: false,
+                autoClose: 2000,
+                closeButton: true,
+              });
+              changeLink("/login");
+            },
+          },
+          {
+            label: "Không",
+          },
+        ],
+      });
+    } else {
+      changeLink("/report");
     }
   };
 
@@ -243,17 +263,55 @@ const RightHeader = ({ reloadCartItems }) => {
         console.log(error);
       }
     };
-    //Đếm thông báo
-    const countOrders = async () => {
+    //Đếm thông báo buyer
+    const fetchOrderNotificationsBuyer = async (userId) => {
       try {
-        const res = await axios.get(`checkOrder/${idStore}`);
-        setCountOrder(res.data.length);
-        // console.log(res.data.length);
+        const response = await axios.get(`/checkOrderBuyer/${userId}`);
+        const inTransitOrders =
+          response.data &&
+          response.data.filter(
+            (order) => order.orderstatus === "Đang vận chuyển"
+          );
+        const canceledOrders =
+          response.data &&
+          response.data.filter((order) => order.orderstatus === "Hủy");
+
+        const inTransitOrderCount = inTransitOrders.length;
+        const canceledOrderCount = canceledOrders.length;
+
+        setCountOrderBuyer(inTransitOrderCount + canceledOrderCount); // Total orders
       } catch (error) {
-        console.log("Error fetching new orders:", error);
+        console.log("Error fetching order notifications:", error);
       }
     };
-    countOrders(idStore);
+    //Đếm thông báo seller
+    const fetchOrderNotificationsSeller = async (idStore) => {
+      try {
+        // Gọi API lấy đơn hàng mới, đơn hàng đã giao và đơn hàng đã hủy song song
+        const [newOrdersRes, deliveredOrdersRes, canceledOrdersRes] =
+          await Promise.all([
+            axios.get(`/checkOrderSeller/${idStore}`),
+            axios.get(`/deliveredOrders/${idStore}`),
+            axios.get(`/canceledOrders/${idStore}`), // Thêm API lấy đơn hàng đã hủy
+          ]);
+
+        // Tính tổng số đơn hàng
+        const newOrderCount = newOrdersRes.data.length;
+        const deliveredOrderCount = deliveredOrdersRes.data.length;
+        const canceledOrderCount = canceledOrdersRes.data.length;
+
+        // Cập nhật tổng số đơn hàng vào state
+        setCountOrderSeller(
+          newOrderCount + deliveredOrderCount + canceledOrderCount
+        );
+      } catch (error) {
+        console.log("Lỗi khi lấy dữ liệu đơn hàng:", error);
+      }
+    };
+    if (token) {
+      if (idStore !== "undefined") fetchOrderNotificationsSeller(idStore);
+      fetchOrderNotificationsBuyer(user?.id);
+    }
     count();
   }, [user, idStore]);
 
@@ -334,13 +392,13 @@ const RightHeader = ({ reloadCartItems }) => {
 
   return (
     <>
-      <div className="d-flex align-items-center border-end me-3 ">
+      <div className="d-flex align-items-center border-end mx-3">
         {matchSeller ? (
           <>
             <Tooltip title="Trang chủ PerWatt">
               <Link
                 type="button"
-                className="btn btn-icon position-relative rounded-3 me-3"
+                className="btn btn-icon position-relative rounded-3 me-1"
                 to={"/"}
               >
                 <Typography sx={{ color: "text.primary" }}>
@@ -351,7 +409,7 @@ const RightHeader = ({ reloadCartItems }) => {
             <Tooltip title="Giỏ hàng">
               <Link
                 type="button"
-                className="btn btn-icon position-relative rounded-3 me-3"
+                className="btn btn-icon position-relative rounded-3 me-1"
                 to={"/cart"}
               >
                 <Typography sx={{ color: "text.primary" }}>
@@ -362,46 +420,38 @@ const RightHeader = ({ reloadCartItems }) => {
                 </span>
               </Link>
             </Tooltip>
-            <Tooltip title="Cài đặt">
+            <Tooltip title="Lịch sử báo cáo">
               <Link
-                onClick={checkUserId}
+                onClick={checkUserIdOnReport}
                 type="button"
-                className="btn btn-icon btn-sm rounded-3 me-3"
+                className="btn btn-icon position-relative rounded-3 me-1"
                 to={""}
               >
                 <Typography sx={{ color: "text.primary" }}>
-                  <i className="bi bi-gear fs-4"></i>
+                  <i className="bi bi-flag fs-4"></i>
                 </Typography>
+                {/* <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {0}
+                </span> */}
               </Link>
             </Tooltip>
             <Tooltip title="Thông báo">
               <Link
                 type="button"
-                className="btn btn-icon btn-sm  position-relative rounded-3 me-3"
-                to={"/notifications"}
+                className="btn btn-icon btn-sm  position-relative rounded-3 me-2"
+                to={"/profileMarket/notifications"}
               >
                 <Typography sx={{ color: "text.primary" }}>
                   <i className="bi bi-bell fs-4"></i>
                 </Typography>
                 <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                  {countOrder}
+                  {countOrderSeller}
                 </span>
               </Link>
             </Tooltip>
           </>
         ) : matchAdmin ? (
           <>
-            <Tooltip title="Ví của tôi">
-              <Link
-                type="button"
-                className="btn btn-icon position-relative rounded-4 me-2"
-                to={"/admin/wallet"}
-              >
-                <Typography sx={{ color: "text.primary" }}>
-                  <WalletIcon />
-                </Typography>
-              </Link>
-            </Tooltip>
             <Tooltip title="Hồ sơ của tôi">
               <Link
                 type="button"
@@ -410,17 +460,6 @@ const RightHeader = ({ reloadCartItems }) => {
               >
                 <Typography sx={{ color: "text.primary" }}>
                   <AccountBoxIcon />
-                </Typography>
-              </Link>
-            </Tooltip>
-            <Tooltip title="Quản lí banner">
-              <Link
-                type="button"
-                className="btn btn-icon position-relative rounded-4 mx-2 me-2 "
-                to={"/admin/banner"}
-              >
-                <Typography sx={{ color: "text.primary" }}>
-                  <ViewCarouselIcon />
                 </Typography>
               </Link>
             </Tooltip>
@@ -510,7 +549,7 @@ const RightHeader = ({ reloadCartItems }) => {
 
               <Tooltip
                 title="Website sẽ tự động điều chỉnh màn hình theo cài đặt hệ thống trên thiết bị của bạn."
-                placement="top"
+                placement="left-start"
                 className="d-flex align-items-center"
                 TransitionComponent={Zoom}
               >
@@ -533,7 +572,7 @@ const RightHeader = ({ reloadCartItems }) => {
               <Tooltip title="Trang admin">
                 <Link
                   type="button"
-                  className="btn btn-icon position-relative rounded-3 me-3"
+                  className="btn btn-icon position-relative rounded-3 me-1"
                   to={"/admin"}
                 >
                   <Typography sx={{ color: "text.primary" }}>
@@ -545,7 +584,7 @@ const RightHeader = ({ reloadCartItems }) => {
             <Tooltip title="Giỏ hàng">
               <Link
                 type="button"
-                className="btn btn-icon position-relative rounded-3 me-3"
+                className="btn btn-icon position-relative rounded-3 me-1"
                 onClick={checkUserIdOnCart}
               >
                 <Typography sx={{ color: "text.primary" }}>
@@ -560,7 +599,7 @@ const RightHeader = ({ reloadCartItems }) => {
               <Link
                 onClick={checkUserId}
                 type="button"
-                className="btn btn-icon btn-sm rounded-3 me-3"
+                className="btn btn-icon btn-sm rounded-3 me-1"
               >
                 <Typography sx={{ color: "text.primary" }}>
                   {" "}
@@ -571,12 +610,30 @@ const RightHeader = ({ reloadCartItems }) => {
             <Tooltip title="Thông báo">
               <Link
                 type="button"
-                className="btn btn-icon btn-sm rounded-3 me-3"
+                className="btn btn-icon btn-sm  position-relative rounded-3 me-1"
+                to={"/buyerNotification"}
               >
                 <Typography sx={{ color: "text.primary" }}>
-                  {" "}
                   <i className="bi bi-bell fs-4"></i>
                 </Typography>
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {countOrderBuyer}
+                </span>
+              </Link>
+            </Tooltip>
+            <Tooltip title="Lịch sử báo cáo">
+              <Link
+                onClick={checkUserIdOnReport}
+                type="button"
+                className="btn btn-icon position-relative rounded-3 me-2"
+                to={""}
+              >
+                <Typography sx={{ color: "text.primary" }}>
+                  <i className="bi bi-flag fs-4"></i>
+                </Typography>
+                {/* <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {0}
+                </span> */}
               </Link>
             </Tooltip>
           </>
@@ -589,7 +646,7 @@ const RightHeader = ({ reloadCartItems }) => {
               src={user.avatar}
               alt=""
               className="rounded-circle img-fluid"
-              style={{ width: "30px", aspectRatio: "1/1" }}
+              style={{ width: "30px", aspectRatio: "1/1", objectFit: "cover" }}
             />{" "}
             &nbsp;
             <span className="" style={{ fontSize: "12px" }}>
@@ -614,10 +671,10 @@ const RightHeader = ({ reloadCartItems }) => {
               }}
             >
               <img
-                src={ user.avatar}
+                src={user.avatar}
                 alt=""
                 className="rounded-circle img-fluid"
-                style={{ width: "30px", height: "30px" }}
+                style={{ width: "30px", height: "30px", objectFit: "cover" }}
               />
               &nbsp;
               <Typography variant="span" style={{ fontSize: "15px" }}>
@@ -666,10 +723,14 @@ const RightHeader = ({ reloadCartItems }) => {
               <MenuItem onClick={handleCloseMenuUser}>
                 <Link className="text-dark " to={"/user"}>
                   <img
-                    src={ user.avatar}
+                    src={user.avatar}
                     alt=""
                     className="rounded-circle img-fluid"
-                    style={{ width: "20px", height: "20px" }}
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      objectFit: "cover",
+                    }}
                   />
                   &nbsp;
                   <Typography variant="span" sx={{ color: "text.primary" }}>
@@ -684,24 +745,6 @@ const RightHeader = ({ reloadCartItems }) => {
                   &nbsp;
                   <Typography variant="span" sx={{ color: "text.primary" }}>
                     Đơn hàng
-                  </Typography>
-                </Link>
-              </MenuItem>
-              <MenuItem onClick={handleCloseMenuUser}>
-                <Link
-                  className="text-dark"
-                  to={
-                    idStore !== "undefined"
-                      ? "/profileMarket/wallet/seller"
-                      : user?.id === 1
-                      ? "/admin/wallet"
-                      : "/wallet/buyer"
-                  }
-                >
-                  <WalletIcon sx={{ color: "text.primary" }} />
-                  &nbsp;
-                  <Typography variant="span" sx={{ color: "text.primary" }}>
-                    Ví của tủa tôi
                   </Typography>
                 </Link>
               </MenuItem>
@@ -724,7 +767,7 @@ const RightHeader = ({ reloadCartItems }) => {
                 title="Website sẽ tự động điều chỉnh màn hình theo cài đặt hệ thống trên thiết bị của bạn."
                 className="d-flex align-items-center"
                 TransitionComponent={Zoom}
-                placement="top"
+                placement="left-start"
               >
                 <MenuItem>
                   <Checkbox

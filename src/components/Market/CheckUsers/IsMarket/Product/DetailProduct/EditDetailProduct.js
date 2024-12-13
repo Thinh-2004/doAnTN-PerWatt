@@ -41,9 +41,6 @@ const EditDetailProduct = ({
   const [imagePreview, setImagePreview] = useState("");
   const [imageEdit, setImageEdit] = useState("");
   const [editingIndex, setEditingIndex] = useState(null); // Index của mục đang được chỉnh sửa
-  const geturlIMG = (detailProductId, filename) => {
-    return `${axios.defaults.baseURL}files/detailProduct/${detailProductId}/${filename}`;
-  };
 
   const formatPrice = (value) => {
     // Xóa các ký tự không phải số
@@ -254,15 +251,14 @@ const EditDetailProduct = ({
           await axios.put(`/detailProduct/${editingIndex}`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
-          setTimeout(() => {
-            toast.update(idToast, {
-              render: "Cập nhật phân loại thành công",
-              type: "success",
-              isLoading: false,
-              closeButton: true,
-              autoClose: 5000,
-            });
-          }, 500);
+
+          toast.update(idToast, {
+            render: "Cập nhật phân loại thành công",
+            type: "success",
+            isLoading: false,
+            closeButton: true,
+            autoClose: 5000,
+          });
           loadData();
           // setImageEdit("");
           setEditingIndex(null);
@@ -273,21 +269,19 @@ const EditDetailProduct = ({
             setIsHiddenDetailPro(false);
             updateChangeForm(false);
           }
-          toast.success("Cập nhật dữ liệu thành công");
         } else {
           const idToast = toast.loading("Vui lòng chờ");
           const res = await axios.post("/detailProduct", formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
-          setTimeout(() => {
-            toast.update(idToast, {
-              render: "Thêm phân loại thành công",
-              type: "success",
-              isLoading: false,
-              closeButton: true,
-              autoClose: 5000,
-            });
-          }, 500);
+
+          toast.update(idToast, {
+            render: "Thêm phân loại thành công",
+            type: "success",
+            isLoading: false,
+            closeButton: true,
+            autoClose: 5000,
+          });
           setFillData((prevData) => [...prevData, res.data]);
           loadData();
         }
@@ -307,7 +301,7 @@ const EditDetailProduct = ({
   };
 
   const handleUpdate = async (id) => {
-    console.log(id);
+    // console.log(id);
     if (validateIsFalse()) {
       // const detailToUpdate = fillData.find((item) => item.id === id);
       // Kiểm tra nếu dataEdit là mảng
@@ -382,19 +376,21 @@ const EditDetailProduct = ({
   };
 
   const handleDelete = async (id) => {
+    if (fillData.length === 1) {
+      toast.warning("Bạn cần giữ lại 1 phân loại khi cập nhật");
+      return;
+    }
     try {
       const idToast = toast.loading("Vui lòng chờ");
       await axios.delete(`/detailProduct/${id}`);
       setFillData((prevData) => prevData.filter((item) => item.id !== id));
-      setTimeout(() => {
-        toast.update(idToast, {
-          render: "Xóa phân loại thành công",
-          type: "success",
-          isLoading: false,
-          closeButton: true,
-          autoClose: 5000,
-        });
-      }, 500);
+      toast.update(idToast, {
+        render: "Xóa phân loại thành công",
+        type: "success",
+        isLoading: false,
+        closeButton: true,
+        autoClose: 5000,
+      });
       loadData();
     } catch (error) {
       console.error(error);

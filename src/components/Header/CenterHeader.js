@@ -262,13 +262,13 @@ const CenterHeader = ({ textSearch, resetSearch }) => {
                       </label>
                     )}
                   </div>
-                  {predictions.map((fill) => (
+                  {/* {predictions.map((fill) => (
                     <div>
                       <label htmlFor="">
                         {fill.className} : {fill.probability.toFixed(2)}
                       </label>
                     </div>
-                  ))}
+                  ))} */}
                   <div className="mt-3">
                     <Button
                       component="label"

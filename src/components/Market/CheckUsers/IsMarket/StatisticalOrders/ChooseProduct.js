@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import "./ChooseProduct.css";
 import axios from "../../../../../Localhost/Custumize-axios";
-import { Pagination } from "antd";
+import { Pagination, Button } from "antd";
 import { Typography } from "@mui/material";
+import { CheckOutlined, ReloadOutlined } from "@ant-design/icons";
 
 const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [selectedProductCategories, setSelectedProductCategories] = useState(
+    []
+  ); // Thêm trạng thái lưu danh mục
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Tất cả danh mục");
   const [products, setProducts] = useState([]);
@@ -19,7 +23,7 @@ const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
       try {
         const response = await axios.get(`/productDetails/store/${idStore}`);
         const productData = response.data;
-
+        console.log(response.data);
         const groupedProducts = productData.reduce((acc, product) => {
           const existingProduct = acc.find((p) => p.id === product.productId);
 
@@ -33,17 +37,11 @@ const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
             existingProduct.discount =
               product.discount || existingProduct.discount;
           } else {
-            // Check if imageDetail exists, else fall back to imageName
-            const imgSrc = product.imageDetail
-              ? product.imageDetail
-              : product.imageName
-              ? product.imageName
-              : "https://via.placeholder.com/100"; // Fallback image if both are missing
-
+            const imgSrc = product.imageName;
             acc.push({
-              id: product.productDetailId,
-              name: product.nameDetail || product.productName, // Use nameDetail or fallback to productName
-              imgSrc, // Image based on imageDetail or imageName
+              id: product.productId,
+              name: product.productName,
+              imgSrc,
               sales: product.soldDetail,
               price: parseFloat(product.priceDetail),
               stock: product.quantityRemainingDetail || 0,
@@ -74,13 +72,23 @@ const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
     fetchProducts();
   }, [idStore]);
 
-  const handleSelectProduct = (productDetailId) => {
+  const handleSelectProduct = (productDetailId, category) => {
     setSelectedProducts((prevSelected) =>
-      prevSelected.includes(productDetailId)  // Cập nhật từ 'id' thành 'productDetailId'
-        ? prevSelected.filter((productId) => productId !== productDetailId) // Cập nhật từ 'id' thành 'productDetailId'
-        : [...prevSelected, productDetailId] // Cập nhật từ 'id' thành 'productDetailId'
+      prevSelected.includes(productDetailId)
+        ? prevSelected.filter((productId) => productId !== productDetailId)
+        : [...prevSelected, productDetailId]
     );
+
+    // Cập nhật danh mục sản phẩm đã chọn
+    setSelectedProductCategories((prevCategories) => {
+      const updatedCategories = [...prevCategories];
+      if (!updatedCategories.includes(category)) {
+        updatedCategories.push(category);
+      }
+      return updatedCategories;
+    });
   };
+
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -108,12 +116,20 @@ const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
       selectedProducts.includes(product.id)
     );
 
-    onSelectProduct(selectedProductDetails); // Gửi thông tin sản phẩm đã chọn về Widget
+    const productCategories = selectedProductDetails.map(
+      (product) => product.category
+    );
+
+    // Lưu danh mục tương ứng với sản phẩm đã chọn
+    console.log("Danh mục sản phẩm đã chọn:", productCategories);
+
+    onSelectProduct(selectedProductDetails);
     onClose(); // Đóng modal sau khi chọn sản phẩm
   };
 
   const handleClose = () => {
     setSelectedProducts([]); // Reset selectedProducts khi đóng modal
+    setSelectedProductCategories([]); // Reset selectedProductCategories khi đóng modal
     onClose();
   };
 
@@ -147,12 +163,13 @@ const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
           />
         </div>
         <div className="choose-product-buttons">
-          <button
-            className="choose-product-button"
+          <Button
+            icon={<ReloadOutlined />}
             onClick={() => setSearchTerm("")}
+            className="choose-product-reset-button"
           >
             Nhập Lại
-          </button>
+          </Button>
         </div>
         <table className="choose-product-table">
           <thead>
@@ -176,7 +193,9 @@ const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
                       type="checkbox"
                       className="choose-product-checkbox me-2"
                       checked={selectedProducts.includes(product.id)}
-                      onChange={() => handleSelectProduct(product.id)}
+                      onChange={() =>
+                        handleSelectProduct(product.id, product.category)
+                      } // Truyền category vào đây
                     />
                     <img
                       src={product.imgSrc}
@@ -190,7 +209,7 @@ const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        width: "300px", // Set a specific width or use max-width
+                        width: "300px",
                       }}
                     >
                       {product.name}
@@ -212,18 +231,14 @@ const ChooseProduct = ({ onClose, onSelectProduct, idStore }) => {
           showSizeChanger={false}
         />
         <div className="choose-product-footer">
-          <button
-            className="choose-product-confirm-button"
+          <Button
+            type="primary"
+            icon={<CheckOutlined />}
             onClick={handleConfirm}
+            className="choose-product-confirm-button"
           >
             Xác Nhận
-          </button>
-          <button
-            className="choose-product-cancel-button"
-            onClick={handleClose}
-          >
-            Hủy
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -111,25 +111,23 @@ const ChangePass = ({ checkStatus }) => {
             Authorization: `Bearer ${localStorage.getItem("hadfjkdshf")}`,
           },
         });
-        setTimeout(() => {
-          toast.update(idToast, {
-            render: "Cập nhật thông tin thành công",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          const userInfo = {
-            id: res.data.id,
-            fullname: res.data.fullname,
-            avatar: res.data.avatar,
-          };
-          localStorage.setItem("user", JSON.stringify(userInfo));
-          if (checkStatus) {
-            checkStatus();
-          }
-          changeLink("/user");
-        }, 500);
+        toast.update(idToast, {
+          render: "Cập nhật thông tin thành công",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
+        const userInfo = {
+          id: res.data.id,
+          fullname: res.data.fullname,
+          avatar: res.data.avatar,
+        };
+        localStorage.setItem("user", JSON.stringify(userInfo));
+        if (checkStatus) {
+          checkStatus();
+        }
+        changeLink("/user");
       } catch (error) {
         toast.update(idToast, {
           render: "Có lỗi xảy ra khi cập nhật hồ sơ",

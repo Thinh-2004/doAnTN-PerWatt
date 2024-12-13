@@ -13,6 +13,7 @@ const Banner = () => {
       try {
         const response = await axios.get("/banners");
         setBanners(response.data);
+        
       } catch (error) {
         console.error("Error fetching banners:", error);
       }
@@ -72,6 +73,7 @@ const Banner = () => {
                 src={midBanners[midIndex].img}
                 alt={midBanners[midIndex].bannername}
                 className="rounded-4"
+                style={{with : "100%", height : "700px"}}
                 
               />
             </Link>

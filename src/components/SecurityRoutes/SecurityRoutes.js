@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import axios from "../../Localhost/Custumize-axios";
+import { Backdrop, CircularProgress } from "@mui/material";
 
 const SecurityRoutes = ({ children, allowedRoles = [] }) => {
   const token = localStorage.getItem("hadfjkdshf"); // Lấy token từ localStorage
@@ -16,12 +17,20 @@ const SecurityRoutes = ({ children, allowedRoles = [] }) => {
         }
 
         const res = await axios.get(`/userProFile/myInfo`);
-        setRole(res.data.role.namerole);
+        // console.log(res.data);
+        setRole(
+          res.data.rolePermission.role.namerole +
+            "_" +
+            res.data.rolePermission.permission.name
+        );
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
         setRole(null); // Nếu lỗi, đặt role về null
       } finally {
-        setLoading(false); // Hoàn tất quá trình tải
+        const timmer = setTimeout(() => {
+          setLoading(false); // Hoàn tất quá trình tải
+        }, 1000);
+        return () => clearTimeout(timmer);
       }
     };
 
@@ -35,7 +44,14 @@ const SecurityRoutes = ({ children, allowedRoles = [] }) => {
 
   if (loading) {
     // Trong khi đang tải role, hiển thị trạng thái chờ
-    return <div>Loading...</div>;
+    return (
+      <Backdrop
+        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    );
   }
 
   if (!allowedRoles.includes(role)) {

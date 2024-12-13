@@ -1,11 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
-import { notification, Table, Switch, Input, Empty } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
+import { notification, Table, Switch, Input, Empty,Button,Modal } from "antd";
+import {
+  UploadOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  PercentageOutlined,
+} from "@ant-design/icons"; // Importing icons
 import axios from "../../Localhost/Custumize-axios";
 import Header from "../../components/Header/Header";
 import {
   Box,
-  Button,
   FormControl,
   MenuItem,
   Select,
@@ -174,33 +179,42 @@ const PromotionInfoComponent = () => {
     setEditingPromotionId(record.id);
   };
 
-  const handleDeletePromotion = async (id) => {
-    try {
-      const response = await axios.delete(`/vouchersAdmin/${id}`);
-
-      if (response.status === 200) {
-        notification.success({
-          message: "Thành công",
-          description: "Khuyến mãi đã được xóa thành công!",
-        });
-
-        fetchPromotions(); // Cập nhật danh sách khuyến mãi
-      } else {
-        throw new Error("Xóa khuyến mãi thất bại. Vui lòng thử lại!");
-      }
-    } catch (error) {
-      console.error("Error deleting promotion:", error);
-      notification.error({
-        message: "Lỗi",
-        description: error.response?.data?.message || error.message,
-      });
-    }
+  const handleDeletePromotion = (id) => {
+    Modal.confirm({
+      title: "Xác nhận xóa",
+      content: "Bạn có chắc chắn muốn xóa khuyến mãi này không?",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: async () => {
+        try {
+          const response = await axios.delete(`/vouchersAdmin/${id}`);
+  
+          if (response.status === 200) {
+            notification.success({
+              message: "Thành công",
+              description: "Khuyến mãi đã được xóa thành công!",
+            });
+  
+            fetchPromotions(); // Cập nhật danh sách khuyến mãi sau khi xóa
+          } else {
+            throw new Error("Xóa khuyến mãi thất bại. Vui lòng thử lại!");
+          }
+        } catch (error) {
+          console.error("Error deleting promotion:", error);
+          notification.error({
+            message: "Lỗi",
+            description: error.response?.data?.message || error.message,
+          });
+        }
+      },
+    });
   };
 
   const handleStatusChange = async (id, currentStatus, endday) => {
     const currentDate = new Date();
     const endDate = new Date(endday);
-
+  
     if (currentStatus === "không hoạt động" && currentDate >= endDate) {
       notification.error({
         message: "Lỗi",
@@ -208,36 +222,36 @@ const PromotionInfoComponent = () => {
       });
       return;
     }
-
+  
     const newStatus =
       currentStatus === "đang hoạt động" ? "không hoạt động" : "đang hoạt động";
-
+  
     try {
       const response = await axios.put(`/vouchersAdmin/${id}/status`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
+        status: newStatus, // Gửi dữ liệu JSON đúng định dạng
       });
-
-      if (!response.ok) {
+      console.log("ID:", id);
+      console.log("Current Status:", currentStatus);
+      console.log("New Status:", newStatus);
+      
+      if (response.status === 200) {
+        notification.success({
+          message: "Thành công",
+          description: "Trạng thái đã được cập nhật!",
+        });
+  
+        fetchPromotions(); // Cập nhật danh sách khuyến mãi sau khi thay đổi trạng thái
+      } else {
         throw new Error("Failed to update status");
       }
-
-      notification.success({
-        message: "Thành công",
-        description: "Trạng thái đã được cập nhật!",
-      });
-
-      fetchPromotions(); // Cập nhật danh sách khuyến mãi sau khi thay đổi trạng thái
     } catch (error) {
       notification.error({
         message: "Lỗi",
-        description: error.message,
+        description: error.response?.data?.message || error.message,
       });
     }
   };
+  
 
   const updatePromotionStatus = (promotion) => {
     const currentDate = new Date();
@@ -296,17 +310,6 @@ const PromotionInfoComponent = () => {
           onChange={() => handleStatusChange(record.id, text, record.endday)}
           checkedChildren="On"
           unCheckedChildren="Off"
-        />
-      ),
-    },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (text, record) => (
-        <Button
-          type="danger"
-          onClick={() => handleDeletePromotion(record.id)}
-          icon={<DeleteOutlined />}
         />
       ),
     },

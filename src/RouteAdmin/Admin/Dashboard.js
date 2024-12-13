@@ -6,29 +6,17 @@ import ProductList from "./ProductList"; // Nhập ProductList từ file tương
 import { UilTimes } from "@iconscout/react-unicons";
 import axios from "../../Localhost/Custumize-axios";
 import "./Dashboard.css";
-import { Box, Button, Container, Typography } from "@mui/material";
-import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
+import { Box, Button, Container, Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
+import ViewCarouselOutlinedIcon from "@mui/icons-material/ViewCarouselOutlined";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import LoyaltyOutlinedIcon from "@mui/icons-material/LoyaltyOutlined";
+import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
+import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
+import { spiral } from "ldrs";
+import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
 
-const checkUserRole = (role) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    const decodedToken = JSON.parse(atob(token.split(".")[1]));
-    const roles = decodedToken.roles;
-    return roles.includes(role);
-  }
-  return false;
-};
-
-// Sử dụng hàm để kiểm tra
-if (checkUserRole("ROLE_ADMIN")) {
-  console.log("User is Admin");
-  // Logic cho Admin
-} else {
-  console.log("User is not Admin");
-  // Logic cho user thông thường
-}
+spiral.register();
 
 // Hàm gọi API thực tế để lấy doanh thu của tháng lớn nhất trong năm lớn nhất
 const fetchRevenueOfMaxMonth = async () => {
@@ -45,20 +33,16 @@ const fetchRevenueOfMaxMonth = async () => {
     // Tìm tháng lớn nhất trong năm lớn nhất
     const maxMonth = Math.max(...filteredData.map((item) => item.Month));
 
-    // Lọc dữ liệu của tháng lớn nhất
+    // Lọc dữ liệu của tháng lớn nhất trong năm lớn nhất
     const maxMonthData = filteredData.filter((item) => item.Month === maxMonth);
 
-    // Lấy dữ liệu của tháng gần nhất trong năm đó
-    const latestMonthData = maxMonthData.reduce(
-      (latest, item) =>
-        new Date(item.Year, item.Month - 1) >
-        new Date(latest.Year, latest.Month - 1)
-          ? item
-          : latest,
-      maxMonthData[0]
+    // Tính tổng `TotalVATCollected` của tất cả các mục trong tháng đó
+    const totalVAT = maxMonthData.reduce(
+      (sum, item) => sum + (item.TotalVATCollected || 0),
+      0
     );
 
-    return latestMonthData.TotalVATCollected; // Trả về tổng VAT đã thu
+    return totalVAT; // Trả về tổng VAT đã thu
   } catch (error) {
     console.error("Error fetching revenue:", error);
     return 0; // Trả về 0 nếu có lỗi
@@ -126,6 +110,31 @@ const Dashboard = () => {
     ? JSON.parse(localStorage.getItem("user"))
     : null;
   const { mode } = useContext(ThemeModeContext);
+  const [rolePermission, setRolePermission] = useState("");
+
+  const token = localStorage.getItem("hadfjkdshf"); // Lấy token từ localStorage
+
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        if (!token) {
+          setLoading(false); // Không có token, dừng xử lý
+          return;
+        }
+
+        const res = await axios.get(`/userProFile/myInfo`);
+        // console.log(res.data);
+        setRolePermission(res.data.rolePermission.permission.name);
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
+        setRolePermission(null); // Nếu lỗi, đặt role về null
+      } finally {
+        setLoading(false); // Hoàn tất quá trình tải
+      }
+    };
+
+    loadUserInfo();
+  }, [token]);
 
   // Hàm lấy lời chào theo giờ hiện tại
   const getGreeting = () => {
@@ -158,9 +167,6 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-
   return (
     <div className="dashboard">
       <Container
@@ -177,60 +183,211 @@ const Dashboard = () => {
               Đây là những gì đang xảy ra trên cửa hàng của bạn ngày hôm nay.
               Xem số liệu thống kê cùng một lúc.
             </p>
-            <Button
-              size="small"
-              variant="outlined"
-              LinkComponent={Link}
-              to="/"
-              sx={{
-                textTransform: "inherit",
-              }}
-              className="me-2"
-            >
-              <img
-                src="/images/logoWeb.png"
-                alt=""
-                className="rounded-circle img-fluid"
-                style={{ width: "40px", aspectRatio: "1/1" }}
-              />
-              &nbsp;
-              <Typography className="mx-2" sx={{ fontSize: "15px" }}>
-                Trang chủ PerWatt
-              </Typography>
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              LinkComponent={Link}
-              to="/admin/voucher/website"
-              sx={{
-                textTransform: "inherit",
-              }}
-              className="mx-2 me-2"
-            >
-              <Typography
-                className="align-content-center"
-                sx={{ fontSize: "15px", height: "40px" }}
-              >
-                Chương trình khuyến mãi
-              </Typography>
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              LinkComponent={Link}
-              to="/admin/category"
-              sx={{
-                textTransform: "inherit",
-              }}
-            >
-              <Typography
-                className="align-content-center"
-                sx={{ fontSize: "15px", height: "40px" }}
-              >
-                Quản lí danh mục sản phẩm
-              </Typography>
-            </Button>
+            {rolePermission === "All_Function" ? (
+              <Tooltip title="Trang chủ PerWatt">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  LinkComponent={Link}
+                  to="/"
+                  className="me-2"
+                >
+                  <HomeOutlinedIcon
+                    sx={{
+                      width: "30px",
+                      height: "30px",
+                      color: "text.default",
+                    }}
+                  />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Quyền truy cập bị giới hạn">
+                <span>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    LinkComponent={Link}
+                    to="/"
+                    className="me-2"
+                    disabled
+                  >
+                    <HomeOutlinedIcon
+                      sx={{
+                        width: "30px",
+                        height: "30px",
+                        color: "text.default",
+                      }}
+                    />
+                  </Button>
+                </span>
+              </Tooltip>
+            )}
+            {rolePermission === "All_Function" ||
+            rolePermission === "Manage_Promotion" ? (
+              <Tooltip title="Chương trình khuyến mãi">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  LinkComponent={Link}
+                  to="/admin/voucher/website"
+                  className="me-2"
+                >
+                  <LoyaltyOutlinedIcon
+                    sx={{
+                      width: "30px",
+                      height: "30px",
+                      color: "text.default",
+                    }}
+                  />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Quyền truy cập bị giới hạn">
+                <span>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    LinkComponent={Link}
+                    to="/admin/voucher/website"
+                    className="me-2"
+                    disabled
+                  >
+                    <LoyaltyOutlinedIcon
+                      sx={{
+                        width: "30px",
+                        height: "30px",
+                        color: "text.default",
+                      }}
+                    />
+                  </Button>
+                </span>
+              </Tooltip>
+            )}
+            {rolePermission === "All_Function" ||
+            rolePermission === "Manage_Banner" ? (
+              <Tooltip title="Quản lý banner">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  LinkComponent={Link}
+                  to="/admin/banner"
+                  className="me-2"
+                >
+                  <ViewCarouselOutlinedIcon
+                    sx={{
+                      width: "30px",
+                      height: "30px",
+                      color: "text.default",
+                    }}
+                  />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Quyền truy cập bị giới hạn">
+                <span>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    LinkComponent={Link}
+                    to="/admin/voucher/website"
+                    className="me-2"
+                    disabled
+                  >
+                    <ViewCarouselOutlinedIcon
+                      sx={{
+                        width: "30px",
+                        height: "30px",
+                        color: "text.default",
+                      }}
+                    />
+                  </Button>
+                </span>
+              </Tooltip>
+            )}
+
+            {rolePermission === "All_Function" ||
+            rolePermission === "Manage_Category" ? (
+              <Tooltip title="Quản lí danh mục sản phẩm">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  LinkComponent={Link}
+                  to="/admin/category"
+                  className="me-2"
+                >
+                  <CategoryOutlinedIcon
+                    sx={{
+                      width: "30px",
+                      height: "30px",
+                      color: "text.default",
+                    }}
+                  />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Quyền truy cập bị giới hạn">
+                <span>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    LinkComponent={Link}
+                    to="/admin/category"
+                    className="me-2"
+                    disabled
+                  >
+                    <CategoryOutlinedIcon
+                      sx={{
+                        width: "30px",
+                        height: "30px",
+                        color: "text.default",
+                      }}
+                    />
+                  </Button>
+                </span>
+              </Tooltip>
+            )}
+            {rolePermission === "All_Function" ||
+            rolePermission === "Manage_Support" ? (
+              <Tooltip title="Quản lí người dùng">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  LinkComponent={Link}
+                  to="/admin/manage/user"
+                  className="me-2"
+                >
+                  <GroupOutlinedIcon
+                    sx={{
+                      width: "30px",
+                      height: "30px",
+                      color: "text.default",
+                    }}
+                  />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Quyền truy cập bị giới hạn">
+                <span>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    LinkComponent={Link}
+                    to="/admin/manage/user"
+                    className="me-2"
+                    disabled
+                  >
+                    <GroupOutlinedIcon
+                      sx={{
+                        width: "30px",
+                        height: "30px",
+                        color: "text.default",
+                      }}
+                    />
+                  </Button>
+                </span>
+              </Tooltip>
+            )}
           </div>
           <img
             className="img-header"
@@ -267,6 +424,8 @@ const Dashboard = () => {
             />
           </Box>
         </div>
+        {/* Thêm ProductList vào đây */}
+        <ProductList />
       </Container>
 
       {showRevenueChart && (
@@ -281,7 +440,7 @@ const Dashboard = () => {
           >
             <UilTimes />
           </button>
-          <h2 className="chart-title">Biểu đồ Doanh thu</h2>
+          <h2 className="chart-title">Biểu đồ doanh thu</h2>
           <RevenueChart onClose={() => setShowRevenueChart(false)} />
         </Box>
       )}
@@ -315,9 +474,6 @@ const Dashboard = () => {
           <UserChart onClose={() => setShowUserChart(false)} />
         </div>
       )}
-
-      {/* Thêm ProductList vào đây */}
-      <ProductList />
     </div>
   );
 };

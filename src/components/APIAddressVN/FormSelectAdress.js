@@ -100,7 +100,7 @@ const FormSelectAdress = ({ apiAddress, resetForm, editFormAddress }) => {
           `api/p/search/?q=${nameProvinces}`
         );
         const dataProvince = resNameProvince.data;
-
+        console.log(dataProvince);
         // Lấy mã tỉnh thành và set vào selectedProvince để tự động chọn
         const foundProvince = dataProvince.find(
           (province) => province.name === nameProvinces

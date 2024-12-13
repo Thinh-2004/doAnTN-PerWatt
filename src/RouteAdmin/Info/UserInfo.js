@@ -1,111 +1,215 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import Header from "../../components/Header/Header";
+import axios from "../../Localhost/Custumize-axios";
+import { Link, Route, Routes } from "react-router-dom";
+import Info from "./Info";
+import ChangePass from "./ChangePassword/ChangePass";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import ShippingList from "../../components/Shipping/ShippingList";
+import "./UserInfoStyle.css";
+import {
+  Button,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  OutlinedInput,
+  useTheme,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const UserInfo = () => {
-  const [user, setUser] = useState({});
+  const [fill, setFill] = useState([]);
+  const [password, setPassword] = useState("");
+  const [isChangePassClicked, setIsChangePassClicked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const userId = sessionStorage.getItem("id");
+  const changeLink = useNavigate();
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
+  const id = user.id;
+  const [checkPassword, setCheckPsasword] = useState({
+    password: "",
+  });
+
+  const theme = useTheme();
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      const res = await axios.get(`http://localhost:8080/info/${userId}`);
-      setUser(res.data);
+    const loadData = async () => {
+      try {
+        const res = await axios.get(`userProFile/${id}`);
+        setFill(res.data);
+
+        const resUser = await axios.get(`userProFile/${id}`);
+        setCheckPsasword(resUser.data.password);
+        // console.log(checkPassword);
+      } catch (error) {
+        console.log(error);
+        toast.error(
+          error.response ? error.response.data.message : error.message
+        );
+      }
     };
-    fetchUserInfo();
-  }, [userId]);
+    loadData();
+  }, [id, checkPassword]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUser({ ...user, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
+  const onClickChangePass = async (e) => {
     e.preventDefault();
-    await axios.put(`http://localhost:8080/info/${userId}`, user);
-    alert("Cập nhật thông tin thành công");
+    if (password === "") {
+      toast.error("Vui lòng nhập mật khẩu ");
+      return;
+    }
+    try {
+      // Gọi API xác thực mật khẩu (nếu có)
+      const res = await axios.post("checkPass", { password, id });
+      toast.success("Truy cập thành công");
+      setIsChangePassClicked(true);
+      changeLink("changePass");
+      const modalElement = document.getElementById("exampleModal");
+      if (modalElement) {
+        const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+          modalInstance.hide();
+        }
+      }
+    } catch (error) {
+      toast.error(error.response ? error.response.data.message : error.message);
+    }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (event) => {
+    event.preventDefault();
   };
 
   return (
-    <div className="container mt-5">
-      <form onSubmit={handleSubmit} className="border p-4 rounded bg-light">
-        <h2 className="mb-4">Thông tin tài khoản</h2>
-        <div className="mb-3">
-          <label className="form-label">Họ và tên</label>
-          <input
-            type="text"
-            className="form-control"
-            name="fullname"
-            value={user.fullname || ""}
-            onChange={handleChange}
-            placeholder="Nhập họ và tên"
-          />
+    <div>
+      <Header />
+      <div className="container">
+        <div className="mx-2">
+          <ul
+            className="mx-3"
+            style={{ listStyleType: "none", paddingLeft: "20px" }}
+          >
+            <li className="mb-2">
+              {isChangePassClicked ? (
+                <span className="text-muted">Đổi mật khẩu</span>
+              ) : checkPassword === null ? (
+                <Link type="button" className="text-primary" to={"changePass"}>
+                  Đổi mật khẩu
+                </Link>
+              ) : (
+                <>
+                  {/* <span
+                          type="button"
+                          className="text-primary"
+                          data-bs-toggle="modal"
+                          data-bs-target="#exampleModal"
+                        >
+                          Đổi mật khẩu
+                        </span> */}
+                  <div
+                    className="modal fade"
+                    id="exampleModal"
+                    tabIndex="-1"
+                    aria-labelledby="exampleModalLabel"
+                    aria-hidden="true"
+                  >
+                    <div className="modal-dialog modal-dialog-centered">
+                      <div
+                        className={`modal-content ${
+                          theme.palette.mode === "light"
+                            ? "bg-white"
+                            : "bg-dark"
+                        }`}
+                      >
+                        <div className="modal-header">
+                          <h1
+                            className="modal-title fs-5"
+                            id="exampleModalLabel"
+                          >
+                            Xác minh tài khoản trước khi thực hiện
+                          </h1>
+                          <button
+                            type="button"
+                            className="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                          ></button>
+                        </div>
+                        <form onSubmit={onClickChangePass}>
+                          <div className="modal-body">
+                            <FormControl
+                              sx={{ m: 1, width: "100%" }}
+                              variant="outlined"
+                            >
+                              <InputLabel htmlFor="outlined-adornment-password">
+                                Nhập mật khẩu của bạn
+                              </InputLabel>
+                              <OutlinedInput
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                id="outlined-adornment-password"
+                                type={showPassword ? "text" : "password"}
+                                endAdornment={
+                                  <InputAdornment position="end">
+                                    <IconButton
+                                      aria-label="toggle password visibility"
+                                      onClick={handleClickShowPassword}
+                                      onMouseDown={handleMouseDownPassword}
+                                      onMouseUp={handleMouseUpPassword}
+                                      edge="end"
+                                    >
+                                      {showPassword ? (
+                                        <VisibilityOff />
+                                      ) : (
+                                        <Visibility />
+                                      )}
+                                    </IconButton>
+                                  </InputAdornment>
+                                }
+                                label="Nhập mật khẩu của bạn"
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="modal-footer">
+                            <Button
+                              variant="contained"
+                              id="btn-checkPass"
+                              type="submit"
+                              disableElevation
+                            >
+                              Xác nhận
+                            </Button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </li>
+          </ul>
         </div>
 
-        <div className="mb-3">
-          <label className="form-label">Email</label>
-          <input
-            type="email"
-            className="form-control"
-            name="email"
-            value={user.email || ""}
-            onChange={handleChange}
-            placeholder="Nhập email"
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Mật khẩu</label>
-          <input
-            type={showPassword ? "text" : "password"}
-            className="form-control"
-            name="password"
-            value={user.password || ""}
-            onChange={handleChange}
-            placeholder="Nhập mật khẩu"
-          />
-          <div className="form-check mt-2">
-            <input
-              type="checkbox"
-              className="form-check-input"
-              checked={showPassword}
-              onChange={togglePasswordVisibility}
+        <div>
+          <Routes>
+            <Route path="/" element={<Info />} />
+            <Route
+              path="changePass"
+              element={
+                <ChangePass checkStatus={() => setIsChangePassClicked(false)} />
+              }
             />
-            <label className="form-check-label">Hiện mật khẩu</label>
-          </div>
+          </Routes>
         </div>
-
-        <div className="mb-3">
-          <label className="form-label">Địa chỉ</label>
-          <input
-            type="text"
-            className="form-control"
-            name="address"
-            value={user.address || ""}
-            onChange={handleChange}
-            placeholder="Nhập địa chỉ"
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Số điện thoại</label>
-          <input
-            type="tel"
-            className="form-control"
-            name="phone"
-            value={user.phone || ""}
-            onChange={handleChange}
-            placeholder="Nhập số điện thoại"
-          />
-        </div>
-
-        <button type="submit" className="btn btn-primary">
-          Cập nhật
-        </button>
-      </form>
+      </div>
     </div>
   );
 };

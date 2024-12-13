@@ -16,16 +16,14 @@ const ForgotPassword = () => {
         toEmail: email,
       });
       const responseData = response.data;
-      setTimeout(() => {
-        toast.update(id, {
-          render: responseData.message,
-          type: "success",
-          isLoading: false,
-          autoClose: 1500,
-          closeButton: true,
-        });
-        navigate("/otp");
-      }, 500);
+      toast.update(id, {
+        render: responseData.message,
+        type: "success",
+        isLoading: false,
+        autoClose: 1500,
+        closeButton: true,
+      });
+      navigate("/otp");
       // Lưu OTP và email vào session storage
       sessionStorage.setItem("generatedOTP", responseData.otp);
       sessionStorage.setItem("email", responseData.email);

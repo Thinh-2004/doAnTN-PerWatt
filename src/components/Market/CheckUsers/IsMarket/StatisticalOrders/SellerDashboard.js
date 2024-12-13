@@ -1,18 +1,27 @@
 import React, { useState, useEffect, useContext } from "react";
-import Slider from "react-slick";
 import Chart from "react-apexcharts";
+import { useInView } from "react-intersection-observer";
 import axios from "../../../../../Localhost/Custumize-axios";
-import { Spin, Modal, Table, DatePicker, Select } from "antd";
+import { Spin, Modal, Table, DatePicker, Select, Pagination } from "antd";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./SellerDashboard.css";
 import { ThemeModeContext } from "../../../../ThemeMode/ThemeModeProvider";
-import { Box, Card, CardContent } from "@mui/material";
+import { Box, CardContent } from "@mui/material";
+import { Link } from "react-router-dom";
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
-    .format(price)
-    .replace("₫", "đ");
+const formatPrice = (value) => {
+  if (value) {
+    // Chuyển giá trị thành kiểu số thực
+    const numberValue = parseFloat(value);
+
+    // Đảm bảo không làm tròn và giữ hết chữ số thập phân
+    const formattedValue = numberValue.toFixed(2); // Giữ 2 chữ số thập phân (bạn có thể thay đổi số lượng chữ số thập phân)
+
+    // Định dạng số với dấu phân cách hàng nghìn và không làm tròn, thêm "đ" vào sau
+    return parseFloat(formattedValue).toLocaleString("vi-VN") + " đ";
+  }
+  return "";
 };
 
 const fetchOrderData = async (
@@ -83,6 +92,7 @@ const fetchProductData = async (
         sold: product.sold,
         rating: calculateRating(product.sold),
         imgSrc: productImage || "https://via.placeholder.com/100",
+        slugProduct: product.slugProduct,
       };
     });
 
@@ -91,123 +101,6 @@ const fetchProductData = async (
     console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
   } finally {
     setLoadingProducts(false);
-  }
-};
-
-const fetchChartData = async (
-  idStore,
-  setRevenueData,
-  setPieChartData,
-  setMixedChartData,
-  dateRange, // Thêm tham số lọc ngày
-  selectedQuarter // Thêm tham số lọc quý
-) => {
-  try {
-    let dateQuery = "";
-
-    if (dateRange && dateRange.length === 2) {
-      // Đảm bảo rằng ngày có định dạng yyyy-MM-dd
-      const startDate = new Date(dateRange[0]).toISOString().split("T")[0]; // Chuyển sang yyyy-MM-dd
-      const endDate = new Date(dateRange[1]).toISOString().split("T")[0]; // Chuyển sang yyyy-MM-dd
-      dateQuery = `?startDate=${startDate}&endDate=${endDate}`;
-    } else if (selectedQuarter) {
-      // Xử lý lọc theo quý và chuyển sang định dạng yyyy-MM-dd
-      const quarterRanges = {
-        1: ["2024-01-01", "2024-03-31"], // Quý 1
-        2: ["2024-04-01", "2024-06-30"], // Quý 2
-        3: ["2024-07-01", "2024-09-30"], // Quý 3
-        4: ["2024-10-01", "2024-12-31"], // Quý 4
-      };
-
-      const [start, end] = quarterRanges[selectedQuarter];
-      dateQuery = `?startDate=${start}&endDate=${end}`;
-    }
-
-    // Gọi API để lấy dữ liệu biểu đồ doanh thu theo năm (hoặc theo ngày/quý nếu có lọc)
-    const revenueResponse = await axios.get(
-      `http://localhost:8080/revenue/${idStore}?period=year${dateQuery}`
-    );
-    setRevenueData(
-      revenueResponse.data.map((item) => ({
-        date: item.date,
-        revenue: item.revenue,
-      }))
-    );
-
-    // Gọi API để lấy dữ liệu biểu đồ dạng bánh (pie chart)
-    const pieChartResponse = await axios.get(
-      `http://localhost:8080/pie-chart/${idStore}${dateQuery}`
-    );
-    setPieChartData(pieChartResponse.data);
-
-    // Gọi API để lấy dữ liệu biểu đồ kết hợp (mixed chart)
-    const response = await axios.get(
-      `http://localhost:8080/mixed-chart/${idStore}${dateQuery}`
-    );
-
-    // Nhóm dữ liệu theo tháng với định dạng MM-yyyy
-    const groupedData = response.data.reduce((acc, item) => {
-      const {
-        month,
-        productDetailName,
-        productName,
-        revenue,
-        orders,
-        totalQuantity,
-        totalProductRevenue,
-      } = item;
-
-      // Chuyển đổi tháng sang định dạng MM-yyyy
-      const formattedMonth =
-        month.substring(5, 7) + "-" + month.substring(0, 4); // Lấy MM-yyyy từ yyyy-MM-dd
-      //
-      const fullDate = new Date(month);
-      //
-      // Kiểm tra và lưu lại nhóm dữ liệu cho mỗi tháng
-      if (!acc[formattedMonth]) {
-        acc[formattedMonth] = {
-          month: formattedMonth,
-          revenue: 0,
-          orders: 0,
-          totalQuantity: 0,
-          totalProductRevenue: 0,
-          details: [],
-          orderDate: fullDate, // Lưu lại ngày đặt
-        };
-      }
-      //
-
-      // Cộng dồn dữ liệu cho mỗi tháng
-      acc[formattedMonth].revenue += revenue;
-      acc[formattedMonth].orders += orders;
-      acc[formattedMonth].totalQuantity += totalQuantity;
-      acc[formattedMonth].totalProductRevenue += totalProductRevenue;
-
-      // Thêm thông tin chi tiết sản phẩm vào mảng details của tháng tương ứng
-      acc[formattedMonth].details.push({
-        productDetailName: productDetailName || productName, // Dùng productName nếu productDetailName không có
-        productName,
-        revenue,
-        orders,
-        totalQuantity,
-        totalProductRevenue,
-        productDetailId: item.productDetailId,
-        productId: item.productId,
-        orderDetailId: item.orderDetailId,
-        orderDate: fullDate, // Lưu lại ngày đặt cho mỗi chi tiết sản phẩm
-      });
-
-      return acc;
-    }, {});
-    //
-
-    // Chuyển đổi dữ liệu từ object sang mảng
-    const chartData = Object.values(groupedData);
-
-    // Cập nhật state mixedChartData
-    setMixedChartData(chartData);
-  } catch (error) {
-    console.error("Error fetching chart data:", error);
   }
 };
 
@@ -230,8 +123,227 @@ const SellerDashboard = () => {
   const { RangePicker } = DatePicker;
   const [dateRange, setDateRange] = useState([]); // Khai báo state cho dateRange
   const [selectedQuarter, setSelectedQuarter] = useState(null);
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6; // Số lượng sản phẩm mỗi trang
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [currentPageProducts, setCurrentPageProducts] = useState([]);
 
+  useEffect(() => {
+    // Cập nhật sản phẩm hiển thị khi chuyển trang
+    const updatedProducts = topProducts.slice(startIndex, endIndex);
+    setCurrentPageProducts(updatedProducts);
+  }, [currentPage, topProducts]);
+
+  // Tính toán chỉ số bắt đầu và kết thúc của sản phẩm trong trang hiện tại
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = currentPage * pageSize;
+  const productsToShow = topProducts.slice(startIndex, endIndex);
   const { mode } = useContext(ThemeModeContext);
+  const handleYearChange = (year) => {
+    setSelectedYear(year); // Lưu trữ năm đã chọn
+    fetchChartData(
+      idStore,
+      setRevenueData,
+      setPieChartData,
+      setMixedChartData,
+      dateRange,
+      selectedQuarter,
+      year
+    );
+  };
+
+  const fetchChartData = async (
+    idStore,
+    setRevenueData,
+    setPieChartData,
+    setMixedChartData,
+    dateRange,
+    selectedQuarter,
+    selectedYear = currentYear // Mặc định là năm hiện tại
+  ) => {
+    try {
+      let dateQuery = "";
+
+      // Kiểm tra trường hợp lọc theo khoảng thời gian (dateRange)
+      if (dateRange && dateRange.length === 2) {
+        const startDate = new Date(dateRange[0]).toISOString().split("T")[0];
+        const endDate = new Date(dateRange[1]).toISOString().split("T")[0];
+        dateQuery = `?startDate=${startDate}&endDate=${endDate}`;
+      } else if (selectedQuarter && selectedQuarter !== 0) {
+        // Xử lý lọc theo quý khi selectedQuarter không phải là 0
+        const quarterRanges = {
+          1: [`${selectedYear}-01-01`, `${selectedYear}-03-31`],
+          2: [`${selectedYear}-04-01`, `${selectedYear}-06-30`],
+          3: [`${selectedYear}-07-01`, `${selectedYear}-09-30`],
+          4: [`${selectedYear}-10-01`, `${selectedYear}-12-31`],
+        };
+
+        // Chọn khoảng thời gian của quý
+        const selectedRange =
+          quarterRanges[selectedQuarter] || quarterRanges[1];
+        const [start, end] = selectedRange;
+        dateQuery = `?startDate=${start}&endDate=${end}`;
+      } else if (selectedQuarter === 0) {
+        // Nếu quý là 0, không lọc theo quý mà chỉ trả về dữ liệu của năm hiện tại
+        dateQuery = `?startDate=${selectedYear}-01-01&endDate=${selectedYear}-12-31`;
+      } else {
+        // Nếu không có giá trị filter quý hoặc ngày, trả về toàn bộ năm hiện tại
+        dateQuery = `?startDate=${selectedYear}-01-01&endDate=${selectedYear}-12-31`;
+      }
+
+      // Lấy dữ liệu doanh thu
+      const revenueResponse = await axios.get(
+        `http://localhost:8080/revenue/${idStore}?period=year${dateQuery}`
+      );
+
+      // Gộp dữ liệu có cùng năm
+      const groupedRevenueData = revenueResponse.data.reduce((acc, item) => {
+        // Kiểm tra nếu năm đã tồn tại trong acc, thì cộng dồn revenue
+        const existingItem = acc.find((entry) => entry.date === item.date);
+        if (existingItem) {
+          existingItem.revenue += item.revenue;
+        } else {
+          acc.push({
+            date: item.date,
+            revenue: item.revenue,
+          });
+        }
+        return acc;
+      }, []);
+
+      // Cập nhật dữ liệu sau khi gộp
+      setRevenueData(groupedRevenueData);
+
+      // Lấy dữ liệu biểu đồ tròn (Pie Chart)
+      const pieChartResponse = await axios.get(
+        `http://localhost:8080/pie-chart/${idStore}${dateQuery}`
+      );
+      setPieChartData(pieChartResponse.data);
+
+      // Lấy dữ liệu biểu đồ kết hợp (Mixed Chart)
+      const response = await axios.get(
+        `http://localhost:8080/mixed-chart/${idStore}${dateQuery}`
+      );
+
+      const groupedData = response.data.reduce((acc, item) => {
+        const {
+          month,
+          productDetailName,
+          productName,
+          revenue,
+          orders,
+          totalQuantity,
+          totalProductRevenue,
+          voucherAdminId,
+          voucherId, // Lấy voucherId
+          discountPrice, // Lấy discountPrice (Số nguyên, ví dụ: 10 -> giảm 10%)
+          productVAT,
+        } = item;
+
+        // Log voucherId và discountPrice
+        console.log("voucherId:", voucherId);
+        console.log("discountPrice:", discountPrice);
+
+        const formattedMonth =
+          month.substring(5, 7) + "-" + month.substring(0, 4);
+        const fullDate = new Date(month);
+
+        if (!acc[formattedMonth]) {
+          acc[formattedMonth] = {
+            month: formattedMonth,
+            revenue: 0,
+            orders: 0,
+            totalQuantity: 0,
+            totalProductRevenue: 0,
+            details: [],
+            orderDate: fullDate,
+            voucherDiscount: 0, // Cột riêng cho giá trị giảm giá từ voucherId
+          };
+        }
+
+        let calculatedTotalProductRevenue = totalQuantity * totalProductRevenue; // Doanh thu gốc
+        let finalRevenue = calculatedTotalProductRevenue;
+        let voucherDiscount = 0; // Cột riêng cho voucher discount
+
+        // Áp dụng giảm giá nếu có voucher
+        if (voucherId) {
+          // Giảm giá từ discountPrice (Giả sử discountPrice là phần trăm giảm giá)
+          voucherDiscount =
+            calculatedTotalProductRevenue * (discountPrice / 100); // Ghi nhận giá trị giảm giá từ voucherId
+          finalRevenue -= voucherDiscount; // Giảm doanh thu sau khi áp dụng voucher discount
+        } else if (voucherAdminId) {
+          // Áp dụng tỷ lệ giảm giá nếu voucherAdminId có giá trị
+          finalRevenue -= finalRevenue * 0.01;
+        }
+
+        // Áp dụng VAT sau khi đã giảm giá
+        finalRevenue -= finalRevenue * productVAT;
+
+        // Doanh thu bị triết khấu: Sự khác biệt giữa doanh thu gốc và doanh thu sau khi đã trừ voucher discount
+        let discountedRevenue =
+          calculatedTotalProductRevenue - finalRevenue - voucherDiscount;
+
+        console.log("Doanh thu gốc:", calculatedTotalProductRevenue);
+        console.log("Doanh thu sau triết khấu:", finalRevenue);
+        console.log("Doanh thu bị triết khấu:", discountedRevenue);
+        console.log("Giảm giá từ voucherId:", voucherDiscount); // Log riêng cho giảm giá từ voucherId
+
+        acc[formattedMonth].revenue += finalRevenue;
+        acc[formattedMonth].orders += orders;
+        acc[formattedMonth].totalQuantity += totalQuantity;
+        acc[formattedMonth].totalProductRevenue +=
+          calculatedTotalProductRevenue;
+
+        // Thêm giá trị giảm giá từ voucherId vào cột riêng
+        acc[formattedMonth].voucherDiscount += voucherDiscount;
+
+        acc[formattedMonth].details.push({
+          productDetailName: productDetailName || productName,
+          productName,
+          revenue: finalRevenue,
+          orders,
+          totalQuantity,
+          totalProductRevenue: calculatedTotalProductRevenue,
+          discountedRevenue, // Thêm discountedRevenue vào đây
+          voucherDiscount, // Thêm giá trị giảm giá từ voucherId vào chi tiết
+          productDetailId: item.productDetailId,
+          productId: item.productId,
+          orderDetailId: item.orderDetailId,
+          orderDate: fullDate,
+        });
+
+        return acc;
+      }, {});
+
+      let chartData = Object.values(groupedData);
+
+      // Nếu không có dateRange và selectedQuarter, lọc dữ liệu theo năm hiện tại
+      if (!dateRange && selectedQuarter === 0) {
+        chartData = chartData.filter((item) => {
+          const itemYear = new Date(item.orderDate).getFullYear();
+          return itemYear === selectedYear; // Sử dụng selectedYear thay vì currentYear
+        });
+      }
+
+      // Log tổng doanh thu cho mỗi năm
+      const totalRevenueByYear = chartData.reduce((acc, item) => {
+        const year = new Date(item.orderDate).getFullYear();
+        if (!acc[year]) {
+          acc[year] = 0;
+        }
+        acc[year] += item.revenue;
+        return acc;
+      }, {});
+
+      console.log("Tổng doanh thu theo từng năm:", totalRevenueByYear);
+
+      setMixedChartData(chartData);
+    } catch (error) {
+      console.error("Error fetching chart data:", error);
+    }
+  };
 
   const handleDateChange = (dates) => {
     if (dates && dates.length === 2) {
@@ -259,15 +371,16 @@ const SellerDashboard = () => {
     }
   };
 
-  const handleQuarterChange = (value) => {
-    setSelectedQuarter(value); // Lưu quý người dùng chọn
+  const handleQuarterChange = (quarter) => {
+    setSelectedQuarter(quarter); // Lưu trữ quý đã chọn
     fetchChartData(
       idStore,
       setRevenueData,
       setPieChartData,
       setMixedChartData,
       dateRange,
-      value
+      quarter,
+      selectedYear
     );
   };
   //
@@ -276,14 +389,6 @@ const SellerDashboard = () => {
     fetchChartData(idStore, setRevenueData, setPieChartData, setMixedChartData);
   }, [idStore]);
 
-  //////
-  const formatPrice = (value) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(value);
-  };
-  //
   const extractOrderDate = (date) => {
     return date.toLocaleDateString("vi-VN"); // Định dạng ngày theo kiểu VN
   };
@@ -299,8 +404,24 @@ const SellerDashboard = () => {
     return selectedColumnData.reduce((total, item) => total + item.revenue, 0);
   };
 
-  // Hiển thị tổng doanh thu
+  const calculateTotalProductRevenue = () => {
+    return selectedColumnData.reduce(
+      (total, item) => total + item.totalProductRevenue,
+      0
+    );
+  };
+
+  const calculateTotalDiscountedRevenue = () => {
+    return selectedColumnData.reduce(
+      (total, item) => total + item.discountedRevenue,
+      0
+    );
+  };
+
+  // Tính tổng doanh thu gốc, sau triết khấu và doanh thu bị triết khấu
   const totalRevenue = calculateTotalRevenue();
+  const totalProductRevenue = calculateTotalProductRevenue();
+  const totalDiscountedRevenue = calculateTotalDiscountedRevenue();
   ////
 
   useEffect(() => {
@@ -328,18 +449,6 @@ const SellerDashboard = () => {
       ? "Chào buổi chiều"
       : "Chào buổi tối";
   };
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 5,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 2000,
-    arrows: true,
-    centerMode: true,
-    centerPadding: "10px",
-  };
 
   const defaultChartData = {
     options: {
@@ -358,6 +467,17 @@ const SellerDashboard = () => {
           formatter: function (value) {
             return formatPrice(value); // Format revenue values as currency
           },
+        },
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function (val) {
+          return new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          })
+            .format(val)
+            .replace("₫", "đ");
         },
       },
       tooltip: {
@@ -504,8 +624,10 @@ const SellerDashboard = () => {
               color: mode === "light" ? "#333" : "#fff", // Màu chữ trục Y thứ hai
             },
           },
-
           labels: {
+            formatter: function (value) {
+              return value; // Chắc chắn giá trị được hiển thị đúng
+            },
             style: {
               colors: mode === "light" ? "black" : "white", // Màu chữ nhãn trục Y thứ hai
             },
@@ -519,7 +641,7 @@ const SellerDashboard = () => {
         y: {
           formatter: function (value, { seriesIndex }) {
             return seriesIndex === 0
-              ? formatPrice(value) + " đ" // Định dạng tooltip cho doanh thu
+              ? formatPrice(value) // Định dạng tooltip cho doanh thu
               : value + " đơn hàng"; // Định dạng tooltip cho số lượng đơn hàng
           },
           title: {
@@ -527,11 +649,6 @@ const SellerDashboard = () => {
           },
           style: {
             color: mode === "light" ? "#333" : "#fff", // Màu chữ tooltip giá trị Y
-          },
-        },
-        legend: {
-          labels: {
-            colors: mode === "light" ? "#333" : "#fff", // Màu chữ cho nhãn series trong legend
           },
         },
       },
@@ -550,6 +667,26 @@ const SellerDashboard = () => {
     ],
   };
 
+  const handleSort = () => {
+    const sortedProducts = [...productsToShow].sort((a, b) => {
+      if (sortOrder === "asc") {
+        return a.sold - b.sold;
+      }
+      return b.sold - a.sold;
+    });
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    // Cập nhật lại danh sách hiển thị
+    setCurrentPageProducts(sortedProducts);
+  };
+
+  const { ref, inView } = useInView({
+    triggerOnce: true, // Hiệu ứng chỉ kích hoạt 1 lần
+    threshold: 0.1, // Kích hoạt khi phần tử xuất hiện 10% trên màn hình
+  });
+  // Hàm thay đổi trang
+  const onPageChange = (page) => {
+    setCurrentPage(page);
+  };
   return (
     <Box
       sx={{ backgroundColor: "backgroundElement.children" }}
@@ -591,86 +728,63 @@ const SellerDashboard = () => {
       </div>
 
       <div className="salesStatisticsClass">
-        <div className="chartsContainer">
-          <div className="areaChartClass">
-            <Chart
-              options={defaultChartData.options}
-              series={defaultChartData.series}
-              type="area"
-              height={350}
-            />
-          </div>
-          <div className="pieChartClass">
-            <Chart
-              options={{
-                labels: pieChartData.map((item) =>
-                  item.products.namedetail
-                    ? item.products.namedetail.length > 20
-                      ? item.products.namedetail.slice(0, 20) + "..."
-                      : item.products.namedetail
-                    : item.products.product.name.length > 20
-                    ? item.products.product.name.slice(0, 20) + "..."
-                    : item.products.product.name
-                ),
-                title: {
-                  text: "Phân bổ doanh thu sản phẩm",
-                  style: {
-                    color: mode === "light" ? "black" : "white", // Title color based on mode
-                  },
-                },
-                tooltip: {
-                  y: {
-                    formatter: function (value, { seriesIndex }) {
-                      const productValue = pieChartData[seriesIndex].value;
-                      return `${formatPrice(productValue)}`; // Format price for each product
-                    },
-                  },
-                },
-                legend: {
-                  labels: {
-                    colors: mode === "light" ? "black" : "white", // Change label color for legend
-                  },
-                },
-                dataLabels: {
-                  style: {
-                    fontSize: "14px", // Adjust font size if needed
-                    fontWeight: "bold", // Optional: Set font weight
-                    colors: [mode === "light" ? "black" : "white"], // Change label text color
-                  },
-                },
-              }}
-              series={pieChartData.map((item) => item.value)} // Data values for the pie chart
-              type="pie"
-              height={350}
-            />
-          </div>
-        </div>
+        <div className="chartsContainer"></div>
       </div>
-
+      <div className="areaChartClass">
+        <Chart
+          options={defaultChartData.options}
+          series={defaultChartData.series}
+          type="bar"
+          height={350}
+        />
+      </div>
       <div>
         <RangePicker
           onChange={handleDateChange}
           format="YYYY-MM-DD"
           style={{
+            margin: "5px",
             marginBottom: "20px",
             backgroundColor: mode === "light" ? "white" : "#363535",
           }}
         />
         <Select
-          defaultValue={null}
-          onChange={handleQuarterChange}
+          defaultValue={currentYear}
+          onChange={(value) => handleYearChange(value)}
           style={{
+            margin: "5px",
             marginBottom: "20px",
             backgroundColor: mode === "light" ? "white" : "#363535",
           }}
           className="selectClass"
         >
-          <Select.Option value={0}>Quý</Select.Option>
+          {[...Array(2)].map((_, index) => {
+            const year = currentYear - index;
+            return (
+              <Select.Option key={year} value={year}>
+                {year}
+              </Select.Option>
+            );
+          })}
+        </Select>
+
+        <Select
+          value={selectedQuarter}
+          onChange={handleQuarterChange}
+          style={{
+            margin: "5px",
+            marginBottom: "20px",
+            backgroundColor: mode === "light" ? "white" : "#363535",
+          }}
+          className="selectClass"
+        >
+          <Select.Option value={0}>Toàn bộ năm</Select.Option>
           <Select.Option value={1}>Quý 1</Select.Option>
           <Select.Option value={2}>Quý 2</Select.Option>
           <Select.Option value={3}>Quý 3</Select.Option>
           <Select.Option value={4}>Quý 4</Select.Option>
         </Select>
+
         <div
           className="mixedChartClass"
           onContextMenu={(e) => e.preventDefault()} // Ngăn menu chuột phải mặc định
@@ -684,8 +798,20 @@ const SellerDashboard = () => {
         </div>
       </div>
 
-      <div className="topProductsClass">
-        <h3 className="sectionTitleClass">Sản phẩm bán chạy</h3>
+      <div>
+        <h3 className="">Sản phẩm bán chạy</h3>
+        <div className="sort-container">
+          {topProducts.length > 0 && (
+            <>
+              {/* <button onClick={handleSort} className="sort-button">
+                Sắp xếp theo số lượng ({sortOrder === "asc" ? "↑" : "↓"})
+              </button> */}
+              {/* <button onClick={handleSortByPrice} className="sort-button">
+              Sắp xếp theo giá ({sortPriceOrder === "asc" ? "↑" : "↓"})
+            </button> */}
+            </>
+          )}
+        </div>
         {loadingProducts ? (
           <Spin spinning tip="Đang tải sản phẩm...">
             <div style={{ minHeight: "200px" }}></div>
@@ -695,26 +821,44 @@ const SellerDashboard = () => {
             <div style={{ minHeight: "200px" }}></div>
           </Spin>
         ) : (
-          <Slider {...sliderSettings}>
-            {topProducts.map((product) => (
-              <Card>
-                <CardContent key={product.id} className="">
-                  <img
-                    src={product.imgSrc}
-                    alt={product.name}
-                    className="productImageClass"
-                  />
-                  <h3 className="productNameClass">{product.name}</h3>
-                  <p className="productPriceClass text-danger">
-                    {product.price}
-                  </p>
-                  <p className="productSoldClass">Đã bán: {product.sold}</p>
-                  <p className="productRatingClass">{product.rating}</p>
-                </CardContent>
-              </Card>
+          <div className="toplist-grid">
+            {currentPageProducts.map((product) => (
+              <Link
+                to={`/detailProduct/${product.slugProduct}`}
+                key={product.id}
+              >
+                <div
+                  ref={ref}
+                  className={`product-card ${inView ? "visible" : "hidden"}`}
+                >
+                  <CardContent>
+                    <img
+                      src={product.imgSrc}
+                      alt={product.name}
+                      className="productImageClass"
+                    />
+                    <h3 className="productNameClass">{product.name}</h3>
+                    <p className="productPriceClass text-danger">
+                      {product.price}
+                    </p>
+                    <p className="productSoldClass">Đã bán: {product.sold}</p>
+                    <p className="productRatingClass">{product.rating}</p>
+                  </CardContent>
+                </div>
+              </Link>
             ))}
-          </Slider>
+          </div>
         )}
+
+        {/* Thêm phân trang */}
+        <Pagination
+          current={currentPage}
+          total={topProducts.length}
+          pageSize={pageSize}
+          onChange={onPageChange}
+          showSizeChanger={false}
+          style={{ textAlign: "center", marginTop: "20px" }}
+        />
       </div>
 
       <Modal
@@ -723,11 +867,21 @@ const SellerDashboard = () => {
         onCancel={() => setIsModalVisible(false)}
         footer={[
           <div key="footer" style={{ textAlign: "right", fontWeight: "bold" }}>
-            <span>Tổng doanh thu: </span>
-            <span>{formatPrice(totalRevenue)}</span>{" "}
-            {/* Sử dụng hàm formatPrice nếu có */}
+            <div>
+              <span>Tổng doanh thu gốc: </span>
+              <span>{formatPrice(totalProductRevenue)}</span>
+            </div>
+            <div>
+              <span>Tổng doanh thu bị triết khấu: </span>
+              <span>{formatPrice(totalDiscountedRevenue)}</span>
+            </div>
+            <div>
+              <span>Tổng doanh thu sau triết khấu: </span>
+              <span>{formatPrice(totalRevenue)}</span>
+            </div>
           </div>,
         ]}
+        width={900} // Điều chỉnh chiều rộng của modal
       >
         <Table
           dataSource={selectedColumnData}
@@ -736,13 +890,13 @@ const SellerDashboard = () => {
               title: "Tên sản phẩm",
               dataIndex: "productDetailName",
               key: "productDetailName",
-              render: (value) => truncateProductName(value), // Hàm cắt ngắn tên sản phẩm
+              render: (value) => truncateProductName(value),
             },
             {
               title: "Ngày đặt",
-              dataIndex: "orderDate", // Sử dụng orderDate trong chi tiết
+              dataIndex: "orderDate",
               key: "orderDate",
-              render: (value) => extractOrderDate(new Date(value)), // Chuyển đổi giá trị ngày
+              render: (value) => extractOrderDate(new Date(value)),
             },
             {
               title: "Số lượng đã bán",
@@ -750,10 +904,28 @@ const SellerDashboard = () => {
               key: "totalQuantity",
             },
             {
-              title: "Doanh thu",
+              title: "Doanh thu gốc",
+              dataIndex: "totalProductRevenue",
+              key: "totalProductRevenue",
+              render: (value) => formatPrice(value),
+            },
+            {
+              title: "Doanh thu sau triết khấu",
               dataIndex: "revenue",
               key: "revenue",
-              render: (value) => formatPrice(value), // Format doanh thu
+              render: (value) => formatPrice(value),
+            },
+            {
+              title: "Doanh thu bị triết khấu",
+              dataIndex: "discountedRevenue", // Cột này hiển thị doanh thu bị triết khấu
+              key: "discountedRevenue",
+              render: (value) => formatPrice(value),
+            },
+            {
+              title: "Giảm giá từ Voucher", // Cột mới cho giảm giá từ voucherId
+              dataIndex: "voucherDiscount", // Dữ liệu từ voucherDiscount
+              key: "voucherDiscount",
+              render: (value) => formatPrice(value), // Hiển thị giá trị giảm giá từ voucher
             },
           ]}
           rowKey="orderDetailId"

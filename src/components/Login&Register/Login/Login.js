@@ -55,14 +55,10 @@ const Login = () => {
     if (validate()) {
       const idToast = toast.loading("Vui lòng chờ...");
       try {
-        const res = await axios.post("/login", { email, password });
+        const res = await axios.post("/form/login", { email, password });
         // Lưu token vào sessionStorage
         localStorage.setItem("hadfjkdshf", res.data.result.token);
-        const resUserInfo = await axios.get(`/userProFile/myInfo`, {
-          headers: {
-            Authorization: `Bearer ${res.data.result.token}`,
-          },
-        });
+        const resUserInfo = await axios.get(`/userProFile/myInfo`);
         //Lọc các thông tin cần lưu
         const userInfo = {
           id: resUserInfo.data.id,
@@ -71,21 +67,20 @@ const Login = () => {
         };
         localStorage.setItem("user", JSON.stringify(userInfo));
         searchStoreByidUser(userInfo.id);
-        setTimeout(() => {
-          toast.update(idToast, {
-            render: "Đăng nhập thành công",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          // console.log(resUserInfo.data);
-          if (resUserInfo.data.role.namerole === "Admin") {
-            navigate("/admin");
-          } else {
-            navigate("/");
-          }
-        }, 500);
+
+        toast.update(idToast, {
+          render: "Đăng nhập thành công",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
+        // console.log(resUserInfo.data);
+        if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
       } catch (error) {
         if (error.status === 401) {
           toast.update(idToast, {
@@ -154,21 +149,20 @@ const Login = () => {
       };
       localStorage.setItem("user", JSON.stringify(userInfo));
       searchStoreByidUser(userInfo.id);
-      setTimeout(() => {
-        toast.update(idToast, {
-          render: "Đăng nhập thành công",
-          type: "success",
-          isLoading: false,
-          autoClose: 5000,
-          closeButton: true,
-        });
-        console.log(resUserInfo.data);
-        if (resUserInfo.data.role.namerole === "Admin") {
-          navigate("/admin");
-        } else {
-          navigate("/");
-        }
-      }, 500);
+
+      toast.update(idToast, {
+        render: "Đăng nhập thành công",
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+        closeButton: true,
+      });
+      console.log(resUserInfo.data);
+      if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.log(error);
       toast.update(idToast, {

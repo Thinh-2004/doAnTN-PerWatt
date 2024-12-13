@@ -3,9 +3,16 @@ import Header from "../../Header/Header";
 import Footer from "../../Footer/Footer";
 import axios from "../../../Localhost/Custumize-axios";
 import { tailspin } from "ldrs";
-import { Button, Card, CardContent, Typography } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { format } from "date-fns";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const OrderDetail = () => {
@@ -16,8 +23,11 @@ const OrderDetail = () => {
     : null;
   const { id } = useParams();
 
+  const [inputReason, setInputReason] = useState("");
+  const [cancelProductDetail, setCancelProductDetail] = useState("");
+  const changeLink = useNavigate();
   tailspin.register();
-
+  const [isCountCart, setIsCountAddCart] = useState(false);
   const load = async () => {
     try {
       const res = await axios.get(`/orderDetail/${id}`);
@@ -51,96 +61,60 @@ const OrderDetail = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return format(date, "HH:mm:ss dd/MM/yyyy");
+    return format(date, "dd/MM/yyyy HH:mm");
   };
 
-  const refundReturn = async (store, totalAmount, productDetailId) => {
-    const resWalletShop = await axios.get(`wallet/${store.user.id}`);
-    if (resWalletShop.data.balance >= totalAmount) {
-      //store
-      const newBalanceShop = resWalletShop.data.balance - totalAmount * 0.9;
-      await axios.put(`wallet/update/${store.user.id}`, {
-        balance: newBalanceShop,
-      });
-      //admin
-      const resWalletAdmin = await axios.get(`wallet/${1}`);
-      const newBalanceAdmin = resWalletAdmin.data.balance - totalAmount * 0.1;
+  const formatDateGHN = (dateString) => {
+    const date = new Date(dateString);
+    return format(date, "dd/MM/yyyy");
+  };
 
-      await axios.put(`wallet/update/${1}`, {
-        balance: newBalanceAdmin,
-      });
-      //user
-      const resWalletUser = await axios.get(`wallet/${user.id}`);
-      const newBalanceUser = resWalletUser.data.balance + totalAmount;
+  const handleConfirmCancel = async () => {
+    if (inputReason) {
+      try {
+        await axios.post(`/orderDetail/update/${cancelProductDetail}`, {
+          status: `Đang gửi yêu cầu trả hàng, với lý do: ${inputReason}`,
+        });
 
-      await axios.put(`wallet/update/${user.id}`, {
-        balance: newBalanceUser,
-      });
+        const closeModalButton = document.querySelector(
+          '[data-bs-dismiss="modal"]'
+        );
+        if (closeModalButton) {
+          closeModalButton.click();
+        }
+        toast.success("Gữi yêu cầu thành công!");
+        load();
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
-      //store
-      const fillWalletStore = await axios.get(`wallet/${store.user.id}`);
-      console.log(store.user.id);
-      console.log(fillWalletStore);
+  const addToCartNow = async (productDetailId, quantity) => {
+    const user = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : null;
 
-      const transactionTypeStore =
-        `Hoàn tiền về người dùng: ${user.fullname}`.substring(0, 50);
-      await axios.post(`wallettransaction/create/${fillWalletStore.data.id}`, {
-        amount: -totalAmount * 0.9,
-        transactiontype: transactionTypeStore,
-        transactiondate: new Date(),
-        user: { id: user.id },
-        store: { id: store.id },
-      });
+    const cartItem = {
+      quantity: quantity,
+      user: { id: user.id },
+      productDetail: { id: productDetailId },
+    };
 
-      //admin
-      const transactionTypeAdmin =
-        `Hoàn tiền về người dùng: ${user.fullname}`.substring(0, 50);
-      await axios.post(`wallettransaction/create/${1}`, {
-        amount: -totalAmount * 0.1,
-        transactiontype: transactionTypeAdmin,
-        transactiondate: new Date(),
-        user: { id: user.id },
-        store: { id: store.id },
-      });
-
-      //userStore
-      const fillWalletUser = await axios.get(`wallet/${user.id}`);
-
-      const transactionTypeUserStore =
-        `Hoàn tiền về từ cửa hàng: ${store.namestore}`.substring(0, 50);
-      await axios.post(`wallettransaction/create/${fillWalletUser.data.id}`, {
-        amount: totalAmount * 0.9,
-        transactiontype: transactionTypeUserStore,
-        transactiondate: new Date(),
-        user: { id: user.id },
-        store: { id: store.id },
-      });
-
-      //userAdmin
-      const transactionTypeUserAdmin = "Hoàn tiền về từ PerWatt";
-      await axios.post(`wallettransaction/create/${fillWalletUser.data.id}`, {
-        amount: totalAmount * 0.1,
-        transactiontype: transactionTypeUserAdmin,
-        transactiondate: new Date(),
-        user: { id: user.id },
-        store: { id: store.id },
-      });
-
-      console.log(productDetailId);
-
-      await axios.put(`/order/${id}/status`, { status: "Trả hàng" });
-      load();
-
-      toast.success("Hoàn tiền thành công");
-    } else {
-      toast.warning("Tài khoản cửa hàng không đủ để hoàn tiền");
-      return;
+    try {
+      await axios.post("/cart/add", cartItem);
+      setIsCountAddCart(true);
+      toast.success("Mua lại mua sản phẩm thành công!");
+      changeLink("/cart");
+    } catch (error) {
+      toast.error("Thêm sản phẩm thất bại!" + error);
+      console.error("Error adding to cart:", error);
     }
   };
 
   return (
     <div>
-      <Header />
+      <Header reloadCartItems={isCountCart} />
       <h1 className="text-center mt-4 mb-4">Đơn hàng chi tiết của bạn</h1>
       <div
         className="col-12 col-md-12 col-lg-10 offset-lg-1"
@@ -171,7 +145,7 @@ const OrderDetail = () => {
                   backgroundColor: "backgroundElement.children",
                 }}
               >
-                <CardContent className="">
+                <CardContent>
                   <Button
                     className="mb-3"
                     variant="contained"
@@ -213,7 +187,10 @@ const OrderDetail = () => {
                     const firstIMG =
                       orderDetail.productDetail.product.images?.[0];
                     return (
-                      <div className="d-flex mb-3" key={index}>
+                      <div
+                        className="d-flex mb-3 align-items-center"
+                        key={index}
+                      >
                         <div
                           className="col-1"
                           style={{
@@ -242,71 +219,207 @@ const OrderDetail = () => {
                             className="rounded-3"
                           />
                         </div>
-                        <div className="col-5 mt-3 mx-2">
+                        <div className="col-3 mt-3 mx-2">
                           <div id="fontSizeTitle">
                             {orderDetail.productDetail.product.name}
                           </div>
                           <div id="fontSize">
-                            {
-                              [
-                                orderDetail.productDetail.namedetail,
-                                orderDetail.productDetail.product
-                                  .productcategory.name,
-                                orderDetail.productDetail.product.trademark
-                                  .name === "No brand"
-                                  ? "Không có thương hiệu"
-                                  : "",
-                                orderDetail.productDetail.product.warranties
-                                  .name,
-                              ]
-                                .filter(Boolean) // Lọc bỏ các giá trị null hoặc rỗng
-                                .join(", ") // Nối các chuỗi lại với nhau bằng dấu phẩy và khoảng trắng
-                            }
+                            {[
+                              orderDetail.productDetail.namedetail,
+                              orderDetail.productDetail.product.productcategory
+                                .name,
+                              orderDetail.productDetail.product.trademark
+                                .name === "No brand"
+                                ? "Không có thương hiệu"
+                                : "",
+                              orderDetail.productDetail.product.warranties.name,
+                            ]
+                              .filter(Boolean)
+                              .join(", ")}
                           </div>
                         </div>
-                        <div className="col-8 mx-3 mt-5">
-                          <div className="d-flex">
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          data-bs-toggle="modal"
+                          data-bs-target="#exampleModal"
+                          hidden
+                        ></button>
+                        <div
+                          className="modal fade"
+                          id="exampleModal"
+                          tabindex="-1"
+                          aria-labelledby="exampleModalLabel"
+                          aria-hidden="true"
+                        >
+                          <div className="modal-dialog">
+                            <div className="modal-content">
+                              <div className="modal-header">
+                                <h1
+                                  className="modal-title fs-5"
+                                  id="exampleModalLabel"
+                                >
+                                  Nhập lý do bạn muốn trả hàng
+                                </h1>
+                                <button
+                                  type="button"
+                                  className="btn-close"
+                                  data-bs-dismiss="modal"
+                                  aria-label="Close"
+                                ></button>
+                              </div>
+                              <div className="modal-body">
+                                <TextField
+                                  fullWidth
+                                  size="small"
+                                  id="outlined-basic"
+                                  label="Nhập lý do bạn muốn trả hàng"
+                                  variant="outlined"
+                                  value={inputReason}
+                                  disabled={cancelProductDetail === ""}
+                                  onChange={(e) =>
+                                    setInputReason(e.target.value)
+                                  }
+                                />
+                              </div>
+                              <div className="modal-footer">
+                                <Button
+                                  onClick={() => handleConfirmCancel()}
+                                  style={{
+                                    width: "auto",
+                                    backgroundColor: "rgb(204,244,255)",
+                                    color: "rgb(0,70,89)",
+                                  }}
+                                  disabled={cancelProductDetail === ""}
+                                  disableElevation
+                                >
+                                  Xác nhận
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-10 mx-3 mt-5">
+                          <div className="d-flex align-items-center">
                             <div className="col-2">
                               Giá: {formatPrice(orderDetail.price) + " VNĐ"}
                             </div>
-                            <div className="col-4 d-flex justify-content-between">
-                              <Typography>
-                                {" "}
-                                Số lượng: {orderDetail.quantity}
-                              </Typography>
-                              <Typography>
-                                {" "}
-                                Thành tiền:{" "}
-                                {formatPrice(
-                                  orderDetail.price * orderDetail.quantity
-                                ) + " VNĐ"}
-                              </Typography>
+                            <div className="col-1 me-5">
+                              Số lượng: {orderDetail.quantity}
                             </div>
-                            {order.orderstatus === "Hoàn thành" ? (
-                              <div className="ms-5">
-                                <Button
-                                  variant="contained"
-                                  style={{
-                                    width: "auto",
-                                    backgroundColor: "rgb(255, 184, 184)",
-                                    color: "rgb(198, 0, 0)",
-                                  }}
-                                  onClick={() =>
-                                    refundReturn(
-                                      store,
-                                      orderDetail.productDetail.price *
-                                        orderDetail.quantity,
-                                      orderDetail.productDetail.id
-                                    )
-                                  }
-                                  disableElevation
-                                >
-                                  Trả hàng/Hoàn tiền
-                                </Button>
-                              </div>
-                            ) : (
-                              ""
-                            )}
+                            <div className="col-2">
+                              Thành tiền:{" "}
+                              {formatPrice(
+                                orderDetail.price * orderDetail.quantity
+                              ) + " VNĐ"}
+                            </div>
+                            <div className="col-5 d-flex justify-content-center align-items-center">
+                              {order.orderstatus === "Hoàn thành" &&
+                                (orderDetail.status === null &&
+                                new Date() -
+                                  new Date(orderDetail.order.receivedate) <=
+                                  24 * 60 * 60 * 1000 ? (
+                                  <Button
+                                    variant="contained"
+                                    style={{
+                                      backgroundColor: "rgb(204,244,255)",
+                                      color: "rgb(0,70,89)",
+                                      display: "inline-block",
+                                    }}
+                                    onClick={() => {
+                                      const timeDiff =
+                                        new Date() -
+                                        new Date(orderDetail.order.receivedate);
+                                      if (timeDiff > 24 * 60 * 60 * 1000) {
+                                        toast.warning(
+                                          "Thời gian trả hàng đã hết"
+                                        );
+                                        return;
+                                      } else {
+                                        setCancelProductDetail(orderDetail.id);
+                                      }
+                                    }}
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#exampleModal"
+                                    disableElevation
+                                  >
+                                    Yêu cầu trả hàng
+                                  </Button>
+                                ) : new Date() -
+                                    new Date(orderDetail.order.receivedate) >
+                                  24 * 60 * 60 * 1000 ? (
+                                  <Button
+                                    variant="contained"
+                                    style={{
+                                      backgroundColor: "rgb(204,244,255)",
+                                      color: "rgb(0,70,89)",
+                                      display: "inline-block",
+                                    }}
+                                    onClick={() =>
+                                      addToCartNow(
+                                        orderDetail.productDetail.id,
+                                        orderDetail.quantity
+                                      )
+                                    }
+                                    disableElevation
+                                  >
+                                    Mua lại
+                                  </Button>
+                                ) : orderDetail.status ===
+                                  "Đã xác nhận trả hàng" ? (
+                                  <div
+                                    style={{
+                                      padding: "5px",
+                                      backgroundColor: "rgb(218, 255, 180)",
+                                      color: "rgb(45, 91, 0)",
+                                      borderRadius: "10px",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    Người bán đã chấp nhận trả hàng
+                                  </div>
+                                ) : orderDetail.status?.startsWith(
+                                    "Từ chối trả hàng"
+                                  ) ? (
+                                  <div>
+                                    <Tooltip
+                                      title={`Người bán đã từ chối trả hàng, ${
+                                        orderDetail.status?.split(",")[1] || ""
+                                      }`}
+                                      arrow
+                                    >
+                                      <span>
+                                        <div
+                                          style={{
+                                            padding: "5px",
+                                            backgroundColor:
+                                              "rgb(255, 184, 184)",
+                                            color: "rgb(198, 0, 0)",
+                                            borderRadius: "10px",
+                                            display: "inline-block",
+                                          }}
+                                        >
+                                          Người bán đã từ chối trả hàng
+                                        </div>
+                                      </span>
+                                    </Tooltip>
+                                  </div>
+                                ) : orderDetail.status?.startsWith(
+                                    "Đang gửi yêu cầu trả hàng"
+                                  ) ? (
+                                  <div
+                                    style={{
+                                      padding: "5px",
+                                      backgroundColor: "rgb(255, 184, 184)",
+                                      color: "rgb(198, 0, 0)",
+                                      borderRadius: "10px",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    Đã gữi yêu cầu trả hàng
+                                  </div>
+                                ) : null)}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -316,11 +429,7 @@ const OrderDetail = () => {
                   <div className="d-flex">
                     <div className="col-6">
                       <div>Họ và tên người nhận: {order.user.fullname}</div>
-                      {order.receivedate ? (
-                        <div>Số điện thoại: {order.user.phone}</div>
-                      ) : (
-                        ""
-                      )}
+                      <div>Số điện thoại: {order.user.phone}</div>
                       <div>
                         Địa chỉ nhận hàng: {order.shippinginfor.address}
                       </div>
@@ -328,25 +437,22 @@ const OrderDetail = () => {
                         Thời gian đặt hàng: {formatDate(order.paymentdate)}
                       </div>
                       <div>
-                        {order.receivedate ? (
+                        {order.orderstatus === "Hoàn thành" &&
+                        order.receivedate ? (
                           <>
                             Thời gian nhận hàng: {formatDate(order.receivedate)}
                           </>
                         ) : (
-                          <>Thời gian nhận hàng: chưa nhận</>
+                          <>
+                            Thời gian dự kiến nhận hàng:{" "}
+                            {formatDateGHN(order.receivedate)}
+                          </>
                         )}
                       </div>
                     </div>
                     <div className="col-6 text-end">
                       <Typography variant="span">
-                        Tổng cộng:{" "}
-                        {formatPrice(
-                          storeProducts.reduce(
-                            (sum, detail) =>
-                              sum + detail.price * detail.quantity,
-                            0
-                          )
-                        ) + " VNĐ"}
+                        Tổng cộng: {formatPrice(order.totalamount) + " VNĐ"}
                       </Typography>
                     </div>
                   </div>

@@ -44,23 +44,31 @@ const ProductItemPerMall = () => {
     setIsNextPage(true);
 
     const timer = setTimeout(() => {
-      setCurrentPage(currentPage + 1);
-      loadData(currentPage + 1, 8);
+      setCurrentPage((prevPage) => {
+        const nextPage = prevPage + 1;
+        loadData(nextPage, 8);
+        return nextPage;
+      });
       setIsNextPage(false);
     }, 500);
-    return () => clearTimeout(timer);
-  }, [currentPage]);
+
+    return () => clearTimeout(timer); // Cleanup timer in case component unmounts
+  }, []);
 
   const handlePrePage = useCallback(() => {
     setIsPrePage(true);
 
     const timer = setTimeout(() => {
-      setCurrentPage(currentPage - 1);
-      loadData(currentPage - 1, 8);
+      setCurrentPage((prevPage) => {
+        const previousPage = prevPage - 1;
+        loadData(previousPage, 8);
+        return previousPage;
+      });
       setIsPrePage(false);
     }, 500);
-    return () => clearTimeout(timer);
-  }, [currentPage]);
+
+    return () => clearTimeout(timer); // Cleanup timer in case component unmounts
+  }, []);
 
   return (
     <>

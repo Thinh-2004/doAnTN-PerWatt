@@ -36,7 +36,7 @@ const ProductCategoryForm = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get("/category");
+      const response = await axios.get("/category/list");
       setCategories(response.data);
       setFilteredCategories(response.data); // Set filtered categories to all initially
     } catch (error) {

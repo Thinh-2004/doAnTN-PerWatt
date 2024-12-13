@@ -23,13 +23,12 @@ const Profile = () => {
     password: "",
     email: "",
     birthdate: "",
-    role: "",
+    rolePermission: "",
     address: "",
     phone: "",
     gender: true,
     avatar: "",
   });
-
 
   const [previewAvatar, setPreviewAvatar] = useState(""); // State for image preview
 
@@ -43,9 +42,7 @@ const Profile = () => {
       setFill(res.data);
       // console.log(res.data);
       // Set the preview URL if there is an avatar
-      setPreviewAvatar(
-        res.data.avatar ?  res.data.avatar : ""
-      );
+      setPreviewAvatar(res.data.avatar ? res.data.avatar : "");
       // console.log(res.data);
     } catch (error) {
       console.log(error);
@@ -126,11 +123,28 @@ const Profile = () => {
       } else {
         const today = new Date();
         const birthDate = new Date(birthdate);
-        const age = today.getFullYear() - birthDate.getFullYear();
-        if (birthDate > today) {
-          toast.warning("Ngày sinh không được lớn hơn ngày hiện tại");
+
+        // Tính tuổi dựa trên năm, tháng, và ngày
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDifference = today.getMonth() - birthDate.getMonth();
+        const dayDifference = today.getDate() - birthDate.getDate();
+
+        // Điều chỉnh tuổi nếu tháng hiện tại hoặc ngày hiện tại chưa tới sinh nhật trong năm nay
+        if (
+          monthDifference < 0 ||
+          (monthDifference === 0 && dayDifference < 0)
+        ) {
+          age--;
+        }
+
+        if (
+          birthDate.getDate() >= today.getDate() &&
+          birthDate.getMonth() >= today.getMonth() &&
+          birthDate.getFullYear() >= today.getFullYear()
+        ) {
+          toast.warning("Ngày sinh không thể lớn hơn hoặc bằng ngày hiện tại");
           return false;
-        } else if (age > 100 || age === 100) {
+        } else if (age > 100) {
           toast.warning("Tuổi không hợp lệ");
           return false;
         }
@@ -158,13 +172,14 @@ const Profile = () => {
         phone: fill.phone,
         gender: fill.gender,
         password: fill.password || null,
-        role: {
-          id: fill.role.id,
+        rolePermission: {
+          id: fill.rolePermission.id,
         },
         address: fill.address,
       };
       formData.append("user", JSON.stringify(userToSend));
       console.log(userToSend);
+      console.log(fill.avatar);
       if (fill.avatar instanceof File) {
         formData.append("avatar", fill.avatar);
       }
@@ -177,25 +192,23 @@ const Profile = () => {
           },
         });
 
-        setTimeout(() => {
-          toast.update(idToast, {
-            render: "Cập nhật thông tin thành công",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          setFill(res.data); // Cập nhật thông tin sau khi lưu thành công
-          const userInfo = {
-            id: res.data.id,
-            fullname: res.data.fullname,
-            avatar: res.data.avatar,
-          };
-          localStorage.setItem("user", JSON.stringify(userInfo)); //Chuyển đổi đối tượng thành JSON
-          // sessionStorage.setItem("fullname", res.data.fullname);
-          // sessionStorage.setItem("avatar", res.data.avatar);
-          loadData();
-        }, 500);
+        toast.update(idToast, {
+          render: "Cập nhật thông tin thành công",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
+        setFill(res.data); // Cập nhật thông tin sau khi lưu thành công
+        const userInfo = {
+          id: res.data.id,
+          fullname: res.data.fullname,
+          avatar: res.data.avatar,
+        };
+        localStorage.setItem("user", JSON.stringify(userInfo)); //Chuyển đổi đối tượng thành JSON
+        // sessionStorage.setItem("fullname", res.data.fullname);
+        // sessionStorage.setItem("avatar", res.data.avatar);
+        loadData();
       } catch (error) {
         toast.update(idToast, {
           render: "Có lỗi xảy ra khi cập nhật hồ sơ",
@@ -402,7 +415,7 @@ const Profile = () => {
             <div className="row">
               <div className="col-lg-12 d-flex justify-content-center mb-3">
                 <img
-                  src={previewAvatar ||  fill.avatar}
+                  src={previewAvatar || fill.avatar}
                   alt="Avatar"
                   className="img-fluid"
                   id="img-change-avatar"

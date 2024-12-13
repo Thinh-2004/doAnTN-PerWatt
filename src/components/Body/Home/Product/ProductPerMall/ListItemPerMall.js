@@ -3,14 +3,15 @@ import { Link } from "react-router-dom";
 import axios from "../../../../../Localhost/Custumize-axios";
 import { Box, Chip } from "@mui/material";
 import LoyaltyIcon from "@mui/icons-material/Loyalty";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 
 const ListItemPerMall = ({ data }) => {
   //Tạo state nhận api voucher theo id product
   //Sử dụng đối tượng để lưu voucher theo từng idProduct
   const [voucher, setVoucher] = useState({});
-  // const geturlIMG = (productId, filename) => {
-  //   return `${axios.defaults.baseURL}files/product-images/${productId}/${filename}`;
-  // };
+  //Tạo state để nhận số sao theo idProduct
+  const [productRating, setProductRating] = useState({});
 
   const formatPrice = (value) => {
     return value ? Number(value).toLocaleString("vi-VN") : "";
@@ -35,10 +36,24 @@ const ListItemPerMall = ({ data }) => {
       console.log(error);
     }
   };
+  //Hàm xử lí số sao
+  const loadCountEvaluate = async (idProduct) => {
+    try {
+      const res = await axios.get(`/comment/count/evaluate/${idProduct}`);
+      //Lưu product rating theo idProduct
+      setProductRating((pre) => ({
+        ...pre,
+        [idProduct]: res.data,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     data.forEach((fill) => {
       loadData(fill.product.id);
+      loadCountEvaluate(fill.product.id);
     });
   }, [data]);
 
@@ -67,7 +82,7 @@ const ListItemPerMall = ({ data }) => {
 
         //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
         const isVoucherPrice = productVoucher.some(
-          (check) => check.productDetail.product.id === fill.product.id
+          (check) => check.product.id === fill.product.id
         );
 
         //Kiểm tra status voucher
@@ -79,38 +94,44 @@ const ListItemPerMall = ({ data }) => {
         let result;
 
         if (productVoucher.length > 0) {
-          // Nếu chỉ có 1 sản phẩm được chọn
-          if (productVoucher.length === 1) {
-            // Tính giá giảm
-            const priceDown =
-              productVoucher[0].productDetail.price *
-              (productVoucher[0].discountprice / 100);
-            result = formatPrice(
-              productVoucher[0].productDetail?.price - priceDown
-            );
-          } else {
-            // Tính giá giảm cho giá nhỏ nhất và lớn nhất
-            const minPriceProductDetail = Math.min(
-              ...productVoucher.map((filter) => filter.productDetail.price)
-            );
-            const maxPriceProductDetail = Math.max(
-              ...productVoucher.map((filter) => filter.productDetail.price)
-            );
-            // Tính giá giảm First và Last
-            const priceDownFirst =
-              minPriceProductDetail * (productVoucher[0].discountprice / 100);
-            const priceDownLast =
-              maxPriceProductDetail *
-              (productVoucher[productVoucher.length - 1].discountprice / 100);
-            //Kết quả
-            const resultFirst = minPriceProductDetail - priceDownFirst;
-            const resultLast = maxPriceProductDetail - priceDownLast;
-            result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
-          }
+          // Tính giá giảm First và Last
+          const priceDownFirst =
+            minPrice * (productVoucher[0].discountprice / 100);
+          const priceDownLast =
+            maxPrice *
+            (productVoucher[productVoucher.length - 1].discountprice / 100);
+          //Kết quả
+          const resultFirst = minPrice - priceDownFirst;
+          const resultLast = maxPrice - priceDownLast;
+          result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
         }
+
+        //Lấy rating tương ứng từng product
+        const productRatings = productRating[fill.product.id] || [];
+
+        // Tính số sao
+        const countRating = productRatings.reduce(
+          (start, rating) => start + rating.rating,
+          0
+        );
+
+        // Tính số lượng bình luận
+        const totalComment = productRatings.length;
+
+        // Kết quả trung bình số sao
+        const resultRating = countRating / totalComment;
+
+        // Làm tròn xuống và chỉ lấy 1 chữ số sau dấu chấm
+        const finalRating =
+          isNaN(resultRating) || resultRating <= 0
+            ? 0
+            : Math.floor(resultRating * 10) / 10;
+        // Tính toán số sao
+        const fullStars = Math.max(0, Math.min(Math.floor(finalRating), 5));
+        const emptyStars = 5 - fullStars;
         return (
           <Box
-            className="col-lg-3 col-md-3 col-sm-3 mb-2 shadow rounded-3 p-2 d-flex flex-column"
+            className="col-lg-3 col-md-3 col-sm-3 mb-2 shadow rounded-3 p-2"
             sx={{ maxWidth: "23%", bgcolor: "backgroundElement.children" }}
             key={fill.product.id}
             id="home-product-itemPerMall"
@@ -121,12 +142,8 @@ const ListItemPerMall = ({ data }) => {
               // style={{ height: "50%" }}
             >
               <img
-                src={
-                  firstIMG
-                    ?  firstIMG.imagename
-                    : "/images/no_img.png"
-                }
-                style={{ width: "100%", height: "150px" }}
+                src={firstIMG ? firstIMG.imagename : "/images/no_img.png"}
+                style={{ width: "100%", aspectRatio : "1/1" }}
                 loading="lazy"
                 className="img-fluid rounded-3"
                 alt="Product"
@@ -154,7 +171,7 @@ const ListItemPerMall = ({ data }) => {
                     className="rounded-3"
                   />
                 </div>
-              ): null}
+              ) : null}
               {fill?.product?.store?.taxcode && (
                 <div className="position-absolute bottom-0 end-0">
                   <img
@@ -204,7 +221,18 @@ const ListItemPerMall = ({ data }) => {
             <div className="d-flex justify-content-between align-items-end">
               <div>
                 <span style={{ fontSize: "12px" }}>
-                  <i className="bi bi-star-fill text-warning"></i> 3.3
+                  {[...Array(fullStars)].map((_, index) => (
+                    <StarIcon
+                      key={index}
+                      sx={{ color: "#FFD700", fontSize: "16px" }}
+                    />
+                  ))}
+                  {[...Array(emptyStars)].map((_, index) => (
+                    <StarBorderIcon
+                      key={index}
+                      sx={{ color: "#FFD700", fontSize: "16px" }}
+                    />
+                  ))}
                 </span>
               </div>
               <div>
