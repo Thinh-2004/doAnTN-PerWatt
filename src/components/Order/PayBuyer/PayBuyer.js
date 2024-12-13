@@ -716,9 +716,9 @@ const PayBuyer = () => {
         }
       }
 
-      if (finalTotal >= 10000000 || finalTotal < 10000) {
+      if (finalTotal >= 5000000 || finalTotal < 10000) {
         toast.warning(
-          "Bạn chỉ được thanh toán tối thiếu 10.000đ và tối đa 10.000.000đ"
+          "Bạn chỉ được mua tối thiếu 10.000đ và tối đa 5.000.000đ"
         );
         return;
       }
@@ -733,7 +733,10 @@ const PayBuyer = () => {
 
       const voucherId = voucher[0]?.voucher?.id;
 
-      if (voucherId) {
+      if (
+        voucherData.id.length !== 0 &&
+        voucherData.discountprice.length !== 0
+      ) {
         sessionStorage.setItem("voucherId", voucherId);
       }
 
@@ -751,10 +754,8 @@ const PayBuyer = () => {
   };
 
   const handleMomo = async () => {
-    if (finalTotal >= 10000000 || finalTotal < 10000) {
-      toast.warning(
-        "Bạn chỉ được thanh toán tối thiếu 10.000đ và tối đa 10.000.000đ"
-      );
+    if (finalTotal >= 5000000 || finalTotal < 10000) {
+      toast.warning("Bạn chỉ được mua tối thiếu 10.000đ và tối đa 5.000.000đ");
       return;
     }
 
@@ -769,7 +770,7 @@ const PayBuyer = () => {
     const voucherId = voucher[0]?.voucher?.id;
     console.log(voucherId);
 
-    if (voucherId) {
+    if (voucherData.id.length !== 0 && voucherData.discountprice.length !== 0) {
       localStorage.setItem("voucherIdMoMo", voucherId);
     }
 
@@ -882,15 +883,15 @@ const PayBuyer = () => {
         calculatedTotalAmountBeforeDiscount
     );
 
-    console.log(calculatedTotalAmountBeforeDiscount);
-    console.log(
-      calculatedTotalAmountAfterDiscount - calculatedTotalAmountBeforeDiscount
-    );
-    console.log(
-      calculatedTotalAmountAfterDiscount -
-        calculatedTotalAmountBeforeDiscount +
-        calculatedTotalAmountBeforeDiscount
-    );
+    // console.log(calculatedTotalAmountBeforeDiscount);
+    // console.log(
+    //   calculatedTotalAmountAfterDiscount - calculatedTotalAmountBeforeDiscount
+    // );
+    // console.log(
+    //   calculatedTotalAmountAfterDiscount -
+    //     calculatedTotalAmountBeforeDiscount +
+    //     calculatedTotalAmountBeforeDiscount
+    // );
   }, [groupedProducts, voucherData]);
 
   return (

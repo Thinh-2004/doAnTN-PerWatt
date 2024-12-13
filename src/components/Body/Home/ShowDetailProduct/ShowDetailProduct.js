@@ -11,7 +11,7 @@ import ListImageDetailProduct from "./ListImageDetailProduct";
 import NavStore from "./NavStore";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 import Comments from "../Comments/Comments";
-import FormReport from "../../../Report/FormReport";
+
 
 const DetailProduct = () => {
   const { slug } = useParams();
@@ -406,12 +406,12 @@ const DetailProduct = () => {
                   </span>
                 </div>
               </div>
-              <div className="d-flex justify-content-end align-content-between">
+              {/* <div className="d-flex justify-content-end align-content-between">
                 <FormReport
                   idStore={FillDetailPr?.store?.id}
                   idProduct={FillDetailPr?.id}
                 />
-              </div>
+              </div> */}
             </div>
             <div
               className={`w-100 h-25 mt-4 rounded-4 ${

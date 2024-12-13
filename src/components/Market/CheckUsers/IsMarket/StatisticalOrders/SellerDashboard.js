@@ -803,9 +803,9 @@ const SellerDashboard = () => {
         <div className="sort-container">
           {topProducts.length > 0 && (
             <>
-              <button onClick={handleSort} className="sort-button">
+              {/* <button onClick={handleSort} className="sort-button">
                 Sắp xếp theo số lượng ({sortOrder === "asc" ? "↑" : "↓"})
-              </button>
+              </button> */}
               {/* <button onClick={handleSortByPrice} className="sort-button">
               Sắp xếp theo giá ({sortPriceOrder === "asc" ? "↑" : "↓"})
             </button> */}

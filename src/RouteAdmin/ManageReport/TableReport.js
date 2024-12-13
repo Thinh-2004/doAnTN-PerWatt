@@ -233,11 +233,30 @@ const ModelDialogUpdateReport = ({ detailInfo, isRefeshTable }) => {
                 src={infoOrder[0]?.productDetail.product.images[0].imagename}
                 alt=""
                 className="object-fit-cover"
-                style={{ width: "30%", aspectRatio: "1/1" }}
+                style={{ width: "20%", aspectRatio: "1/1" }}
               />
               <Box sx={{ display: "flex", flexDirection: "column" }}>
                 <CardContent sx={{ flex: "1 0 auto" }}>
-                  {infoOrder[0]?.productDetail.product.name}
+                  <Typography component="strong" variant="h5">
+                    <label className="text-truncate" style={{ width: "30%" }}>
+                      {infoOrder[0].productDetail.product.name}
+                    </label>
+                  </Typography>
+                  <Typography
+                    variant="subtitle1"
+                    component="div"
+                    sx={{ color: "text.secondary" }}
+                    className=""
+                  >
+                    <label htmlFor="" className="me-3">
+                      Thương hiệu:{" "}
+                      {infoOrder[0].productDetail.product.trademark.name}
+                    </label>
+                    <label htmlFor="">
+                      Loại sản phẩm:{" "}
+                      {infoOrder[0].productDetail.product.productcategory.name}
+                    </label>
+                  </Typography>
                 </CardContent>
               </Box>
             </Card>

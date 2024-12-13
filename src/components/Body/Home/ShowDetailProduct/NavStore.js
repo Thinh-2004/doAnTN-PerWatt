@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Box } from "@mui/material";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
-import FormReport from "../../../Report/FormReport";
+// import FormReport from "../../../Report/FormReport";
 import axios from "../../../../Localhost/Custumize-axios";
 import StarIcon from "@mui/icons-material/Star";
 import ChatInterface from "../../../Notification&Message&Comment/Message/Message";
@@ -113,7 +113,7 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
                   ? FillDetailPr.store.namestore
                   : "N/A"}
               </Link>
-              <FormReport idStore={FillDetailPr?.store.id} />
+              {/* <FormReport idStore={FillDetailPr?.store.id} /> */}
             </div>
             <div className="d-flex justify-content-start">
               <Link

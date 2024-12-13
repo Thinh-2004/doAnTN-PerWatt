@@ -19,7 +19,6 @@ import {
   Menu,
   MenuItem,
   Select,
-  styled,
   TextField,
   Typography,
 } from "@mui/material";
@@ -198,7 +197,7 @@ const FormReport = ({ idStore, idOrder, idProduct }) => {
             user: { id: user.id },
             store: { id: idStore || null },
             order: { id: idOrder || null },
-            product: { id: idProduct || null },
+            product: { id: infoOrder[0].productDetail.product.id || null },
             content: selectContent === "Khác" ? content : selectContent,
             status: "Chờ xử lý",
           })
@@ -341,34 +340,34 @@ const FormReport = ({ idStore, idOrder, idProduct }) => {
             <hr className="m-0 p-0 mt-3" />
             <strong className="">Sản phẩm vi phạm</strong>
             <hr className="m-0 p-0 mb-3" />
-            {infoProduct ? (
+            {infoOrder.map((fillProduct) => (
               <Card sx={{ display: "flex" }}>
                 <CardMedia
                   component="img"
                   sx={{ width: "20%", aspectRatio: "1/1" }}
-                  image={infoProduct.images[0].imagename}
+                  image={fillProduct.productDetail.product.images[0].imagename}
                   className="rounded-3 object-fit-cover "
                 />
                 <Box sx={{ display: "flex", flexDirection: "column" }}>
                   <CardContent sx={{ flex: "1 0 auto" }}>
-                    <Typography
-                      component="div"
-                      variant="h5"
-                      className="text-truncate w-50"
-                    >
-                      {infoProduct.name}
+                    <Typography component="strong" variant="h5">
+                      <label className="text-truncate" style={{ width: "30%" }}>
+                        {fillProduct.productDetail.product.name}
+                      </label>
                     </Typography>
                     <Typography
                       variant="subtitle1"
                       component="div"
                       sx={{ color: "text.secondary" }}
-                      className="d-flex justify-content-between"
+                      className=""
                     >
-                      <label htmlFor="">
-                        Thương hiệu: {infoProduct.trademark.name}
+                      <label htmlFor="" className="me-3">
+                        Thương hiệu:{" "}
+                        {fillProduct.productDetail.product.trademark.name}
                       </label>
                       <label htmlFor="">
-                        Loại sản phẩm: {infoProduct.productcategory.name}
+                        Loại sản phẩm:{" "}
+                        {fillProduct.productDetail.product.productcategory.name}
                       </label>
                     </Typography>
                   </CardContent>
@@ -377,9 +376,7 @@ const FormReport = ({ idStore, idOrder, idProduct }) => {
                   ></Box>
                 </Box>
               </Card>
-            ) : (
-              "Không có"
-            )}
+            ))}
             <hr className="m-0 p-0 mb-3" />
             {/*  */}
             <hr className="m-0 p-0 mt-3" />

@@ -273,35 +273,46 @@ const Successful = () => {
           }
 
           leadtime = [...leadtime, response.data.data.expected_delivery_time];
+
+          const savedVoucherId = sessionStorage.getItem("voucherId");
+
+          const order = {
+            user: { id: user.id },
+            paymentmethod: { id: 6 },
+            shippinginfor: { id: addressIds },
+            store: { id: storeId },
+            paymentdate: new Date().toISOString(),
+            receivedate: response.data.data.expected_delivery_time
+              ? new Date(
+                  response.data.data.expected_delivery_time
+                ).toISOString()
+              : null,
+            orderstatus: "Đang chờ duyệt",
+            totalamount: totalAmount + feeShip,
+            voucher:
+              savedVoucherId === null ? null : { id: parseInt(savedVoucherId) },
+          };
+
+          const orderDetails = storeProducts.map((product) => ({
+            productDetail: { id: product.productDetail.id },
+            quantity: product.quantity,
+            price: product.productDetail.price,
+            status: null,
+          }));
+          console.log(order);
+          console.log(savedVoucherId);
+
+          await axios.post("/api/orderCreate", {
+            order,
+            orderDetails,
+          });
+
+          sessionStorage.removeItem("voucherId");
+          
         } catch (error) {
           console.error("Error: ", error);
           return;
         }
-        const savedVoucherId = sessionStorage.getItem("voucherId");
-        console.log("Voucher ID đã lưu:", savedVoucherId);
-
-        const order = {
-          user: { id: user.id },
-          paymentmethod: { id: 6 },
-          shippinginfor: { id: addressIds },
-          store: { id: storeId },
-          paymentdate: new Date().toISOString(),
-          orderstatus: "Đang chờ duyệt",
-          totalamount: totalAmount + feeShip,
-          voucher: { id: savedVoucherId },
-        };
-
-        const orderDetails = storeProducts.map((product) => ({
-          productDetail: { id: product.productDetail.id },
-          quantity: product.quantity,
-          price: product.productDetail.price,
-          status: null,
-        }));
-
-        await axios.post("/api/orderCreate", {
-          order,
-          orderDetails,
-        });
       }
 
       // navigate("/order");
