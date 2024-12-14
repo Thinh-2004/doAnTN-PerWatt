@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import axios from "../../Localhost/Custumize-axios";
 import { Card, Chip } from "@mui/material";
 import LoyaltyIcon from "@mui/icons-material/Loyalty";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 
 const ListItemProduct = ({ data, classNameCol }) => {
   //Sử dụng đối tượng để lưu voucher theo từng idProduct
   const [voucher, setVoucher] = useState({});
   //Tạo state để nhận số sao theo idProduct
   const [productRating, setProductRating] = useState({});
-
 
   const formatPrice = (value) => {
     return value ? Number(value).toLocaleString("vi-VN") : "";
@@ -81,7 +82,7 @@ const ListItemProduct = ({ data, classNameCol }) => {
 
         //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
         const isVoucherPrice = productVoucher.some(
-          (check) => check.productDetail.product.id === fill.product.id
+          (check) => check.product.id === fill.product.id
         );
 
         //Kiểm tra status voucher
@@ -93,34 +94,16 @@ const ListItemProduct = ({ data, classNameCol }) => {
         let result;
 
         if (productVoucher.length > 0) {
-          // Nếu chỉ có 1 sản phẩm được chọn
-          if (productVoucher.length === 1) {
-            // Tính giá giảm
-            const priceDown =
-              productVoucher[0].productDetail.price *
-              (productVoucher[0].discountprice / 100);
-            result = formatPrice(
-              productVoucher[0].productDetail?.price - priceDown
-            );
-          } else {
-            // Tính giá giảm cho giá nhỏ nhất và lớn nhất
-            const minPriceProductDetail = Math.min(
-              ...productVoucher.map((filter) => filter.productDetail.price)
-            );
-            const maxPriceProductDetail = Math.max(
-              ...productVoucher.map((filter) => filter.productDetail.price)
-            );
-            // Tính giá giảm First và Last
-            const priceDownFirst =
-              minPriceProductDetail * (productVoucher[0].discountprice / 100);
-            const priceDownLast =
-              maxPriceProductDetail *
-              (productVoucher[productVoucher.length - 1].discountprice / 100);
-            //Kết quả
-            const resultFirst = minPriceProductDetail - priceDownFirst;
-            const resultLast = maxPriceProductDetail - priceDownLast;
-            result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
-          }
+          // Tính giá giảm First và Last
+          const priceDownFirst =
+            minPrice * (productVoucher[0].discountprice / 100);
+          const priceDownLast =
+            maxPrice *
+            (productVoucher[productVoucher.length - 1].discountprice / 100);
+          //Kết quả
+          const resultFirst = minPrice - priceDownFirst;
+          const resultLast = maxPrice - priceDownLast;
+          result = formatPrice(resultFirst) + " - " + formatPrice(resultLast);
         }
 
         //Lấy rating tương ứng từng product
@@ -139,7 +122,13 @@ const ListItemProduct = ({ data, classNameCol }) => {
         const resultRating = countRating / totalComment;
 
         // Làm tròn xuống và chỉ lấy 1 chữ số sau dấu chấm
-        const finalRating = Math.floor(resultRating * 10) / 10;
+        const finalRating =
+          isNaN(resultRating) || resultRating <= 0
+            ? 0
+            : Math.floor(resultRating * 10) / 10;
+        // Tính toán số sao
+        const fullStars = Math.max(0, Math.min(Math.floor(finalRating), 5));
+        const emptyStars = 5 - fullStars;
 
         return (
           <Card
@@ -230,12 +219,18 @@ const ListItemProduct = ({ data, classNameCol }) => {
             <div className="d-flex justify-content-between align-items-end">
               <div>
                 <span style={{ fontSize: "12px" }}>
-                  <i className="bi bi-star-fill text-warning"></i>{" "}
-                  {finalRating > 5
-                    ? "5.0"
-                    : finalRating < 0 || isNaN(finalRating)
-                    ? "0"
-                    : finalRating}
+                  {[...Array(fullStars)].map((_, index) => (
+                    <StarIcon
+                      key={index}
+                      sx={{ color: "#FFD700", fontSize: "16px" }}
+                    />
+                  ))}
+                  {[...Array(emptyStars)].map((_, index) => (
+                    <StarBorderIcon
+                      key={index}
+                      sx={{ color: "#FFD700", fontSize: "16px" }}
+                    />
+                  ))}
                 </span>
               </div>
               <div>

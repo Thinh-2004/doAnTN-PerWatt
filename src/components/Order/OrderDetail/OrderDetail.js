@@ -8,10 +8,11 @@ import {
   Card,
   CardContent,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { format } from "date-fns";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const OrderDetail = () => {
@@ -21,23 +22,12 @@ const OrderDetail = () => {
     ? JSON.parse(localStorage.getItem("user"))
     : null;
   const { id } = useParams();
+
   const [inputReason, setInputReason] = useState("");
   const [cancelProductDetail, setCancelProductDetail] = useState("");
-
+  const changeLink = useNavigate();
   tailspin.register();
-
-  // const load = async () => {
-  //   try {
-  //     const res = await axios.get(`/orderDetail/${id}`);
-  //     const grouped = groupByStore(res.data);
-  //     setGroupedByStore(grouped);
-  //   } catch (error) {
-  //     console.error(error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
+  const [isCountCart, setIsCountAddCart] = useState(false);
   const load = async () => {
     try {
       const res = await axios.get(`/orderDetail/${id}`);
@@ -71,46 +61,19 @@ const OrderDetail = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return format(date, "HH:mm:ss dd/MM/yyyy");
+    return format(date, "dd/MM/yyyy HH:mm");
   };
 
-  // const refundReturn = async (orderDetailId) => {
-  //   try {
-  //     await axios.put(`/orderDetail/update/${orderDetailId}`);
-
-  //     toast.success("Gữi yêu cầu thành công!");
-  //     load();
-  //   } catch (error) {
-  //     console.log(error);
-  //     toast.error("Đã xảy ra lỗi trong quá gữi yêu cầu hoàn tiền!");
-  //   }
-  // };
-
-  // const handleConfirmCancel = async (orderDetailId) => {
-  //   if (inputReason) {
-  //     try {
-  //       await axios.put(`/orderDetail/update/${orderDetailId}`, {
-  //         status: `Đang gửi yêu cầu hoàn tiền, lý do: ${inputReason}`,
-  //       });
-
-  //       const closeModalButton = document.querySelector(
-  //         '[data-bs-dismiss="modal"]'
-  //       );
-  //       if (closeModalButton) {
-  //         closeModalButton.click();
-  //       }
-  //       refundReturn(orderDetailId);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-  // };
+  const formatDateGHN = (dateString) => {
+    const date = new Date(dateString);
+    return format(date, "dd/MM/yyyy");
+  };
 
   const handleConfirmCancel = async () => {
     if (inputReason) {
       try {
         await axios.post(`/orderDetail/update/${cancelProductDetail}`, {
-          status: `Đang gửi yêu cầu hoàn tiền, lý do: ${inputReason}`,
+          status: `Đang gửi yêu cầu trả hàng, với lý do: ${inputReason}`,
         });
 
         const closeModalButton = document.querySelector(
@@ -127,9 +90,31 @@ const OrderDetail = () => {
     }
   };
 
+  const addToCartNow = async (productDetailId, quantity) => {
+    const user = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : null;
+
+    const cartItem = {
+      quantity: quantity,
+      user: { id: user.id },
+      productDetail: { id: productDetailId },
+    };
+
+    try {
+      await axios.post("/cart/add", cartItem);
+      setIsCountAddCart(true);
+      toast.success("Mua lại mua sản phẩm thành công!");
+      changeLink("/cart");
+    } catch (error) {
+      toast.error("Thêm sản phẩm thất bại!" + error);
+      console.error("Error adding to cart:", error);
+    }
+  };
+
   return (
     <div>
-      <Header />
+      <Header reloadCartItems={isCountCart} />
       <h1 className="text-center mt-4 mb-4">Đơn hàng chi tiết của bạn</h1>
       <div
         className="col-12 col-md-12 col-lg-10 offset-lg-1"
@@ -239,21 +224,18 @@ const OrderDetail = () => {
                             {orderDetail.productDetail.product.name}
                           </div>
                           <div id="fontSize">
-                            {
-                              [
-                                orderDetail.productDetail.namedetail,
-                                orderDetail.productDetail.product
-                                  .productcategory.name,
-                                orderDetail.productDetail.product.trademark
-                                  .name === "No brand"
-                                  ? "Không có thương hiệu"
-                                  : "",
-                                orderDetail.productDetail.product.warranties
-                                  .name,
-                              ]
-                                .filter(Boolean) // Lọc bỏ các giá trị null hoặc rỗng
-                                .join(", ") // Nối các chuỗi lại với nhau bằng dấu phẩy và khoảng trắng
-                            }
+                            {[
+                              orderDetail.productDetail.namedetail,
+                              orderDetail.productDetail.product.productcategory
+                                .name,
+                              orderDetail.productDetail.product.trademark
+                                .name === "No brand"
+                                ? "Không có thương hiệu"
+                                : "",
+                              orderDetail.productDetail.product.warranties.name,
+                            ]
+                              .filter(Boolean)
+                              .join(", ")}
                           </div>
                         </div>
                         <button
@@ -277,7 +259,7 @@ const OrderDetail = () => {
                                   className="modal-title fs-5"
                                   id="exampleModalLabel"
                                 >
-                                  Nhập lý do bạn muốn hoàn tiền
+                                  Nhập lý do bạn muốn trả hàng
                                 </h1>
                                 <button
                                   type="button"
@@ -291,9 +273,10 @@ const OrderDetail = () => {
                                   fullWidth
                                   size="small"
                                   id="outlined-basic"
-                                  label="Nhập lý do bạn muốn hoàn tiền"
+                                  label="Nhập lý do bạn muốn trả hàng"
                                   variant="outlined"
                                   value={inputReason}
+                                  disabled={cancelProductDetail === ""}
                                   onChange={(e) =>
                                     setInputReason(e.target.value)
                                   }
@@ -307,6 +290,7 @@ const OrderDetail = () => {
                                     backgroundColor: "rgb(204,244,255)",
                                     color: "rgb(0,70,89)",
                                   }}
+                                  disabled={cancelProductDetail === ""}
                                   disableElevation
                                 >
                                   Xác nhận
@@ -330,26 +314,59 @@ const OrderDetail = () => {
                               ) + " VNĐ"}
                             </div>
                             <div className="col-5 d-flex justify-content-center align-items-center">
-                              {order.orderstatus === "Hoàn thành" ? (
-                                orderDetail.status === "" ? (
+                              {order.orderstatus === "Hoàn thành" &&
+                                (orderDetail.status === null &&
+                                new Date() -
+                                  new Date(orderDetail.order.receivedate) <=
+                                  24 * 60 * 60 * 1000 ? (
                                   <Button
                                     variant="contained"
                                     style={{
-                                      backgroundColor: "rgb(255, 184, 184)",
-                                      color: "rgb(198, 0, 0)",
+                                      backgroundColor: "rgb(204,244,255)",
+                                      color: "rgb(0,70,89)",
                                       display: "inline-block",
                                     }}
-                                    onClick={() =>
-                                      setCancelProductDetail(orderDetail.id)
-                                    }
+                                    onClick={() => {
+                                      const timeDiff =
+                                        new Date() -
+                                        new Date(orderDetail.order.receivedate);
+                                      if (timeDiff > 24 * 60 * 60 * 1000) {
+                                        toast.warning(
+                                          "Thời gian trả hàng đã hết"
+                                        );
+                                        return;
+                                      } else {
+                                        setCancelProductDetail(orderDetail.id);
+                                      }
+                                    }}
                                     data-bs-toggle="modal"
                                     data-bs-target="#exampleModal"
                                     disableElevation
                                   >
-                                    Trả hàng/Hoàn tiền
+                                    Yêu cầu trả hàng
+                                  </Button>
+                                ) : new Date() -
+                                    new Date(orderDetail.order.receivedate) >
+                                  24 * 60 * 60 * 1000 ? (
+                                  <Button
+                                    variant="contained"
+                                    style={{
+                                      backgroundColor: "rgb(204,244,255)",
+                                      color: "rgb(0,70,89)",
+                                      display: "inline-block",
+                                    }}
+                                    onClick={() =>
+                                      addToCartNow(
+                                        orderDetail.productDetail.id,
+                                        orderDetail.quantity
+                                      )
+                                    }
+                                    disableElevation
+                                  >
+                                    Mua lại
                                   </Button>
                                 ) : orderDetail.status ===
-                                  "Đã xác nhận hoàn tiền" ? (
+                                  "Đã xác nhận trả hàng" ? (
                                   <div
                                     style={{
                                       padding: "5px",
@@ -359,9 +376,37 @@ const OrderDetail = () => {
                                       display: "inline-block",
                                     }}
                                   >
-                                    Cửa hàng đã hoàn tiền cho bạn
+                                    Người bán đã chấp nhận trả hàng
                                   </div>
-                                ) : (
+                                ) : orderDetail.status?.startsWith(
+                                    "Từ chối trả hàng"
+                                  ) ? (
+                                  <div>
+                                    <Tooltip
+                                      title={`Người bán đã từ chối trả hàng, ${
+                                        orderDetail.status?.split(",")[1] || ""
+                                      }`}
+                                      arrow
+                                    >
+                                      <span>
+                                        <div
+                                          style={{
+                                            padding: "5px",
+                                            backgroundColor:
+                                              "rgb(255, 184, 184)",
+                                            color: "rgb(198, 0, 0)",
+                                            borderRadius: "10px",
+                                            display: "inline-block",
+                                          }}
+                                        >
+                                          Người bán đã từ chối trả hàng
+                                        </div>
+                                      </span>
+                                    </Tooltip>
+                                  </div>
+                                ) : orderDetail.status?.startsWith(
+                                    "Đang gửi yêu cầu trả hàng"
+                                  ) ? (
                                   <div
                                     style={{
                                       padding: "5px",
@@ -371,12 +416,9 @@ const OrderDetail = () => {
                                       display: "inline-block",
                                     }}
                                   >
-                                    {orderDetail.status}
+                                    Đã gữi yêu cầu trả hàng
                                   </div>
-                                )
-                              ) : (
-                                ""
-                              )}
+                                ) : null)}
                             </div>
                           </div>
                         </div>
@@ -384,28 +426,28 @@ const OrderDetail = () => {
                     );
                   })}
                   <hr />
-
                   <div className="d-flex">
                     <div className="col-6">
                       <div>Họ và tên người nhận: {order.user.fullname}</div>
-                      {order.receivedate ? (
-                        <div>Số điện thoại: {order.user.phone}</div>
-                      ) : (
-                        ""
-                      )}
+                      <div>Số điện thoại: {order.user.phone}</div>
                       <div>
                         Địa chỉ nhận hàng: {order.shippinginfor.address}
                       </div>
                       <div>
                         Thời gian đặt hàng: {formatDate(order.paymentdate)}
                       </div>
+
                       <div>
-                        {order.receivedate ? (
+                        {order.orderstatus === "Hoàn thành" &&
+                        order.receivedate ? (
                           <>
                             Thời gian nhận hàng: {formatDate(order.receivedate)}
                           </>
                         ) : (
-                          <>Thời gian nhận hàng: chưa nhận</>
+                          <>
+                            Thời gian dự kiến nhận hàng:{" "}
+                            {formatDateGHN(order.receivedate)}
+                          </>
                         )}
                       </div>
                     </div>

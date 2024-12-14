@@ -3,7 +3,6 @@ import { Route, Routes } from "react-router-dom";
 import AdminDashboard from "../RouteAdmin/Admin/AdminDashboard";
 import UserInfo from "./Info/UserInfo";
 import UserBanner from "./Banner/UserBanner";
-import Wallet from "../components/Wallet/Wallet";
 import SecurityRoutes from "../components/SecurityRoutes/SecurityRoutes";
 import PromotionInfoComponent from "./Admin/PromotionInfoComponent";
 import ProductCategoryForm from "./Admin/ProductCategoryForm";
@@ -36,14 +35,7 @@ const RouteAdmin = (props) => {
           </SecurityRoutes>
         }
       />
-      <Route
-        path="/admin/wallet"
-        element={
-          <SecurityRoutes allowedRoles={["Admin"]}>
-            <Wallet />
-          </SecurityRoutes>
-        }
-      />
+
       <Route
         path="/admin/voucher/website"
         element={

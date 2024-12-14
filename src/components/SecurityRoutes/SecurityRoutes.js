@@ -35,7 +35,7 @@ const SecurityRoutes = ({ children, allowedRoles = [] }) => {
 
   if (loading) {
     // Trong khi đang tải role, hiển thị trạng thái chờ
-    return <div>Loading...</div>;
+    return <div></div>;
   }
 
   if (!allowedRoles.includes(role)) {

@@ -8,7 +8,13 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import { Button, Card, CardContent, TextField } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  Pagination,
+  TextField,
+} from "@mui/material";
 import useSession from "../../../../../Session/useSession";
 import { toast } from "react-toastify";
 
@@ -46,16 +52,21 @@ const Order = () => {
   const timeoutRef = useRef(null);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [inputReason, setInputReason] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+  const totalItems = fill.length;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = fill.slice(indexOfFirstItem, indexOfLastItem);
 
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
   tailspin.register();
 
   useEffect(() => {
     const load = async () => {
       try {
         const res = await axios.get(`orderSeller/${idStore}`);
-
         setFill(res.data);
-
         res.data.forEach((order) => {
           fillOrderDetailbyOrderID(order.id);
         });
@@ -66,20 +77,15 @@ const Order = () => {
       }
     };
     load();
-    // const interval = setInterval(() => {
-    //   load();
-    // }, 5000);
-
-    // return () => clearInterval(interval);
   }, [user.id]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return format(date, "HH:mm:ss dd/MM/yyyy");
+    return format(date, "dd/MM/yyyy HH:mm");
   };
 
   const handleCancelOrder = (orderId) => {
-    setSelectedOrderId(orderId); // Lưu orderId để dùng khi gửi yêu cầu hủy
+    setSelectedOrderId(orderId);
   };
 
   const handleConfirmCancel = async (orderId) => {
@@ -87,16 +93,15 @@ const Order = () => {
       try {
         await axios.put(`/order/${orderId}/status`, {
           status: "Hủy",
-          note: `Đơn hàng được huỷ bởi chủ cửa hàng, lý do: ${inputReason}`,
+          note: `Đơn hàng được huỷ bởi chủ người bán, lý do: ${inputReason}`,
         });
-        // Cập nhật trạng thái
         setFill((prevFill) =>
           prevFill.map((order) =>
             order.id === orderId
               ? {
                   ...order,
                   orderstatus: "Hủy",
-                  note: `Được huỷ bởi chủ cửa hàng, lý do: ${inputReason}`,
+                  note: `Được huỷ bởi chủ người bán, lý do: ${inputReason}`,
                 }
               : order
           )
@@ -141,7 +146,6 @@ const Order = () => {
               await axios.put(`/order/${orderId}/status`, {
                 status: "Đang vận chuyển",
               });
-              // Cập nhật trạng thái
               setFill((prevFill) =>
                 prevFill.map((order) =>
                   order.id === orderId
@@ -176,8 +180,8 @@ const Order = () => {
 
   const handleOrderOnTheWay = (orderId) => {
     confirmAlert({
-      title: "Xác nhận chuyển trạng thái",
-      message: "Bạn có chắc chắn đơn hàng sắp vấn chuyển đến người dùng?",
+      title: "Xác nhận giao hàng",
+      message: "Bạn có chắc chắn đơn hàng sắp vận chuyển đến người dùng không!",
       buttons: [
         {
           label: "Có",
@@ -186,7 +190,6 @@ const Order = () => {
               await axios.put(`/order/${orderId}/status`, {
                 status: "Chờ nhận hàng",
               });
-              // Cập nhật trạng thái
               setFill((prevFill) =>
                 prevFill.map((order) =>
                   order.id === orderId
@@ -246,7 +249,7 @@ const Order = () => {
     if (filteredOrders.length === 0) {
       return <div className="text-center">Chưa có sản phẩm</div>;
     }
-    return filteredOrders.map((order) => (
+    return currentItems.map((order) => (
       <Card
         className=" rounded-3 mt-3"
         key={order.id}
@@ -295,8 +298,8 @@ const Order = () => {
             orderDetails[order.id].slice(0, 2).map((orderDetail) => {
               const firstIMG = orderDetail.productDetail.product.images?.[0];
               return (
-                <div key={orderDetail.id}>
-                  <div className="d-flex align-items-start">
+                <div key={orderDetail.id} className="row">
+                  <div className="col-sm-12 col-lg-8 d-flex align-items-start">
                     <div
                       style={{ position: "relative", display: "inline-block" }}
                     >
@@ -313,27 +316,9 @@ const Order = () => {
                         }}
                         className="rounded-3 mb-3 me-3"
                       />
-                      {orderDetail.status?.includes(
-                        "Đang gửi yêu cầu hoàn tiền"
-                      ) && (
-                        <span
-                          style={{
-                            position: "absolute",
-                            top: "5px",
-                            left: "5px",
-                            backgroundColor: "red",
-                            borderRadius: "50%",
-                            width: "10px",
-                            height: "10px",
-                            boxShadow: "0 0 10px 5px rgba(255, 0, 0, 0.6)", // Hiệu ứng bloom
-                            filter: "blur(1px)", // Làm mờ nhẹ để tạo cảm giác phát sáng
-                            animation: "pulse 2s infinite", // Hiệu ứng chuyển động
-                          }}
-                        ></span>
-                      )}
                     </div>
 
-                    <div className="d-flex flex-column">
+                    <div className="d-flex flex-column me-3">
                       <div>{orderDetail.productDetail.product.name}</div>
                       {orderDetail.productDetail.namedetail && (
                         <label>
@@ -349,6 +334,25 @@ const Order = () => {
                       </div>
                     </div>
                   </div>
+
+                  {orderDetail.status?.includes(
+                    "Đang gửi yêu cầu trả hàng"
+                  ) && (
+                    <div className="col-sm-12 col-lg-4 ms-auto text-end">
+                      <div
+                        className="text-end"
+                        style={{
+                          padding: "5px",
+                          backgroundColor: "rgb(255, 184, 184)",
+                          color: "rgb(198, 0, 0)",
+                          borderRadius: "10px",
+                          display: "inline-block",
+                        }}
+                      >
+                        <span>Người dùng yêu cầu trả hàng</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -362,20 +366,33 @@ const Order = () => {
               <Button href={`/profileMarket/OrderDetailSeller/${order.id}`}>
                 + {orderDetails[order.id].length - 2} sản phẩm
               </Button>
-              {orderDetails[order.id]
-                .slice(2) // Lấy danh sách sản phẩm từ phần tử thứ 3 trở đi
-                .some(
-                  (item) => item.status === "Đang gửi yêu cầu hoàn tiền"
-                ) && (
-                <span
+
+              {orderDetails[order.id].filter(
+                (detail) =>
+                  detail.status &&
+                  detail.status.includes("Đang gửi yêu cầu trả hàng")
+              ).length > 0 ? (
+                <div
                   style={{
-                    backgroundColor: "red",
-                    borderRadius: "50%",
-                    width: "10px",
-                    height: "10px",
+                    padding: "5px",
+                    backgroundColor: "rgb(255, 184, 184)",
+                    color: "rgb(198, 0, 0)",
+                    borderRadius: "10px",
                     display: "inline-block",
                   }}
-                ></span>
+                >
+                  <span>
+                    Còn{" "}
+                    {orderDetails[order.id].filter(
+                      (detail) =>
+                        detail.status &&
+                        detail.status.includes("Đang gửi yêu cầu trả hàng")
+                    ).length - 2}{" "}
+                    sản phẩm đang yêu cầu trả hàng
+                  </span>
+                </div>
+              ) : (
+                ""
               )}
             </>
           )}
@@ -399,20 +416,8 @@ const Order = () => {
                       }}
                       disableElevation
                     >
-                      <i className="bi bi-cart-check-fill"></i>
+                      <i class="bi bi-check-circle-fill"></i>{" "}
                     </Button>
-                    {/* <Button
-                      onClick={() => handleCancelOrder(order.id)}
-                      style={{
-                        width: "auto",
-                        backgroundColor: "rgb(255, 184, 184)",
-                        color: "rgb(198, 0, 0)",
-                      }}
-                      disableElevation
-                    >
-                      <i className="bi bi-cart-x-fill"></i>
-                    </Button> */}
-
                     <Button
                       onClick={() => handleCancelOrder(order.id)}
                       style={{
@@ -424,36 +429,10 @@ const Order = () => {
                       data-bs-toggle="modal"
                       data-bs-target="#exampleModal"
                     >
-                      <i className="bi bi-cart-x-fill"></i>
-                    </Button>
-
-                    <Button
-                      onClick={() => handleCancelOrder(order.id)}
-                      style={{
-                        width: "auto",
-                        backgroundColor: "rgb(255, 184, 184)",
-                        color: "rgb(198, 0, 0)",
-                      }}
-                      disableElevation
-                      data-bs-toggle="modal"
-                      data-bs-target="#exampleModal"
-                    >
-                      <i className="bi bi-cart-x-fill"></i>
+                      <i class="bi bi-x-circle-fill"></i>{" "}
                     </Button>
                   </>
                 ) : order.orderstatus === "Đang vận chuyển" ? (
-                  /* <Button
-                    onClick={() => handleOrderOnTheWay(order.id)}
-                    style={{
-                      width: "auto",
-                      backgroundColor: "rgb(204,244,255)",
-color: "rgb(0,70,89)",
-                    }}
-                    disableElevation
-                  >
-                    <i className="bi bi-truck"></i>
-                  </Button> */
-
                   <Button
                     onClick={() => handleOrderOnTheWay(order.id)}
                     style={{
@@ -465,13 +444,10 @@ color: "rgb(0,70,89)",
                     }}
                     disableElevation
                   >
-                    <i
-                      className="bi bi-truck"
-                      style={{ animation: "moveTruck 1s linear infinite" }}
-                    ></i>
+                    <i className="bi bi-truck"></i>
                   </Button>
                 ) : (
-                  ""
+                  <div></div>
                 )}
               </div>
               <button
@@ -636,6 +612,18 @@ color: "rgb(0,70,89)",
           ))}
         </Box>
       </div>
+      <Pagination
+        className="mb-3"
+        count={Math.ceil(totalItems / itemsPerPage)}
+        page={currentPage}
+        onChange={(event, value) => paginate(value)}
+        color="primary"
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "20px",
+        }}
+      />
     </div>
   );
 };

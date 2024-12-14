@@ -19,12 +19,8 @@ import Successful from "../components/Order/Successful/Successful";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import FindMoreProduct from "../components/Body/Home/FindMoreProduct/FindMoreProduct";
 import FindMoreProductPerMall from "../components/Body/Home/FindMoreProductPerMall/FindMoreProductPerMall";
-import Wallet from "../components/Wallet/Wallet";
-import Transaction from "../components/Wallet/Transaction";
 import NotFound from "../NotFound";
 import SecurityRoutes from "../components/SecurityRoutes/SecurityRoutes";
-import PinCode from "../components/Wallet/PinCode";
-import ChangePinCode from "../components/Wallet/ChangePinCode";
 import BuyerNotification from "../components/Notification&Message&Comment/Notification/BuyerNotification";
 import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification";
 
@@ -131,40 +127,6 @@ const RouteUsers = (props) => {
           </SecurityRoutes>
         }
       ></Route>
-
-      <Route
-        path="/wallet/:role"
-        element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
-            <Wallet />
-          </SecurityRoutes>
-        }
-      ></Route>
-      <Route
-        path="/transaction"
-        element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
-            <Transaction />
-          </SecurityRoutes>
-        }
-      />
-
-      <Route
-        path="/pinCode"
-        element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
-            <PinCode />
-          </SecurityRoutes>
-        }
-      />
-      <Route
-        path="/changePinCode"
-        element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
-            <ChangePinCode />
-          </SecurityRoutes>
-        }
-      />
       {/* ------------- */}
       {/* Phân quyền Buyer */}
       <Route

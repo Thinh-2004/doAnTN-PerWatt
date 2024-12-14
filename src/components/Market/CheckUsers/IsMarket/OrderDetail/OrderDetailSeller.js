@@ -7,6 +7,7 @@ import {
   Card,
   CardContent,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import useSession from "../../../../../Session/useSession";
@@ -27,18 +28,6 @@ const OrderDetailSeller = () => {
     ? JSON.parse(localStorage.getItem("user"))
     : null;
 
-  // const load = async () => {
-  //   try {
-  //     const res = await axios.get(`/orderDetailSeller/${id}`);
-
-  //     const grouped = groupByStore(res.data);
-  //     setGroupedByStore(grouped);
-  //   } catch (error) {
-  //     console.error(error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const load = async () => {
     try {
       const res = await axios.get(`/orderDetailSeller/${id}`);
@@ -51,6 +40,18 @@ const OrderDetailSeller = () => {
       setLoading(false);
     }
   };
+
+  const maxWords = 15; // Giới hạn số từ tối đa hiển thị
+
+  // Hàm cắt chuỗi theo số lượng từ
+  const truncateText = (text, maxWords) => {
+    const words = text.split(" ");
+    if (words.length > maxWords) {
+      return words.slice(0, maxWords).join(" ") + "..."; // Cắt và thêm dấu "..."
+    }
+    return text;
+  };
+
   useEffect(() => {
     load();
   }, [id]);
@@ -73,37 +74,21 @@ const OrderDetailSeller = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return format(date, "HH:mm:ss dd/MM/yyyy");
+    return format(date, "dd/MM/yyyy HH:mm");
   };
 
-  const Aaccept = (
-    storeId,
-    userId,
-    totalAmount,
-    productDetailId,
-    namestore,
-    orderDetailId,
-    status
-  ) => {
+  const Aaccept = (orderDetailId, status) => {
     const statusMessage = status.split(",")[1]
       ? status.split(",")[1].trim()
       : status;
 
     confirmAlert({
-      title: "Xác nhận hoàn tiền",
+      title: "Xác nhận trả hàng",
       message: "Với " + statusMessage,
       buttons: [
         {
           label: "Có",
-          onClick: () =>
-            refundReturn(
-              storeId,
-              userId,
-              totalAmount,
-              productDetailId,
-              namestore,
-              orderDetailId
-            ),
+          onClick: () => refundReturn(orderDetailId),
         },
         {
           label: "Không",
@@ -112,107 +97,15 @@ const OrderDetailSeller = () => {
       ],
     });
   };
-  const refundReturn = async (
-    storeId,
-    userId,
-    totalAmount,
-    productDetailId,
-    namestore,
-    orderDetailId
-  ) => {
+  const refundReturn = async (orderDetailId) => {
     try {
-      // Lấy thông tin ví của shop
-      const resWalletShop = await axios.get(`wallet/${userId}`);
-      // Lấy thông tin ví của admin
-      const resWalletAdmin = await axios.get(`wallet/${1}`);
-
-      // Kiểm tra nếu số dư của shop và admin đủ để hoàn tiền
-      if (resWalletShop.data.balance < totalAmount * 0.9) {
-        toast.warning("Tài khoản cửa hàng không đủ để hoàn tiền");
-        return;
-      }
-
-      if (resWalletAdmin.data.balance < totalAmount * 0.1) {
-        toast.warning("Tài khoản quản trị không đủ để hoàn tiền");
-        return;
-      }
-
-      // Nếu đủ, tiếp tục các giao dịch
-      // Cập nhật số dư của cửa hàng (shop)
-      const newBalanceShop = resWalletShop.data.balance - totalAmount * 0.9;
-      await axios.put(`wallet/update/${userId}`, {
-        balance: newBalanceShop,
-      });
-
-      // Cập nhật số dư của admin
-      const newBalanceAdmin = resWalletAdmin.data.balance - totalAmount * 0.1;
-      await axios.put(`wallet/update/${1}`, {
-        balance: newBalanceAdmin,
-      });
-
-      // Cập nhật số dư của người dùng (user)
-      const resWalletUser = await axios.get(`wallet/${user.id}`);
-      const newBalanceUser = resWalletUser.data.balance + totalAmount;
-      await axios.put(`wallet/update/${user.id}`, {
-        balance: newBalanceUser,
-      });
-
-      //đã fix
-      // Ghi lại giao dịch cho shop
-      const fillWalletStore = await axios.get(`wallet/${user.id}`);
-      const transactionTypeStore =
-        `Hoàn tiền về người dùng: ${user.fullname}`.substring(0, 50);
-      await axios.post(`wallettransaction/create/${fillWalletStore.data.id}`, {
-        amount: -totalAmount * 0.9,
-        transactiontype: transactionTypeStore,
-        transactiondate: new Date(),
-        user: { id: user.id },
-        store: { id: storeId },
-      });
-
-      // Ghi lại giao dịch cho admin
-      const transactionTypeAdmin =
-        `Hoàn tiền về người dùng: ${user.fullname}`.substring(0, 50);
-      await axios.post(`wallettransaction/create/${1}`, {
-        amount: -totalAmount * 0.1,
-        transactiontype: transactionTypeAdmin,
-        transactiondate: new Date(),
-        user: { id: user.id },
-        store: { id: storeId },
-      });
-
-      // Ghi lại giao dịch cho người dùng (user)
-      const fillWalletUser = await axios.get(`wallet/${userId}`);
-      const transactionTypeUserStore =
-        `Hoàn tiền về từ cửa hàng: ${namestore}`.substring(0, 50);
-      await axios.post(`wallettransaction/create/${fillWalletUser.data.id}`, {
-        amount: totalAmount * 0.9,
-        transactiontype: transactionTypeUserStore,
-        transactiondate: new Date(),
-        user: { id: user.id },
-        store: { id: storeId },
-      });
-
-      // Ghi lại giao dịch cho userAdmin
-      const transactionTypeUserAdmin = "Hoàn tiền về từ PerWatt";
-      await axios.post(`wallettransaction/create/${fillWalletUser.data.id}`, {
-        amount: totalAmount * 0.1,
-        transactiontype: transactionTypeUserAdmin,
-        transactiondate: new Date(),
-        user: { id: user.id },
-        store: { id: storeId },
-      });
-
-      // Cập nhật trạng thái của orderDetail
       await axios.post(`/orderDetail/update/${orderDetailId}`, {
-        status: "Đã xác nhận hoàn tiền",
+        status: "Đã xác nhận trả hàng",
       });
-
-      load(); // Load lại dữ liệu
-
-      toast.success("Hoàn tiền thành công");
+      load();
+      toast.success("Trả hàng thành công");
     } catch (error) {
-      toast.error("Đã có lỗi xảy ra trong quá trình hoàn tiền");
+      toast.error("Đã có lỗi xảy ra trong quá trình trả hàng");
       console.error(error);
     }
   };
@@ -226,10 +119,10 @@ const OrderDetailSeller = () => {
 
   const cancelRefundS = async () => {
     await axios.post(`/orderDetail/update/${cancelProductDetail}`, {
-      status: "Từ chối hoàn tiền với lý do " + reason,
+      status: "Từ chối trả hàng, với lý do " + reason,
     });
 
-    toast.success("Từ chối hoàn tiền thành công!");
+    toast.success("Từ chối trả hàng thành công!");
     load();
     const closeModalButton = document.querySelector(
       '[data-bs-dismiss="modal"]'
@@ -379,7 +272,7 @@ const OrderDetailSeller = () => {
                                   className="modal-title fs-5"
                                   id="exampleModalLabel"
                                 >
-                                  Nhập lý do bạn không muốn xác nhận hoàn tiền
+                                  Nhập lý do bạn không muốn xác nhận trả hàng
                                 </h1>
                                 <button
                                   type="button"
@@ -393,15 +286,15 @@ const OrderDetailSeller = () => {
                                   fullWidth
                                   size="small"
                                   id="outlined-basic"
-                                  label="Nhập lý do bạn không muốn xác nhận hoàn tiền"
+                                  label="Nhập lý do bạn không muốn xác nhận trả hàng"
                                   variant="outlined"
                                   value={reason}
-                                  onChange={(e) => setReason(e.target.value)} // Cập nhật lý do vào inputReason
+                                  onChange={(e) => setReason(e.target.value)}
                                 />
                               </div>
                               <div className="modal-footer">
                                 <Button
-                                  onClick={() => cancelRefundS(orderDetail.id)} // Xác nhận hủy đơn hàng
+                                  onClick={() => cancelRefundS(orderDetail.id)}
                                   style={{
                                     width: "auto",
                                     backgroundColor: "rgb(204,244,255)",
@@ -430,36 +323,28 @@ const OrderDetailSeller = () => {
                               ) + " VNĐ"}
                             </div>
                             <div className="col-3 d-flex justify-content-center align-items-center">
-                              {orderDetail.status === "" ? (
+                              {orderDetail.status === null ? (
                                 ""
                               ) : orderDetail.status?.includes(
-                                  "Đang gửi yêu cầu hoàn tiền"
+                                  "Đang gửi yêu cầu trả hàng"
                                 ) ? (
                                 <Button
                                   variant="contained"
                                   style={{
                                     display: "inline-block",
-                                    backgroundColor: "rgb(255, 184, 184)",
-                                    color: "rgb(198, 0, 0)",
+                                    backgroundColor: "rgb(204,244,255)",
+                                    color: "rgb(0,70,89)",
                                   }}
                                   disableElevation
                                   onClick={() => {
-                                    Aaccept(
-                                      orderDetail.order.store.id,
-                                      orderDetail.order.user.id,
-                                      orderDetail.price * orderDetail.quantity,
-                                      orderDetail.productDetail.id,
-                                      orderDetail.order.store.namestore,
-                                      orderDetail.id,
-                                      orderDetail.status
-                                    );
+                                    Aaccept(orderDetail.id, orderDetail.status);
                                     setCancelProductDetail(orderDetail.id);
                                   }}
                                 >
-                                  Xác nhận hoàn tiền
+                                  Xác nhận trả hàng
                                 </Button>
                               ) : orderDetail.status ===
-                                "Đã xác nhận hoàn tiền" ? (
+                                "Đã xác nhận trả hàng" ? (
                                 <div
                                   style={{
                                     padding: "5px",
@@ -469,7 +354,7 @@ const OrderDetailSeller = () => {
                                     display: "inline-block",
                                   }}
                                 >
-                                  Đã hoàn tiền cho người mua
+                                  Đã xác nhận trả hàng cho người mua
                                 </div>
                               ) : (
                                 <div
@@ -479,9 +364,22 @@ const OrderDetailSeller = () => {
                                     color: "rgb(198, 0, 0)",
                                     borderRadius: "10px",
                                     display: "inline-block",
+                                    maxWidth: "100%",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
                                   }}
                                 >
-                                  {orderDetail.status}
+                                  <Tooltip title={orderDetail.status} arrow>
+                                    <span>
+                                      {orderDetail.status.includes(",")
+                                        ? "Từ chối trả hàng"
+                                        : truncateText(
+                                            orderDetail.status,
+                                            maxWords
+                                          )}
+                                    </span>
+                                  </Tooltip>
                                 </div>
                               )}
                             </div>
@@ -503,12 +401,14 @@ const OrderDetailSeller = () => {
                         Thời gian đặt hàng: {formatDate(order.paymentdate)}
                       </div>
                       <div>
-                        {order.receivedate ? (
+                        {order.orderstatus === "Hoàn thành" &&
+                        order.receivedate ? (
                           <>
-                            Thời gian nhận hàng: {formatDate(order.receivedate)}
+                            Thời gian người mua đã nhận hàng:{" "}
+                            {formatDate(order.receivedate)}
                           </>
                         ) : (
-                          <>Thời gian nhận hàng: chưa nhận</>
+                          <>Trạng thái nhận hàng của người mua: Chưa nhận </>
                         )}
                       </div>
                     </div>

@@ -11,6 +11,8 @@ import ListImageDetailProduct from "./ListImageDetailProduct";
 import NavStore from "./NavStore";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
 import Comments from "../Comments/Comments";
+// import FormReport from "../../../Report/FormReport";
+// import FormReport1 from "../../../../";
 
 const DetailProduct = () => {
   const { slug } = useParams();
@@ -130,16 +132,14 @@ const DetailProduct = () => {
             label: "Đi tới đăng nhập",
             onClick: () => {
               const toastId = toast.loading("Vui lòng chờ...");
-              setTimeout(() => {
-                toast.update(toastId, {
-                  render: "Chuyển tới form đăng nhập thành công",
-                  type: "message",
-                  isLoading: false,
-                  autoClose: 5000,
-                  closeButton: true,
-                });
-                changeLink("/login");
-              }, 500);
+              toast.update(toastId, {
+                render: "Chuyển tới form đăng nhập thành công",
+                type: "message",
+                isLoading: false,
+                autoClose: 5000,
+                closeButton: true,
+              });
+              changeLink("/login");
             },
           },
           {
@@ -162,59 +162,6 @@ const DetailProduct = () => {
       await axios.post("/cart/add", cartItem);
       setIsCountAddCart(true);
       toast.success("Thêm sản phẩm thành công!");
-    } catch (error) {
-      toast.error("Thêm sản phẩm thất bại!" + error);
-      console.error("Error adding to cart:", error);
-    }
-  };
-
-  const addToCartNow = async (productId) => {
-    const user = localStorage.getItem("user")
-      ? JSON.parse(localStorage.getItem("user"))
-      : null; // Thay thế bằng ID người dùng thực tế
-    if (user == null || user === "") {
-      confirmAlert({
-        title: "Bạn chưa đăng nhập",
-        message:
-          "Hãy đăng nhập để có thể thêm hoặc mua sản phẩm yêu thích của bạn",
-        buttons: [
-          {
-            label: "Đi tới đăng nhập",
-            onClick: () => {
-              const toastId = toast.loading("Vui lòng chờ...");
-              setTimeout(() => {
-                toast.update(toastId, {
-                  render: "Chuyển tới form đăng nhập thành công",
-                  type: "message",
-                  isLoading: false,
-                  autoClose: 5000,
-                  closeButton: true,
-                });
-                changeLink("/login");
-              }, 500);
-            },
-          },
-          {
-            label: "Hủy",
-          },
-        ],
-      });
-      return;
-    }
-
-    const cartItem = {
-      quantity: quantity,
-      user: { id: user.id },
-      productDetail: { id: productDetailIds },
-    };
-    // console.log("ở đây nè id product " + productDetailIds);
-    // console.log("ở đây nè số lượng " + quantity);
-
-    try {
-      await axios.post("/cart/add", cartItem);
-      setIsCountAddCart(true);
-      toast.success("Thêm sản phẩm thành công!");
-      changeLink("/cart");
     } catch (error) {
       toast.error("Thêm sản phẩm thất bại!" + error);
       console.error("Error adding to cart:", error);
@@ -309,12 +256,12 @@ const DetailProduct = () => {
 
   //Kiểm tra xem idProduct có trùng với idProduct trong voucher hay không
   const isVoucherPrice = voucher.some(
-    (check) => check.productDetail.product.id === FillDetailPr.id
+    (check) => check.product.id === FillDetailPr.id
   );
   //Lấy phần trăm giảm từng sản phẩm
   const disCountPrice = voucher.reduce((take, item) => {
     if (item.status === "Hoạt động") {
-      if (item.productDetail.product.id === FillDetailPr.id) {
+      if (item.product.id === FillDetailPr.id) {
         return item.discountprice;
       } else {
         return null;
@@ -326,92 +273,82 @@ const DetailProduct = () => {
   //Render giá gốc và giá sau khi giảm sản phẩm
   useEffect(() => {
     // Lọc giá sản phẩm theo voucher
-    const priceProductDetails = voucher.map(
-      (filter) => filter.productDetail.price
-    );
+    const priceProductDetails = fillDetail.map((filter) => filter.price);
     const minPriceProductDetail = Math.min(...priceProductDetails);
     const maxPriceProductDetail = Math.max(...priceProductDetails);
 
     // Nếu có ít nhất 1 sản phẩm được chọn
     if (voucher.length > 0) {
       // Nếu chỉ có 1 sản phẩm được chọn
-      if (voucher.length === 1) {
-        // Tính giá giảm
-        const priceDown =
-          voucher[0].productDetail.price * (voucher[0].discountprice / 100);
-        const result = voucher[0].productDetail?.price - priceDown;
-        if (result) {
-          setResult(formatPrice(result));
-        }
-      } else {
-        // Tính giá giảm First
-        const priceDownFirst =
-          minPriceProductDetail * (voucher[0].discountprice / 100);
-        const resultFirst = minPriceProductDetail - priceDownFirst;
-        // Tính giá giảm First
-        const priceDownLast =
-          maxPriceProductDetail *
-          (voucher[voucher.length - 1].discountprice / 100);
-        const resultLast = maxPriceProductDetail - priceDownLast;
+      // Tính giá giảm First
+      const priceDownFirst =
+        minPriceProductDetail * (voucher[0].discountprice / 100);
+      const resultFirst = minPriceProductDetail - priceDownFirst;
+      // Tính giá giảm First
+      const priceDownLast =
+        maxPriceProductDetail *
+        (voucher[voucher.length - 1].discountprice / 100);
+      const resultLast = maxPriceProductDetail - priceDownLast;
 
-        // Nếu tìm thấy cả 2 sản phẩm đầu tiên và cuối cùng, hiển thị giá của chúng
+      // Nếu tìm thấy cả 2 sản phẩm đầu tiên và cuối cùng, hiển thị giá của chúng
+      if (priceDownFirst === priceDownLast) {
+        setResult(`${formatPrice(resultLast)}`);
+      } else {
         setResult(`${formatPrice(resultFirst)} - ${formatPrice(resultLast)}`);
       }
     }
   }, [voucher]);
 
-  // const addToCartNow = async (productId) => {
-  //   const user = localStorage.getItem("user")
-  //     ? JSON.parse(localStorage.getItem("user"))
-  //     : null; // Thay thế bằng ID người dùng thực tế
-  //   if (user == null || user === "") {
-  //     confirmAlert({
-  //       title: "Bạn chưa đăng nhập",
-  //       message:
-  //         "Hãy đăng nhập để có thể thêm hoặc mua sản phẩm yêu thích của bạn",
-  //       buttons: [
-  //         {
-  //           label: "Đi tới đăng nhập",
-  //           onClick: () => {
-  //             const toastId = toast.loading("Vui lòng chờ...");
-  //             setTimeout(() => {
-  //               toast.update(toastId, {
-  //                 render: "Chuyển tới form đăng nhập thành công",
-  //                 type: "message",
-  //                 isLoading: false,
-  //                 autoClose: 5000,
-  //                 closeButton: true,
-  //               });
-  //               changeLink("/login");
-  //             }, 500);
-  //           },
-  //         },
-  //         {
-  //           label: "Hủy",
-  //         },
-  //       ],
-  //     });
-  //     return;
-  //   }
+  const addToCartNow = async (productId) => {
+    const user = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : null; // Thay thế bằng ID người dùng thực tế
+    if (user == null || user === "") {
+      confirmAlert({
+        title: "Bạn chưa đăng nhập",
+        message:
+          "Hãy đăng nhập để có thể thêm hoặc mua sản phẩm yêu thích của bạn",
+        buttons: [
+          {
+            label: "Đi tới đăng nhập",
+            onClick: () => {
+              const toastId = toast.loading("Vui lòng chờ...");
+              toast.update(toastId, {
+                render: "Chuyển tới form đăng nhập thành công",
+                type: "message",
+                isLoading: false,
+                autoClose: 5000,
+                closeButton: true,
+              });
+              changeLink("/login");
+            },
+          },
+          {
+            label: "Hủy",
+          },
+        ],
+      });
+      return;
+    }
 
-  //   const cartItem = {
-  //     quantity: quantity,
-  //     user: { id: user.id },
-  //     productDetail: { id: productDetailIds },
-  //   };
-  //   // console.log("ở đây nè id product " + productDetailIds);
-  //   // console.log("ở đây nè số lượng " + quantity);
+    const cartItem = {
+      quantity: quantity,
+      user: { id: user.id },
+      productDetail: { id: productDetailIds },
+    };
+    // console.log("ở đây nè id product " + productDetailIds);
+    // console.log("ở đây nè số lượng " + quantity);
 
-  //   try {
-  //     await axios.post("/cart/add", cartItem);
-  //     setIsCountAddCart(true);
-  //     toast.success("Thêm sản phẩm thành công!");
-  //     changeLink("/cart");
-  //   } catch (error) {
-  //     toast.error("Thêm sản phẩm thất bại!" + error);
-  //     console.error("Error adding to cart:", error);
-  //   }
-  // };
+    try {
+      await axios.post("/cart/add", cartItem);
+      setIsCountAddCart(true);
+      toast.success("Thêm sản phẩm thành công!");
+      changeLink("/cart");
+    } catch (error) {
+      toast.error("Thêm sản phẩm thất bại!" + error);
+      console.error("Error adding to cart:", error);
+    }
+  };
 
   return (
     <>
@@ -442,7 +379,10 @@ const DetailProduct = () => {
                 {FillDetailPr ? FillDetailPr.name : "No Name"}
               </h1>
             </div>
-            <div className="d-flex justify-content-between">
+            <div
+              className="d-flex justify-content-between"
+              style={{ height: "5%" }}
+            >
               <div className="d-flex">
                 <div className="mx-2 mt-1">
                   <span htmlFor="">
@@ -470,14 +410,12 @@ const DetailProduct = () => {
                   </span>
                 </div>
               </div>
-              <div className="d-flex justify-content-end">
-                <span htmlFor="">
-                  <strong htmlFor="" className="me-2">
-                    {totalQuantity ? totalQuantity : 0}
-                  </strong>
-                  <label htmlFor="">sản phẩm còn lại</label>
-                </span>
-              </div>
+              {/* <div className="d-flex justify-content-end align-content-between">
+                <FormReport
+                  idStore={FillDetailPr?.store?.id}
+                  idProduct={FillDetailPr?.id}
+                />
+              </div> */}
             </div>
             <div
               className={`w-100 h-25 mt-4 rounded-4 ${
@@ -595,6 +533,13 @@ const DetailProduct = () => {
                     }}
                     size="small"
                   />
+                  <span htmlFor="" className="mx-2 align-content-center">
+                    <strong htmlFor="">
+                      {totalQuantity ? totalQuantity : 0}
+                    </strong>{" "}
+                    &nbsp;
+                    <label htmlFor="">sản phẩm còn lại</label>
+                  </span>
                 </div>
               </div>
               <div className="col-lg-6 col-md-6 col-sm-6 align-content-end ">
