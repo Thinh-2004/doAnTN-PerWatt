@@ -14,6 +14,7 @@ import Comments from "../Comments/Comments";
 // import FormReport from "../../../Report/FormReport";
 // import FormReport1 from "../../../../";
 
+
 const DetailProduct = () => {
   const { slug } = useParams();
   const changeLink = useNavigate();
@@ -25,9 +26,6 @@ const DetailProduct = () => {
   const [quantity, setQuantity] = useState(1); //trạng thái cho số lượng trước khi thêm giỏ hàng
   const [productDetailIds, setproductDetailIds] = useState(null);
 
-  // const geturlImgDetailProduct = (detailId, filename) => {
-  //   return `${axios.defaults.baseURL}files/detailProduct/${detailId}/${filename}`;
-  // };
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
@@ -536,8 +534,7 @@ const DetailProduct = () => {
                   <span htmlFor="" className="mx-2 align-content-center">
                     <strong htmlFor="">
                       {totalQuantity ? totalQuantity : 0}
-                    </strong>{" "}
-                    &nbsp;
+                    </strong>	&nbsp;
                     <label htmlFor="">sản phẩm còn lại</label>
                   </span>
                 </div>

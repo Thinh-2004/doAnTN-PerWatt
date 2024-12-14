@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Banner.css";
 import axios from "../../Localhost/Custumize-axios";
+import dayjs from "dayjs";
 
 const Banner = () => {
   const [banners, setBanners] = useState([]);
@@ -8,9 +9,16 @@ const Banner = () => {
 
   useEffect(() => {
     const fetchBanners = async () => {
+      const today = dayjs().format("YYYY-MM-DD");
       try {
         const response = await axios.get("/banners");
-        setBanners(response.data);
+        // Lọc danh sách banner không có enddate bằng ngày hiện tại
+        const filteredBanners = response.data.filter((banner) => {
+          // Giả sử `enddate` là chuỗi ngày ở định dạng "YYYY-MM-DD"
+          return banner.enddate !== today;
+        });
+
+        setBanners(filteredBanners);
       } catch (error) {
         console.error("Error fetching banners:", error);
       }

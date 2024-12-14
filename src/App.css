@@ -44,3 +44,7 @@
 .dark-mode{
   background-color: #212121;
 }
+
+.custom-overlay {
+  z-index: 1500 !important; /* Ưu tiên cao hơn Dialog (mui default z-index: 1300) */
+}

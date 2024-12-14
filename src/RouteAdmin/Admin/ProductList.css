@@ -146,3 +146,95 @@
   background-color: #333;
   color: #f0f0f0;
 }
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* Hiệu ứng zoom khi hover vào sản phẩm */
+.product-card {
+  width: 100%;  /* Đảm bảo thẻ chiếm toàn bộ không gian của container */
+  height: 90%;
+  max-width: 350px; /* Đặt giới hạn tối đa cho chiều rộng của thẻ */
+  margin: 20px auto;  /* Khoảng cách giữa các thẻ */
+  border-radius: 15px;  /* Bo góc cho thẻ */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ nhẹ */
+  background-color: #fff; /* Màu nền trắng cho thẻ */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Hiệu ứng hover */
+  overflow: hidden; /* Ẩn phần tràn ra ngoài */
+  color: black;
+}
+
+.product-card:hover {
+  transform: scale(1.1); /* Phóng to 10% khi hover */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Đổ bóng thêm khi hover */
+}
+
+
+/* Trạng thái ẩn ban đầu */
+.hidden {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Trạng thái hiện khi cuộn tới */
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sort-button {
+  margin-bottom: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: 2px solid #007bff;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  text-align: center;
+}
+
+.sort-button:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+}
+
+.sort-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(38, 143, 255, 0.4);
+}
+
+.sort-button:active {
+  background-color: #004085;
+  border-color: #004085;
+  transform: scale(0.98);
+}
+.search-container {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.search-input {
+  padding: 0.5rem;
+  width: 50%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.sort-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.pagination-container {
+  text-align: center;
+  margin-top: 20px;
+}
+

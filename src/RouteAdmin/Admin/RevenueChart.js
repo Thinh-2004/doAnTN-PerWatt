@@ -168,37 +168,41 @@ const RevenueChart = () => {
   // Hàm gọi API để lấy dữ liệu doanh thu
   const fetchRevenueData = async (period, startDate, endDate, month) => {
     if (isFetching.current) return;
-
+  
     let url;
     let dateQuery = "";
-
-    // Prepare the query string based on the selected period
-    if (period === "day" && startDate && endDate) {
+  
+    const currentYear = new Date().getFullYear();
+  
+    // Nếu là "Theo ngày" và không có startDate, endDate, lấy dữ liệu từ đầu năm nay đến ngày hiện tại
+    if (period === "day" && !startDate && !endDate) {
+      const startDate = new Date(currentYear, 0, 1); // Ngày đầu năm
+      const endDate = new Date(); // Ngày hiện tại
+      dateQuery = `?startDate=${startDate.toISOString().split("T")[0]}&endDate=${endDate.toISOString().split("T")[0]}`;
+    } else if (period === "day" && startDate && endDate) {
       // Định dạng lại ngày bắt đầu và kết thúc
       const startFormatted = new Date(startDate).toISOString().split("T")[0];
       const endFormatted = new Date(endDate).toISOString().split("T")[0];
       dateQuery = `?startDate=${startFormatted}&endDate=${endFormatted}`;
     } else if (period === "month" && month) {
-      // Nếu là tháng, tạo startDate và endDate cho tháng đó
+      // Tính toán ngày bắt đầu và kết thúc cho tháng đó
       const startDate = new Date(month);
       const endDate = new Date(month);
       startDate.setDate(1); // Đặt ngày đầu tháng
       endDate.setMonth(endDate.getMonth() + 1); // Đặt ngày cuối tháng
       endDate.setDate(0); // Đặt lại ngày cuối tháng
-
+  
       const startFormatted = startDate.toISOString().split("T")[0];
       const endFormatted = endDate.toISOString().split("T")[0];
-
+  
       dateQuery = `?startDate=${startFormatted}&endDate=${endFormatted}`;
     } else if (period === "year") {
       // Nếu là năm, sử dụng toàn bộ năm hiện tại
       const startDate = new Date(`${currentYear}-01-01`);
       const endDate = new Date(`${currentYear}-12-31`);
-      dateQuery = `?startDate=${
-        startDate.toISOString().split("T")[0]
-      }&endDate=${endDate.toISOString().split("T")[0]}`;
+      dateQuery = `?startDate=${startDate.toISOString().split("T")[0]}&endDate=${endDate.toISOString().split("T")[0]}`;
     }
-
+  
     // Construct the API URL based on period
     switch (period) {
       case "year":
@@ -213,9 +217,9 @@ const RevenueChart = () => {
       default:
         return;
     }
-
+  
     isFetching.current = true;
-
+  
     try {
       const response = await axios.get(url); // Changed axios usage to .get
       const data = response.data;
@@ -226,6 +230,7 @@ const RevenueChart = () => {
       isFetching.current = false;
     }
   };
+  
 
   const updateChartData = (data, period) => {
     let categories = [];
@@ -233,11 +238,22 @@ const RevenueChart = () => {
     let title = "";
   
     if (period === "year") {
-      categories = data.map((item) => item.Year);
-      seriesData = data.map((item) => item.TotalRevenue);
+      // Nhóm dữ liệu theo năm và tính tổng doanh thu cho từng năm
+      const groupedData = data.reduce((acc, item) => {
+        const year = item.Year;
+        if (!acc[year]) {
+          acc[year] = 0;
+        }
+        acc[year] += item.TotalRevenue; // Cộng dồn tổng doanh thu cho cùng một năm
+        return acc;
+      }, {});
+  
+      // Lấy các năm từ dữ liệu đã nhóm
+      categories = Object.keys(groupedData);
+      seriesData = Object.values(groupedData);
       title = "Doanh thu theo năm";
     } else if (period === "month") {
-      // Group data by Month/Year
+      // Xử lý dữ liệu theo tháng tương tự như hiện tại
       const groupedData = data.reduce((acc, item) => {
         const key = `${item.Month}/${item.Year}`;
         if (!acc[key]) {
@@ -247,13 +263,24 @@ const RevenueChart = () => {
         return acc;
       }, {});
   
-      // Extract categories and series data
-      categories = Object.keys(groupedData);
-      seriesData = Object.values(groupedData);
+      const allYears = data.map((item) => item.Year);
+      const latestYear = Math.max(...allYears);
   
-      title = "Doanh thu theo tháng";
+      const filteredGroupedData = Object.keys(groupedData)
+        .filter((key) => {
+          const year = parseInt(key.split('/')[1], 10);
+          return year === latestYear;
+        })
+        .reduce((acc, key) => {
+          acc[key] = groupedData[key];
+          return acc;
+        }, {});
   
-      // Lưu danh sách tháng khả dụng
+      categories = Object.keys(filteredGroupedData);
+      seriesData = Object.values(filteredGroupedData);
+      title = `Doanh thu theo tháng (${latestYear})`;
+  
+      // Lưu danh sách tháng khả dụng theo từng năm
       const monthsByYear = {};
       data.forEach((item) => {
         const year = item.Year;
@@ -267,6 +294,7 @@ const RevenueChart = () => {
       });
       setAvailableMonths(monthsByYear);
     } else if (period === "day") {
+      // Xử lý dữ liệu theo ngày
       categories = data.map((item) => {
         const date = new Date(item.OrderDate);
         return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
@@ -284,6 +312,8 @@ const RevenueChart = () => {
       series: [{ name: "Doanh thu", data: seriesData }],
     });
   };
+  
+  
   
   useEffect(() => {
     if (selectedMonth) {

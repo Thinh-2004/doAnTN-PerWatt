@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import useSession from "../../../../../Session/useSession";
 import { toast } from "react-toastify";
+import ChatInterface from "../../../../Notification&Message&Comment/Message/Message";
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -232,6 +233,19 @@ const Order = () => {
     };
   }, []);
 
+  //Chát tin nhấn
+  const [infoUser, setInfoUser] = useState({});
+  const [isOpenChatBox, setIsOpenChatBox] = useState(false);
+  const handleOpenShowChatBox = (user) => {
+    setIsOpenChatBox(true);
+    setInfoUser(user);
+    console.log(user);
+
+    setTimeout(() => {
+      setIsOpenChatBox(false);
+    }, 500);
+  };
+
   const renderOrders = (filterFn) => {
     const filteredOrders = fill.filter(filterFn);
     if (loading) {
@@ -401,6 +415,15 @@ const Order = () => {
           <div className="d-flex justify-content-between align-items-center">
             <div>Mã đơn hàng: {order.id}</div>
             <div className="d-flex align-items-center">
+              {/* icon nhắn tin */}
+              <button
+                className="btn btn-sm me-3"
+                id="btn-chatMessage"
+                onClick={() => handleOpenShowChatBox(order.user)}
+              >
+                Nhắn tin cho người mua
+              </button>
+              <ChatInterface isOpenChatBox={isOpenChatBox} user={infoUser} />
               <div className="me-3">
                 {order.orderstatus === "Hoàn thành" ? (
                   <></>
@@ -450,6 +473,7 @@ const Order = () => {
                   <div></div>
                 )}
               </div>
+
               <button
                 type="button"
                 class="btn btn-primary"

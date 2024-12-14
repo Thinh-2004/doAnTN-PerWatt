@@ -12,17 +12,13 @@ const Successful = () => {
   const query = new URLSearchParams(location.search);
   const statusVNPay = query.get("vnp_ResponseCode");
   const vnp_OrderInfo = query.get("vnp_OrderInfo");
-
   const vnp_Amount = query.get("vnp_Amount");
-
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(5);
 
   const addressIds = vnp_OrderInfo.split(",").pop().trim();
   const cartIds = vnp_OrderInfo.split(",").slice(0, -1).join(",").trim();
-
   const totalAmounts = vnp_Amount.split(",").pop().trim();
   let totalAmount = totalAmounts / 100;
-
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
@@ -64,45 +60,45 @@ const Successful = () => {
     }
   };
 
-  // const createVnPay = async () => {
-  //   try {
-  //     const groupedProducts = groupByStore(products);
+  const createVnPay = async () => {
+    try {
+      const groupedProducts = groupByStore(products);
 
-  //     for (const storeId in groupedProducts) {
-  //       const { products: storeProducts } = groupedProducts[storeId];
-  //       const totalAmount = storeProducts.reduce((sum, product) => {
-  //         return sum + product.productDetail.price * product.quantity;
-  //       }, 0);
+      for (const storeId in groupedProducts) {
+        const { products: storeProducts } = groupedProducts[storeId];
+        const totalAmount = storeProducts.reduce((sum, product) => {
+          return sum + product.productDetail.price * product.quantity;
+        }, 0);
 
-  //       const order = {
-  //         user: { id: user.id },
-  //         paymentmethod: { tyle: "Thanh toán bằng VN Pay" },
-  //         shippinginfor: { id: addressIds },
-  //         store: { id: storeId },
-  //         paymentdate: new Date().toISOString(),
-  //         orderstatus: "Đang chờ duyệt",
-  //         totalamount: totalAmount,
-  //       };
+        const order = {
+          user: { id: user.id },
+          paymentmethod: { tyle: "Thanh toán bằng VN Pay" },
+          shippinginfor: { id: addressIds },
+          store: { id: storeId },
+          paymentdate: new Date().toISOString(),
+          orderstatus: "Đang chờ duyệt",
+          totalamount: totalAmount,
+        };
 
-  //       const orderDetails = storeProducts.map((product) => ({
-  //         productDetail: { id: product.productDetail.id },
-  //         quantity: product.quantity,
-  //         price: product.productDetail.price,
-  //         status: null,
-  //       }));
-  //       if (statusVNPay === "00") {
-  //         await axios.post("/api/payment/createVnPayOrder", {
-  //           order,
-  //           orderDetails,
-  //         });
-  //       } else {
-  //         return;
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+        const orderDetails = storeProducts.map((product) => ({
+          productDetail: { id: product.productDetail.id },
+          quantity: product.quantity,
+          price: product.productDetail.price,
+          status: null,
+        }));
+        if (statusVNPay === "00") {
+          await axios.post("/api/payment/createVnPayOrder", {
+            order,
+            orderDetails,
+          });
+        } else {
+          return;
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleCod = async () => {
     try {
@@ -293,7 +289,8 @@ const Successful = () => {
               : null,
             orderstatus: "Đang chờ duyệt",
             totalamount: totalAmount + feeShip,
-            voucher: savedVoucherId === "" ? null : { id: savedVoucherId },
+            voucher:
+              savedVoucherId === null ? null : { id: parseInt(savedVoucherId) },
           };
 
           const orderDetails = storeProducts.map((product) => ({
@@ -302,16 +299,23 @@ const Successful = () => {
             price: product.productDetail.price,
             status: null,
           }));
+          console.log(order);
+          console.log(savedVoucherId);
 
           await axios.post("/api/orderCreate", {
             order,
             orderDetails,
           });
+
+          sessionStorage.removeItem("voucherId");
+          
         } catch (error) {
           console.error("Error: ", error);
           return;
         }
       }
+
+      // navigate("/order");
 
       // const allDatesAreSame = leadtime.every((time) => time === leadtime[0]);
 
@@ -327,7 +331,8 @@ const Successful = () => {
       //     .join(", ")}`;
       // };
 
-      sessionStorage.removeItem("voucherId");
+      // toast.success("Đặt hàng thành công");
+
       const timer = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -339,6 +344,12 @@ const Successful = () => {
       }, 1000);
 
       return () => clearInterval(timer);
+
+      // const timer = setTimeout(() => {
+      //   navigate("/order");
+      // }, 5000);
+
+      // return () => clearTimeout(timer);
     } catch (error) {
       console.error("Lỗi: ", error);
       return;

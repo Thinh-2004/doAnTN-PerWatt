@@ -18,6 +18,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { forwardRef } from "react";
+import { toast } from "react-toastify";
 
 const DetailProduct = forwardRef(
   ({ DataDetail, reloadArrayDetail, isChangeForm }, ref) => {
@@ -153,6 +154,50 @@ const DetailProduct = forwardRef(
       },
     }));
 
+    const validateEditForm = () => {
+      const { namedetail, price, quantity, imagedetail } = newTemporaryData;
+
+      if (isChangeForm) {
+        if (!namedetail) {
+          toast.warning("Vui lòng nhập tên phân loại");
+          return false;
+        }
+        if (namedetail.length > 200) {
+          toast.warning("Tên phân loại không được lớn hơn 200 ký tự");
+          return false;
+        }
+        if (!price) {
+          toast.warning("Vui lòng nhập giá phân loại sản phẩm");
+          return false;
+        }
+        if (!parseFloat(price)) {
+          toast.warning("Giá không hợp lệ");
+          return false;
+        }
+        if (price.replace(/\D/g, "") <= 1000) {
+          toast.warning("Giá không được nhỏ hơn 1.000");
+          return false;
+        }
+        if (!quantity) {
+          toast.warning("Vui lòng nhập số lượng phân loại");
+          return false;
+        }
+        if (!parseInt(quantity)) {
+          toast.warning("Số lượng phân loại sản phẩm không hợp lệ");
+          return false;
+        }
+        if (parseInt(quantity) <= 0) {
+          toast.warning("Số lượng không được nhỏ hơn hoặc bằng 0");
+          return false;
+        }
+        if (!imagedetail) {
+          toast.warning("Vui lòng chọn hình ảnh");
+          return false;
+        }
+      }
+      return true;
+    };
+
     const handleAddOrUpdate = () => {
       if (validate()) {
         const newItems = {
@@ -163,6 +208,12 @@ const DetailProduct = forwardRef(
         };
 
         if (editingIndex !== null) {
+          // Trường hợp chỉnh sửa
+          if (!validateEditForm()) {
+            // Nếu validateEditForm không hợp lệ, dừng hàm
+            return;
+          }
+
           // Cập nhật mục đã chọn
           setTemporaryData((prevData) =>
             prevData.map((item, index) =>
@@ -176,11 +227,12 @@ const DetailProduct = forwardRef(
           );
           setEditingIndex(null); // Kết thúc chế độ chỉnh sửa
         } else {
-          // Thêm mục mới
+          // Trường hợp thêm mới
           setTemporaryData((prevData) => [...prevData, newItems]);
           setMoveData((prevData) => [...prevData, newItems]);
         }
 
+        // Đặt lại dữ liệu
         setNewTemporaryData({
           namedetail: "",
           price: "",
@@ -190,7 +242,9 @@ const DetailProduct = forwardRef(
           formattedPrice: "",
         });
         setImagePreview("");
-        DataDetail([...moveData, newItems]); //Truyền dữ liệu đến component khác xử lý
+
+        // Truyền dữ liệu đến component khác
+        DataDetail([...moveData, newItems]);
       }
     };
 
@@ -279,11 +333,11 @@ const DetailProduct = forwardRef(
 
     return (
       <div className="shadow">
-        <Card sx={{backgroundColor: "backgroundElement.children"}}>
-          <CardContent >
+        <Card sx={{ backgroundColor: "backgroundElement.children" }}>
+          <CardContent>
             <div className="d-flex justify-content-between">
               {isChangeForm ? (
-                <Box  className="row">
+                <Box className="row">
                   <div className="col-lg-4 col-md-4 col-sm-4 mb-3">
                     <TextField
                       label="Nhập tên phân loại"
@@ -301,7 +355,10 @@ const DetailProduct = forwardRef(
                       id="outlined-size-small"
                       size="small"
                       name="price"
-                      value={newTemporaryData.formattedPrice}
+                      value={
+                        newTemporaryData.formattedPrice ||
+                        formatPrice(newTemporaryData.price)
+                      }
                       onChange={handleInputChange}
                       fullWidth
                       className="me-2"

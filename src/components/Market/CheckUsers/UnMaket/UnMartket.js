@@ -83,7 +83,7 @@ const UnMatket = () => {
         // Gửi yêu cầu POST đến backend
         const response = await axios.post("store", storeToSend);
         //lấy lại token mới
-        const resToken = await axios.post("/login", {
+        const resToken = await axios.post("form/login", {
           email: response.data.user.email,
           isGoogleLogin: true,
         });

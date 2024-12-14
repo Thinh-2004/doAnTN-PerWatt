@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Route, Routes } from "react-router-dom";
 import "./isMarketStyle.css";
 import ListProduct from "./Product/List/ListProduct";
@@ -20,16 +20,39 @@ import EditVoucher from "./Voucher/UpdateVoucher";
 import OrderDetailSeller from "./OrderDetail/OrderDetailSeller";
 import PromotionalCard from "./StatisticalOrders/PromotionalCard";
 import Widget from "./StatisticalOrders/Widget";
+import { Alert, AlertTitle } from "@mui/material";
+import ViewListSharpIcon from "@mui/icons-material/ViewListSharp";
+import AddCircleOutlineRoundedIcon from "@mui/icons-material/AddCircleOutlineRounded";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
+import ManageHistoryOutlinedIcon from "@mui/icons-material/ManageHistoryOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import ShopOutlinedIcon from "@mui/icons-material/ShopOutlined";
 
 const IsMarket = () => {
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
+  const [infoStore, setInfoStore] = useState(null);
+  const [checkBan, setCheckBan] = useState(0);
+
+  const checkban = async (idStore) => {
+    try {
+      const res = await axios.get(`check/ban/shop/${idStore}`);
+      setCheckBan(res.data);
+      // console.log(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     const searchIdStoreByIdUser = async () => {
       try {
         const res = await axios.get(`/searchStore/${user.id}`);
         sessionStorage.setItem("idStore", res.data.id);
+        setInfoStore(res.data);
+        // console.log(res.data);
       } catch (error) {
         // Xử lý lỗi nếu có
         console.error("Error fetching store data:", error);
@@ -41,6 +64,13 @@ const IsMarket = () => {
       searchIdStoreByIdUser();
     }
   }, [user.id]);
+
+  useEffect(() => {
+    if (infoStore) {
+      checkban(infoStore.id);
+    }
+  }, [infoStore]);
+
   return (
     <>
       <Header />
@@ -63,20 +93,25 @@ const IsMarket = () => {
                   style={{ listStyleType: "none", textDecoration: "none" }}
                   className="p-0 m-0"
                 >
-                  <li>
+                  <li className="">
                     <Link
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/listStoreProduct"
                     >
-                      Danh sách sản phẩm
+                      <Typography sx={{ color: "text.default" }}>
+                        <ViewListSharpIcon /> Danh sách sản phẩm
+                      </Typography>
                     </Link>
                   </li>
+                  <hr />
                   <li>
                     <Link
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/FormStoreProduct"
                     >
-                      Thêm sản phẩm
+                      <Typography sx={{ color: "text.default" }}>
+                        <AddCircleOutlineRoundedIcon /> Thêm sản phẩm
+                      </Typography>
                     </Link>
                   </li>
                 </ul>
@@ -106,7 +141,9 @@ const IsMarket = () => {
                       style={{ textDecoration: "none" }}
                       to={`/profileMarket/orderSeller/${user.id}`}
                     >
-                      Đơn hàng
+                      <Typography sx={{ color: "text.default" }}>
+                        <ReceiptLongOutlinedIcon /> Đơn hàng
+                      </Typography>
                     </Link>
                   </li>
                 </ul>
@@ -136,15 +173,9 @@ const IsMarket = () => {
                       style={{ textDecoration: "none" }}
                       to="/profileMarket"
                     >
-                      Doanh thu
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      style={{ textDecoration: "none" }}
-                      to="/profileMarket/wallet/seller"
-                    >
-                      Số dư TK của tôi
+                      <Typography sx={{ color: "text.default" }}>
+                        <PaymentsOutlinedIcon /> Doanh thu
+                      </Typography>
                     </Link>
                   </li>
                 </ul>
@@ -174,7 +205,9 @@ const IsMarket = () => {
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/profileShop"
                     >
-                      Hồ sơ shop
+                      <Typography sx={{ color: "text.default" }}>
+                        <StoreOutlinedIcon /> Hồ sơ shop
+                      </Typography>
                     </Link>
                   </li>
                 </ul>
@@ -204,23 +237,34 @@ const IsMarket = () => {
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/addVoucher"
                     >
-                      Thêm khuyến mãi
+                      <Typography sx={{ color: "text.default" }}>
+                        <AddCircleOutlineRoundedIcon />
+                        Thêm khuyến mãi
+                      </Typography>
                     </Link>
                   </li>
+                  <hr />
                   <li>
                     <Link
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/fillVoucher"
                     >
-                      Quản lý khuyến mãi
+                      <Typography sx={{ color: "text.default" }}>
+                        {" "}
+                        <ManageHistoryOutlinedIcon /> Quản lý khuyến mãi
+                      </Typography>
                     </Link>
                   </li>
+                  <hr />
                   <li>
                     <Link
                       style={{ textDecoration: "none" }}
                       to="/profileMarket/voucher/webite"
                     >
-                      Chương trình PerWatt
+                      <Typography sx={{ color: "text.default" }}>
+                        {" "}
+                        <ShopOutlinedIcon /> Chương trình PerWatt
+                      </Typography>
                     </Link>
                   </li>
                 </ul>
@@ -229,6 +273,29 @@ const IsMarket = () => {
           </Accordion>
         </div>
         <div className="col-lg-9">
+          {infoStore?.block && (
+            <div className="mt-3 mb-3">
+              <Alert severity="error">
+                <AlertTitle>Cảnh báo cửa hàng</AlertTitle>
+                {infoStore.reason}
+                <div className="d-flex justify-content-end">
+                  <storng>Hiệu lực</storng>(
+                  <label htmlFor="">{infoStore.status}</label>)
+                </div>
+              </Alert>
+            </div>
+          )}
+          {checkBan > 0 && (
+            <div className="mt-3 mb-3">
+              <Alert severity="error">
+                <AlertTitle>Cảnh báo sản phẩm</AlertTitle>
+                Quản trị website thấy rằng sản phẩm cửa hàng của bạn vi phạm
+                điều khoản và dịch vụ của website vui lòng kiểm tra và thay đổi
+                lại sản phẩm của cửa hàng.
+              </Alert>
+            </div>
+          )}
+
           <Routes>
             <Route path="/" element={<SellerDashboard />} />
             <Route path="/listStoreProduct" element={<ListProduct />} />

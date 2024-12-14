@@ -13,6 +13,7 @@ import Box from "@mui/material/Box";
 import { Button, Card, CardContent, Pagination } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
+import FormReport from "../../Report/FormReport";
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -316,7 +317,10 @@ const Order = () => {
                 : null,
               orderstatus: "Đang chờ duyệt",
               totalamount: parseInt(totalAmount) + feeShip,
-              voucher: savedVoucherId === "" ? null : { id: savedVoucherId },
+              voucher:
+                savedVoucherId === null
+                  ? null
+                  : { id: parseInt(savedVoucherId) },
             };
 
             const orderDetails = storeProducts.map((product) => ({
@@ -330,13 +334,13 @@ const Order = () => {
               order,
               orderDetails,
             });
+
+            localStorage.removeItem("voucherIdMoMo");
           } catch (error) {
             console.error("Error: ", error);
             return;
           }
         }
-
-        sessionStorage.removeItem("voucherIdMoMo");
       }
     } catch (error) {
       console.error("Lỗi: ", error);
@@ -525,6 +529,17 @@ const Order = () => {
             </div>
             <div className="col-3 d-flex justify-content-center">
               {order.paymentmethod.type}
+            </div>
+            <div className="col-0 d-flex justify-content-center">
+              {order.orderstatus === "Hoàn thành" && (
+                <FormReport
+                  idStore={
+                    orderDetails[order.id] &&
+                    orderDetails[order.id][0].productDetail.product.store.id
+                  }
+                  idOrder={order.id}
+                />
+              )}
             </div>
           </div>
           {orderDetails[order.id] &&

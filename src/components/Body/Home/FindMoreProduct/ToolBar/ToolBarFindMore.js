@@ -76,17 +76,26 @@ const ToolBarFindMore = ({
     }
   }, [address, text, trademark]);
 
-  const handleTextSearch = useCallback(
-    (value) => {
+  const handleTextSearch = useCallback(() => {
+    let timeoutId; // Biến lưu trữ timeout ID
+
+    return (value) => {
+      // Hủy timeout trước đó nếu có
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
       text(value);
 
-      setTimeout(() => {
-        // Lưu giá trị tìm kiếm vào localStorage
+      // Thiết lập timeout mới
+      timeoutId = setTimeout(() => {
         localStorage.setItem("searchText", value);
+
+        // Xóa timeout ID sau khi thực thi
+        timeoutId = null;
       }, 1000);
-    },
-    [text]
-  );
+    };
+  }, [text])();
 
   const dataNameAddress = useCallback(
     (data) => {
@@ -118,10 +127,13 @@ const ToolBarFindMore = ({
 
   useEffect(() => {
     // Đặt lại giá trị của isRemoveStorage và onClearFilters
-    setTimeout(() => {
+    const timmer = setTimeout(() => {
       setIsRemoveStorage(false);
       onClearFilters(false);
     }, 500);
+    return () => {
+      clearTimeout(timmer);
+    };
   }, [isRemoveStorage, onClearFilters]);
 
   //Hàm xử lí truyền dữ liệu valuePriceMinMax

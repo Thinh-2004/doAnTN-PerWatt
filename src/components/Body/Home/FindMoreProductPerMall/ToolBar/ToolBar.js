@@ -3,16 +3,27 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import AdjustIcon from "@mui/icons-material/Adjust";
 import { useState } from "react";
-import { Button } from "@mui/material";
+import {
+  Button,
+  ButtonGroup,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
 
 const ToolBar = ({ isAscending, isSortOption, valueSort }) => {
+  const [selectSortPrice, setSelectSortPrice] = useState("");
+
+  const handleChange = (event) => {
+    const value = event.target.value;
+    setSelectSortPrice(value);
+    valueSort(value);
+  };
+
   const [selectedButton, setSelectedButton] = useState(null);
   const handleButtonClick = (buttonName) => {
     if ((buttonName === "oldItems") | (buttonName === "newItems")) {
-      setSelectedButton(buttonName);
-      valueSort(buttonName);
-    }
-    if ((buttonName === "priceASC") | (buttonName === "priceDESC")) {
       setSelectedButton(buttonName);
       valueSort(buttonName);
     }
@@ -22,9 +33,10 @@ const ToolBar = ({ isAscending, isSortOption, valueSort }) => {
       valueSort(buttonName);
     }
   };
+
   return (
     <>
-      <div class="position-relative">
+      <div className="position-relative" style={{ width: "50%" }}>
         <Button
           variant="outlined"
           sx={{ margin: "4px" }}
@@ -55,7 +67,7 @@ const ToolBar = ({ isAscending, isSortOption, valueSort }) => {
           )}
         </Button>
 
-        <Button
+        {/* <Button
           variant="outlined"
           sx={{ margin: "4px" }}
           onClick={() =>
@@ -72,7 +84,27 @@ const ToolBar = ({ isAscending, isSortOption, valueSort }) => {
               <AdjustIcon sx={{ width: 15 }} />
             </div>
           ) : null}
-        </Button>
+        </Button> */}
+
+        <FormControl size="small" sx={{ width: "30%", margin: "4px" }}>
+          <InputLabel id="demo-simple-select-label">
+            Sắp xếp giá theo
+          </InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={selectSortPrice}
+            label="Sắp xếp giá theo"
+            onChange={handleChange}
+          >
+            <MenuItem value={"priceASC"}>
+              <ArrowUpwardIcon /> Giá thấp đến cao
+            </MenuItem>
+            <MenuItem value={"priceDESC"}>
+              <ArrowDownwardIcon /> Giá cao đến thấp
+            </MenuItem>
+          </Select>
+        </FormControl>
       </div>
     </>
   );

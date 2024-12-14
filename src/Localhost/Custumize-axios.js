@@ -60,7 +60,7 @@ const refreshToken = async (token) => {
     } catch (error) {
       console.error("Làm mới token thất bại:", error);
       localStorage.clear();
-      window.location.href = "/";
+      // window.location.href = "/";
       isRefreshing = false;
       throw error;
     }
@@ -110,7 +110,7 @@ instance.interceptors.response.use(
       } catch (refreshError) {
         console.error("Không thể làm mới token sau lỗi 401:", refreshError);
         localStorage.clear();
-        window.location.href = "/";
+        // window.location.href = "/";
         return Promise.reject(refreshError);
       }
     }

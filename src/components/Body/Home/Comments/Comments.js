@@ -31,10 +31,14 @@ const Comments = ({ FillDetailPr }) => {
   const [totalComment, setTotalComment] = useState(null);
   // State để lưu rating, mặc định là 5 sao
   const [rating, setRating] = useState(5);
+  // State để lưu cho phép người dùng comment hay không
+  const [isUserCanComment, setIsUserCanComment] = useState(false);
 
-  const user = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
-    : null;
+  const [user, setUser] = useState(
+    localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : null
+  );
   const idStore = localStorage.getItem("idStore");
   const idProduct = FillDetailPr?.id;
   const { mode } = useContext(ThemeModeContext);
@@ -53,7 +57,7 @@ const Comments = ({ FillDetailPr }) => {
     setReplyCommentId(id);
   };
 
-  const handleChangeContentUdateComment = (event) => {
+  const handleChangeContentUpdateComment = (event) => {
     setUpdateComment(event.target.value);
   };
 
@@ -70,14 +74,18 @@ const Comments = ({ FillDetailPr }) => {
     }
   };
 
-  const loadComments = async (page = 1, limit = 5, sort = "newest") => {
+  const loadComments = async (
+    page = 1,
+    limit = 5,
+    sort = "newest",
+    ratingSort = "highest"
+  ) => {
     try {
       const res = await axios.get("/comment/list", {
-        params: { productId: idProduct, page, limit, sort },
+        params: { productId: idProduct, page, limit, sort, ratingSort },
       });
 
       const commentsRes = res.data;
-
       const commentsData = await Promise.all(
         commentsRes.map(async (comment) => {
           const replies = await loadReplies(comment.id);
@@ -87,7 +95,6 @@ const Comments = ({ FillDetailPr }) => {
           };
         })
       );
-
       setComments(commentsData);
     } catch (err) {
       console.log(err);
@@ -106,10 +113,34 @@ const Comments = ({ FillDetailPr }) => {
       })
       .catch((err) => console.log(err));
   };
+  const loadIsUserCanComment = async (productId) => {
+    if (user === null) {
+      return;
+    }
+    var orderedOfUser = await axios.get("/comment/count/ordered", {
+      params: {
+        userId: user.id,
+        productId: productId,
+      },
+    });
+    var commentOfUser = await axios.get("/comment/count/user", {
+      params: {
+        userId: user.id,
+        productId: productId,
+      },
+    });
+    if (commentOfUser.data < orderedOfUser.data) {
+      setIsUserCanComment(true);
+    } else {
+      setIsUserCanComment(false);
+    }
+  };
   useEffect(() => {
+    // console.log(FillDetailPr);
     if (FillDetailPr) {
       loadComments();
       loadTotalComment(FillDetailPr.id);
+      loadIsUserCanComment(FillDetailPr.id);
     }
   }, [FillDetailPr]);
 
@@ -130,6 +161,7 @@ const Comments = ({ FillDetailPr }) => {
       .then((res) => {
         loadComments();
         loadTotalComment(FillDetailPr.id);
+        loadIsUserCanComment(FillDetailPr.id);
       })
       .catch((err) => console.log(err));
   };
@@ -182,12 +214,14 @@ const Comments = ({ FillDetailPr }) => {
       .then((res) => {
         loadComments();
         loadTotalComment(productid);
+        loadIsUserCanComment(productid);
       })
       .catch((err) => console.log(err));
   };
 
   // Hàm chọn comment chỉnh sửa
   const handleChangeUpdateComment = (id, content, currentRating) => {
+    console.log(id);
     setUpdateCommentId(id);
     setUpdateComment(content);
     setRating(currentRating); // Set lại số sao hiện tại
@@ -240,6 +274,7 @@ const Comments = ({ FillDetailPr }) => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [commentsPerPage, setCommentsPerPage] = useState(5);
+  const [ratingOption, setRatingOption] = useState("highest"); // or 'lowest'
   const [sortOption, setSortOption] = useState("newest"); // or 'oldest'
 
   const handlePageChange = (pageNumber) => {
@@ -256,7 +291,12 @@ const Comments = ({ FillDetailPr }) => {
   const handleSortOptionChange = (event) => {
     setSortOption(event.target.value);
     setCurrentPage(1); // Reset to first page when changing sort option
-    loadComments(1, commentsPerPage, event.target.value);
+    loadComments(1, commentsPerPage, event.target.value, null);
+  };
+  const handleRatingOptionChange = (event) => {
+    setRatingOption(event.target.value);
+    setCurrentPage(1); // Reset to first page when changing sort option
+    loadComments(1, commentsPerPage, sortOption, event.target.value);
   };
 
   const renderPagination = () => {
@@ -326,7 +366,11 @@ const Comments = ({ FillDetailPr }) => {
                 id="btn-add-card"
                 style={{ width: "100px" }}
                 onClick={addComment}
-                disabled={comment.trim().length === 0 || !user ? true : false}
+                disabled={
+                  comment.trim().length === 0 || !user || !isUserCanComment
+                    ? true
+                    : false
+                }
               >
                 Gửi
               </Button>
@@ -342,17 +386,30 @@ const Comments = ({ FillDetailPr }) => {
                 </div>
               </div>
               <div className="d-flex">
-                <select onChange={handleSortOptionChange} value={sortOption}>
-                  <option value="newest">Mới nhất</option>
-                  <option value="oldest">Cũ nhất</option>
+                <select
+                  className="form-select"
+                  onChange={handleSortOptionChange}
+                  value={sortOption}
+                >
+                  <option className="text-primary" value="newest">
+                    Mới nhất
+                  </option>
+                  <option className="text-primary" value="oldest">
+                    Cũ nhất
+                  </option>
                 </select>
                 <select
-                  onChange={handleCommentsPerPageChange}
-                  value={commentsPerPage}
+                  className="form-select"
+                  onChange={handleRatingOptionChange}
+                  value={ratingOption}
+                  style={{ width: "200px" }}
                 >
-                  <option value={5}>5 bình luận/trang</option>
-                  <option value={10}>10 bình luận/trang</option>
-                  <option value={20}>20 bình luận/trang</option>
+                  <option className="text-primary" value="highest">
+                    Đánh giá tốt nhất
+                  </option>
+                  <option className="text-primary" value="lowest">
+                    Đánh giá thấp nhất
+                  </option>
                 </select>
               </div>
             </div>
@@ -392,7 +449,7 @@ const Comments = ({ FillDetailPr }) => {
                             disabled={!checkIsUpdateComment(item.id)}
                             onChange={(e) =>
                               checkIsUpdateComment(item.id) &&
-                              handleChangeContentUdateComment(e)
+                              handleChangeContentUpdateComment(e)
                             }
                             value={
                               !checkIsUpdateComment(item.id)
@@ -462,53 +519,50 @@ const Comments = ({ FillDetailPr }) => {
                           ) : null}
                         </div>
                       </div>
-                      {isUserComment(item.user.id) && (
-                        <div
-                          className="text-center mt-3"
-                          style={{ width: "5%" }}
-                        >
-                          <div>
-                            <IconButton
-                              aria-label="more"
-                              id="long-button"
-                              aria-controls={open ? "long-menu" : undefined}
-                              aria-expanded={open ? "true" : undefined}
-                              aria-haspopup="true"
-                              onClick={handleClick}
-                            >
-                              <MoreVertIcon />
-                            </IconButton>
-                            <Menu
-                              id="long-menu"
-                              MenuListProps={{
-                                "aria-labelledby": "long-button",
-                              }}
-                              anchorEl={anchorEl}
-                              open={open}
-                              onClose={handleClose}
-                            >
-                              <MenuItem
-                                onClick={() =>
-                                  handleChangeUpdateComment(
-                                    item.id,
-                                    item.content,
-                                    item.rating
-                                  )
-                                }
+                      {isUserComment(item.user.id) &&
+                        item.replies.length === 0 && (
+                          <div
+                            className="text-center mt-3"
+                            style={{ width: "5%" }}
+                          >
+                            <div class="dropdown" data-bs-auto-close="true">
+                              <button
+                                class="btn focus-visible-none"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
                               >
-                                Chỉnh sửa
-                              </MenuItem>
-                              <MenuItem
-                                onClick={() =>
-                                  deleteComment(item.id, item.product.id)
-                                }
-                              >
-                                Xóa
-                              </MenuItem>
-                            </Menu>
+                                <i class="bi bi-three-dots-vertical"></i>
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li>
+                                  <a
+                                    class="dropdown-item"
+                                    onClick={() =>
+                                      handleChangeUpdateComment(
+                                        item.id,
+                                        item.content,
+                                        item.rating
+                                      )
+                                    }
+                                  >
+                                    Chỉnh sửa
+                                  </a>
+                                </li>
+                                <li>
+                                  <a
+                                    class="dropdown-item"
+                                    onClick={() =>
+                                      deleteComment(item.id, item.product.id)
+                                    }
+                                  >
+                                    Xóa
+                                  </a>
+                                </li>
+                              </ul>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                     {/* Hiển thị các comment phản hồi */}
                     <div className="stack">
@@ -537,7 +591,7 @@ const Comments = ({ FillDetailPr }) => {
                                     disabled={!checkIsUpdateComment(reply.id)}
                                     onChange={(e) =>
                                       checkIsUpdateComment(reply.id) &&
-                                      handleChangeContentUdateComment(e)
+                                      handleChangeContentUpdateComment(e)
                                     }
                                     value={
                                       !checkIsUpdateComment(reply.id)
@@ -585,16 +639,16 @@ const Comments = ({ FillDetailPr }) => {
                                   >
                                     {getRelativeTime(reply.commentdate)}
                                   </Typography>
-                                  <Typography
-                                    variant="span"
-                                    sx={{ color: "text.secondary" }}
-                                    className="ms-3 text-underline-hover"
-                                    onClick={() =>
-                                      handleChangeReplyCommentId(item.id)
-                                    }
-                                  >
-                                    Phản hồi
-                                  </Typography>
+                                  {/* <Typography
+                                                                      variant="span"
+                                                                      sx={{ color: "text.secondary" }}
+                                                                      className="ms-3 text-underline-hover"
+                                                                      onClick={() =>
+                                                                          handleChangeReplyCommentId(item.id)
+                                                                      }
+                                                                  >
+                                                                      Phản hồi
+                                                                  </Typography> */}
                                 </div>
                               </div>
                               {isUserComment(reply.user.id) && (

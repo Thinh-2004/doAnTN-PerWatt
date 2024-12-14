@@ -6,11 +6,19 @@ import axios from "../../../../../../Localhost/Custumize-axios";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import { bouncy } from "ldrs";
-import { Box, Paper, TableContainer, TablePagination } from "@mui/material";
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Paper,
+  TableContainer,
+  TablePagination,
+} from "@mui/material";
 import useDebounce from "../../../../../../CustumHook/useDebounce";
 
 import ProductTable from "./ProductTable";
 import ToolbarListProduct from "./ToolbarListProduct";
+import dayjs from "dayjs";
 
 bouncy.register();
 
@@ -193,9 +201,31 @@ const ListProduct = () => {
     setIdCateOption(newValue.id); // Lưu id
   };
 
+  //Hàm xử lý tính toán ngày
+  const calculateDifference = (startDay, endDay) => {
+    const start = dayjs(startDay);
+    const end = dayjs(endDay);
+
+    // Tính số năm
+    const years = end.diff(start, "year");
+    if (years >= 1) {
+      return `${years} năm`;
+    }
+
+    // Tính số tháng
+    const months = end.diff(start, "month");
+    if (months >= 1) {
+      return `${months} tháng`;
+    }
+
+    // Tính số ngày
+    const days = end.diff(start, "day");
+    return `${days} ngày`;
+  };
+
   return (
     <Box
-      className=" mt-4 mb-4"
+      className="mt-4 mb-4"
       sx={{ backgroundColor: "backgroundElement.children" }}
     >
       <div className="d-flex justify-content-between p-4">
@@ -222,12 +252,12 @@ const ListProduct = () => {
           <div className="mt-4 mb-4 d-flex justify-content-center">
             <l-bouncy size="60" speed="0.75" color="black"></l-bouncy>
           </div>
-        ) :  fill.length === 0 ? (
+        ) : fill.length === 0 && debounceSearch === "" ? (
           <>
             <hr />
             <h1 className="text-center">Bạn chưa đăng bán sản phẩm.</h1>
           </>
-        ) : fill.length === 0 && search !== "" ? (
+        ) : fill.length === 0 && debounceSearch !== "" ? (
           <>
             <hr />
             <h1 className="text-center">Sản phẩm bạn tìm không tồn tại.</h1>
@@ -261,6 +291,32 @@ const ListProduct = () => {
           },
         }}
       />
+      {fill.map(
+        (showBan) =>
+          showBan.product.block && (
+            <Alert severity="error">
+              <AlertTitle>Quyết định xử phạt</AlertTitle>
+              Nội dung: {showBan.product.reason}{" "}
+              <hr className="m-0 p-0 mb-2 mt-2" />
+              <div className="d-flex justify-content-between">
+                <div className="">
+                  Thời gian:{" "}
+                  {dayjs(showBan.product.startday).format("DD/MM/YYYY")}
+                  &nbsp;-&nbsp;
+                  {dayjs(showBan.product.endday).format("DD/MM/YYYY")}
+                </div>
+                <div className="">
+                  Hiệu lực(
+                  {calculateDifference(
+                    showBan.product.startday,
+                    showBan.product.endday
+                  )}
+                  )
+                </div>
+              </div>
+            </Alert>
+          )
+      )}
     </Box>
   );
 };

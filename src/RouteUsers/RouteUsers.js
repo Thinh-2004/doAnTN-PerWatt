@@ -1,5 +1,5 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import Home from "../components/Body/Home/Home";
 import Form from "../components/Login&Register/Form";
 import Market from "../components/Market/Market";
@@ -23,8 +23,34 @@ import NotFound from "../NotFound";
 import SecurityRoutes from "../components/SecurityRoutes/SecurityRoutes";
 import BuyerNotification from "../components/Notification&Message&Comment/Notification/BuyerNotification";
 import NotificationCard from "../components/Notification&Message&Comment/Notification/SellerNotification";
+import ListReportUser from "../components/Report/ListReportUser";
+import axios from "../Localhost/Custumize-axios";
 
 const RouteUsers = (props) => {
+  //Khi vừa render trang web kiểm tra quyền
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadCheck = async () => {
+      try {
+        const resUserInfo = await axios.get(`/userProFile/myInfo`);
+        // Lưu trạng thái đã phân quyền vào sessionStorage
+        sessionStorage.setItem("checkRenderWebsite", true);
+        if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Error checking user role:", error);
+      }
+    };
+
+    if (!sessionStorage.getItem("checkRenderWebsite")) {
+      // Chỉ kiểm tra quyền lần đầu tiên
+      loadCheck();
+    }
+  }, [navigate]);
   return (
     <Routes>
       {/* Các routes public */}
@@ -57,7 +83,13 @@ const RouteUsers = (props) => {
       <Route
         path="/cart"
         element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+          <SecurityRoutes
+            allowedRoles={[
+              "Admin_All_Function",
+              "Seller_Manage_Shop",
+              "Buyer_Manage_Buyer",
+            ]}
+          >
             <Cart />
           </SecurityRoutes>
         }
@@ -65,7 +97,13 @@ const RouteUsers = (props) => {
       <Route
         path="/user/*"
         element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+          <SecurityRoutes
+            allowedRoles={[
+              "Admin_All_Function",
+              "Seller_Manage_Shop",
+              "Buyer_Manage_Buyer",
+            ]}
+          >
             <ProfileUser />
           </SecurityRoutes>
         }
@@ -73,7 +111,13 @@ const RouteUsers = (props) => {
       <Route
         path="/order"
         element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+          <SecurityRoutes
+            allowedRoles={[
+              "Admin_All_Function",
+              "Seller_Manage_Shop",
+              "Buyer_Manage_Buyer",
+            ]}
+          >
             <Order />
           </SecurityRoutes>
         }
@@ -81,7 +125,13 @@ const RouteUsers = (props) => {
       <Route
         path="/paybuyer"
         element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+          <SecurityRoutes
+            allowedRoles={[
+              "Admin_All_Function",
+              "Seller_Manage_Shop",
+              "Buyer_Manage_Buyer",
+            ]}
+          >
             <PayBuyer />
           </SecurityRoutes>
         }
@@ -89,7 +139,13 @@ const RouteUsers = (props) => {
       <Route
         path="/orderDetail/:id"
         element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+          <SecurityRoutes
+            allowedRoles={[
+              "Admin_All_Function",
+              "Seller_Manage_Shop",
+              "Buyer_Manage_Buyer",
+            ]}
+          >
             <OrderDetail />
           </SecurityRoutes>
         }
@@ -97,7 +153,13 @@ const RouteUsers = (props) => {
       <Route
         path="/orderCreateVnPay"
         element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+          <SecurityRoutes
+            allowedRoles={[
+              "Admin_All_Function",
+              "Seller_Manage_Shop",
+              "Buyer_Manage_Buyer",
+            ]}
+          >
             <Successful />
           </SecurityRoutes>
         }
@@ -106,7 +168,13 @@ const RouteUsers = (props) => {
       <Route
         path="/notifications"
         element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+          <SecurityRoutes
+            allowedRoles={[
+              "Admin_All_Function",
+              "Seller_Manage_Shop",
+              "Buyer_Manage_Buyer",
+            ]}
+          >
             <NotificationCard />
           </SecurityRoutes>
         }
@@ -114,7 +182,9 @@ const RouteUsers = (props) => {
       <Route
         path="/profileMarket/notifications"
         element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+          <SecurityRoutes
+            allowedRoles={["Admin_All_Function", "Seller_Manage_Shop"]}
+          >
             <NotificationCard />
           </SecurityRoutes>
         }
@@ -122,17 +192,35 @@ const RouteUsers = (props) => {
       <Route
         path="/buyerNotification"
         element={
-          <SecurityRoutes allowedRoles={["Admin", "Seller", "Buyer"]}>
+          <SecurityRoutes
+            allowedRoles={[
+              "Admin_All_Function",
+              "Seller_Manage_Shop",
+              "Buyer_Manage_Buyer",
+            ]}
+          >
             <BuyerNotification />
           </SecurityRoutes>
         }
       ></Route>
+
+      <Route
+        path="/report"
+        element={
+          <SecurityRoutes
+            allowedRoles={["Seller_Manage_Shop", "Buyer_Manage_Buyer"]}
+          >
+            <ListReportUser />
+          </SecurityRoutes>
+        }
+      ></Route>
+
       {/* ------------- */}
       {/* Phân quyền Buyer */}
       <Route
         path="/market"
         element={
-          <SecurityRoutes allowedRoles={["Buyer"]}>
+          <SecurityRoutes allowedRoles={["Buyer_Manage_Buyer"]}>
             <Market />
           </SecurityRoutes>
         }
@@ -142,7 +230,7 @@ const RouteUsers = (props) => {
       <Route
         path="/profileMarket/*"
         element={
-          <SecurityRoutes allowedRoles={["Seller"]}>
+          <SecurityRoutes allowedRoles={["Seller_Manage_Shop"]}>
             <IsMarket />
           </SecurityRoutes>
         }
@@ -150,7 +238,7 @@ const RouteUsers = (props) => {
       <Route
         path="profileMarket/checkItemProduct/:slug"
         element={
-          <SecurityRoutes allowedRoles={["Seller"]}>
+          <SecurityRoutes allowedRoles={["Seller_Manage_Shop"]}>
             <CheckItemProduct />
           </SecurityRoutes>
         }

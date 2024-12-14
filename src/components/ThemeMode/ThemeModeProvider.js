@@ -14,9 +14,11 @@ export const ThemeModeProvider = ({ children }) => {
     return saved === "true";
   });
 
+ 
+
   useEffect(() => {
     if (checkAutoMode === true) {
-      //Theo đỗi màu nền hệ thống
+      // Theo dõi màu nền hệ thống
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleMediaChange = (e) => {
         setMode(e.matches ? "dark" : "light");
@@ -36,31 +38,28 @@ export const ThemeModeProvider = ({ children }) => {
       mode: mode,
       ...(mode === "light"
         ? {
-            //Light mode
+            // Light mode
             backgroundElement: {
               default: "white",
               children: "white",
             },
             background: {
               default: "#f4f6f8",
-              // paper: "#fff",
             },
             text: {
-              default: "#000", // Black text in light mode
-              secondary: "#555", // Gray text for secondary text
+              default: "#000",
+              secondary: "#555",
               titleHeader: "#001F3F",
             },
           }
         : {
-            //Dark mode
-            // Custom colors for dark mode
+            // Dark mode
             backgroundElement: {
               default: "#212121",
               children: "#363535",
             },
             background: {
               default: "#212121",
-              // paper: "#1e1e1e",
             },
             text: {
               default: "#fff",
@@ -70,27 +69,29 @@ export const ThemeModeProvider = ({ children }) => {
           }),
     },
     transitions: {
-      duration: { enteringScreen: 500, leavingScreen: 500 }, // Thời gian chuyển đổi
+      duration: { enteringScreen: 500, leavingScreen: 500 },
     },
   });
 
   const toggleMode = (valueMode) => {
     const newMode = valueMode ? "dark" : "light";
     setMode(newMode);
-    // console.log(newMode);
     document.body.style.backgroundColor =
       newMode === "dark" ? "#212121" : "#f4f6f8";
   };
 
   const handleAutoScreenMode = (valueAuto) => {
-    const newAutoMode = valueAuto;
-    setCheckAutoMode(newAutoMode);
-    // console.log(valueAuto);
+    setCheckAutoMode(valueAuto);
   };
 
   return (
     <ThemeModeContext.Provider
-      value={{ mode, checkAutoMode, toggleMode, handleAutoScreenMode }}
+      value={{
+        mode,
+        checkAutoMode,
+        toggleMode,
+        handleAutoScreenMode,
+      }}
     >
       <ThemeProvider theme={theme}>
         <CssBaseline />

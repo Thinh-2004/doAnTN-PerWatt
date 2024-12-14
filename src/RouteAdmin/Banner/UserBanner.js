@@ -55,8 +55,6 @@ const BannerTable = () => {
   ); // Months are 0-based
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
 
-
-
   useEffect(() => {
     if (user) {
       setFormData((prevState) => ({
@@ -411,7 +409,7 @@ const BannerTable = () => {
                         </TableCell>
                         <TableCell align="center">
                           <img
-                            src={ banner.img}
+                            src={banner.img}
                             alt={banner.bannername}
                             width="100"
                           />

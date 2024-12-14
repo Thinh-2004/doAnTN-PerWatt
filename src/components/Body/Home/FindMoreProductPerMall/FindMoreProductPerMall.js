@@ -5,7 +5,7 @@ import axios from "../../../../Localhost/Custumize-axios";
 import SkeletonLoad from "../../../../Skeleton/SkeletonLoad";
 import { Box, Container, Pagination } from "@mui/material";
 import useDebounce from "../../../../CustumHook/useDebounce";
-import Footer from "../../../../components/Footer/Footer"
+import Footer from "../../../../components/Footer/Footer";
 import "./FindMoreProductPerMallStyle.css";
 import ListItemProduct from "../../../ListItemProduct/ListItemProduct";
 
@@ -32,7 +32,6 @@ const FindMoreProductPerMall = () => {
       );
       setCurrentPage(res.data.currentPage);
       setTotalPage(res.data.totalPage);
-    
 
       setFill(res.data.products);
       // console.log(res.data.products);
@@ -45,7 +44,7 @@ const FindMoreProductPerMall = () => {
   };
 
   useEffect(() => {
-    if (debouncedItem|| sortOption) {
+    if (debouncedItem || sortOption) {
       loadData(0, 20, debouncedItem, sortOption);
     } else {
       loadData();
@@ -101,11 +100,8 @@ const FindMoreProductPerMall = () => {
     setSearch("");
     setIsResetSearch(true);
 
-    const timer = setTimeout(() => {
-      loadData();
-      setIsResetSearch(false);
-    }, 500);
-    return () => clearTimeout(timer);
+    loadData();
+    setIsResetSearch(false);
   };
 
   return (
@@ -134,14 +130,13 @@ const FindMoreProductPerMall = () => {
                   id="default"
                   className="fill-all btn-fill text-center"
                   onClick={handleShowMore}
-                  sx={{background : "background.default"}}
+                  sx={{ background: "background.default" }}
                 >
                   <svg>
                     <rect x="0" y="0" fill="none" width="100%" height="100%" />
                   </svg>
                   <i className="bi bi-box-seam"></i> Hiển thị tất cả
                 </Box>
-                
               )}
             </div>
           </div>
@@ -171,7 +166,10 @@ const FindMoreProductPerMall = () => {
           </div>
         ) : (
           <div className="row d-flex justify-content-center">
-            <ListItemProduct data={fill} classNameCol={"col-lg-2 col-md-3 col-sm-3"}/>
+            <ListItemProduct
+              data={fill}
+              classNameCol={"col-lg-2 col-md-3 col-sm-3"}
+            />
           </div>
         )}
         <div className="mt-3 mb-3 d-flex justify-content-center">
@@ -184,7 +182,7 @@ const FindMoreProductPerMall = () => {
           />
         </div>
       </Container>
-      <Footer/>
+      <Footer />
     </>
   );
 };

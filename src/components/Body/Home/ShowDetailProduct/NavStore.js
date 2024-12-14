@@ -1,11 +1,17 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Box } from "@mui/material";
 import { ThemeModeContext } from "../../../ThemeMode/ThemeModeProvider";
+// import FormReport from "../../../Report/FormReport";
+import axios from "../../../../Localhost/Custumize-axios";
+import StarIcon from "@mui/icons-material/Star";
+import ChatInterface from "../../../Notification&Message&Comment/Message/Message";
 
 const NavStore = ({ FillDetailPr, countProductStore }) => {
-  const {mode} = useContext(ThemeModeContext);
- 
+  const { mode } = useContext(ThemeModeContext);
+  const [evaluateStore, setEvaluateStore] = useState(0);
+  const [isOpenChatBox, setIsOpenChatBox] = useState(false);
+
   //Hàm cắt chuỗi địa chỉ
   const splitByAddress = (address) => {
     const parts = address?.split(",");
@@ -13,6 +19,21 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
       return parts[4];
     }
   };
+
+  const fillEvaluete = async (id) => {
+    try {
+      const res = await axios.get(`/comment/evaluate/store/${id}`);
+      setEvaluateStore(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (FillDetailPr) {
+      fillEvaluete(FillDetailPr.store.id);
+    }
+  }, [FillDetailPr]);
 
   //Hàm tính toán ngày giờ
   const calculateAccountDuration = (accountCreatedDate) => {
@@ -46,6 +67,14 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
     }
   };
 
+  //sự kiện hiển thị chat
+  const handleOpenShowChatBox = () => {
+    setIsOpenChatBox(true);
+    setTimeout(() => {
+      setIsOpenChatBox(false);
+    }, 500);
+  };
+
   return (
     <Box
       sx={{ backgroundColor: "backgroundElement.children" }}
@@ -53,31 +82,30 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
     >
       <div className="col-lg-4 col-md-4 col-sm-4 border-end">
         <div className="d-flex justify-content-center">
-          <div className="p-2 d-flex justify-content-center">
+          <div className="p-2 mt-2 d-flex justify-content-center">
             <Link to={`/pageStore/${FillDetailPr?.store?.slug}`}>
               <img
                 src={
                   FillDetailPr && FillDetailPr.store
-                    ? 
-                        FillDetailPr.store.user.avatar
-                      
+                    ? FillDetailPr.store.user.avatar
                     : "/images/no_img.png"
                 }
                 alt=""
                 id="avt-store"
                 //   onClick={handleViewStoreInfo}
                 style={{ cursor: "pointer", border: "none" }}
+                className="object-fit-lg-cover"
               />
             </Link>
           </div>
           <div className=" mt-3 ">
-            <div className="text-center mb-1">
+            <div className="d-flex justify-content-center mb-1">
               <Link
                 to={`/pageStore/${FillDetailPr?.store?.slug}`}
                 htmlFor=""
                 className={`fs-6 ${
                   mode === "light" ? "text-dark" : "text-white"
-                }`}
+                } align-content-center`}
                 // onClick={handleViewStoreInfo}
                 style={{ cursor: "pointer" }}
               >
@@ -85,14 +113,15 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
                   ? FillDetailPr.store.namestore
                   : "N/A"}
               </Link>
+              {/* <FormReport idStore={FillDetailPr?.store.id} /> */}
             </div>
-            <div className="d-flex">
+            <div className="d-flex justify-content-start">
               <Link
                 to={`/pageStore/${FillDetailPr?.store?.slug}`}
                 className="text-decoration-none"
               >
                 <button
-                  className="btn btn-sm mx-2"
+                  className="btn btn-sm me-2"
                   // onClick={handleViewStoreInfo}
                   id="btn-infor-shop"
                 >
@@ -100,9 +129,15 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
                 </button>
               </Link>
 
-              <button className="btn btn-sm" id="btn-chatMessage">
-                Nhắn tin shop
-              </button>
+              <Link>
+                <button
+                  className="btn btn-sm"
+                  id="btn-chatMessage"
+                  onClick={() => handleOpenShowChatBox()}
+                >
+                  Nhắn tin shop
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -145,11 +180,18 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
             <div className="col-lg-4 col-md-4 col-sm-4 mb-3  border-end">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="fst-italic">Đánh giá cửa hàng:</label>
-                <span className="fw-semibold">100</span>
+                <span className="fw-semibold d-flex justify-content-end">
+                  {evaluateStore || 0}{" "}
+                  <StarIcon sx={{ color: "yellow", width: "50%" }} />
+                </span>
               </div>
             </div>
           </div>
         </div>
+        <ChatInterface
+          isOpenChatBox={isOpenChatBox}
+          store={FillDetailPr?.store}
+        />
       </div>
     </Box>
   );

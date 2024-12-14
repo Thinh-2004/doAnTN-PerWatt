@@ -41,19 +41,7 @@ const Product = ({ item, idCate, handleReset }) => {
   };
 
   useEffect(() => {
-    // const loadingData = async () => {
-    //   // setLoading(true);
-    //   try {
-    //     if (debouncedItem) {
-    //       await loadData(0, 20, debouncedItem);
-    //     } else if (debouncedIdCate) {
-    //       await loadData(0, 20, debouncedIdCate);
-    //     } else {
-    //       await loadData();
-    //     }
-    //   } catch {}
-    // };
-    // loadingData();
+    
     loadData(0, 20, debouncedItem ? debouncedItem : debouncedIdCate);
   }, [debouncedItem, debouncedIdCate]);
 

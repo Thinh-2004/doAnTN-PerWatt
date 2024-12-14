@@ -589,13 +589,13 @@ const Cart = () => {
                             voucher[cart.productDetail.product.id] || [];
 
                           const matchingPrices = productVoucher.filter(
-                            (v) => cart.productDetail.product.id === v.product.id
+                            (v) =>
+                              cart.productDetail.product.id === v.product.id
                           );
 
                           const isVoucherPrice = productVoucher.some(
                             (check) =>
-                              check.product.id ===
-                              cart.productDetail.product.id
+                              check.product.id === cart.productDetail.product.id
                           );
 
                           const isStatusVoucher = productVoucher.some(

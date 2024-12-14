@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "../../../../../Localhost/Custumize-axios";
 import "./ProfileShopStyle.css";
-import { Box, Button, Card, CardContent, styled, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  styled,
+  TextField,
+} from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import StoreIcon from "@mui/icons-material/Store";
 import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
@@ -24,7 +31,7 @@ const ProfileShop = () => {
     email: "",
     phone: "",
     cccdnumber: "",
-    createdtime : "",
+    createdtime: "",
     imgbackgound: "",
     user: user.id,
     taxcode: "",
@@ -35,7 +42,6 @@ const ProfileShop = () => {
     address: "",
   });
   const [previewAvatar, setPreviewAvatar] = useState("");
-
 
   //Satet lữu dữ liệu của formSelectAddress
   const [dataAddress, setDataAddress] = useState("");
@@ -90,12 +96,15 @@ const ProfileShop = () => {
     const pattenEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const pattenCccd = /^[0-9]{9,12}$/;
 
-    if (!namestore || !address || !email || !phone || !cccdnumber) {
+    if (!namestore && !address && !email && !phone && !cccdnumber) {
       toast.warning("Cần nhập tất cả thông tin");
       return false;
     }
 
-    if (namestore.length < 10) {
+    if (namestore === "") {
+      toast.warning("Vui lòng nhập tên cửa hàng");
+      return false;
+    } else if (namestore.length < 10) {
       toast.warning("Tên cửa hàng phải tối thiểu 10 kí tự");
       return false;
     }
@@ -108,7 +117,10 @@ const ProfileShop = () => {
       return false;
     }
 
-    if (!pattenPhone.test(phone)) {
+    if (phone === "") {
+      toast.warning("Vui lòng nhập số điện thoại");
+      return false;
+    } else if (!pattenPhone.test(phone)) {
       toast.warning("Số điện thoại không hợp lệ");
       return false;
     }
@@ -118,7 +130,10 @@ const ProfileShop = () => {
       return false;
     }
 
-    if (!pattenCccd.test(cccdnumber)) {
+    if (cccdnumber === "") {
+      toast.warning("Vui lòng nhập căn cước công dân");
+      return false;
+    } else if (!pattenCccd.test(cccdnumber)) {
       toast.warning("Căn cước không hợp lệ");
       return false;
     }
@@ -161,7 +176,7 @@ const ProfileShop = () => {
             email: dataStore.email,
             phone: dataStore.phone,
             cccdnumber: dataStore.cccdnumber,
-            createdtime : dataStore.createdtime,
+            createdtime: dataStore.createdtime,
             user: {
               id: user.id,
             },
@@ -179,16 +194,14 @@ const ProfileShop = () => {
             "Content-Type": "multipart/form-data",
           },
         });
-        setTimeout(() => {
-          toast.update(idToast, {
-            render: "Sửa thông tin cửa hàng thành công",
-            type: "success",
-            isLoading: false,
-            autoClose: 5000,
-            closeButton: true,
-          });
-          loadData();
-        }, 500);
+        toast.update(idToast, {
+          render: "Sửa thông tin cửa hàng thành công",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
+        loadData();
       } catch (error) {
         console.log(error);
         if (error.response) {
@@ -244,7 +257,10 @@ const ProfileShop = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Card className=" mt-4 p-3" sx={{backgroundColor: "backgroundElement.children"}}>
+      <Card
+        className=" mt-4 p-3"
+        sx={{ backgroundColor: "backgroundElement.children" }}
+      >
         <div className="row">
           <div className="col-lg-6 col-md-6 col-sm-6 border-end">
             <h3 className="text-center">Thông tin kênh bán hàng của tôi</h3>
@@ -332,10 +348,7 @@ const ProfileShop = () => {
               <div>
                 <div className="d-flex justify-content-center">
                   <img
-                    src={
-                      previewAvatar ||
-                      dataStore.imgbackgound
-                    }
+                    src={previewAvatar || dataStore.imgbackgound}
                     alt="Logo shop"
                     id="img-background"
                     className="rounded-3"
@@ -365,7 +378,10 @@ const ProfileShop = () => {
           </div>
         </CardContent>
       </Card>
-      <Card className=" mt-4 p-3 mb-4" sx={{backgroundColor: "backgroundElement.children"}}>
+      <Card
+        className=" mt-4 p-3 mb-4"
+        sx={{ backgroundColor: "backgroundElement.children" }}
+      >
         <h3 className="text-start">Thông tin chi tiết</h3>
         <span className="p-0 m-0">
           <hr />

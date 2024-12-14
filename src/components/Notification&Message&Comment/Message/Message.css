@@ -1,0 +1,40 @@
+/* Nút chat ở góc dưới bên phải */
+.chat-icon-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.chat-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #007bff;
+  background-color: #fff;
+  padding: 5px;
+}
+
+/* Modal hiển thị phía trên nút chat */
+.chat-modal .modal-dialog {
+  position: fixed;
+  bottom: 50px; /* Cách nút chat */
+  right: 50px; /* Căn sát lề phải */
+  margin: 0;
+  width: 650px; /* Độ rộng Modal (lớn hơn) */
+  max-width: none;
+  z-index: 1050;
+}
+
+.chat-modal .modal-content {
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  height: 550px; /* Chiều cao Modal (nhiều không gian hơn) */
+}
+
+.content-container {
+  text-align: center;
+  padding: 20px;
+}

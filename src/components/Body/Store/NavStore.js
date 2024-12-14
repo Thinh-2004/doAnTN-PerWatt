@@ -257,21 +257,21 @@ const Store = () => {
   };
 
   const loadIsUserFollowStore = async (storeId) => {
-    // var check = await axios.get("/follow/user", {
-    //   params: {
-    //     userId: user.id,
-    //     storeId: storeId,
-    //   },
-    // });
-    // setIsUserFollowStore(check.data);
+    var check = await axios.get("/follow/user", {
+      params: {
+        userId: user.id,
+        storeId: storeId,
+      },
+    });
+    setIsUserFollowStore(check.data);
   };
   const loadTotalFollower = async (storeId) => {
-    // var res = await axios.get("/follow/count", {
-    //   params: {
-    //     storeId: storeId,
-    //   },
-    // });
-    // setTotalFollower(res.data);
+    var res = await axios.get("/follow/count", {
+      params: {
+        storeId: storeId,
+      },
+    });
+    setTotalFollower(res.data);
   };
 
   // Bổ sung follow 2

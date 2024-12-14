@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "../../../../../Localhost/Custumize-axios";
 import {
   Card,
   Table,
@@ -10,7 +11,8 @@ import {
   Col,
   Empty,
 } from "antd";
-import axios from "../../../../../Localhost/Custumize-axios";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale"; // Use Vietnamese locale for formatting
 
 const { Title, Text } = Typography;
 
@@ -21,79 +23,30 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-const formatDate = (dateString) => {
-  const options = { year: "numeric", month: "numeric", day: "numeric" };
-  return new Date(dateString).toLocaleDateString("vi-VN", options);
+const formatDate = (date) => {
+  return format(new Date(date), "  'ngày' dd MMMM 'năm' yyyy 'lúc' HH:mm:ss", {
+    locale: vi,
+  });
 };
 
-const BasicInfoComponent = () => {
+const BasicInfoComponent = ({ savedProducts, id, onDeleteProduct }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(savedProducts);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [discounts, setDiscounts] = useState({});
-  const [voucherInfo, setVoucherInfo] = useState({
-    voucherName: "",
-    startDay: "",
-    endDay: "",
-  });
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 }); // Hiển thị 5 sản phẩm mỗi trang
-  const idStore = localStorage.getItem("idStore");
+  const [voucherDetails, setVoucherDetails] = useState(null);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
 
-  // useEffect(() => {
-  //     const fetchVoucherInfo = async () => {
-  //         try {
-  //             const response = await axios.get(`voucherAdminDetails/list/${idStore}`);
-  //             console.log(response.data);
-  //             setVoucherInfo({
-  //                 voucherName: response.data.vouchername,
-  //                 startDay: formatDate(response.data.startday),
-  //                 endDay: formatDate(response.data.endday),
-  //             });
-  //         } catch (error) {
-  //             console.error("Error fetching voucher info:", error);
-  //         }
-  //     };
-
-  //     if (idVoucherAdmin) {
-  //         fetchVoucherInfo();
-  //     }
-  // }, [idVoucherAdmin]);
-
-  // useEffect(() => {
-  //     const key = `savedProducts_${idVoucherAdmin}`;
-  //     if (products.length > 0) {
-  //         localStorage.setItem(key, JSON.stringify(products));
-  //     } else {
-  //         localStorage.removeItem(key);
-  //     }
-  // }, [products, idVoucherAdmin]);
-  const loadData = async () => {
-    try {
-      const response = await axios.get(`voucherAdminDetails/list/${idStore}`);
-      console.log(response.data);
-      setProducts(response.data);
-      // setVoucherInfo({
-      //   voucherName: response.data.vouchername,
-      //   startDay: formatDate(response.data.startday),
-      //   endDay: formatDate(response.data.endday),
-      // });
-    } catch (error) {
-      console.error("Error fetching voucher info:", error);
-    }
-  };
   useEffect(() => {
-    loadData();
-  }, [idStore]);
+    setProducts(savedProducts);
+  }, [savedProducts]);
 
   const filteredProducts = products.filter((filter) =>
-    filter.productDetail.product.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+    filter.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Group products by category
   const groupedProducts = filteredProducts.reduce((groups, product) => {
-    const category = product.productDetail.categoryName || "Không xác định"; // Chắc chắn có thuộc tính categoryName trong dữ liệu
+    const category = product.category || "Không xác định";
     if (!groups[category]) {
       groups[category] = [];
     }
@@ -101,7 +54,6 @@ const BasicInfoComponent = () => {
     return groups;
   }, {});
 
-  // Chuyển đổi object thành array
   const groupedProductsArray = Object.entries(groupedProducts).map(
     ([category, products]) => ({
       category,
@@ -109,60 +61,78 @@ const BasicInfoComponent = () => {
     })
   );
 
-  const handleDeleteByProductDetail = async (idProductDetail) => {
-    try {
-      await axios.delete(
-        `/voucherAdminDetails/deleteByProductDetail/${idProductDetail}`
-      );
+  useEffect(() => {
+    const fetchVoucherDetails = async () => {
+      try {
+        const response = await axios.get(`/vouchersAdmin/${id}`);
+        setVoucherDetails(response.data); // Cập nhật thông tin voucher
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin voucher:", error);
+        notification.error({
+          message: "Lỗi",
+          description: "Không thể lấy thông tin voucher.",
+        });
+      }
+    };
 
-      const updatedProducts = products.filter(
-        (product) => product.productDetail.id !== idProductDetail
-      );
-      setProducts(updatedProducts);
-
-      notification.success({
-        message: "Thành công",
-        description: "Đã xóa sản phẩm thành công.",
-      });
-    } catch (error) {
-      notification.error({
-        message: "Lỗi",
-        description: "Đã xảy ra lỗi khi xóa sản phẩm! Vui lòng thử lại.",
-      });
-    }
-  };
+    fetchVoucherDetails();
+  }, [id]);
 
   const handleDeleteSelected = async () => {
-    try {
-      // Gửi tất cả yêu cầu xóa đồng thời
-      await Promise.all(
-        selectedRowKeys.map((idProductDetail) =>
-          axios.delete(
-            `/voucherAdminDetails/deleteByProductDetail/${idProductDetail}`
-          )
-        )
-      );
-
-      // Lọc danh sách sản phẩm để loại bỏ những sản phẩm đã xóa
-      const updatedProducts = products.filter(
-        (product) => !selectedRowKeys.includes(product.productDetail.id)
-      );
-
-      // Cập nhật lại state products
-      setProducts(updatedProducts);
-
-      // Xóa danh sách các sản phẩm đã chọn
-      setSelectedRowKeys([]);
-
-      notification.success({
-        message: "Thành công",
-        description: "Đã xóa các sản phẩm được chọn thành công.",
+    // Kiểm tra xem có sản phẩm nào được chọn không
+    if (selectedRowKeys.length === 0) {
+      notification.warning({
+        message: "Cảnh báo",
+        description: "Vui lòng chọn ít nhất một sản phẩm để xóa.",
       });
+      return; // Dừng lại nếu không có sản phẩm nào được chọn
+    }
+
+    const updatedProducts = savedProducts.filter(
+      (product) => !selectedRowKeys.includes(product.id)
+    );
+
+    // Cập nhật lại danh sách sản phẩm đã xóa trên localStorage
+    const key = `savedProducts_${id}`;
+    if (updatedProducts.length > 0) {
+      localStorage.setItem(key, JSON.stringify(updatedProducts));
+    } else {
+      localStorage.removeItem(key);
+    }
+
+    // Hiển thị thông báo thành công
+    notification.success({
+      message: "Thành công",
+      description: "Xóa thành công.",
+    });
+
+    // Gọi API để xóa các sản phẩm đã chọn khỏi cơ sở dữ liệu
+    try {
+      await Promise.all(
+        selectedRowKeys.map(async (idProduct) => {
+          const response = await axios.delete(
+            `/voucherAdminDetails/deleteByProduct/${idProduct}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (response.status !== 200) {
+            throw new Error(`Không thể xóa sản phẩm có id: ${idProduct}`);
+          }
+        })
+      );
+      console.log("Các sản phẩm đã được xóa khỏi cơ sở dữ liệu");
+      // Sau khi xóa thành công, gọi lại hàm onDeleteProduct
+      onDeleteProduct(selectedRowKeys); // Đồng bộ với widget
+
+      setSelectedRowKeys([]); // Xóa danh sách các sản phẩm đã chọn
     } catch (error) {
       notification.error({
         message: "Lỗi",
-        description:
-          "Đã xảy ra lỗi khi xóa các sản phẩm đã chọn! Vui lòng thử lại.",
+        description: `Có lỗi xảy ra khi xóa sản phẩm: ${error.message}`,
       });
     }
   };
@@ -174,51 +144,57 @@ const BasicInfoComponent = () => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
-  const handleDiscountChange = async (id, value) => {
-    const discountValue = value || 0;
-    const updatedDiscounts = { ...discounts, [id]: discountValue };
-    setDiscounts(updatedDiscounts);
-
-    const updatedProducts = products.map((product) => {
-      if (product.productDetail.id === id) {
-        return {
-          ...product,
-          discount: discountValue,
-          discountPrice: product.originalPrice * (1 - discountValue / 100), // Tính lại giá sau khi giảm nếu cần
-        };
-      }
-      return product;
-    });
-    setProducts(updatedProducts);
-  };
-
   const handleUpdateDiscount = async () => {
     try {
-      for (const [idProductDetail, discount] of Object.entries(discounts)) {
-        // Gửi giá giảm mới về backend
-        await axios.put(
-          `/voucherAdminDetails/updateDiscountByProductDetail/${idProductDetail}`,
-          null, // Không cần gửi body, sử dụng query params thay thế
-          {
-            params: { newDiscountPrice: discount },
-          }
-        );
+      for (const [idProduct, discount] of Object.entries(discounts)) {
+        const product = products.find((p) => p.id === parseInt(idProduct));
+        const discountPrice = product?.originalPrice * (1 - discount / 100);
+
+        if (product) {
+          await axios.put(
+            `/voucherAdminDetails/updateDiscountByProduct/${idProduct}`,
+            null,
+            {
+              params: { newDiscountPrice: discountPrice },
+            }
+          );
+        }
       }
 
       notification.success({
         message: "Thành công",
         description: "Cập nhật giảm giá thành công.",
       });
-      loadData();
-      setDiscounts({}); // Reset discounts after successful update
+
+      setDiscounts({});
     } catch (error) {
-      const errorMessage = error.response ? error.response.data : error.message;
-      console.error("Lỗi khi cập nhật giảm giá:", errorMessage);
       notification.error({
         message: "Lỗi",
-        description: `Đã xảy ra lỗi khi cập nhật giảm giá! Chi tiết: ${errorMessage}`,
+        description: "Đã xảy ra lỗi khi cập nhật giảm giá! Vui lòng thử lại.",
       });
     }
+  };
+
+  const handleDiscountChange = (id, value) => {
+    const discountValue = parseFloat(value) || 0;
+
+    const updatedDiscounts = { ...discounts, [id]: discountValue };
+    setDiscounts(updatedDiscounts);
+
+    const updatedProducts = products.map((product) => {
+      if (product.id === id) {
+        const originalPrice = product.originalPrice;
+        const discountPrice = originalPrice * (1 - discountValue / 100);
+        return {
+          ...product,
+          discount: discountValue,
+          discountPrice: discountPrice,
+        };
+      }
+      return product;
+    });
+
+    setProducts(updatedProducts);
   };
 
   const handleTableChange = (pagination) => {
@@ -234,18 +210,25 @@ const BasicInfoComponent = () => {
         <Col span={12}>
           <Text>
             Loại chương trình khuyến mãi:{" "}
-            <strong>{voucherInfo.voucherName}</strong>
+            <strong>
+              {voucherDetails ? voucherDetails.vouchername : "Loading..."}
+            </strong>
           </Text>
         </Col>
         <Col span={12}>
           <Text>
             Thời gian khuyến mãi:{" "}
             <strong>
-              {voucherInfo.startDay} - {voucherInfo.endDay}
+              {voucherDetails
+                ? `${formatDate(voucherDetails.startday)} - ${formatDate(
+                    voucherDetails.endday
+                  )}`
+                : "Loading..."}
             </strong>
           </Text>
         </Col>
       </Row>
+
       <Input
         placeholder="Tìm kiếm..."
         value={searchTerm}
@@ -254,13 +237,8 @@ const BasicInfoComponent = () => {
       />
       <Row gutter={16} style={{ marginBottom: "16px" }}>
         <Col>
-          <Button
-            type="primary"
-            danger
-            onClick={handleDeleteSelected}
-            disabled={selectedRowKeys.length === 0}
-          >
-            Xóa sản phẩm đã chọn
+          <Button onClick={handleDeleteSelected}>
+            Xóa các sản phẩm đã chọn
           </Button>
         </Col>
         <Col>
@@ -299,95 +277,54 @@ const BasicInfoComponent = () => {
                     >
                       <input
                         type="checkbox"
-                        checked={selectedRowKeys.includes(
-                          record.productDetail.id
-                        )}
-                        onChange={() =>
-                          handleSelectRow(record.productDetail.id)
-                        }
+                        checked={selectedRowKeys.includes(record.id)}
+                        onChange={() => handleSelectRow(record.id)}
                         style={{ marginRight: "8px" }}
                       />
                       <img
-                        src={record.productDetail.product.images[0].imagename}
-                        alt={record.productDetail.product.name}
+                        src={record.imgSrc}
+                        alt={record.name}
                         style={{ width: "50px", marginRight: "8px" }}
                         className="rounded-3"
                       />
-                      {record.productDetail.product.name}
+                      {record.name}
                     </span>
-                  ),
-                },
-                {
-                  title: "Tên phân loại",
-                  dataIndex: "name",
-                  key: "name",
-                  render: (text, record) => (
-                    <>
-                      <img
-                        src={record.productDetail.imagedetail}
-                        alt={record.productDetail.namedetail}
-                        style={{ width: "50px", marginRight: "8px" }}
-                        className="rounded-3"
-                      />
-                      {record.productDetail.namedetail ? (
-                        <span className="">
-                          {record.productDetail.namedetail}
-                        </span>
-                      ) : (
-                        <div className="text-start ">
-                          <strong>Không phân loại</strong>
-                        </div>
-                      )}
-                    </>
                   ),
                 },
                 {
                   title: "Giá gốc",
                   dataIndex: "originalPrice",
                   key: "originalPrice",
-                  render: (price, record) =>
-                    formatPrice(record.productDetail.price),
-                },
-                {
-                  title: "Giá giảm",
-                  dataIndex: "discountPrice",
-                  key: "discountPrice",
-                  render: (price, record) => {
-                    //Lấy giá gốc
-                    const priceDetail = record.productDetail.price;
-                    //Lấy phần trăm giảm giá
-                    const discountPrice = record.discountprice;
-                    //Tính ra giá giảm
-                    const priceDown = priceDetail * (discountPrice / 100);
-                    //Tính giá sau khi giảm
-                    const result = priceDetail - priceDown;
-
-                    return formatPrice(result);
-                  },
+                  render: (text) => formatPrice(text),
                 },
                 {
                   title: "Giảm giá (%)",
+                  dataIndex: "discount",
+                  key: "discount",
                   render: (text, record) => (
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={
-                        discounts[record.productDetail.id] ||
-                        record.discountprice ||
-                        0
-                      }
+                    <Input
+                      value={discounts[record.id] || text || ""}
                       onChange={(e) =>
-                        handleDiscountChange(
-                          record.productDetail.id,
-                          e.target.value
-                        )
+                        handleDiscountChange(record.id, e.target.value)
                       }
-                      className="w-16 p-1 border rounded-md"
+                      style={{ width: 80 }}
                     />
                   ),
                 },
+                {
+                  title: "Giá sau giảm",
+                  dataIndex: "discountPrice",
+                  key: "discountPrice",
+                  render: (text) => formatPrice(text),
+                },
               ]}
+              pagination={{
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total: fill.products.length,
+              }}
+              onChange={handleTableChange}
+              rowKey="id"
             />
           </React.Fragment>
         ))
