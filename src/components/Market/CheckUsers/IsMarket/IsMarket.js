@@ -28,6 +28,7 @@ import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
 import ManageHistoryOutlinedIcon from "@mui/icons-material/ManageHistoryOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import ShopOutlinedIcon from "@mui/icons-material/ShopOutlined";
+import dayjs from "dayjs";
 
 const IsMarket = () => {
   const user = localStorage.getItem("user")
@@ -70,6 +71,28 @@ const IsMarket = () => {
       checkban(infoStore.id);
     }
   }, [infoStore]);
+
+  //Hàm xử lý tính toán ngày
+  const calculateDifference = (startDay, endDay) => {
+    const start = dayjs(startDay);
+    const end = dayjs(endDay);
+
+    // Tính số năm
+    const years = end.diff(start, "year");
+    if (years >= 1) {
+      return `${years} năm`;
+    }
+
+    // Tính số tháng
+    const months = end.diff(start, "month");
+    if (months >= 1) {
+      return `${months} tháng`;
+    }
+
+    // Tính số ngày
+    const days = end.diff(start, "day");
+    return `${days} ngày`;
+  };
 
   return (
     <>
@@ -277,10 +300,28 @@ const IsMarket = () => {
             <div className="mt-3 mb-3">
               <Alert severity="error">
                 <AlertTitle>Cảnh báo cửa hàng</AlertTitle>
-                {infoStore.reason}
-                <div className="d-flex justify-content-end">
-                  <storng>Hiệu lực</storng>(
-                  <label htmlFor="">{infoStore.status}</label>)
+                <div className="w-100">{infoStore.reason}</div>
+                <div className="d-flex justify-content-between">
+                  <div className="">
+                    Thời gian:{" "}
+                    {infoStore.startday
+                      ? dayjs(infoStore.startday).format("DD/MM/YYYY")
+                      : "Vĩnh viễn"}
+                    &nbsp;-&nbsp;
+                    {infoStore.endday
+                      ? dayjs(infoStore.endday).format("DD/MM/YYYY")
+                      : "Vĩnh viễn"}
+                  </div>
+                  <div className="mx-3">
+                    Hiệu lực(
+                    {infoStore.endday && infoStore.startday
+                      ? calculateDifference(
+                          infoStore.startday,
+                          infoStore.endday
+                        )
+                      : "Không giới hạn"}
+                    )
+                  </div>
                 </div>
               </Alert>
             </div>

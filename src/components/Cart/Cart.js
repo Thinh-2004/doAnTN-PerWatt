@@ -52,6 +52,59 @@ const Cart = () => {
   };
   const open = Boolean(anchorEl);
 
+  useEffect(() => {
+    const thanhPho = async () => {
+      try {
+        const quanHuyen = 252;
+        const langXa = 2042;
+        const response = await fetch(
+          "https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Token: "ece58b2c-b0da-11ef-9083-dadc35c0870d",
+            },
+          }
+        );
+        const data = await response.json();
+
+        const response2 = await axios.get(
+          "https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Token: "ece58b2c-b0da-11ef-9083-dadc35c0870d",
+            },
+            params: {
+              province_id: quanHuyen,
+            },
+          }
+        );
+
+        const response3 = await axios.post(
+          "https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id",
+          {
+            district_id: langXa,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Token: "ece58b2c-b0da-11ef-9083-dadc35c0870d",
+            },
+          }
+        );
+        console.log(data.data);
+        console.log(response2.data.data);
+        console.log(response3.data.data);
+      } catch (error) {
+        console.error("Error fetching provinces:", error);
+      }
+    };
+
+    thanhPho();
+  }, []);
+
   tailspin.register();
 
   const groupByStore = (products) => {
@@ -613,7 +666,9 @@ const Cart = () => {
                               cart.productDetail.price * cart.quantity -
                                 priceDown
                             );
-                            console.log(result);
+                            {
+                              /* console.log(result); */
+                            }
                           }
                           return (
                             <div className="d-flex mt-3 mb-3" key={cart.id}>

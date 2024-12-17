@@ -144,7 +144,7 @@ const TableProduct = ({ data, isRefeshListProduct }) => {
       return false;
     }
 
-    if (!dates[id]?.startday) {
+    if (!dates[id]?.startday && productStates[id] !== "Vĩnh viễn") {
       toast.warning("Vui lòng chọn ngày bắt đầu");
       return false;
     } else {
@@ -175,7 +175,7 @@ const TableProduct = ({ data, isRefeshListProduct }) => {
       }
     }
 
-    if (!dates[id]?.endday) {
+    if (!dates[id]?.endday && productStates[id] !== "Vĩnh viễn") {
       toast.warning("Vui lòng ngày kết thúc");
       return false;
     } else {
@@ -218,8 +218,12 @@ const TableProduct = ({ data, isRefeshListProduct }) => {
               const productBanToSend = {
                 block: checkedStates[id],
                 status: productStates[id],
-                startday: dayjs(dates[id]?.startday).format("YYYY-MM-DD"),
-                endday: dayjs(dates[id]?.endday).format("YYYY-MM-DD"),
+                startday: dates[id]?.startday
+                  ? dayjs(dates[id]?.startday).format("YYYY-MM-DD")
+                  : null,
+                endday: dates[id]?.endday
+                  ? dayjs(dates[id]?.endday).format("YYYY-MM-DD")
+                  : null,
                 reason: reason,
               };
               // console.log(productBanToSend);

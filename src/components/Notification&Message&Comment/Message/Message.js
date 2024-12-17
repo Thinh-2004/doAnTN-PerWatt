@@ -4,14 +4,13 @@ import "./Message.css";
 import axios from "../../../Localhost/Custumize-axios"; // Tùy chỉnh lại theo đường dẫn của bạn
 import ChatSeller from "./ChatSeller";
 import ChatBuyer from "./ChatBuyer";
+import { useMatch } from "react-router-dom";
 
 // Placeholder Components for ChatBuyer and ChatSeller
 
 const ChatInterface = ({ isOpenChatBox, store, user }) => {
   const [show, setShow] = useState(false); // Trạng thái hiển thị Modal
-  const [role, setRole] = useState(null); // Vai trò của người dùng
-  const [loading, setLoading] = useState(true); // Trạng thái đang tải
-  const token = localStorage.getItem("hadfjkdshf"); // Lấy token từ localStorage
+  const urlSeller = useMatch("profileMarket/*");
 
   useEffect(() => {
     if (isOpenChatBox) {
@@ -27,25 +26,25 @@ const ChatInterface = ({ isOpenChatBox, store, user }) => {
     setShow(false);
   }; // Đóng Modal
 
-  useEffect(() => {
-    const loadUserInfo = async () => {
-      try {
-        if (!token) {
-          setLoading(true);
-          return;
-        }
-        const res = await axios.get(`/userProFile/myInfo`);
-        setRole(res.data.rolePermission.role.namerole); // Lấy role người dùng
-      } catch (error) {
-        console.error("Lỗi khi lấy thông tin người dùng:", error);
-        setRole(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const loadUserInfo = async () => {
+  //     try {
+  //       if (!token) {
+  //         setLoading(true);
+  //         return;
+  //       }
+  //       const res = await axios.get(`/userProFile/myInfo`);
+  //       setRole(res.data.rolePermission.role.namerole); // Lấy role người dùng
+  //     } catch (error) {
+  //       console.error("Lỗi khi lấy thông tin người dùng:", error);
+  //       setRole(null);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    loadUserInfo();
-  }, [token]);
+  //   loadUserInfo();
+  // }, [token]);
 
   return (
     <>
@@ -72,11 +71,9 @@ const ChatInterface = ({ isOpenChatBox, store, user }) => {
         </Modal.Header>
         <Modal.Body>
           <div className="">
-            {loading ? (
-              <p>Đang tải thông tin...</p>
-            ) : role === "Buyer" ? (
+            {!urlSeller ? (
               <ChatBuyer infoStore={store} /> // Hiển thị giao diện ChatBuyer
-            ) : role === "Seller" ? (
+            ) : urlSeller ? (
               <ChatSeller infoUser={user} /> // Hiển thị giao diện ChatSeller
             ) : (
               <p>Lỗi: Không xác định được vai trò của người dùng.</p>

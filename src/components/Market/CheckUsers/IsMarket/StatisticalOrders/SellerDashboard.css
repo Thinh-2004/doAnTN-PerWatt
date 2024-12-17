@@ -133,8 +133,6 @@
   margin-bottom: 2rem;
 }
 
-
-
 .productImageClass {
   display: block;
   margin-left: auto;
@@ -167,7 +165,7 @@
 }
 
 .productSoldClass {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   /* color: #71717a; zinc-500 */
 }
 
@@ -213,7 +211,7 @@
   max-width: 100%; /* Tối đa chiều rộng là 50% */
 }
 
-.toplist-grid{
+.toplist-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
@@ -228,3 +226,62 @@
   padding: 16px; /* Điều chỉnh padding nếu cần */
 }
 
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
+.product-table th,
+.product-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left; /* Căn chữ sang trái */
+}
+
+.product-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+  color: #333;
+}
+
+.product-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.product-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.product-table img {
+  max-width: 50px;
+  max-height: 50px;
+  object-fit: cover;
+}
+
+.text-danger {
+  color: black;
+}
+
+.sort-container {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+.sort-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.sort-button:hover {
+  background-color: #0056b3;
+}

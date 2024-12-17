@@ -32,6 +32,7 @@ const PayBuyer = () => {
   const [resetForm, setResetForm] = useState(false);
   const [totalAmountProduct, setTotalAmountProduct] = useState(0);
   const [finalTotal, setFinalTotal] = useState(0);
+  const [feeShip, setFeeShip] = useState(0);
 
   const [voucher, setVoucher] = useState(null);
   const [voucherS, setVoucherS] = useState(0);
@@ -278,8 +279,8 @@ const PayBuyer = () => {
 
       const groupedProducts = groupByStore(products);
 
-      let feeShip = 0;
-      let leadtime = [];
+      // let feeShip = 0;
+      // let leadtime = [];
 
       for (const storeId in groupedProducts) {
         const { products: storeProducts, store } = groupedProducts[storeId];
@@ -313,191 +314,185 @@ const PayBuyer = () => {
           return sum + priceAfterDiscount;
         }, 0);
 
-        const addressUser = await axios.get(
-          `shippingInfoId/${selectedShippingInfo}`
-        );
+        // const addressUser = await axios.get(
+        //   `shippingInfoId/${selectedShippingInfo}`
+        // );
 
-        const addressPartFroms = store.address
-          .split(",")
-          .map((part) => part.trim());
+        // const addressPartFroms = store.address
+        //   .split(",")
+        //   .map((part) => part.trim());
 
-        let phuong = "";
-        let quan = "";
-        let thanhPho = "";
+        // let phuong = "";
+        // let quan = "";
+        // let thanhPho = "";
 
-        if (addressPartFroms.length === 3) {
-          phuong = addressPartFroms[0];
-          quan = addressPartFroms[1];
-          thanhPho = addressPartFroms[2];
-        } else if (addressPartFroms.length === 4) {
-          phuong = addressPartFroms[1];
-          quan = addressPartFroms[2];
-          thanhPho = addressPartFroms[3];
-        } else if (addressPartFroms.length === 5) {
-          phuong = addressPartFroms[2];
-          quan = addressPartFroms[3];
-          thanhPho = addressPartFroms[4];
-        }
+        // if (addressPartFroms.length === 3) {
+        //   phuong = addressPartFroms[0];
+        //   quan = addressPartFroms[1];
+        //   thanhPho = addressPartFroms[2];
+        // } else if (addressPartFroms.length === 4) {
+        //   phuong = addressPartFroms[1];
+        //   quan = addressPartFroms[2];
+        //   thanhPho = addressPartFroms[3];
+        // } else if (addressPartFroms.length === 5) {
+        //   phuong = addressPartFroms[2];
+        //   quan = addressPartFroms[3];
+        //   thanhPho = addressPartFroms[4];
+        // }
 
-        const addressPartsTo = addressUser.data.address
-          .split(",")
-          .map((part) => part.trim());
+        // const addressPartsTo = addressUser.data.address
+        //   .split(",")
+        //   .map((part) => part.trim());
 
-        let to_ward_name = "";
-        let to_district_name = "";
-        let to_province_name = "";
+        // let to_ward_name = "";
+        // let to_district_name = "";
+        // let to_province_name = "";
 
-        if (addressPartsTo.length === 3) {
-          to_ward_name = addressPartsTo[0];
-          to_district_name = addressPartsTo[1];
-          to_province_name = addressPartsTo[2];
-        } else if (addressPartsTo.length === 4) {
-          to_ward_name = addressPartsTo[1];
-          to_district_name = addressPartsTo[2];
-          to_province_name = addressPartsTo[3];
-        } else if (addressPartsTo.length === 5) {
-          to_ward_name = addressPartsTo[2];
-          to_district_name = addressPartsTo[3];
-          to_province_name = addressPartsTo[4];
-        }
+        // if (addressPartsTo.length === 3) {
+        //   to_ward_name = addressPartsTo[0];
+        //   to_district_name = addressPartsTo[1];
+        //   to_province_name = addressPartsTo[2];
+        // } else if (addressPartsTo.length === 4) {
+        //   to_ward_name = addressPartsTo[1];
+        //   to_district_name = addressPartsTo[2];
+        //   to_province_name = addressPartsTo[3];
+        // } else if (addressPartsTo.length === 5) {
+        //   to_ward_name = addressPartsTo[2];
+        //   to_district_name = addressPartsTo[3];
+        //   to_province_name = addressPartsTo[4];
+        // }
 
-        const ghnPayload = {
-          payment_type_id: 2,
-          note: "",
-          required_note: "KHONGCHOXEMHANG",
-          return_phone: store.phone,
-          return_address: store.address,
-          return_district_id: "",
-          return_ward_code: "",
-          client_order_code: "",
-          from_name: store.namestore,
-          from_phone: store.phone,
-          from_address: store.address,
-          from_ward_name: phuong,
-          from_district_name: quan,
-          from_province_name: thanhPho,
-          to_name: user.fullname,
-          to_phone: addressUser.data.user.phone,
-          to_address: addressUser.data.address,
-          to_ward_name: to_ward_name,
-          to_district_name: to_district_name,
-          to_province_name: to_province_name,
-          cod_amount: 0,
-          content: "",
-          weight: 200,
-          length: 1,
-          width: 20,
-          height: 10,
-          cod_failed_amount: 10000,
-          pick_station_id: 1444,
-          deliver_station_id: 0,
-          insurance_value: totalAmount,
-          service_id: 2,
-          service_type_id: 2,
-          coupon: "",
-          pickup_time: 1733758226,
-          pick_shift: [1],
-          items: storeProducts.map((product) => ({
-            name:
-              product.productDetail.product.name +
-              " " +
-              product.productDetail?.namedetail,
-            code: String(product.productDetail.id),
-            quantity: product.quantity,
-            price: product.productDetail.price,
-            length: 12,
-            width: 12,
-            weight: 1200,
-            height: 12,
-            category: {
-              level1: "Sản phẩm",
-            },
-          })),
+        // const ghnPayload = {
+        //   payment_type_id: 2,
+        //   note: "",
+        //   required_note: "KHONGCHOXEMHANG",
+        //   return_phone: store.phone,
+        //   return_address: store.address,
+        //   return_district_id: "",
+        //   return_ward_code: "",
+        //   client_order_code: "",
+        //   from_name: store.namestore,
+        //   from_phone: store.phone,
+        //   from_address: store.address,
+        //   from_ward_name: phuong,
+        //   from_district_name: quan,
+        //   from_province_name: thanhPho,
+        //   to_name: user.fullname,
+        //   to_phone: addressUser.data.user.phone,
+        //   to_address: addressUser.data.address,
+        //   to_ward_name: to_ward_name,
+        //   to_district_name: to_district_name,
+        //   to_province_name: to_province_name,
+        //   cod_amount: 0,
+        //   content: "",
+        //   weight: 200,
+        //   length: 1,
+        //   width: 20,
+        //   height: 10,
+        //   cod_failed_amount: 10000,
+        //   pick_station_id: 1444,
+        //   deliver_station_id: 0,
+        //   insurance_value: totalAmount,
+        //   service_id: 2,
+        //   service_type_id: 2,
+        //   coupon: "",
+        //   pickup_time: 1733758226,
+        //   pick_shift: [1],
+        //   items: storeProducts.map((product) => ({
+        //     name:
+        //       product.productDetail.product.name +
+        //       " " +
+        //       product.productDetail?.namedetail,
+        //     code: String(product.productDetail.id),
+        //     quantity: product.quantity,
+        //     price: product.productDetail.price,
+        //     length: 12,
+        //     width: 12,
+        //     weight: 1200,
+        //     height: 12,
+        //     category: {
+        //       level1: "Sản phẩm",
+        //     },
+        //   })),
+        // };
+
+        // try {
+        //   console.log("Payload gửi tới GHN: ", ghnPayload);
+        //   const response = await axios.post(
+        //     "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",
+        //     ghnPayload,
+        //     {
+        //       headers: {
+        //         "Content-Type": "application/json",
+        //         ShopId: "195541",
+        //         Token: "ece58b2c-b0da-11ef-9083-dadc35c0870d",
+        //         // Authorization: "Bearer ece58b2c-b0da-11ef-9083-dadc35c0870d",
+        //       },
+        //     }
+        //   );
+        //   console.log("Kết quả trả về từ GHN: ", response.data);
+        //   console.log("Total fee: ", response.data.data.total_fee);
+
+        //   feeShip += Number(response.data.data.total_fee);
+
+        //   if (!Array.isArray(leadtime)) {
+        //     leadtime = [];
+        //   }
+
+        //   leadtime = [...leadtime, response.data.data.expected_delivery_time];
+
+        // } catch (error) {
+        //   console.error(error);
+        //   return;
+        // }
+
+        const order = {
+          user: { id: user.id },
+          paymentmethod: { id: selectedPaymentMethod },
+          shippinginfor: { id: selectedShippingInfo },
+          store: { id: storeId },
+          paymentdate: new Date().toISOString(),
+          orderstatus: "Đang chờ duyệt",
+          totalamount: totalAmount + feeShip,
+          voucher: voucher[0]?.voucher?.id
+            ? { id: voucher[0].voucher.id }
+            : null,
         };
 
-        try {
-          console.log("Payload gửi tới GHN: ", ghnPayload);
-          const response = await axios.post(
-            "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",
-            ghnPayload,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                ShopId: "195541",
-                Token: "ece58b2c-b0da-11ef-9083-dadc35c0870d",
-                // Authorization: "Bearer ece58b2c-b0da-11ef-9083-dadc35c0870d",
-              },
-            }
-          );
-          console.log("Kết quả trả về từ GHN: ", response.data);
-          console.log("Total fee: ", response.data.data.total_fee);
+        const orderDetails = storeProducts.map((product) => ({
+          productDetail: { id: product.productDetail.id },
+          quantity: product.quantity,
+          price: product.productDetail.price,
+          status: null,
+        }));
 
-          feeShip += Number(response.data.data.total_fee);
-
-          if (!Array.isArray(leadtime)) {
-            leadtime = [];
-          }
-
-          leadtime = [...leadtime, response.data.data.expected_delivery_time];
-
-          const order = {
-            user: { id: user.id },
-            paymentmethod: { id: selectedPaymentMethod },
-            shippinginfor: { id: selectedShippingInfo },
-            store: { id: storeId },
-            paymentdate: new Date().toISOString(),
-            receivedate: response.data.data.expected_delivery_time
-              ? new Date(
-                  response.data.data.expected_delivery_time
-                ).toISOString()
-              : null,
-            orderstatus: "Đang chờ duyệt",
-            totalamount: totalAmount + feeShip,
-            voucher: voucher[0]?.voucher?.id
-              ? { id: voucher[0].voucher.id }
-              : null,
-          };
-
-          const orderDetails = storeProducts.map((product) => ({
-            productDetail: { id: product.productDetail.id },
-            quantity: product.quantity,
-            price: product.productDetail.price,
-            status: null,
-          }));
-
-          await axios.post("/api/orderCreate", {
-            order,
-            orderDetails,
-          });
-        } catch (error) {
-          console.error(error);
-          return;
-        }
+        await axios.post("/api/orderCreate", {
+          order,
+          orderDetails,
+        });
       }
 
       navigate("/order");
 
-      const allDatesAreSame = leadtime.every((time) => time === leadtime[0]);
+      // const allDatesAreSame = leadtime.every((time) => time === leadtime[0]);
 
-      const message = () => {
-        if (allDatesAreSame) {
-          return `Đặt hàng thành công với thời gian nhận hàng dự kiến là: ${formatDate(
-            leadtime[0]
-          )}`;
-        }
+      // const message = () => {
+      //   if (allDatesAreSame) {
+      //     return `Đặt hàng thành công với thời gian nhận hàng dự kiến là: ${formatDate(
+      //       leadtime[0]
+      //     )}`;
+      //   }
 
-        return `Đặt hàng thành công với thời gian nhận hàng dự kiến là: ${leadtime
-          .map((time) => formatDate(time))
-          .join(", ")}`;
-      };
+      //   return `Đặt hàng thành công với thời gian nhận hàng dự kiến là: ${leadtime
+      //     .map((time) => formatDate(time))
+      //     .join(", ")}`;
+      // };
 
       toast.update(loadingGHN, {
-        render: `${message()} và tổng phí ship là: ${
-          formatPrice(feeShip) + " VNĐ"
-        }`,
+        render: "Đặt hàng thành công",
         type: "success",
         isLoading: false,
-        autoClose: 10000,
+        autoClose: 5000,
         closeButton: true,
       });
     } catch (error) {
@@ -506,182 +501,6 @@ const PayBuyer = () => {
       return;
     }
   };
-
-  // const handleFeeShip = async () => {
-  //   const loadingGHN = toast.loading("Đang đặt hàng");
-
-  //   try {
-  //     if (!selectedShippingInfo) {
-  //       toast.error("Vui lòng chọn địa chỉ nhận hàng!");
-  //       return;
-  //     }
-
-  //     const groupedProducts = groupByStore(products);
-
-  //     let feeShip = 0;
-  //     let leadtime = [];
-
-  //     for (const storeId in groupedProducts) {
-  //       const { products: storeProducts, store } = groupedProducts[storeId];
-
-  //       if (!storeProducts.length) continue;
-
-  //       const outOfStockProduct = storeProducts.find(
-  //         (product) => product.productDetail.quantity === 0
-  //       );
-
-  //       if (outOfStockProduct) {
-  //         toast.error(
-  //           "Sản phẩm đã có người mua trước, vui lòng mua sản phẩm khác hoặc mua lại sau"
-  //         );
-  //         return;
-  //       }
-
-  //       const totalAmount = storeProducts.reduce((sum, product) => {
-  //         const productPrice =
-  //           voucherData.id === product.productDetail.id
-  //             ? product.productDetail.price *
-  //               product.quantity *
-  //               (1 - voucherData.discountprice / 100)
-  //             : product.productDetail.price * product.quantity;
-  //         return sum + productPrice;
-  //       }, 0);
-
-  //       const addressUser = await axios.get(
-  //         `shippingInfoId/${selectedShippingInfo}`
-  //       );
-
-  //       const ghnPayload = {
-  //         payment_type_id: 2,
-  //         note: "",
-  //         required_note: "KHONGCHOXEMHANG",
-  //         return_phone: store.phone,
-  //         return_address: store.address,
-  //         return_district_id: null,
-  //         return_ward_code: "",
-  //         client_order_code: "",
-  //         to_name: addressUser.data.user.fullname,
-  //         to_phone: addressUser.data.user.phone,
-  //         to_address: addressUser.data.address,
-  //         to_ward_code: "",
-  //         to_district_id: "",
-  //         cod_amount: totalAmount,
-  //         content: "ABCDEF",
-  //         weight: 200,
-  //         length: 15,
-  //         width: 15,
-  //         height: 15,
-  //         pick_station_id: 0,
-  //         insurance_value: totalAmount,
-  //         service_id: 0,
-  //         service_type_id: 2,
-  //         coupon: null,
-  //         pick_shift: [2],
-  //         items: storeProducts.map((product) => ({
-  //           name:
-  //             product.productDetail.product.name +
-  //             " " +
-  //             product.productDetail?.namedetail,
-  //           code: String(product.productDetail.id),
-  //           quantity: product.quantity,
-  //           price: product.productDetail.price,
-  //           length: 12,
-  //           width: 12,
-  //           height: 12,
-  //           category: {
-  //             level1: "Sản phẩm",
-  //           },
-  //         })),
-  //       };
-
-  //       try {
-  //         console.log("Payload gửi tới GHN: ", ghnPayload);
-  //         const response = await axios.post(
-  //           "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/preview",
-  //           ghnPayload,
-  //           {
-  //             headers: {
-  //               "Content-Type": "application/json",
-  //               ShopId: "195541",
-  //               Token: "ece58b2c-b0da-11ef-9083-dadc35c0870d",
-  //             },
-  //           }
-  //         );
-  //         console.log("Kết quả trả về từ GHN: ", response.data);
-  //         console.log("Total fee: ", response.data.data.total_fee);
-
-  //         feeShip += Number(response.data.data.total_fee);
-
-  //         if (!Array.isArray(leadtime)) {
-  //           leadtime = [];
-  //         }
-
-  //         leadtime = [...leadtime, response.data.data.expected_delivery_time];
-  //       } catch (error) {
-  //         console.error("Error: ", error);
-  //         return;
-  //       }
-
-  //       const order = {
-  //         user: { id: user.id },
-  //         paymentmethod: { id: selectedPaymentMethod },
-  //         shippinginfor: { id: selectedShippingInfo },
-  //         store: { id: storeId },
-  //         paymentdate: new Date().toISOString(),
-  //         orderstatus: "Đang chờ duyệt",
-  //         totalamount: totalAmount + feeShip,
-  //       };
-
-  //       const orderDetails = storeProducts.map((product) => ({
-  //         productDetail: { id: product.productDetail.id },
-  //         quantity: product.quantity,
-  //         price: product.productDetail.price,
-  //         status: null,
-  //       }));
-
-  //       await axios.post("/api/orderCreate", {
-  //         order,
-  //         orderDetails,
-  //       });
-  //     }
-
-  //     navigate("/order");
-
-  //     const allDatesAreSame = leadtime.every((time) => time === leadtime[0]);
-
-  //     const message = () => {
-  //       if (allDatesAreSame) {
-  //         return `Đặt hàng thành công với thời gian nhận hàng dự kiến là: ${formatDate(
-  //           leadtime[0]
-  //         )}`;
-  //       }
-
-  //       return `Đặt hàng thành công với thời gian nhận hàng dự kiến là: ${leadtime
-  //         .map((time) => formatDate(time))
-  //         .join(", ")}`;
-  //     };
-
-  //     console.log(feeShip);
-
-  //     // toast.update(loadingGHN, {
-  //     //   render: `${message()} và tổng phí ship là: ${
-  //     //     formatPrice(feeShip) + " VNĐ"
-  //     //   }`,
-  //     //   type: "success",
-  //     //   isLoading: false,
-  //     //   autoClose: 10000,
-  //     //   closeButton: true,
-  //     // });
-  //   } catch (error) {
-  //     console.error("Lỗi: ", error);
-  //     toast.error("Đặt hàng thất bại!");
-  //     return;
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   handleFeeShip();
-  // }, [selectedShippingInfo]);
 
   const handleVnPay = async () => {
     try {
@@ -836,6 +655,75 @@ const PayBuyer = () => {
   };
 
   useEffect(() => {
+    const feeShipCalculator = async () => {
+      try {
+        // const groupedProducts = groupByStore(products);
+
+        // for (const storeId in groupedProducts) {
+        //   const { products: storeProducts } = groupedProducts[storeId];
+
+        const addressUser = await axios.get(
+          `shippingInfoId/${selectedShippingInfo}`
+        );
+
+        console.log(selectedShippingInfo);
+
+        // console.log(addressUser.data.districtid);
+        // console.log(addressUser.data.wardid);
+
+        const requestData = {
+          service_type_id: 2,
+          from_district_id: 1442,
+          from_ward_code: "21211",
+          to_district_id: addressUser.data.districtid,
+          to_ward_code: addressUser.data.wardid.toString(),
+          height: 10,
+          length: 10,
+          weight: 10,
+          width: 5,
+          insurance_value: 0,
+          coupon: null,
+          items: [
+            {
+              name: "TEST1",
+              quantity: 1,
+              height: 10,
+              weight: 10,
+              length: 10,
+              width: 5,
+            },
+          ],
+        };
+
+        // eslint-disable-next-line no-loop-func
+        const getShippingFee = async () => {
+          try {
+            const response = await fetch(
+              "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Token: "ece58b2c-b0da-11ef-9083-dadc35c0870d",
+                  ShopId: "195541",
+                },
+                body: JSON.stringify(requestData),
+              }
+            );
+
+            const data = await response.json();
+            setFeeShip(data.data?.total);
+          } catch (error) {
+            console.error(error);
+          }
+        };
+        getShippingFee();
+        // }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
     const calculatedTotalAmountBeforeDiscount = Object.values(
       groupedProducts
     ).reduce((sum, { products }) => {
@@ -872,7 +760,7 @@ const PayBuyer = () => {
         }, 0)
       );
     }, 0);
-
+    feeShipCalculator();
     setTotalAmountProduct(calculatedTotalAmountBeforeDiscount);
     setVoucherS(
       calculatedTotalAmountAfterDiscount - calculatedTotalAmountBeforeDiscount
@@ -880,19 +768,10 @@ const PayBuyer = () => {
     setFinalTotal(
       calculatedTotalAmountAfterDiscount -
         calculatedTotalAmountBeforeDiscount +
-        calculatedTotalAmountBeforeDiscount
+        calculatedTotalAmountBeforeDiscount +
+        feeShip
     );
-
-    // console.log(calculatedTotalAmountBeforeDiscount);
-    // console.log(
-    //   calculatedTotalAmountAfterDiscount - calculatedTotalAmountBeforeDiscount
-    // );
-    // console.log(
-    //   calculatedTotalAmountAfterDiscount -
-    //     calculatedTotalAmountBeforeDiscount +
-    //     calculatedTotalAmountBeforeDiscount
-    // );
-  }, [groupedProducts, voucherData]);
+  }, [groupedProducts, voucherData, selectedShippingInfo]);
 
   return (
     <div>
@@ -1011,7 +890,7 @@ const PayBuyer = () => {
                                 Thành tiền:{" "}
                                 {voucherData.id.length > 0 &&
                                 voucherData.id.includes(
-                                  cart.productDetail.id
+                                  cart.productDetail.product.id
                                 ) ? (
                                   <>
                                     <del style={{ fontSize: "14px" }}>
@@ -1020,26 +899,29 @@ const PayBuyer = () => {
                                       )}{" "}
                                       VNĐ
                                     </del>{" "}
-                                    {voucherData.id.reduce(
-                                      (
-                                        priceAfterDiscount,
-                                        voucherId,
-                                        index
-                                      ) => {
-                                        if (
-                                          voucherId === cart.productDetail.id
-                                        ) {
-                                          const discount =
-                                            voucherData.discountprice[index];
-                                          return (
-                                            priceAfterDiscount *
-                                            (1 - discount / 100)
-                                          );
-                                        }
-                                        return priceAfterDiscount;
-                                      },
-                                      cart.productDetail.price * cart.quantity
-                                    )}
+                                    {formatPrice(
+                                      voucherData.id.reduce(
+                                        (
+                                          priceAfterDiscount,
+                                          voucherId,
+                                          index
+                                        ) => {
+                                          if (
+                                            voucherId ===
+                                            cart.productDetail.product.id
+                                          ) {
+                                            const discount =
+                                              voucherData.discountprice[index];
+                                            return (
+                                              priceAfterDiscount *
+                                              (1 - discount / 100)
+                                            );
+                                          }
+                                          return priceAfterDiscount;
+                                        },
+                                        cart.productDetail.price * cart.quantity
+                                      )
+                                    )}{" "}
                                     VNĐ
                                   </>
                                 ) : (
@@ -1117,7 +999,6 @@ const PayBuyer = () => {
                                   voucherName
                               );
 
-                              // Lấy quantityVoucher từ voucher đầu tiên trong nhóm có cùng vouchername
                               const isDisabled =
                                 vouchersWithSameName[0].voucher
                                   .quantityvoucher < 1;
@@ -1140,7 +1021,7 @@ const PayBuyer = () => {
                                   {" Còn lại " +
                                     vouchersWithSameName[0].voucher
                                       .quantityvoucher}{" "} */}
-                                  {isDisabled && "(Hết số lượng)"}{" "}
+                                  {isDisabled && "( Hết số lượng)"}{" "}
                                 </MenuItem>
                               );
                             })
@@ -1160,7 +1041,9 @@ const PayBuyer = () => {
                                 productPrice * productQuantity;
 
                               voucherData.id.forEach((voucherId, index) => {
-                                if (voucherId === cart.productDetail.id) {
+                                if (
+                                  voucherId === cart.productDetail.product.id
+                                ) {
                                   const discount =
                                     voucherData.discountprice[index];
                                   priceAfterDiscount *= 1 - discount / 100;
@@ -1409,6 +1292,11 @@ const PayBuyer = () => {
               <div className="d-flex justify-content-between">
                 <span>Tổng tiền:</span>
                 <span>{formatPrice(totalAmountProduct) + " VNĐ"}</span>
+              </div>
+              <hr />
+              <div className="d-flex justify-content-between">
+                <span>Phí ship</span>
+                <span>{formatPrice(feeShip) + " VNĐ"}</span>
               </div>
               <hr />
               {voucherData.id ? (

@@ -46,7 +46,11 @@ const SecurityRoutes = ({ children, allowedRoles = [] }) => {
     // Trong khi đang tải role, hiển thị trạng thái chờ
     return (
       <Backdrop
-        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+        sx={{
+          backgroundColor: "backgroundElement.children",
+          color: "text.default",
+          // zIndex: theme.zIndex.drawer + 1
+        }}
         open={loading}
       >
         <CircularProgress color="inherit" />
