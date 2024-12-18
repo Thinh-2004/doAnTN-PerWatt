@@ -301,16 +301,22 @@ const ListProduct = () => {
               <div className="d-flex justify-content-between">
                 <div className="">
                   Thời gian:{" "}
-                  {dayjs(showBan.product.startday).format("DD/MM/YYYY")}
+                  {showBan.product.startday
+                    ? dayjs(showBan.product.startday).format("DD/MM/YYYY")
+                    : "Vĩnh viễn"}
                   &nbsp;-&nbsp;
-                  {dayjs(showBan.product.endday).format("DD/MM/YYYY")}
+                  {showBan.product.endday
+                    ? dayjs(showBan.product.endday).format("DD/MM/YYYY")
+                    : "Vĩnh viễn"}
                 </div>
                 <div className="">
                   Hiệu lực(
-                  {calculateDifference(
-                    showBan.product.startday,
-                    showBan.product.endday
-                  )}
+                  {showBan.product.endday && showBan.product.startday
+                    ? calculateDifference(
+                        showBan.product.startday,
+                        showBan.product.endday
+                      )
+                    : "Không giới hạn"}
                   )
                 </div>
               </div>

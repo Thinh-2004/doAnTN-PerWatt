@@ -31,6 +31,8 @@ const Store = () => {
   const { mode } = useContext(ThemeModeContext);
   const [totalItems, setTotalItems] = useState(0); //Tổng số lượng sản phẩm
   const [vouchers, setVouchers] = useState([]); //danh sách voucher
+  //state order có idVoucher
+  const [order, setOrder] = useState([]);
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
@@ -91,8 +93,10 @@ const Store = () => {
         `store/${storeRes.data.products[0].product.store.id}`
       );
       setFill(res.data);
-      loadIsUserFollowStore(res.data.id);
-      loadTotalFollower(res.data.id);
+      if (user?.id) {
+        loadIsUserFollowStore(res.data.id);
+        loadTotalFollower(res.data.id);
+      }
 
       //Kiểm tra infoStore trước khi call API
       if (res.data && res.data.id) {
@@ -105,8 +109,19 @@ const Store = () => {
       console.log(error);
     }
   };
+
+  const loadOrderUser = async () => {
+    try {
+      const res = await axios.get(`check/add/voucher/${user.id}`);
+      setOrder(res.data);
+      // console.log(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   useEffect(() => {
     loadData();
+    if (user?.id) loadOrderUser();
   }, [getIdBySlugStore]);
 
   useEffect(() => {
@@ -163,14 +178,18 @@ const Store = () => {
   const [isAddVoucherDetail, setIsAddVoucherDetail] = useState(false);
   const addVoucherDetails = async (id, vouchername) => {
     try {
-      const voucherDetailRequest = {
-        user: { id: user.id },
-        voucher: { id: id, vouchername: vouchername },
-      };
-      console.log(voucherDetailRequest);
-      await axios.post(`addVoucherDetails`, voucherDetailRequest);
-      toast.success("Nhận voucher thành công");
-      setIsAddVoucherDetail(true);
+      if (user?.id) {
+        const voucherDetailRequest = {
+          user: { id: user.id },
+          voucher: { id: id, vouchername: vouchername },
+        };
+        // console.log(voucherDetailRequest);
+        await axios.post(`addVoucherDetails`, voucherDetailRequest);
+        toast.success("Nhận voucher thành công");
+        setIsAddVoucherDetail(true);
+      } else {
+        toast.warning("Vui lòng đăng nhập để nhận voucher");
+      }
     } catch (error) {
       console.log(error);
       toast.error("Nhận voucher thất bại");
@@ -191,7 +210,7 @@ const Store = () => {
     if (user) {
       check();
     }
-  }, [user.id]);
+  }, [user?.id]);
 
   useEffect(() => {
     // Hàm để lấy danh sách vouchers từ cửa hàng
@@ -247,19 +266,27 @@ const Store = () => {
       setIsUserFollowStore(false);
       setIsOpenDropdownFollow(false); // Bổ sung follow 2
     } else {
-      await axios.post("/follow", {
-        userId: user.id,
-        storeId: fill.id,
-      });
-      setIsUserFollowStore(true);
+      try {
+        if (user?.id) {
+          await axios.post("/follow", {
+            userId: user.id,
+            storeId: fill.id,
+          });
+          setIsUserFollowStore(true);
+        } else {
+          toast.warning("Vui lòng đăng nhập để theo dõi cửa hàng");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
-    loadTotalFollower(fill.id);
+    if (user?.id) loadTotalFollower(fill.id);
   };
 
   const loadIsUserFollowStore = async (storeId) => {
     var check = await axios.get("/follow/user", {
       params: {
-        userId: user.id,
+        userId: user?.id,
         storeId: storeId,
       },
     });
@@ -485,6 +512,10 @@ const Store = () => {
                     const isVoucherReceived = voucherDetail.some(
                       (voucherItem) => voucherItem?.voucher?.id === voucher.id
                     );
+                    const checkVoucherIvalidInOrder = order.some(
+                      (check) => check.voucher?.slug === voucher.slug
+                    );
+
                     return voucher.status === "Hoạt động" ? (
                       <CardContent
                         key={voucher.id}
@@ -516,6 +547,10 @@ const Store = () => {
                           {isVoucherReceived ? (
                             <button className="btn btn-danger" disabled>
                               Mã đã được nhận
+                            </button>
+                          ) : checkVoucherIvalidInOrder ? (
+                            <button className="btn btn-danger" disabled>
+                              Bạn đã sử dụng voucher
                             </button>
                           ) : (
                             <button

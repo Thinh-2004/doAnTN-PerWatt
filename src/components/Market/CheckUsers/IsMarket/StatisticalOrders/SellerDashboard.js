@@ -104,6 +104,43 @@ const fetchProductData = async (
   }
 };
 
+const columns = [
+  {
+    title: "Hình ảnh",
+    dataIndex: "imgSrc",
+    key: "imgSrc",
+    render: (imgSrc, record) => (
+      <Link to={`/detailProduct/${record.slugProduct}`}>
+        <img
+          src={imgSrc}
+          alt={record.name}
+          className="productImageClass"
+          style={{ width: "50px", height: "auto" }}
+        />
+      </Link>
+    ),
+  },
+  {
+    title: "Tên sản phẩm",
+    dataIndex: "name",
+    key: "name",
+  },
+
+  {
+    title: "Giá",
+    dataIndex: "price",
+    key: "price",
+    render: (price) => <p className="text-dark">{price}</p>,
+  },
+
+  {
+    title: "Đã bán",
+    dataIndex: "sold",
+    key: "sold",
+    render: (sold) => <p className="productSoldClass">Đã bán: {sold}</p>,
+  },
+];
+
 const SellerDashboard = () => {
   const [orders, setOrders] = useState(0);
   const [pendingOrders, setPendingOrders] = useState(0);
@@ -119,14 +156,14 @@ const SellerDashboard = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedColumnData, setSelectedColumnData] = useState([]);
   const idStore = localStorage.getItem("idStore");
-  const nameStore = localStorage.getItem("fullName");
+  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
   const { RangePicker } = DatePicker;
   const [dateRange, setDateRange] = useState([]); // Khai báo state cho dateRange
   const [selectedQuarter, setSelectedQuarter] = useState(null);
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6; // Số lượng sản phẩm mỗi trang
+  const pageSize = 5; // Số lượng sản phẩm mỗi trang
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPageProducts, setCurrentPageProducts] = useState([]);
 
@@ -695,7 +732,7 @@ const SellerDashboard = () => {
       <div className="header">
         <div className="mb-6">
           <h2 className="text-xl font-semibold">
-            {getGreeting()}, {nameStore} 👋
+            {getGreeting()}, {user.fullname} 👋
           </h2>
           <p className="text-muted-foreground">
             Đây là những gì đang xảy ra trên cửa hàng của bạn ngày hôm nay. Xem
@@ -800,18 +837,6 @@ const SellerDashboard = () => {
 
       <div>
         <h3 className="">Sản phẩm bán chạy</h3>
-        <div className="sort-container">
-          {topProducts.length > 0 && (
-            <>
-              {/* <button onClick={handleSort} className="sort-button">
-                Sắp xếp theo số lượng ({sortOrder === "asc" ? "↑" : "↓"})
-              </button> */}
-              {/* <button onClick={handleSortByPrice} className="sort-button">
-              Sắp xếp theo giá ({sortPriceOrder === "asc" ? "↑" : "↓"})
-            </button> */}
-            </>
-          )}
-        </div>
         {loadingProducts ? (
           <Spin spinning tip="Đang tải sản phẩm...">
             <div style={{ minHeight: "200px" }}></div>
@@ -821,36 +846,15 @@ const SellerDashboard = () => {
             <div style={{ minHeight: "200px" }}></div>
           </Spin>
         ) : (
-          <div className="toplist-grid">
-            {currentPageProducts.map((product) => (
-              <Link
-                to={`/detailProduct/${product.slugProduct}`}
-                key={product.id}
-              >
-                <div
-                  ref={ref}
-                  className={`product-card ${inView ? "visible" : "hidden"}`}
-                >
-                  <CardContent>
-                    <img
-                      src={product.imgSrc}
-                      alt={product.name}
-                      className="productImageClass"
-                    />
-                    <h3 className="productNameClass">{product.name}</h3>
-                    <p className="productPriceClass text-danger">
-                      {product.price}
-                    </p>
-                    <p className="productSoldClass">Đã bán: {product.sold}</p>
-                    <p className="productRatingClass">{product.rating}</p>
-                  </CardContent>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <Table
+            columns={columns}
+            dataSource={currentPageProducts}
+            rowKey="id"
+            pagination={false}
+          />
         )}
 
-        {/* Thêm phân trang */}
+        {/* Phân trang */}
         <Pagination
           current={currentPage}
           total={topProducts.length}

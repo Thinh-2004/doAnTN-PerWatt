@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { Table, Spin, Alert, Pagination, Modal,Select } from "antd";
+import { Table, Spin, Alert, Pagination, Modal, Select } from "antd";
 import { useSpring, animated } from "@react-spring/web";
 import "./ProductList.css";
 import axios from "../../Localhost/Custumize-axios";
@@ -51,21 +51,29 @@ const ProductList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortPriceOrder, setSortPriceOrder] = useState("asc");
-  const [currentPage, setCurrentPage] = useState(1);  // Trạng thái cho trang hiện tại
-  const [pageSize] = useState(6);  // Số sản phẩm trên mỗi trang
+  const [currentPage, setCurrentPage] = useState(1); // Trạng thái cho trang hiện tại
+  const [pageSize] = useState(6); // Số sản phẩm trên mỗi trang
   const { mode } = useContext(ThemeModeContext);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalRevenueDetail, setModalRevenueDetail] = useState(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const filteredRevenueData = revenueData.filter(item => item.Year === selectedYear);
-  
+  const filteredRevenueData = revenueData.filter(
+    (item) => item.Year === selectedYear
+  );
+
+  //state nhận trạng thái lỗi
+  const [error403, setError403] = useState();
+
   const columns = [
     {
       title: "Tên Cửa Hàng",
       dataIndex: "StoreName",
       key: "storeName",
       render: (StoreName, record) => (
-        <Link to={`/pageStore/${record.slugStore}`} style={{ color: mode === "light" ? "black" : "white" }}>
+        <Link
+          to={`/pageStore/${record.slugStore}`}
+          style={{ color: mode === "light" ? "black" : "white" }}
+        >
           {StoreName}
         </Link>
       ),
@@ -75,7 +83,10 @@ const ProductList = () => {
       dataIndex: "NetRevenue",
       key: "netRevenue",
       render: (value, record) => (
-        <span onClick={() => handleShowRevenueDetail(record)} style={{ color: "blue", cursor: "pointer" }}>
+        <span
+          onClick={() => handleShowRevenueDetail(record)}
+          style={{ color: "blue", cursor: "pointer" }}
+        >
           {new Intl.NumberFormat("vi-VN", {
             style: "decimal",
             minimumFractionDigits: 2,
@@ -90,7 +101,6 @@ const ProductList = () => {
   const handleYearChange = (value) => {
     setSelectedYear(value);
   };
-  
 
   const calculateRating = (soldCount) => {
     if (soldCount >= 500) return "⭐⭐⭐⭐⭐";
@@ -153,7 +163,8 @@ const ProductList = () => {
         setProducts(productData);
       } catch (error) {
         console.error("Error fetching product data:", error);
-        setError("Không thể tải dữ liệu sản phẩm.");
+        if (error.response.status === 403) setError403(error.response.status);
+        else setError("Không thể tải dữ liệu sản phẩm.");
       } finally {
         setLoading(false);
       }
@@ -163,51 +174,52 @@ const ProductList = () => {
       try {
         const response = await axios.get(`/revenue/net-store-revenue`);
         const rawRevenueData = response.data;
-    
+
         // Gộp dữ liệu theo năm
         const groupedData = rawRevenueData.reduce((acc, curr) => {
           const { Year, NetRevenue, StoreName, slugStore, OrderCount } = curr;
-    
+
           // Kiểm tra xem năm đã tồn tại trong `acc` chưa
           if (!acc[Year]) {
-            acc[Year] = { 
-              Year, 
-              NetRevenue: 0, 
-              OrderCount: 0, 
-              StoreName, 
-              slugStore 
+            acc[Year] = {
+              Year,
+              NetRevenue: 0,
+              OrderCount: 0,
+              StoreName,
+              slugStore,
             };
           }
-    
+
           // Cộng dồn doanh thu và số lượng đơn hàng
           acc[Year].NetRevenue += NetRevenue;
           acc[Year].OrderCount += OrderCount;
-    
+
           return acc;
         }, {});
-    
+
         // Chuyển đổi đối tượng thành mảng
         const aggregatedRevenueData = Object.values(groupedData);
-    
+
         // Cập nhật state với dữ liệu gộp
         setRevenueData(aggregatedRevenueData);
-    
+
         // Lấy danh sách các năm có sẵn từ dữ liệu doanh thu
-        const years = [...new Set(aggregatedRevenueData.map((item) => item.Year))];
+        const years = [
+          ...new Set(aggregatedRevenueData.map((item) => item.Year)),
+        ];
         setAvailableYears(years); // Cập nhật danh sách năm
       } catch (error) {
         console.error("Error fetching revenue data:", error);
-        setError("Không thể tải dữ liệu doanh thu.");
+        if (error.response.status === 403) setError403(error.response.status);
+        else setError("Không thể tải dữ liệu doanh thu.");
       } finally {
         setLoading(false);
       }
     };
-    
 
     fetchProducts();
     fetchRevenueData();
   }, []);
-  
 
   const errorAnimation = useSpring({
     transform: error ? "translateY(0)" : "translateY(-100%)",
@@ -248,15 +260,19 @@ const ProductList = () => {
         />
       </div>
       <div className="sort-container">
-        {products.length > 0 && (
-          <>
-            <button onClick={handleSort} className="sort-button">
-              Sắp xếp theo số lượng ({sortOrder === "asc" ? "↑" : "↓"})
-            </button>
-            <button onClick={handleSortByPrice} className="sort-button">
-              Sắp xếp theo giá ({sortPriceOrder === "asc" ? "↑" : "↓"})
-            </button>
-          </>
+        {error403 === 403 ? (
+          <label>Quyền truy cập bị giới hạn</label>
+        ) : (
+          products.length > 0 && (
+            <>
+              <button onClick={handleSort} className="sort-button">
+                Sắp xếp theo số lượng ({sortOrder === "asc" ? "↑" : "↓"})
+              </button>
+              <button onClick={handleSortByPrice} className="sort-button">
+                Sắp xếp theo giá ({sortPriceOrder === "asc" ? "↑" : "↓"})
+              </button>
+            </>
+          )
         )}
       </div>
       {loading ? (
@@ -267,7 +283,7 @@ const ProductList = () => {
         <animated.div style={errorAnimation}>
           <Alert message={error} type="error" showIcon />
         </animated.div>
-      ) : filteredProducts.length === 0 ? (
+      ) : filteredProducts.length === 0 && !error403 ? (
         <div className="no-data-message" style={{ minHeight: "200px" }}>
           Không có sản phẩm
         </div>
@@ -303,50 +319,64 @@ const ProductList = () => {
       {/* Hiển thị bảng với dữ liệu doanh thu */}
       <Table
         columns={columns}
-        dataSource={filteredRevenueData}  // Sử dụng dữ liệu đã lọc theo năm
+        dataSource={filteredRevenueData} // Sử dụng dữ liệu đã lọc theo năm
         loading={loading}
         rowKey="slugStore"
       />
-     <Modal
-  title="Chi tiết Doanh thu"
-  visible={modalVisible}
-  onCancel={handleCloseModal}
-  footer={null}
->
-  {modalRevenueDetail && (
-    <div>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Thông tin</th>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Giá trị</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style={{ border: '1px solid #ddd', padding: '8px' }}>Tên Cửa Hàng</td>
-            <td style={{ border: '1px solid #ddd', padding: '8px' }}>{modalRevenueDetail.StoreName}</td>
-          </tr>
-          <tr>
-            <td style={{ border: '1px solid #ddd', padding: '8px' }}>Doanh thu</td>
-            <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-              {new Intl.NumberFormat("vi-VN", {
-                style: "decimal",
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              }).format(modalRevenueDetail.NetRevenue)} đ
-            </td>
-          </tr>
-          <tr>
-            <td style={{ border: '1px solid #ddd', padding: '8px' }}>Số đơn hàng</td>
-            <td style={{ border: '1px solid #ddd', padding: '8px' }}>{modalRevenueDetail.OrderCount}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  )}
-</Modal>
-
+      <Modal
+        title="Chi tiết Doanh thu"
+        visible={modalVisible}
+        onCancel={handleCloseModal}
+        footer={null}
+      >
+        {modalRevenueDetail && (
+          <div>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                    Thông tin
+                  </th>
+                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                    Giá trị
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                    Tên Cửa Hàng
+                  </td>
+                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                    {modalRevenueDetail.StoreName}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                    Doanh thu
+                  </td>
+                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "decimal",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(modalRevenueDetail.NetRevenue)}{" "}
+                    đ
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                    Số đơn hàng
+                  </td>
+                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                    {modalRevenueDetail.OrderCount}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

@@ -19,7 +19,7 @@ const Info = () => {
     password: "",
     email: "",
     birthdate: "",
-    role: "",
+    rolePermission: "",
     address: "",
     phone: "",
     gender: true,
@@ -30,7 +30,7 @@ const Info = () => {
 
   const loadData = async () => {
     try {
-      const res = await axios.get(`userProFile/${user.id}`);
+      const res = await axios.get(`userProFile/myInfo`);
       setFill(res.data);
       // console.log(res.data);
       // Set the preview URL if there is an avatar
@@ -147,8 +147,8 @@ const Info = () => {
         phone: fill.phone,
         gender: fill.gender,
         password: fill.password || null,
-        role: {
-          id: fill.role.id,
+        rolePermission: {
+          id: fill.rolePermission.id,
         },
         address: fill.address,
       };

@@ -26,7 +26,7 @@ const ChangePass = ({ checkStatus }) => {
     password: "",
     email: "",
     birthdate: "",
-    role: "",
+    rolePermission: "",
     address: "",
     phone: "",
     gender: true,
@@ -39,8 +39,9 @@ const ChangePass = ({ checkStatus }) => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await axios.get(`userProFile/${user.id}`);
+        const res = await axios.get(`userProFile/myInfo`);
         setFormPass(res.data);
+        console.log(res.data);
       } catch (error) {
         console.log(error);
       }
@@ -87,8 +88,8 @@ const ChangePass = ({ checkStatus }) => {
           phone: formPass.phone,
           gender: formPass.gender,
           password: newPass, // Sử dụng mật khẩu mới
-          role: {
-            id: formPass.role.id,
+          rolePermission: {
+            id: formPass.rolePermission.id,
           },
           address: formPass.address,
           avatar: formPass.avatar,

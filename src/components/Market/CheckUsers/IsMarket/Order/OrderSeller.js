@@ -12,12 +12,20 @@ import {
   Button,
   Card,
   CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Pagination,
+  Slide,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import useSession from "../../../../../Session/useSession";
 import { toast } from "react-toastify";
 import ChatInterface from "../../../../Notification&Message&Comment/Message/Message";
+import { load } from "@teachablemachine/image";
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -41,6 +49,10 @@ CustomTabPanel.propTypes = {
   value: PropTypes.number.isRequired,
 };
 
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
+
 const Order = () => {
   const [fill, setFill] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +66,9 @@ const Order = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [inputReason, setInputReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [reason, setReason] = useState("");
+  const [reasons, setReasonS] = useState("");
+
   const itemsPerPage = 4;
   const totalItems = fill.length;
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -63,20 +78,30 @@ const Order = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   tailspin.register();
 
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const load = async () => {
+    try {
+      const res = await axios.get(`orderSeller/${idStore}`);
+      setFill(res.data);
+      res.data.forEach((order) => {
+        fillOrderDetailbyOrderID(order.id);
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await axios.get(`orderSeller/${idStore}`);
-        setFill(res.data);
-        res.data.forEach((order) => {
-          fillOrderDetailbyOrderID(order.id);
-        });
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
   }, [user.id]);
 
@@ -90,11 +115,15 @@ const Order = () => {
   };
 
   const handleConfirmCancel = async (orderId) => {
+    const loadingGHN = toast.loading(
+      "Đang hủy đơn và gữi gmail cho người mua!"
+    );
+
     if (inputReason) {
       try {
-        await axios.put(`/order/${orderId}/status`, {
+        await axios.put(`/order/Update/${orderId}`, {
           status: "Hủy",
-          note: `Đơn hàng được huỷ bởi chủ người bán, lý do: ${inputReason}`,
+          note: `Đơn hàng được hủy bởi người bán, với lý do là: ${inputReason}`,
         });
         setFill((prevFill) =>
           prevFill.map((order) =>
@@ -102,7 +131,7 @@ const Order = () => {
               ? {
                   ...order,
                   orderstatus: "Hủy",
-                  note: `Được huỷ bởi chủ người bán, lý do: ${inputReason}`,
+                  note: `Đơn hàng được hủy bởi người bán, lý do là: ${inputReason}`,
                 }
               : order
           )
@@ -113,27 +142,18 @@ const Order = () => {
         if (closeModalButton) {
           closeModalButton.click();
         }
-        toast.success("Huỷ hàng thành công với lý do: " + inputReason);
+        toast.update(loadingGHN, {
+          render: "Hủy hàng thành công với lý do là: " + inputReason,
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
       } catch (error) {
         console.log(error);
       }
     }
   };
-
-  // const handleMarkAsReceived = async (orderId) => {
-  //   try {
-  //     await axios.put(`/order/${orderId}/status`, { status: "Đang vận chuyển" });
-  //     setFill((prevFill) =>
-  //       prevFill.map((order) =>
-  //         order.id === orderId
-  //           ? { ...order, orderstatus: "Đang vận chuyển" }
-  //           : order
-  //       )
-  //     );
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
 
   const handleMarkAsReceived = (orderId) => {
     confirmAlert({
@@ -157,6 +177,7 @@ const Order = () => {
             } catch (error) {
               console.log(error);
             }
+            load();
           },
         },
         { label: "Không" },
@@ -164,20 +185,78 @@ const Order = () => {
     });
   };
 
-  // const handleMarkAsReceived2 = async (orderId) => {
-  //   try {
-  //     await axios.put(`/order/${orderId}/status`, { status: "Chờ nhận hàng" });
-  //     setFill((prevFill) =>
-  //       prevFill.map((order) =>
-  //         order.id === orderId
-  //           ? { ...order, orderstatus: "Chờ nhận hàng" }
-  //           : order
-  //       )
-  //     );
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  const handleRefun = (orderId) => {
+    setReason(orderId);
+    confirmAlert({
+      title: "Xác nhận trả hàng",
+      message: "Bạn có chắc chắn muốn xác nhận trả hàng!",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            try {
+              await axios.put(`/order/Refun/${orderId}`, {
+                status: "Trả hàng",
+              });
+              setFill((prevFill) =>
+                prevFill.map((order) =>
+                  order.id === orderId
+                    ? { ...order, orderstatus: "Trả hàng" }
+                    : order
+                )
+              );
+            } catch (error) {
+              console.log(error);
+            }
+            load();
+          },
+        },
+        {
+          label: "Không",
+          onClick: () => {
+            handleClickOpen();
+          },
+        },
+      ],
+    });
+  };
+
+  const handleRefunS = async () => {
+    const loadingGHN = toast.loading(
+      "Đang gữi yêu cầu và gmail từ chối trả hàng!"
+    );
+    try {
+      await axios.put(`/order/Refun/${reason}`, {
+        status: "Chờ nhận hàng",
+        note: `Từ chối trả hàng, với lý do là: ${reasons}`,
+      });
+      console.log(reasons);
+
+      setFill((prevFill) =>
+        prevFill.map((order) =>
+          order.id === reason
+            ? {
+                ...order,
+                orderstatus: "Trả hàng",
+                note: `Từ chối trả hàng, với lý do là: ${reasons}`,
+              }
+            : order
+        )
+      );
+      toast.update(loadingGHN, {
+        render: "Hủy hàng thành công với lý do là: " + reasons,
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+        closeButton: true,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+
+    setOpen(false);
+    load();
+  };
 
   const handleOrderOnTheWay = (orderId) => {
     confirmAlert({
@@ -190,6 +269,7 @@ const Order = () => {
             try {
               await axios.put(`/order/${orderId}/status`, {
                 status: "Chờ nhận hàng",
+                awaitingdeliverydate: new Date(),
               });
               setFill((prevFill) =>
                 prevFill.map((order) =>
@@ -199,7 +279,10 @@ const Order = () => {
                 )
               );
             } catch (error) {
-              console.log(error);
+              console.error(error);
+              alert(
+                "Đã xảy ra lỗi khi cập nhật trạng thái đơn hàng. Vui lòng thử lại."
+              );
             }
           },
         },
@@ -263,7 +346,6 @@ const Order = () => {
     if (filteredOrders.length === 0) {
       return <div className="text-center">Chưa có sản phẩm</div>;
     }
-
     return currentItems.map((order) => (
       <Card
         className=" rounded-3 mt-3"
@@ -376,6 +458,36 @@ const Order = () => {
               Thành tiền: {formatPrice(order.totalamount) + " VNĐ"}
             </div>
           </div>
+          <React.Fragment>
+            <Dialog
+              open={open}
+              TransitionComponent={Transition}
+              keepMounted
+              onClose={handleClose}
+              aria-describedby="alert-dialog-slide-description"
+            >
+              <DialogTitle>{"Nhập lý do từ chối trả hàng"}</DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-slide-description">
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Nhập lý do"
+                      aria-label="Nhập lý do"
+                      aria-describedby="basic-addon1"
+                      value={reasons}
+                      onChange={(e) => setReasonS(e.target.value)}
+                    />
+                  </div>
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleClose}>Hủy</Button>
+                <Button onClick={() => handleRefunS()}>Xác nhận</Button>
+              </DialogActions>
+            </Dialog>
+          </React.Fragment>
           {orderDetails[order.id] && orderDetails[order.id].length > 2 && (
             <>
               <Button href={`/profileMarket/OrderDetailSeller/${order.id}`}>
@@ -415,6 +527,30 @@ const Order = () => {
           <hr />
           <div className="d-flex justify-content-between align-items-center">
             <div>Mã đơn hàng: {order.id}</div>
+            <div>
+              {order.note ? (
+                <Tooltip
+                  title={
+                    order.note.includes(",")
+                      ? order.note.split(",")[1].trim()
+                      : ""
+                  }
+                  arrow
+                >
+                  <span
+                    style={{
+                      padding: "5px",
+                      backgroundColor: "rgb(255, 184, 184)",
+                      color: "rgb(198, 0, 0)",
+                      borderRadius: "10px",
+                      display: "inline-block",
+                    }}
+                  >
+                    {order.note.split(",")[0]}
+                  </span>
+                </Tooltip>
+              ) : null}
+            </div>
             <div className="d-flex align-items-center">
               {/* icon nhắn tin */}
               <button
@@ -430,49 +566,69 @@ const Order = () => {
                   <></>
                 ) : order.orderstatus === "Đang chờ duyệt" ? (
                   <>
-                    <Button
-                      className="me-3"
-                      onClick={() => handleMarkAsReceived(order.id)}
-                      style={{
-                        width: "auto",
-                        backgroundColor: "rgb(218, 255, 180)",
-                        color: "rgb(45, 91, 0)",
-                      }}
-                      disableElevation
-                    >
-                      <i class="bi bi-check-circle-fill"></i>{" "}
-                    </Button>
-                    <Button
-                      onClick={() => handleCancelOrder(order.id)}
-                      style={{
-                        width: "auto",
-                        backgroundColor: "rgb(255, 184, 184)",
-                        color: "rgb(198, 0, 0)",
-                      }}
-                      disableElevation
-                      data-bs-toggle="modal"
-                      data-bs-target="#exampleModal"
-                    >
-                      <i class="bi bi-x-circle-fill"></i>{" "}
-                    </Button>
+                    <Tooltip title="Duyệt đơn hàng" arrow>
+                      <Button
+                        className="me-3"
+                        onClick={() => handleMarkAsReceived(order.id)}
+                        style={{
+                          width: "auto",
+                          backgroundColor: "rgb(218, 255, 180)",
+                          color: "rgb(45, 91, 0)",
+                        }}
+                        disableElevation
+                      >
+                        <i className="bi bi-check-circle-fill"></i>
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="Hủy đơn hàng" arrow>
+                      <Button
+                        onClick={() => handleCancelOrder(order.id)}
+                        style={{
+                          width: "auto",
+                          backgroundColor: "rgb(255, 184, 184)",
+                          color: "rgb(198, 0, 0)",
+                        }}
+                        disableElevation
+                        data-bs-toggle="modal"
+                        data-bs-target="#exampleModal"
+                      >
+                        <i className="bi bi-x-circle-fill"></i>{" "}
+                      </Button>
+                    </Tooltip>
                   </>
                 ) : order.orderstatus === "Đang vận chuyển" ? (
-                  <Button
-                    onClick={() => handleOrderOnTheWay(order.id)}
-                    style={{
-                      width: "auto",
-                      backgroundColor: "rgb(204,244,255)",
-                      color: "rgb(0,70,89)",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                    disableElevation
-                  >
-                    <i className="bi bi-truck"></i>
-                  </Button>
-                ) : (
-                  <div></div>
-                )}
+                  <Tooltip title="Chờ giao hàng" arrow>
+                    <Button
+                      onClick={() => handleOrderOnTheWay(order.id)}
+                      style={{
+                        width: "auto",
+                        backgroundColor: "rgb(204,244,255)",
+                        color: "rgb(0,70,89)",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                      disableElevation
+                    >
+                      <i className="bi bi-truck"></i>
+                    </Button>
+                  </Tooltip>
+                ) : order.note &&
+                  order.note.split(",")[0] ===
+                    "Yêu cầu trả hàng bởi người dùng" ? (
+                  <Tooltip title="Xử lý yêu cầu trả hàng" arrow>
+                    <Button
+                      onClick={() => handleRefun(order.id)}
+                      style={{
+                        width: "auto",
+                        backgroundColor: "rgb(255, 230, 180)",
+                        color: "rgb(128, 64, 0)",
+                      }}
+                      disableElevation
+                    >
+                      <i className="bi bi-arrow-return-left"></i>{" "}
+                    </Button>
+                  </Tooltip>
+                ) : null}
               </div>
 
               <button
@@ -493,7 +649,7 @@ const Order = () => {
                   <div className="modal-content">
                     <div className="modal-header">
                       <h1 className="modal-title fs-5" id="exampleModalLabel">
-                        Nhập lý do huỷ hàng
+                        Nhập lý do hủy hàng
                       </h1>
                       <button
                         type="button"
@@ -510,17 +666,12 @@ const Order = () => {
                         label="Nhập lý do hủy đơn hàng"
                         variant="outlined"
                         value={inputReason}
-                        onChange={(e) => setInputReason(e.target.value)} // Cập nhật lý do vào inputReason
+                        onChange={(e) => setInputReason(e.target.value)}
                       />
-
-                      {/* <input
-                        type="text"
-                        placeholder="Nhập lý do hủy đơn hàng"
-                      /> */}
                     </div>
                     <div className="modal-footer">
                       <Button
-                        onClick={() => handleConfirmCancel(selectedOrderId)} // Xác nhận hủy đơn hàng
+                        onClick={() => handleConfirmCancel(selectedOrderId)}
                         style={{
                           width: "auto",
                           backgroundColor: "rgb(204,244,255)",
@@ -536,23 +687,25 @@ const Order = () => {
               </div>
 
               <div>
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    timeoutRef.current = setTimeout(() => {
-                      window.location.href = `/profileMarket/OrderDetailSeller/${order.id}`;
-                    }, 250);
-                  }}
-                  style={{
-                    height: "40px",
-                    width: "auto",
-                    backgroundColor: "rgb(204,244,255)",
-                    color: "rgb(0,70,89)",
-                  }}
-                  disableElevation
-                >
-                  <i className="bi bi-eye-fill fs-5"></i>
-                </Button>
+                <Tooltip title="Xem chi tiết" arrow>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      timeoutRef.current = setTimeout(() => {
+                        window.location.href = `/profileMarket/OrderDetailSeller/${order.id}`;
+                      }, 250);
+                    }}
+                    style={{
+                      height: "40px",
+                      width: "auto",
+                      backgroundColor: "rgb(204,244,255)",
+                      color: "rgb(0,70,89)",
+                    }}
+                    disableElevation
+                  >
+                    <i className="bi bi-eye-fill fs-5"></i>
+                  </Button>
+                </Tooltip>
               </div>
             </div>
           </div>

@@ -18,59 +18,6 @@ import { ThemeModeContext } from "../../components/ThemeMode/ThemeModeProvider";
 
 spiral.register();
 
-// Hàm gọi API thực tế để lấy doanh thu của tháng lớn nhất trong năm lớn nhất
-const fetchRevenueOfMaxMonth = async () => {
-  try {
-    const response = await axios.get("/revenue-by-month");
-    const data = response.data;
-
-    // Tìm năm lớn nhất
-    const maxYear = Math.max(...data.map((item) => item.Year));
-
-    // Lọc dữ liệu của năm lớn nhất
-    const filteredData = data.filter((item) => item.Year === maxYear);
-
-    // Tìm tháng lớn nhất trong năm lớn nhất
-    const maxMonth = Math.max(...filteredData.map((item) => item.Month));
-
-    // Lọc dữ liệu của tháng lớn nhất trong năm lớn nhất
-    const maxMonthData = filteredData.filter((item) => item.Month === maxMonth);
-
-    // Tính tổng `TotalVATCollected` của tất cả các mục trong tháng đó
-    const totalVAT = maxMonthData.reduce(
-      (sum, item) => sum + (item.TotalVATCollected || 0),
-      0
-    );
-
-    return totalVAT; // Trả về tổng VAT đã thu
-  } catch (error) {
-    console.error("Error fetching revenue:", error);
-    return 0; // Trả về 0 nếu có lỗi
-  }
-};
-
-// Hàm gọi API để lấy số lượng cửa hàng
-const fetchTotalStoresCount = async () => {
-  try {
-    const response = await axios.get("/total-stores-count");
-    return response.data.totalStoresCount || 0; // Trả về số lượng cửa hàng hoặc 0 nếu không có dữ liệu
-  } catch (error) {
-    console.error("Error fetching total stores count:", error);
-    return 0; // Trả về 0 nếu có lỗi
-  }
-};
-
-// Hàm gọi API để lấy số lượng người dùng
-const fetchTotalUsersCount = async () => {
-  try {
-    const response = await axios.get("/total-users");
-    return response.data[0]?.TotalUsers || 0; // Trả về số lượng người dùng hoặc 0 nếu không có dữ liệu
-  } catch (error) {
-    console.error("Error fetching total users count:", error);
-    return 0; // Trả về 0 nếu có lỗi
-  }
-};
-
 // Hàm định dạng tiền tệ
 const formatCurrencyVND = (amount) => {
   return Number(amount)
@@ -97,6 +44,26 @@ const CardItem = ({ title, value, percentage, isIncrease, onClick }) => {
   );
 };
 
+// Thành phần hiển thị thông tin thẻ
+const CardItemDisable = ({ title, value, percentage, isIncrease, onClick }) => {
+  const displayValue =
+    title === "Số cửa hàng" || title === "Số người dùng"
+      ? value
+      : formatCurrencyVND(value);
+
+  return (
+    <div className="card-item" onClick={onClick}>
+      <h2 className="card-item-title" style={{ color: "#929292" }}>
+        {title}
+      </h2>
+      <p className="card-item-value" style={{ color: "#929292" }}>
+        {displayValue}
+      </p>
+      <p style={{ color: "#929292" }}>0% so với tháng trước</p>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [revenue, setRevenue] = useState(0);
   const [totalStores, setTotalStores] = useState(0);
@@ -113,6 +80,67 @@ const Dashboard = () => {
   const [rolePermission, setRolePermission] = useState("");
 
   const token = localStorage.getItem("hadfjkdshf"); // Lấy token từ localStorage
+
+  //state nhận trạng thái lỗi
+  const [error403, setError403] = useState();
+
+  // Hàm gọi API thực tế để lấy doanh thu của tháng lớn nhất trong năm lớn nhất
+  const fetchRevenueOfMaxMonth = async () => {
+    try {
+      const response = await axios.get("/revenue-by-month");
+      const data = response.data;
+
+      // Tìm năm lớn nhất
+      const maxYear = Math.max(...data.map((item) => item.Year));
+
+      // Lọc dữ liệu của năm lớn nhất
+      const filteredData = data.filter((item) => item.Year === maxYear);
+
+      // Tìm tháng lớn nhất trong năm lớn nhất
+      const maxMonth = Math.max(...filteredData.map((item) => item.Month));
+
+      // Lọc dữ liệu của tháng lớn nhất trong năm lớn nhất
+      const maxMonthData = filteredData.filter(
+        (item) => item.Month === maxMonth
+      );
+
+      // Tính tổng `TotalVATCollected` của tất cả các mục trong tháng đó
+      const totalVAT = maxMonthData.reduce(
+        (sum, item) => sum + (item.TotalVATCollected || 0),
+        0
+      );
+
+      return totalVAT; // Trả về tổng VAT đã thu
+    } catch (error) {
+      console.error("Error fetching revenue:", error);
+      if (error.response.status === 403) setError403(error.response.status);
+      return 0; // Trả về 0 nếu có lỗi
+    }
+  };
+
+  // Hàm gọi API để lấy số lượng cửa hàng
+  const fetchTotalStoresCount = async () => {
+    try {
+      const response = await axios.get("/total-stores-count");
+      return response.data.totalStoresCount || 0; // Trả về số lượng cửa hàng hoặc 0 nếu không có dữ liệu
+    } catch (error) {
+      console.error("Error fetching total stores count:", error);
+      if (error.response.status === 403) setError403(error.response.status);
+      return 0; // Trả về 0 nếu có lỗi
+    }
+  };
+
+  // Hàm gọi API để lấy số lượng người dùng
+  const fetchTotalUsersCount = async () => {
+    try {
+      const response = await axios.get("/total-users");
+      return response.data[0]?.TotalUsers || 0; // Trả về số lượng người dùng hoặc 0 nếu không có dữ liệu
+    } catch (error) {
+      console.error("Error fetching total users count:", error);
+      if (error.response.status === 403) setError403(error.response.status);
+      return 0; // Trả về 0 nếu có lỗi
+    }
+  };
 
   useEffect(() => {
     const loadUserInfo = async () => {
@@ -397,32 +425,62 @@ const Dashboard = () => {
         </div>
 
         <div className="grid-container p-3">
-          <Box className="border rounded-3">
-            <CardItem
-              title="Doanh thu"
-              value={revenue}
-              percentage={10}
-              isIncrease={true}
-              onClick={() => setShowRevenueChart(!showRevenueChart)}
-            />
-          </Box>
-          <Box className="border rounded-3">
-            <CardItem
-              title="Số cửa hàng"
-              value={totalStores}
-              percentage={2}
-              isIncrease={true}
-              onClick={() => setShowStoresChart(!showStoresChart)}
-            />
-          </Box>
-          <Box className="border rounded-3">
-            <CardItem
-              title="Số người dùng"
-              value={totalUsers}
-              percentage={5}
-              isIncrease={true}
-            />
-          </Box>
+          {!error403 ? (
+            <Box className="border rounded-3">
+              <CardItem
+                title="Doanh thu"
+                value={revenue}
+                percentage={10}
+                isIncrease={true}
+                onClick={() => setShowRevenueChart(!showRevenueChart)}
+              />
+            </Box>
+          ) : (
+            <Tooltip title="Quyền truy cập bị giới hạn">
+              <Box className="border rounded-3">
+                <CardItemDisable value={0} title="Doanh thu" percentage={1} />
+              </Box>
+            </Tooltip>
+          )}
+
+          {!error403 ? (
+            <Box className="border rounded-3">
+              <CardItem
+                title="Số cửa hàng"
+                value={totalStores}
+                percentage={2}
+                isIncrease={true}
+                onClick={() => setShowStoresChart(!showStoresChart)}
+              />
+            </Box>
+          ) : (
+            <Tooltip title="Quyền truy cập bị giới hạn">
+              <Box className="border rounded-3">
+                <CardItemDisable title="Số cửa hàng" value={0} percentage={1} />
+              </Box>
+            </Tooltip>
+          )}
+
+          {!error403 ? (
+            <Box className="border rounded-3">
+              <CardItem
+                title="Số người dùng"
+                value={totalUsers}
+                percentage={5}
+                isIncrease={true}
+              />
+            </Box>
+          ) : (
+            <Tooltip title="Quyền truy cập bị giới hạn">
+              <Box className="border rounded-3">
+                <CardItemDisable
+                  title="Số người dùng"
+                  value={0}
+                  percentage={0}
+                />
+              </Box>
+            </Tooltip>
+          )}
         </div>
         {/* Thêm ProductList vào đây */}
         <ProductList />

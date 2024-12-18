@@ -10,10 +10,27 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import { Button, Card, CardContent, Pagination } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  InputLabel,
+  MenuItem,
+  Pagination,
+  Slide,
+  TextField,
+  Tooltip,
+} from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import FormReport from "../../Report/FormReport";
+import { FormControl } from "react-bootstrap";
+import { Select } from "antd";
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -37,12 +54,22 @@ CustomTabPanel.propTypes = {
   value: PropTypes.number.isRequired,
 };
 
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
+
 const Order = () => {
   const [fill, setFill] = useState([]);
   const [loading, setLoading] = useState(true);
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
+  const [inputReason, setInputReason] = useState("");
+  const [cancelProductDetail, setCancelProductDetail] = useState("");
+  const [open, setOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState(" ");
+  const [cancelReasonS, setCancelReasonS] = useState(" ");
+  const [returnOrder, setReturnOrder] = useState("");
 
   const [value, setValue] = useState(0);
   const [orderDetails, setOrderDetails] = useState({});
@@ -61,6 +88,7 @@ const Order = () => {
   const amount = query.get("amount");
   // const totalAmounts = amount.split(",").pop().trim();
   // let totalAmount = totalAmounts / 100;
+  const [orderIdS, setOrderIdS] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
@@ -70,6 +98,11 @@ const Order = () => {
   const currentItems = fill.slice(indexOfFirstItem, indexOfLastItem);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  // const [age, setAge] = React.useState("");
+
+  // const handleChangeS = (event) => {
+  //   setAge(event.target.value);
+  // };
 
   const load = async () => {
     try {
@@ -383,38 +416,79 @@ const Order = () => {
     return format(date, "dd/MM/yyyy HH:mm");
   };
 
-  const handleCancelOrder = (orderId) => {
-    confirmAlert({
-      title: "Hủy đơn hàng",
-      message: "Bạn có muốn hủy đơn không?",
-      buttons: [
-        {
-          label: "Có",
-          onClick: async () => {
-            try {
-              await axios.put(`/order/${orderId}/status`, {
-                status: "Hủy",
-                note: "Đơn hàng được huỷ bởi người dùng",
-              });
-              setFill((prevFill) =>
-                prevFill.map((order) =>
-                  order.id === orderId
-                    ? {
-                        ...order,
-                        orderstatus: "Hủy",
-                        note: "Đơn hàng được huỷ bởi người dùng",
-                      }
-                    : order
-                )
-              );
-            } catch (error) {
-              console.log(error);
-            }
-          },
-        },
-        { label: "Không" },
-      ],
-    });
+  const handleCancelOrder = async () => {
+    try {
+      await axios.put(`/order/${orderIdS}/status`, {
+        status: "Hủy",
+        note: `Đơn hàng được hủy bởi người dùng, với lý do là: ${cancelReason}`,
+      });
+      setFill((prevFill) =>
+        prevFill.map((order) =>
+          order.id === orderIdS
+            ? {
+                ...order,
+                orderstatus: "Hủy",
+                note: `Đơn hàng được Hủy bởi người dùng, với lý do là: ${cancelReason}`,
+              }
+            : order
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
+    setOpen(false);
+    setCancelReason("");
+    load();
+  };
+
+  // const handleConfirmCancel = async () => {
+  //   if (inputReason) {
+  //     try {
+  //       await axios.post(`/orderDetail/update/${cancelProductDetail}`, {
+  //         status: `Đang gửi yêu cầu trả hàng, với lý do: ${inputReason}`,
+  //       });
+
+  //       const closeModalButton = document.querySelector(
+  //         '[data-bs-dismiss="modal"]'
+  //       );
+  //       if (closeModalButton) {
+  //         closeModalButton.click();
+  //       }
+  //       toast.success("Gữi yêu cầu thành công!");
+  //       load();
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  // };
+
+  const handleReturn = async () => {
+    try {
+      await axios.put(`/order/${returnOrder}/status`, {
+        status: "Chờ nhận hàng",
+        note: `Yêu cầu trả hàng bởi người dùng, với lý do là: ${cancelReasonS}`,
+      });
+
+      setFill((prevFill) =>
+        prevFill.map((order) =>
+          order.id === returnOrder
+            ? {
+                ...order,
+                note: `Yêu cầu trả hàng bởi người dùng, với lý do là: ${cancelReasonS}`,
+              }
+            : order
+        )
+      );
+      const closeModalButton = document.querySelector(
+        '[data-bs-dismiss="modal"]'
+      );
+      if (closeModalButton) {
+        closeModalButton.click();
+      }
+      toast.success("Gữi yêu cầu trả hàng thành công");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleMarkAsReceived = (orderId) => {
@@ -438,6 +512,7 @@ const Order = () => {
                     : order
                 )
               );
+              load();
             } catch (error) {
               console.log(error);
             }
@@ -465,6 +540,15 @@ const Order = () => {
   const formatPrice = (value) => {
     if (!value) return "0";
     return Number(value).toLocaleString("vi-VN");
+  };
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setCancelReason(" ");
+    setOpen(false);
   };
 
   const renderOrders = (filterFn) => {
@@ -542,6 +626,149 @@ const Order = () => {
               )}
             </div>
           </div>
+          <React.Fragment>
+            <Dialog
+              open={open}
+              TransitionComponent={Transition}
+              keepMounted
+              onClose={handleClose}
+              aria-describedby="alert-dialog-slide-description"
+              maxWidth="lg"
+            >
+              <DialogTitle sx={{ fontSize: "24px" }}>
+                {"Lý do hủy đơn hàng"}
+              </DialogTitle>{" "}
+              <DialogContent>
+                <DialogContentText id="alert-dialog-slide-description">
+                  <div className="form-check" style={{ fontSize: "18px" }}>
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="flexRadioDefault"
+                      id="flexRadioDefault1"
+                      onChange={() =>
+                        setCancelReason("muốn thay đổi địa chỉ nhận hàng")
+                      }
+                      style={{ cursor: "pointer" }}
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="flexRadioDefault1"
+                      style={{ cursor: "pointer" }} // Thêm cursor pointer vào label
+                    >
+                      Muốn thay đổi địa chỉ nhận hàng
+                    </label>
+                  </div>
+
+                  <div className="form-check" style={{ fontSize: "18px" }}>
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="flexRadioDefault"
+                      id="flexRadioDefault2"
+                      onChange={() =>
+                        setCancelReason("muốn nhập/thay đổi Voucher")
+                      }
+                      style={{ cursor: "pointer" }}
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="flexRadioDefault2"
+                      style={{ cursor: "pointer" }}
+                    >
+                      Muốn nhập/thay đổi Voucher
+                    </label>
+                  </div>
+
+                  <div className="form-check" style={{ fontSize: "18px" }}>
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="flexRadioDefault"
+                      id="flexRadioDefault3"
+                      onChange={() =>
+                        setCancelReason("muốn đổi phân loại sản phẩm")
+                      }
+                      style={{ cursor: "pointer" }}
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="flexRadioDefault3"
+                      style={{ cursor: "pointer" }}
+                    >
+                      Muốn đổi phân loại sản phẩm
+                    </label>
+                  </div>
+
+                  <div className="form-check" style={{ fontSize: "18px" }}>
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="flexRadioDefault"
+                      id="flexRadioDefault4"
+                      onChange={() => setCancelReason("không còn nhu cầu nữa")}
+                      style={{ cursor: "pointer" }}
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="flexRadioDefault4"
+                      style={{ cursor: "pointer" }}
+                    >
+                      Không còn nhu cầu nữa
+                    </label>
+                  </div>
+
+                  <div className="form-check" style={{ fontSize: "18px" }}>
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="flexRadioDefault"
+                      id="flexRadioDefault5"
+                      onChange={() => setCancelReason("")}
+                      style={{ cursor: "pointer" }}
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="flexRadioDefault5"
+                      style={{ cursor: "pointer" }}
+                    >
+                      Khác
+                    </label>
+                  </div>
+
+                  {![
+                    "muốn thay đổi địa chỉ nhận hàng",
+                    "muốn nhập/thay đổi Voucher",
+                    "muốn đổi phân loại sản phẩm",
+                    "không còn nhu cầu nữa",
+                    " ",
+                  ].includes(cancelReason) || cancelReason === "" ? (
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Nhập lý do"
+                      value={cancelReason}
+                      onChange={(e) => setCancelReason(e.target.value)}
+                      style={{ fontSize: "16px", padding: "12px" }} // Tăng kích thước input
+                    />
+                  ) : null}
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleClose} sx={{ fontSize: "18px" }}>
+                  Hủy
+                </Button>{" "}
+                {/* Tăng kích thước button */}
+                <Button
+                  onClick={() => handleCancelOrder()}
+                  sx={{ fontSize: "18px" }}
+                >
+                  Xác nhận
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </React.Fragment>
+
           {orderDetails[order.id] &&
             orderDetails[order.id].slice(0, 2).map((orderDetail) => {
               const firstIMG = orderDetail.productDetail.product.images?.[0];
@@ -593,6 +820,7 @@ const Order = () => {
               Thành tiền: {formatPrice(order.totalamount) + " VNĐ"}
             </div>
           </div>
+
           {orderDetails[order.id] && orderDetails[order.id].length > 2 && (
             <Button href={`/orderDetail/${order.id}`}>
               + {orderDetails[order.id].length - 2} sản phẩm
@@ -601,35 +829,94 @@ const Order = () => {
           <hr />
           <div className="d-flex justify-content-between align-items-center">
             {order.note ? (
-              <div
-                style={{
-                  padding: "5px",
-                  backgroundColor: "rgb(255, 184, 184)",
-                  color: "rgb(198, 0, 0)",
-                  borderRadius: "10px",
-                  display: "inline-block",
-                }}
+              <Tooltip
+                title={
+                  order.note.includes(",")
+                    ? order.note.split(",")[1].trim()
+                    : ""
+                }
+                arrow
               >
-                {order.note}
-              </div>
+                <span
+                  style={{
+                    padding: "5px",
+                    backgroundColor: "rgb(255, 184, 184)",
+                    color: "rgb(198, 0, 0)",
+                    borderRadius: "10px",
+                    display: "inline-block",
+                  }}
+                >
+                  {order.note.split(",")[0]}
+                </span>
+              </Tooltip>
             ) : (
               <div></div>
             )}
 
             <div className="d-flex align-items-center">
               <div className="me-3">
-                {order.orderstatus === "Chờ nhận hàng" ? (
-                  <Button
-                    onClick={() => handleMarkAsReceived(order.id)}
-                    style={{
-                      width: "auto",
-                      backgroundColor: "rgb(218, 255, 180)",
-                      color: "rgb(45, 91, 0)",
-                    }}
-                    disableElevation
-                  >
-                    Đã nhận hàng
-                  </Button>
+                {order.orderstatus === "Đang chờ duyệt" ? (
+                  <>
+                    <Tooltip title="Hủy đơn hàng" arrow>
+                      <Button
+                        onClick={() => {
+                          setOrderIdS(order.id);
+                          handleClickOpen();
+                        }}
+                        style={{
+                          width: "auto",
+                          backgroundColor: "rgb(255, 184, 184)",
+                          color: "rgb(198, 0, 0)",
+                        }}
+                        disableElevation
+                      >
+                        <i className="bi bi-x-circle-fill"></i>
+                      </Button>
+                    </Tooltip>
+                  </>
+                ) : order.orderstatus === "Chờ nhận hàng" ? (
+                  new Date() - new Date(order.awaitingdeliverydate) <=
+                  7 * 24 * 60 * 60 * 1000 ? (
+                    <>
+                      {!(
+                        order.note &&
+                        (order.note.split(",")[0] === "Từ chối trả hàng" ||
+                          order.note.split(",")[0] ===
+                            "Yêu cầu trả hàng bởi người dùng")
+                      ) && (
+                        <Tooltip title="Trả hàng" arrow>
+                          <Button
+                            className="me-3"
+                            onClick={() => setReturnOrder(order.id)}
+                            style={{
+                              width: "auto",
+                              backgroundColor: "rgb(204,244,255)",
+                              color: "rgb(0,70,89)",
+                            }}
+                            disableElevation
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal"
+                          >
+                            Trả hàng
+                          </Button>
+                        </Tooltip>
+                      )}
+
+                      <Tooltip title="Đã nhận hàng" arrow>
+                        <Button
+                          onClick={() => handleMarkAsReceived(order.id)}
+                          style={{
+                            width: "auto",
+                            backgroundColor: "rgb(218, 255, 180)",
+                            color: "rgb(45, 91, 0)",
+                          }}
+                          disableElevation
+                        >
+                          Đã nhận hàng
+                        </Button>
+                      </Tooltip>
+                    </>
+                  ) : null
                 ) : order.orderstatus === "Hoàn thành" ? (
                   <>
                     {orderDetails &&
@@ -652,36 +939,188 @@ const Order = () => {
                       <p>Không có chi tiết đơn hàng</p>
                     )}
                   </>
-                ) : (
-                  order.orderstatus !== "Hủy" && (
-                    <Button
-                      onClick={() => handleCancelOrder(order.id)}
-                      style={{
-                        width: "auto",
-                        backgroundColor: "rgb(255, 184, 184)",
-                        color: "rgb(198, 0, 0)",
-                      }}
-                      disableElevation
-                    >
-                      <i class="bi bi-x-circle-fill"></i>
-                    </Button>
-                  )
-                )}
+                ) : null}
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#exampleModal"
+                hidden
+              ></button>
+              <div
+                className="modal fade"
+                id="exampleModal"
+                tabindex="-1"
+                aria-labelledby="exampleModalLabel"
+                aria-hidden="true"
+              >
+                <div className="modal-dialog">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h1 className="modal-title fs-5" id="exampleModalLabel">
+                        Nhập lý do bạn muốn trả hàng
+                      </h1>
+                      <button
+                        type="button"
+                        className="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div className="modal-body">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="flexRadioDefault"
+                          id="flexRadioDefault1"
+                          onChange={() =>
+                            setCancelReasonS("chưa nhận được hàng")
+                          }
+                          style={{ cursor: "pointer" }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="flexRadioDefault1"
+                          style={{ cursor: "pointer" }}
+                        >
+                          Chưa nhận được hàng
+                        </label>
+                      </div>
+
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="flexRadioDefault"
+                          id="flexRadioDefault2"
+                          onChange={() => setCancelReasonS("thiếu hàng")}
+                          style={{ cursor: "pointer" }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="flexRadioDefault2"
+                          style={{ cursor: "pointer" }}
+                        >
+                          Thiếu hàng
+                        </label>
+                      </div>
+
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="flexRadioDefault"
+                          id="flexRadioDefault3"
+                          onChange={() =>
+                            setCancelReasonS("người bán gửi sai hàng")
+                          }
+                          style={{ cursor: "pointer" }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="flexRadioDefault3"
+                          style={{ cursor: "pointer" }}
+                        >
+                          Người bán gửi sai hàng
+                        </label>
+                      </div>
+
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="flexRadioDefault"
+                          id="flexRadioDefault4"
+                          onChange={() => setCancelReasonS("hàng bể vỡ")}
+                          style={{ cursor: "pointer" }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="flexRadioDefault4"
+                          style={{ cursor: "pointer" }}
+                        >
+                          Hàng bể vỡ
+                        </label>
+                      </div>
+
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="flexRadioDefault"
+                          id="flexRadioDefault5"
+                          onChange={() => setCancelReasonS("")}
+                          style={{ cursor: "pointer" }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="flexRadioDefault5"
+                          style={{ cursor: "pointer" }}
+                        >
+                          Khác
+                        </label>
+                      </div>
+
+                      {![
+                        "chưa nhận được hàng",
+                        "thiếu hàng",
+                        "người bán gửi sai hàng",
+                        "hàng bể vỡ",
+                        " ",
+                      ].includes(cancelReasonS) || cancelReasonS === "" ? (
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Nhập lý do"
+                          value={cancelReasonS}
+                          onChange={(e) => setCancelReasonS(e.target.value)}
+                        />
+                      ) : null}
+                      {/* <TextField
+                        fullWidth
+                        size="small"
+                        id="outlined-basic"
+                        label="Nhập lý do bạn muốn trả hàng"
+                        variant="outlined"
+                        value={inputReason}
+                        onChange={(e) => setInputReason(e.target.value)}
+                      /> */}
+                    </div>
+                    <div className="modal-footer">
+                      <Button
+                        onClick={() => handleReturn()}
+                        style={{
+                          width: "auto",
+                          backgroundColor: "rgb(204,244,255)",
+                          color: "rgb(0,70,89)",
+                        }}
+                        disableElevation
+                      >
+                        Xác nhận
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div>
-                <Button
-                  variant="contained"
-                  href={`/orderDetail/${order.id}`}
-                  style={{
-                    height: "40px",
-                    width: "auto",
-                    backgroundColor: "rgb(204,244,255)",
-                    color: "rgb(0,70,89)",
-                  }}
-                  disableElevation
-                >
-                  <i className="bi bi-eye-fill fs-5"></i>
-                </Button>
+                <Tooltip title="Xem chi tiết" arrow>
+                  <Button
+                    variant="contained"
+                    href={`/orderDetail/${order.id}`}
+                    style={{
+                      height: "40px",
+                      width: "auto",
+                      backgroundColor: "rgb(204,244,255)",
+                      color: "rgb(0,70,89)",
+                    }}
+                    disableElevation
+                  >
+                    <i className="bi bi-eye-fill fs-5"></i>
+                  </Button>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -725,6 +1164,7 @@ const Order = () => {
                 "Tất cả",
                 "Đang chờ duyệt",
                 "Đang vận chuyển",
+                "Chờ nhận hàng",
                 "Hoàn thành",
                 "Hủy",
                 "Trả hàng",
@@ -737,6 +1177,7 @@ const Order = () => {
             "Tất cả",
             "Đang chờ duyệt",
             "Đang vận chuyển",
+            "Chờ nhận hàng",
             "Hoàn thành",
             "Hủy",
             "Trả hàng",
@@ -751,6 +1192,8 @@ const Order = () => {
                       return order.orderstatus === "Đang chờ duyệt";
                     case "Đang vận chuyển":
                       return order.orderstatus === "Đang vận chuyển";
+                    case "Chờ nhận hàng":
+                      return order.orderstatus === "Chờ nhận hàng";
                     case "Hoàn thành":
                       return order.orderstatus === "Hoàn thành";
                     case "Hủy":

@@ -26,7 +26,7 @@ const ChangePass = ({ checkStatus }) => {
     password: "",
     email: "",
     birthdate: "",
-    role: "",
+    rolePermission: "",
     address: "",
     phone: "",
     gender: true,
@@ -92,8 +92,8 @@ const ChangePass = ({ checkStatus }) => {
           phone: formPass.phone,
           gender: formPass.gender,
           password: newPass, // Sử dụng mật khẩu mới
-          role: {
-            id: formPass.role.id,
+          rolePermission: {
+            id: formPass.rolePermission.id,
           },
           address: formPass.address,
           avatar: formPass.avatar,

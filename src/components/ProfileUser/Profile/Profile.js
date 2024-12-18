@@ -178,8 +178,8 @@ const Profile = () => {
         address: fill.address,
       };
       formData.append("user", JSON.stringify(userToSend));
-      console.log(userToSend);
-      console.log(fill.avatar);
+      // console.log(userToSend);
+      // console.log(fill.avatar);
       if (fill.avatar instanceof File) {
         formData.append("avatar", fill.avatar);
       }

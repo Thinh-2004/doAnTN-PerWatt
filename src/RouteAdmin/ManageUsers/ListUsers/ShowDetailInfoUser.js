@@ -78,6 +78,10 @@ const ShowDetailInfoUser = ({ idUser }) => {
 
       if (name === "select") {
         setSelect(value);
+        if(value === "Vĩnh viễn"){
+          setStartday(null)
+          setEndday(null)
+        }
       } else if (name === "checked") {
         setChecked(checked);
       } else if (name === "reason") {
@@ -198,7 +202,7 @@ const ShowDetailInfoUser = ({ idUser }) => {
       return false;
     }
 
-    if (!startday) {
+    if (!startday && select !== "Vĩnh viễn") {
       toast.warning("Vui lòng chọn ngày bắt đầu");
       return false;
     } else {
@@ -207,31 +211,33 @@ const ShowDetailInfoUser = ({ idUser }) => {
 
       // So sánh toàn bộ ngày
       if (
-        start.getFullYear() < today.getFullYear() ||
-        (start.getFullYear() === today.getFullYear() &&
-          start.getMonth() < today.getMonth()) ||
-        (start.getFullYear() === today.getFullYear() &&
-          start.getMonth() === today.getMonth() &&
-          start.getDate() < today.getDate())
+        select !== "Vĩnh viễn" &&
+        (start.getFullYear() < today.getFullYear() ||
+          (start.getFullYear() === today.getFullYear() &&
+            start.getMonth() < today.getMonth()) ||
+          (start.getFullYear() === today.getFullYear() &&
+            start.getMonth() === today.getMonth() &&
+            start.getDate() < today.getDate()))
       ) {
         toast.warning("Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
         return false;
       }
     }
 
-    if (!endday) {
+    if (!endday && select !== "Vĩnh viễn") {
       toast.warning("Vui lòng ngày kết thúc");
       return false;
     } else {
       const start = new Date(startday);
       const end = new Date(endday);
       if (
-        end.getFullYear() < start.getFullYear() ||
-        (end.getFullYear() === start.getFullYear() &&
-          end.getMonth() < start.getMonth()) ||
-        (end.getFullYear() === start.getFullYear() &&
-          end.getMonth() === start.getMonth() &&
-          end.getDate() <= start.getDate())
+        select !== "Vĩnh viễn" &&
+        (end.getFullYear() < start.getFullYear() ||
+          (end.getFullYear() === start.getFullYear() &&
+            end.getMonth() < start.getMonth()) ||
+          (end.getFullYear() === start.getFullYear() &&
+            end.getMonth() === start.getMonth() &&
+            end.getDate() <= start.getDate()))
       ) {
         toast.warning(
           "Ngày kết thúc không được nhỏ hơn hoặc bằng ngày bắt đầu."
