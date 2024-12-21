@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "../../../Localhost/Custumize-axios";
 import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { confirmAlert } from "react-confirm-alert";
+import { toast } from "react-toastify";
 import "./Chat.css";
 
 const ChatSeller = ({ infoUser }) => {
@@ -113,13 +115,36 @@ const ChatSeller = ({ infoUser }) => {
   };
 
   const handleDeleteMessage = async (id) => {
-    const confirmDelete = window.confirm(
-      "Bạn có chắc muốn xóa tin nhắn này không?"
-    );
-    if (confirmDelete) {
-      await deleteMessage(id);
-    }
-    setOpenDropdownId(null);
+    confirmAlert({
+      title: "Xóa tin nhắn!",
+      message: "Bạn có chắc chắn rằng muốn xóa tin nhắn này không?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            // Hiển thị thông báo đang tải
+            try {
+              const idToast = toast.loading("Vui lòng chờ...");
+              await deleteMessage(id);
+              toast.update(idToast, {
+                render: "Xóa tin nhắn thành công",
+                type: "success",
+                isLoading: false,
+                autoClose: 2000,
+                closeButton: true,
+              });
+              setOpenDropdownId(null);
+            } catch (error) {
+              console.log(error);
+            }
+          },
+        },
+        {
+          label: "Không",
+        },
+      ],
+      overlayClassName: "custom-overlay",
+    });
   };
 
   const toggleDropdown = (id) => {

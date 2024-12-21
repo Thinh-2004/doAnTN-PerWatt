@@ -174,35 +174,38 @@ const ProductList = () => {
       try {
         const response = await axios.get(`/revenue/net-store-revenue`);
         const rawRevenueData = response.data;
-
-        // Gộp dữ liệu theo năm
+    
+        // Gộp dữ liệu theo năm và cửa hàng
         const groupedData = rawRevenueData.reduce((acc, curr) => {
           const { Year, NetRevenue, StoreName, slugStore, OrderCount } = curr;
-
-          // Kiểm tra xem năm đã tồn tại trong `acc` chưa
-          if (!acc[Year]) {
-            acc[Year] = {
+    
+          // Tạo khóa duy nhất dựa trên Year và slugStore
+          const key = `${Year}-${slugStore}`;
+    
+          // Kiểm tra xem khóa đã tồn tại trong `acc` chưa
+          if (!acc[key]) {
+            acc[key] = {
               Year,
-              NetRevenue: 0,
-              OrderCount: 0,
               StoreName,
               slugStore,
+              NetRevenue: 0,
+              OrderCount: 0,
             };
           }
-
+    
           // Cộng dồn doanh thu và số lượng đơn hàng
-          acc[Year].NetRevenue += NetRevenue;
-          acc[Year].OrderCount += OrderCount;
-
+          acc[key].NetRevenue += NetRevenue;
+          acc[key].OrderCount += OrderCount;
+    
           return acc;
         }, {});
-
+    
         // Chuyển đổi đối tượng thành mảng
         const aggregatedRevenueData = Object.values(groupedData);
-
+    
         // Cập nhật state với dữ liệu gộp
         setRevenueData(aggregatedRevenueData);
-
+    
         // Lấy danh sách các năm có sẵn từ dữ liệu doanh thu
         const years = [
           ...new Set(aggregatedRevenueData.map((item) => item.Year)),
@@ -210,12 +213,13 @@ const ProductList = () => {
         setAvailableYears(years); // Cập nhật danh sách năm
       } catch (error) {
         console.error("Error fetching revenue data:", error);
-        if (error.response.status === 403) setError403(error.response.status);
+        if (error.response?.status === 403) setError403(error.response.status);
         else setError("Không thể tải dữ liệu doanh thu.");
       } finally {
         setLoading(false);
       }
     };
+    
 
     fetchProducts();
     fetchRevenueData();

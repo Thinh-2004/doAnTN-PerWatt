@@ -12,53 +12,53 @@ function App() {
   // CheckTimeLogOut();
   const { mode } = useContext(ThemeModeContext);
 
-  // const detectDevTools = () => {
-  //   const threshold = 160;
-  //   let isDevToolsOpen = false;
+  const detectDevTools = () => {
+    const threshold = 160;
+    let isDevToolsOpen = false;
 
-  //   const checkSizeDifference = () => {
-  //     if (
-  //       window.outerWidth - window.innerWidth > threshold ||
-  //       window.outerHeight - window.innerHeight > threshold
-  //     ) {
-  //       isDevToolsOpen = true;
-  //       handleDevToolsOpen();
-  //     }
-  //   };
+    const checkSizeDifference = () => {
+      if (
+        window.outerWidth - window.innerWidth > threshold ||
+        window.outerHeight - window.innerHeight > threshold
+      ) {
+        isDevToolsOpen = true;
+        handleDevToolsOpen();
+      }
+    };
 
-  //   const checkExecutionTime = () => {
-  //     const start = performance.now();
-  //     // debugger; // Lệnh này sẽ chậm hơn khi DevTools đang mở
-  //     const end = performance.now();
+    const checkExecutionTime = () => {
+      const start = performance.now();
+      // debugger; // Lệnh này sẽ chậm hơn khi DevTools đang mở
+      const end = performance.now();
 
-  //     if (end - start > 100) {
-  //       // Nếu thời gian thực thi vượt quá 100ms, DevTools có khả năng đang mở
-  //       isDevToolsOpen = true;
-  //       handleDevToolsOpen();
-  //     }
-  //   };
+      if (end - start > 100) {
+        // Nếu thời gian thực thi vượt quá 100ms, DevTools có khả năng đang mở
+        isDevToolsOpen = true;
+        handleDevToolsOpen();
+      }
+    };
 
-  //   const handleDevToolsOpen = () => {
-  //     if (isDevToolsOpen) {
-  //       window.location.href = "/"; // Điều hướng về trang đăng nhập
-  //       localStorage.clear(); // Xóa dữ liệu người dùng
-  //       console.log(
-  //         "%cVui lòng tắt developer tool để tiếp tục trải nghiệm website",
-  //         "color: red; font-size: 16px; font-weight: bold;"
-  //       );
-  //     }
-  //   };
+    const handleDevToolsOpen = () => {
+      if (isDevToolsOpen) {
+        window.location.href = "/"; // Điều hướng về trang đăng nhập
+        localStorage.clear(); // Xóa dữ liệu người dùng
+        console.log(
+          "%cVui lòng tắt developer tool để tiếp tục trải nghiệm website",
+          "color: red; font-size: 16px; font-weight: bold;"
+        );
+      }
+    };
 
-  //   // Lắng nghe sự kiện thay đổi kích thước cửa sổ
-  //   window.addEventListener("resize", checkSizeDifference);
+    // Lắng nghe sự kiện thay đổi kích thước cửa sổ
+    window.addEventListener("resize", checkSizeDifference);
 
-  //   // Kiểm tra thời gian thực thi
-  //   setInterval(checkExecutionTime, 1000); // Kiểm tra định kỳ mỗi giây
-  // };
+    // Kiểm tra thời gian thực thi
+    setInterval(checkExecutionTime, 1000); // Kiểm tra định kỳ mỗi giây
+  };
 
-  // useEffect(() => {
-  //   detectDevTools(); // Kiểm tra ngay khi trang load
-  // }, []);
+  useEffect(() => {
+    detectDevTools(); // Kiểm tra ngay khi trang load
+  }, []);
 
   return (
     <>

@@ -400,19 +400,23 @@ const Order = () => {
                     <div
                       style={{ position: "relative", display: "inline-block" }}
                     >
-                      <img
-                        src={
-                          orderDetail.productDetail.imagedetail
-                            ? orderDetail.productDetail.imagedetail
-                            : firstIMG?.imagename
-                        }
-                        alt=""
-                        style={{
-                          width: "100px",
-                          height: "100px",
-                        }}
-                        className="rounded-3 mb-3 me-3"
-                      />
+                      <a
+                        href={`/detailProduct/${orderDetail.productDetail.product.slug}`}
+                      >
+                        <img
+                          src={
+                            orderDetail.productDetail.imagedetail
+                              ? orderDetail.productDetail.imagedetail
+                              : firstIMG?.imagename
+                          }
+                          alt=""
+                          style={{
+                            width: "100px",
+                            height: "100px",
+                          }}
+                          className="rounded-3 mb-3 me-3"
+                        />
+                      </a>
                     </div>
 
                     <div className="d-flex flex-column me-3">

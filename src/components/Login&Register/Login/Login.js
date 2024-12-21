@@ -32,25 +32,25 @@ const Login = () => {
     }
   };
 
-  // const detectDevTools = () => {
-  //   const threshold = 160;
-  //   const isDevToolsOpen =
-  //     window.outerWidth - window.innerWidth > threshold ||
-  //     window.outerHeight - window.innerHeight > threshold;
-  //   return isDevToolsOpen;
-  // };
+  const detectDevTools = () => {
+    const threshold = 160;
+    const isDevToolsOpen =
+      window.outerWidth - window.innerWidth > threshold ||
+      window.outerHeight - window.innerHeight > threshold;
+    return isDevToolsOpen;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Kiểm tra nếu Developer Tools đang mở
-    // if (detectDevTools()) {
-    //   toast.error("Vui lòng tắt Developer Tools để tiếp tục.", {
-    //     autoClose: 3000,
-    //     closeButton: true,
-    //   });
-    //   return; // Không cho phép tiếp tục gọi API
-    // }
+    if (detectDevTools()) {
+      toast.error("Vui lòng tắt Developer Tools để tiếp tục.", {
+        autoClose: 3000,
+        closeButton: true,
+      });
+      return; // Không cho phép tiếp tục gọi API
+    }
 
     if (validate()) {
       const idToast = toast.loading("Vui lòng chờ...");

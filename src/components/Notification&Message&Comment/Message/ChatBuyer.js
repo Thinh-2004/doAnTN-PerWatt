@@ -15,9 +15,8 @@ const ChatBuyer = ({ infoStore }) => {
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user"));
-  const idStore = localStorage.getItem("idStore");
+  // const idStore = localStorage.getItem("idStore");
 
-  const senderId = idStore === "undefined" ? user.id : idStore;
 
   useEffect(() => {
     const socket = new SockJS("http://localhost:8080/ws");
@@ -41,7 +40,7 @@ const ChatBuyer = ({ infoStore }) => {
     const loadDataMessage = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/messages/${senderId}/${infoStore.id}`
+          `http://localhost:8080/api/messages/${user.id}/${infoStore.id}`
         );
         setMessages(res.data);
       } catch (error) {
@@ -49,10 +48,10 @@ const ChatBuyer = ({ infoStore }) => {
       }
     };
 
-    if (senderId && infoStore.id) {
+    if (user && infoStore.id) {
       loadDataMessage();
     }
-  }, [senderId, infoStore.id]);
+  }, [user, infoStore.id]);
 
   const handleSendMessage = async () => {
     if (!inputMessage || !user?.id || !infoStore?.id) return;

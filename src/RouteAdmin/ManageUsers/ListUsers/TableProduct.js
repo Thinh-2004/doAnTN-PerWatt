@@ -300,64 +300,64 @@ const TableProduct = ({ data, isRefeshListProduct }) => {
                       />
                     </TableCell>
                     <TableCell align="center">
-                      {listChangeNameProduct.length === 0
-                        ? row.product.name
-                        : listChangeNameProduct.length === 1 && (
-                            <>
-                              <ListItemButton
-                                onClick={handleClick}
-                                sx={{
-                                  "&:hover": { backgroundColor: "transparent" },
-                                }}
-                              >
-                                <ListItemIcon sx={{ color: "text.default" }}>
+                      {listChangeNameProduct.length === 0 ? (
+                        <Tooltip title={row.product.name}>
+                          <Typography className="text-truncate">
+                            {row.product.name}
+                          </Typography>
+                        </Tooltip>
+                      ) : (
+                        listChangeNameProduct.length >= 1 && (
+                          <>
+                            <ListItemButton
+                              onClick={handleClick}
+                              sx={{
+                                "&:hover": { backgroundColor: "transparent" },
+                              }}
+                            >
+                              <ListItemIcon sx={{ color: "text.default" }}>
+                                <Typography className="text-truncate w-25">
                                   {
                                     listNameProductChange[row.product.id][0]
                                       .nameproduct
                                   }
-                                </ListItemIcon>
-                                {typeof listNameProductChange[
-                                  row.product.id
-                                ]?.[0]?.nameproduct === "string" &&
-                                  !listNameProductChange[
-                                    row.product.id
-                                  ][0].nameproduct.includes(
-                                    row.product.name
-                                  ) && (
-                                    <>
-                                      {open ? <ExpandLess /> : <ExpandMore />}
-                                    </>
-                                  )}
-                              </ListItemButton>
+                                </Typography>
+                              </ListItemIcon>
                               {typeof listNameProductChange[row.product.id]?.[0]
                                 ?.nameproduct === "string" &&
                                 !listNameProductChange[
                                   row.product.id
                                 ][0].nameproduct.includes(row.product.name) && (
-                                  <Collapse
-                                    in={open}
-                                    timeout="auto"
-                                    unmountOnExit
-                                  >
-                                    <List component="div" disablePadding>
-                                      <div className="text-start">
-                                        <strong>Tên được thay đổi:</strong>
-                                      </div>
-                                      <ListItemButton>
-                                        <div className="d-flex justify-content-start">
-                                          <Typography
-                                            variant="span"
-                                            className=""
-                                          >
-                                            {row.product.name}
-                                          </Typography>
-                                        </div>
-                                      </ListItemButton>
-                                    </List>
-                                  </Collapse>
+                                  <>{open ? <ExpandLess /> : <ExpandMore />}</>
                                 )}
-                            </>
-                          )}
+                            </ListItemButton>
+                            {typeof listNameProductChange[row.product.id]?.[0]
+                              ?.nameproduct === "string" &&
+                              !listNameProductChange[
+                                row.product.id
+                              ][0].nameproduct.includes(row.product.name) && (
+                                <Collapse
+                                  in={open}
+                                  timeout="auto"
+                                  unmountOnExit
+                                >
+                                  <List component="div" disablePadding>
+                                    <div className="text-start">
+                                      <strong>Tên được thay đổi:</strong>
+                                    </div>
+                                    <ListItemButton>
+                                      <div className="d-flex justify-content-start">
+                                        <Typography variant="span" className="">
+                                          {row.product.name}
+                                        </Typography>
+                                      </div>
+                                    </ListItemButton>
+                                  </List>
+                                </Collapse>
+                              )}
+                          </>
+                        )
+                      )}
                     </TableCell>
                     <TableCell align="center">
                       {row.countOrderSuccess}

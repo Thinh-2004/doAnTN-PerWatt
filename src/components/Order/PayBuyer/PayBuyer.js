@@ -535,9 +535,9 @@ const PayBuyer = () => {
         }
       }
 
-      if (finalTotal >= 5000000 || finalTotal < 10000) {
+      if (finalTotal >= 10000000 || finalTotal < 10000) {
         toast.warning(
-          "Bạn chỉ được mua tối thiếu 10.000đ và tối đa 5.000.000đ"
+          "Bạn chỉ được mua tối thiếu 10.000đ và tối đa 10.000.000đ"
         );
         return;
       }
@@ -573,8 +573,8 @@ const PayBuyer = () => {
   };
 
   const handleMomo = async () => {
-    if (finalTotal >= 5000000 || finalTotal < 10000) {
-      toast.warning("Bạn chỉ được mua tối thiếu 10.000đ và tối đa 5.000.000đ");
+    if (finalTotal >= 10000000 || finalTotal < 10000) {
+      toast.warning("Bạn chỉ được mua tối thiếu 10.000đ và tối đa 10.000.000đ");
       return;
     }
 

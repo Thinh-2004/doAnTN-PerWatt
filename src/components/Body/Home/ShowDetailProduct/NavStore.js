@@ -23,7 +23,8 @@ const NavStore = ({ FillDetailPr, countProductStore }) => {
   const fillEvaluete = async (id) => {
     try {
       const res = await axios.get(`/comment/evaluate/store/${id}`);
-      setEvaluateStore(res.data);
+      const roundedValue = parseFloat(res.data.toFixed(1)); // Lấy 1 chữ số thập phân
+      setEvaluateStore(roundedValue);
     } catch (error) {
       console.log(error);
     }

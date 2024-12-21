@@ -363,8 +363,7 @@ const OrderDetail = () => {
                           </>
                         ) : (
                           <>
-                            Thời gian dự kiến nhận hàng:{" "}
-                            {formatDateGHN(order.receivedate)}
+                            <>Trạng thái nhận hàng của người mua: Chưa nhận </>
                           </>
                         )}
                       </div>

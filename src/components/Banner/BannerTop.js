@@ -15,7 +15,7 @@ const Banner = () => {
         // Lọc danh sách banner không có enddate bằng ngày hiện tại
         const filteredBanners = response.data.filter((banner) => {
           // Giả sử `enddate` là chuỗi ngày ở định dạng "YYYY-MM-DD"
-          return banner.enddate !== today;
+          return today >= banner.startdate && today <= banner.enddate
         });
 
         setBanners(filteredBanners);
@@ -27,19 +27,20 @@ const Banner = () => {
     fetchBanners();
   }, []);
 
-  const getActiveBanners = () => {
-    const today = new Date();
-    return banners.filter((banner) => {
-      const startDate = new Date(banner.startdate);
-      const endDate = new Date(banner.enddate);
-      return today >= startDate && today <= endDate;
-    });
-  };
+  // const getActiveBanners = () => {
+  //   const today = new Date();
+  //   return banners.filter((banner) => {
+  //     const startDate = new Date(banner.startdate);
+  //     const endDate = new Date(banner.enddate);
+  //     return today >= startDate && today <= endDate;
+  //   });
+  // };
 
-  const activeBanners = getActiveBanners();
-  const topBanners = activeBanners.filter(
+  // const activeBanners = getActiveBanners();
+  const topBanners = banners.filter(
     (banner) => banner.position === "TOP"
   );
+
 
   useEffect(() => {
     const topInterval = setInterval(() => {
