@@ -44,13 +44,13 @@ const Login = () => {
     e.preventDefault();
 
     // Kiểm tra nếu Developer Tools đang mở
-    if (detectDevTools()) {
-      toast.error("Vui lòng tắt Developer Tools để tiếp tục.", {
-        autoClose: 3000,
-        closeButton: true,
-      });
-      return; // Không cho phép tiếp tục gọi API
-    }
+    // if (detectDevTools()) {
+    //   toast.error("Vui lòng tắt Developer Tools để tiếp tục.", {
+    //     autoClose: 3000,
+    //     closeButton: true,
+    //   });
+    //   return; // Không cho phép tiếp tục gọi API
+    // }
 
     if (validate()) {
       const idToast = toast.loading("Vui lòng chờ...");
@@ -134,6 +134,7 @@ const Login = () => {
         token: res.credential,
         isGoogleLogin: true,
       });
+      console.log(res.credential);
       // Lưu token vào sessionStorage
       localStorage.setItem("hadfjkdshf", response.data.result.token);
       const resUserInfo = await axios.get(`/userProFile/myInfo`, {
@@ -157,7 +158,7 @@ const Login = () => {
         autoClose: 5000,
         closeButton: true,
       });
-      console.log(resUserInfo.data);
+      // console.log(res.profileObj);
       if (resUserInfo.data.rolePermission.role.namerole === "Admin") {
         navigate("/admin");
       } else {
